@@ -11,7 +11,7 @@ class PaymentStatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final (label, color) = switch (status) {
       InvoiceStatus.paid => ('Paid', const Color(0xFF087F5B)),
-      InvoiceStatus.partiallyPaid => ('Part paid', const Color(0xFFB45309)),
+      InvoiceStatus.partiallyPaid => ('Partial', const Color(0xFFB45309)),
       InvoiceStatus.pending => ('Pending', const Color(0xFFB45309)),
       InvoiceStatus.overdue => ('Overdue', const Color(0xFFC2410C)),
       InvoiceStatus.unpaid => ('Unpaid', const Color(0xFF9A5B13)),

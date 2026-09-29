@@ -119,17 +119,17 @@ class ProfilePage extends GetView<ProfileController> {
                 const SizedBox(height: 18),
                 _ProfileHero(profile: profile),
                 const SizedBox(height: 22),
-                _SectionCard(
-                  title: 'Role-based view',
-                  subtitle: 'Demo switch: the app adapts to each role.',
-                  children: [
-                    _RoleSelector(
-                      selected: role,
-                      onChanged: (next) => _applyRole(next),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
+                // _SectionCard(
+                //   title: 'Role-based view',
+                //   subtitle: 'Demo switch: the app adapts to each role.',
+                //   children: [
+                //     _RoleSelector(
+                //       selected: role,
+                //       onChanged: (next) => _applyRole(next),
+                //     ),
+                //   ],
+                // ),
+                // const SizedBox(height: 14),
                 _SectionCard(
                   title: 'Personal information',
                   children: [

@@ -6,7 +6,7 @@ extension InvoiceStatusLabel on InvoiceStatus {
       case InvoiceStatus.paid:
         return 'Paid';
       case InvoiceStatus.partiallyPaid:
-        return 'Part paid';
+        return 'Partial';
       case InvoiceStatus.pending:
         return 'Pending';
       case InvoiceStatus.overdue:
