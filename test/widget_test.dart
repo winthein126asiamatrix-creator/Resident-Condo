@@ -110,17 +110,26 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Payment summary'), findsOneWidget);
     expect(find.text('Select items'), findsOneWidget);
-    // Nothing is selected automatically: the resident picks the fees.
+    // Mandatory fees are selected automatically and locked, optional ones are
+    // left for the resident to pick.
     final firstItem = find.byKey(const Key('invoice-item-condoFee|Sep 2026'));
     expect(firstItem, findsOneWidget);
-    expect(
-      tester
-          .widget<CheckboxListTile>(
-            find.descendant(of: firstItem, matching: find.byType(CheckboxListTile)),
-          )
-          .value,
-      isFalse,
+    final mandatoryTile = tester.widget<CheckboxListTile>(
+      find.descendant(of: firstItem, matching: find.byType(CheckboxListTile)),
     );
+    expect(mandatoryTile.value, isTrue);
+    expect(mandatoryTile.onChanged, isNull);
+
+    final optionalItem = find.byKey(
+      const Key('invoice-item-parking|Sep 2026 · Slot B2-125'),
+    );
+    expect(optionalItem, findsOneWidget);
+    final optionalTile = tester.widget<CheckboxListTile>(
+      find.descendant(of: optionalItem, matching: find.byType(CheckboxListTile)),
+    );
+    expect(optionalTile.value, isFalse);
+    expect(optionalTile.onChanged, isNotNull);
+    expect(find.text('Mandatory'), findsWidgets);
 
     await tester.pageBack();
     await tester.pumpAndSettle();

@@ -88,6 +88,7 @@ class InvoiceItem {
     this.note = '',
     this.isPaid = false,
     this.paidDate,
+    this.mustPaid = false,
   });
 
   final InvoiceItemType type;
@@ -95,6 +96,10 @@ class InvoiceItem {
   final String note;
   final bool isPaid;
   final String? paidDate;
+
+  /// Mandatory charges (rent, condo fee, late fees) always travel with the
+  /// payment: they are pre-selected and cannot be unchecked.
+  final bool mustPaid;
 
   /// Stable identity used when paying a subset of the invoice.
   String get key => '${type.name}|${note.isEmpty ? label : note}';
@@ -104,19 +109,28 @@ class InvoiceItem {
   /// Only unpaid, non-zero charges can be selected for payment.
   bool get isPayable => !isPaid && amount > 0;
 
+  /// A mandatory charge still has to be outstanding to be payable, and it can
+  /// never be deselected by the resident.
+  bool get isMandatory => mustPaid && isPayable;
+
   bool get isZero => amount <= 0;
 
   double get dueAmount => isPaid ? 0 : amount;
 
   double get paidAmount => isPaid ? amount : 0;
 
-  InvoiceItem copyWith({bool? isPaid, String? paidDate}) {
+  InvoiceItem copyWith({
+    bool? isPaid,
+    String? paidDate,
+    bool? mustPaid,
+  }) {
     return InvoiceItem(
       type: type,
       amount: amount,
       note: note,
       isPaid: isPaid ?? this.isPaid,
       paidDate: paidDate ?? this.paidDate,
+      mustPaid: mustPaid ?? this.mustPaid,
     );
   }
 
@@ -127,13 +141,15 @@ class InvoiceItem {
           other.type == type &&
           other.amount == amount &&
           other.note == note &&
-          other.isPaid == isPaid;
+          other.isPaid == isPaid &&
+          other.mustPaid == mustPaid;
 
   @override
-  int get hashCode => Object.hash(type, amount, note, isPaid);
+  int get hashCode => Object.hash(type, amount, note, isPaid, mustPaid);
 
   @override
-  String toString() => 'InvoiceItem(${type.name}, $amount, paid: $isPaid)';
+  String toString() =>
+      'InvoiceItem(${type.name}, $amount, paid: $isPaid, mustPaid: $mustPaid)';
 }
 
 class Invoice {
@@ -170,6 +186,16 @@ class Invoice {
 
   List<InvoiceItem> get unpaidItems =>
       items.where((item) => item.isPayable).toList();
+
+  /// Charges that must always be part of the payment.
+  List<InvoiceItem> get mandatoryItems =>
+      items.where((item) => item.isMandatory).toList();
+
+  /// Value of the mandatory charges that are still open.
+  double get mandatoryDue => mandatoryItems.fold(
+    0,
+    (sum, item) => sum + item.dueAmount,
+  );
 
   bool get hasPaidItems => items.any((item) => item.isPaid);
 

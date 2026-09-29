@@ -64,7 +64,8 @@ class PaymentSummaryPage extends GetView<PaymentController> {
             ),
             const SizedBox(height: 4),
             const Text(
-              'Pick one or several fees. Settled items are locked.',
+              'Pick one or several fees. Mandatory fees are always included '
+              'and settled items are locked.',
               style: TextStyle(color: AppPalette.muted, fontSize: 12),
             ),
             const SizedBox(height: 10),
@@ -73,7 +74,7 @@ class PaymentSummaryPage extends GetView<PaymentController> {
                 key: Key('invoice-item-${item.key}'),
                 item: item,
                 selected: controller.isItemSelected(item),
-                onChanged: item.isPayable
+                onChanged: item.isPayable && !item.mustPaid
                     ? (_) => controller.toggleInvoiceItem(item)
                     : null,
               ),
@@ -82,12 +83,23 @@ class PaymentSummaryPage extends GetView<PaymentController> {
               total: controller.selectedTotal,
               count: controller.selectedCount,
             ),
+            if (controller.missingMandatoryItems.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _MandatoryWarning(
+                message: controller.mandatoryValidationMessage,
+              ),
+            ],
             const SizedBox(height: 20),
             FilledButton(
               key: const Key('continue-to-payment'),
-              onPressed: controller.selectedItems.isEmpty
-                  ? null
-                  : () => Get.toNamed(AppRoutes.paymentMethod),
+              onPressed: controller.canProceedToPayment
+                  ? () {
+                      if (!controller.canProceedToPayment) {
+                        return;
+                      }
+                      Get.toNamed(AppRoutes.paymentMethod);
+                    }
+                  : null,
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
               ),
@@ -177,7 +189,11 @@ class _SelectableItem extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: CheckboxListTile(
-          value: item.isPaid ? false : selected,
+          value: item.isPaid
+              ? false
+              : item.isMandatory
+              ? true
+              : selected,
           onChanged: onChanged,
           controlAffinity: ListTileControlAffinity.leading,
           contentPadding: const EdgeInsets.symmetric(horizontal: 6),
@@ -193,6 +209,10 @@ class _SelectableItem extends StatelessWidget {
                   ),
                 ),
               ),
+              if (item.isMandatory) ...[
+                const _MandatoryBadge(),
+                const SizedBox(width: 8),
+              ],
               Text(
                 item.isZero
                     ? 'No charge'
@@ -207,6 +227,8 @@ class _SelectableItem extends StatelessWidget {
           subtitle: Text(
             item.isPaid
                 ? 'Paid${item.paidDate == null ? '' : ' on ${item.paidDate}'}'
+                : item.isMandatory
+                ? 'Mandatory fee · always included'
                 : item.isZero
                 ? 'Not charged this period'
                 : item.note.isEmpty
@@ -214,8 +236,14 @@ class _SelectableItem extends StatelessWidget {
                 : item.note,
             style: TextStyle(
               fontSize: 11,
-              color: item.isPaid ? AppPalette.success : AppPalette.muted,
-              fontWeight: item.isPaid ? FontWeight.w700 : FontWeight.w400,
+              color: item.isPaid
+                  ? AppPalette.success
+                  : item.isMandatory
+                  ? AppPalette.brand
+                  : AppPalette.muted,
+              fontWeight: item.isPaid || item.isMandatory
+                  ? FontWeight.w700
+                  : FontWeight.w400,
             ),
           ),
           secondary: item.isPaid
@@ -224,8 +252,77 @@ class _SelectableItem extends StatelessWidget {
                   size: 18,
                   color: AppPalette.success,
                 )
+              : item.isMandatory
+              ? const Icon(
+                  Icons.lock_rounded,
+                  size: 18,
+                  color: AppPalette.brand,
+                )
               : null,
         ),
+      ),
+    );
+  }
+}
+
+class _MandatoryBadge extends StatelessWidget {
+  const _MandatoryBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const Key('mandatory-badge'),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppPalette.brandTint,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: const Text(
+        'Mandatory',
+        style: TextStyle(
+          color: AppPalette.brand,
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _MandatoryWarning extends StatelessWidget {
+  const _MandatoryWarning({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const Key('mandatory-warning'),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppPalette.danger.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppPalette.danger.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.error_outline_rounded,
+            size: 18,
+            color: AppPalette.danger,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: AppPalette.danger,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

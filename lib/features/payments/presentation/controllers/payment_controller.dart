@@ -131,6 +131,12 @@ class PaymentController extends GetxController {
           selectedItems.removeWhere(
             (item) => !(refreshed.itemByKey(item.key)?.isPayable ?? false),
           );
+          // Mandatory charges are always part of the payment.
+          selectedItems.addAll(
+            refreshed.mandatoryItems.where(
+              (item) => !selectedItems.contains(item),
+            ),
+          );
         } else {
           selectedItems.clear();
         }
@@ -156,19 +162,30 @@ class PaymentController extends GetxController {
 
   // -------------------------------------------------------------- selection
 
-  /// Selecting an invoice clears the selection: nothing is auto selected so
-  /// "Pay now" can never settle the whole balance by accident.
+  /// Selecting an invoice clears the selection: nothing optional is auto
+  /// selected so "Pay now" can never settle the whole balance by accident.
+  /// Mandatory charges are the exception, they are always pre-selected.
   void selectInvoice(Invoice invoice) {
     selectedInvoice.value = invoice;
     paymentSuccess.value = null;
     paymentFailure.value = null;
     errorMessage.value = null;
     selectedPaymentMethod.value = PaymentMethod.card;
-    selectedItems.clear();
+    selectedItems
+      ..clear()
+      ..addAll(invoice.mandatoryItems);
   }
 
+  /// Clears the optional items. Mandatory charges stay selected.
   void clearSelection() {
-    selectedItems.clear();
+    final invoice = selectedInvoice.value;
+    if (invoice == null) {
+      selectedItems.clear();
+      return;
+    }
+    selectedItems
+      ..clear()
+      ..addAll(invoice.mandatoryItems);
   }
 
   /// Explicit user action, used by the "Select all unpaid" shortcut.
@@ -184,9 +201,10 @@ class PaymentController extends GetxController {
 
   bool isItemSelected(InvoiceItem item) => selectedItems.contains(item);
 
-  /// Paid and zero-amount items can never be selected again.
+  /// Paid and zero-amount items can never be selected again, and mandatory
+  /// charges can never be deselected.
   void toggleInvoiceItem(InvoiceItem item) {
-    if (!item.isPayable) {
+    if (!item.isPayable || item.mustPaid) {
       return;
     }
     if (selectedItems.contains(item)) {
@@ -194,6 +212,31 @@ class PaymentController extends GetxController {
     } else {
       selectedItems.add(item);
     }
+  }
+
+  /// Mandatory charges that are not part of the current selection. A non empty
+  /// result blocks the payment.
+  List<InvoiceItem> get missingMandatoryItems {
+    final invoice = selectedInvoice.value;
+    if (invoice == null) {
+      return const [];
+    }
+    return invoice.mandatoryItems
+        .where((item) => !selectedItems.contains(item))
+        .toList();
+  }
+
+  /// Payment can only continue once every mandatory charge is selected.
+  bool get canProceedToPayment =>
+      selectedItems.isNotEmpty && missingMandatoryItems.isEmpty;
+
+  String get mandatoryValidationMessage {
+    final missing = missingMandatoryItems;
+    if (missing.isEmpty) {
+      return '';
+    }
+    final labels = missing.map((item) => item.label).join(', ');
+    return 'Mandatory fees must be paid: $labels';
   }
 
   void selectPaymentMethod(PaymentMethod method) {
@@ -221,6 +264,10 @@ class PaymentController extends GetxController {
     }
     if (selectedItems.isEmpty) {
       errorMessage.value = 'Select at least one fee to pay.';
+      return null;
+    }
+    if (missingMandatoryItems.isNotEmpty) {
+      errorMessage.value = mandatoryValidationMessage;
       return null;
     }
 
