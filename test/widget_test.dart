@@ -1,0 +1,183 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:test/app/app.dart';
+
+void main() {
+  testWidgets('opens the resident dashboard after the splash', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const CondoResidentApp());
+    await tester.pump();
+    expect(find.text('Condo Residents'), findsOneWidget);
+
+    await tester.pump(const Duration(milliseconds: 1800));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Good morning, Alex'), findsOneWidget);
+    expect(find.text('Tower A · Unit 1205'), findsOneWidget);
+    expect(find.text('Outstanding balance'), findsOneWidget);
+    expect(find.text('Payments'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('dashboard-notifications')));
+    await tester.pumpAndSettle();
+    expect(find.text('Notifications'), findsOneWidget);
+    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('Payment due soon'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.text('Good morning, Alex'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Pay now'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Pay now'));
+    await tester.pumpAndSettle();
+    expect(find.text('Outstanding balance'), findsOneWidget);
+    await tester.drag(
+      find.byKey(const Key('payments-scroll')),
+      const Offset(0, -450),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Invoices'), findsOneWidget);
+
+    await tester.tap(find.text('Home'));
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.byKey(const Key('dashboard-scroll')),
+      const Offset(0, 600),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Good morning, Alex'), findsOneWidget);
+
+    await tester.drag(
+      find.byKey(const Key('dashboard-scroll')),
+      const Offset(0, -300),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Good morning, Alex'), findsOneWidget);
+    await tester.drag(
+      find.byKey(const Key('dashboard-scroll')),
+      const Offset(0, 300),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tower A · Unit 1205'));
+    await tester.pumpAndSettle();
+    expect(find.text('My Unit'), findsOneWidget);
+    expect(find.text('Unit information'), findsOneWidget);
+    expect(find.textContaining('Parking B2-125'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.text('Good morning, Alex'), findsOneWidget);
+
+    await tester.tap(find.text('Payments'));
+    await tester.pumpAndSettle();
+    // The payments tab keeps its scroll offset, so reset it before asserting.
+    await tester.drag(
+      find.byKey(const Key('payments-scroll')),
+      const Offset(0, 600),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Outstanding balance'), findsOneWidget);
+    expect(find.text('Balance by fee type'), findsOneWidget);
+
+    await tester.drag(
+      find.byKey(const Key('payments-scroll')),
+      const Offset(0, -450),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('INV-2026-011'), findsOneWidget);
+
+    await tester.tap(find.textContaining('INV-2026-011'));
+    await tester.pumpAndSettle();
+    expect(find.text('Invoice details'), findsOneWidget);
+    expect(find.text('Breakdown'), findsOneWidget);
+    expect(find.text('AMOUNT DUE'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('invoice-pay-selected')),
+      220,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const Key('invoice-detail-scroll')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('invoice-pay-selected')));
+    await tester.pumpAndSettle();
+    expect(find.text('Payment summary'), findsOneWidget);
+    expect(find.text('Select items'), findsOneWidget);
+    // Nothing is selected automatically: the resident picks the fees.
+    final firstItem = find.byKey(const Key('invoice-item-condoFee|Sep 2026'));
+    expect(firstItem, findsOneWidget);
+    expect(
+      tester
+          .widget<CheckboxListTile>(
+            find.descendant(of: firstItem, matching: find.byType(CheckboxListTile)),
+          )
+          .value,
+      isFalse,
+    );
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Home'));
+    await tester.pumpAndSettle();
+    expect(find.text('Good morning, Alex'), findsOneWidget);
+
+    await tester.tap(find.text('Maintenance'));
+    await tester.pumpAndSettle();
+    expect(find.text('Maintenance summary'), findsOneWidget);
+    expect(find.byKey(const Key('add-maintenance-request')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('add-maintenance-request')));
+    await tester.pumpAndSettle();
+    expect(find.text('New request'), findsOneWidget);
+    expect(find.byKey(const Key('maintenance-title')), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Facilities'));
+    await tester.pumpAndSettle();
+    expect(find.text('Your amenities'), findsOneWidget);
+    expect(find.text('Gym'), findsOneWidget);
+    expect(find.text('Reserve'), findsNWidgets(6));
+
+    await tester.drag(find.byType(ListView).last, const Offset(0, -300));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('reserve-facility-facility-gym')));
+    await tester.pumpAndSettle();
+    expect(find.text('Reserve facility'), findsOneWidget);
+    expect(find.text('Select a date'), findsOneWidget);
+    expect(find.text('Select a time slot'), findsOneWidget);
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Profile'));
+    await tester.pumpAndSettle();
+    expect(find.text('Alex Johnson'), findsNWidgets(2));
+    expect(find.text('Personal information'), findsOneWidget);
+    expect(find.text('Role-based view'), findsOneWidget);
+    expect(find.byKey(const Key('role-option-owner')), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Logout'),
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const Key('profile-scroll')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Edit profile'), findsOneWidget);
+    expect(find.text('Logout'), findsOneWidget);
+  });
+}
