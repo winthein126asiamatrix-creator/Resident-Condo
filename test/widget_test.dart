@@ -125,7 +125,10 @@ void main() {
     );
     expect(optionalItem, findsOneWidget);
     final optionalTile = tester.widget<CheckboxListTile>(
-      find.descendant(of: optionalItem, matching: find.byType(CheckboxListTile)),
+      find.descendant(
+        of: optionalItem,
+        matching: find.byType(CheckboxListTile),
+      ),
     );
     expect(optionalTile.value, isFalse);
     expect(optionalTile.onChanged, isNotNull);
@@ -147,8 +150,9 @@ void main() {
 
     await tester.tap(find.byKey(const Key('add-maintenance-request')));
     await tester.pumpAndSettle();
-    expect(find.text('New request'), findsOneWidget);
+    expect(find.text('New Request'), findsOneWidget);
     expect(find.byKey(const Key('maintenance-title')), findsOneWidget);
+    expect(find.byKey(const Key('submit-maintenance-request')), findsOneWidget);
 
     await tester.pageBack();
     await tester.pumpAndSettle();
