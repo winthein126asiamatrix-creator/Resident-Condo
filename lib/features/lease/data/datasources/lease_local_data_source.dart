@@ -25,14 +25,14 @@ class LeaseLocalDataSource {
       owner: const LeaseParty(
         name: 'Alex Johnson',
         role: LeasePartyRole.owner,
-        phone: '+1 555 014 2026',
+        phone: '+959772611100',
         email: 'alex.johnson@example.com',
         idNumber: 'ID-88214-A',
       ),
       tenant: const LeaseParty(
         name: 'Jamie Rivera',
         role: LeasePartyRole.tenant,
-        phone: '+1 555 017 8842',
+        phone: '+959772611100',
         email: 'jamie.rivera@example.com',
         idNumber: 'ID-40019-J',
       ),

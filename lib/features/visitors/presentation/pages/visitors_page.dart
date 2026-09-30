@@ -69,10 +69,10 @@ class VisitorsPage extends GetView<VisitorController> {
                         ),
                       ),
                     ),
-                    TextButton(
-                      onPressed: () => Get.toNamed(AppRoutes.visitorVerify),
-                      child: const Text('Verify'),
-                    ),
+                    // TextButton(
+                    //   onPressed: () => Get.toNamed(AppRoutes.visitorVerify),
+                    //   child: const Text('Verify'),
+                    // ),
                   ],
                 ),
               ),

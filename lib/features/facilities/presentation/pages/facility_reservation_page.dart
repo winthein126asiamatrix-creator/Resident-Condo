@@ -11,6 +11,7 @@ import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/facility.dart';
 import '../controllers/facility_controller.dart';
 import '../widgets/facility_labels.dart';
+import '../../../../core/utils/app_times.dart';
 
 class FacilityReservationPage extends GetView<FacilityController> {
   const FacilityReservationPage({super.key});
@@ -37,6 +38,7 @@ class FacilityReservationPage extends GetView<FacilityController> {
           );
         }
         return ListView(
+          key: const Key('facility-reservation-scroll'),
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.gutter,
             AppSpacing.pageTop,
@@ -58,25 +60,35 @@ class FacilityReservationPage extends GetView<FacilityController> {
             ),
             const SizedBox(height: 22),
             const Text(
-              'Select a time slot',
+              'Start time',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
             const SizedBox(height: 10),
             _SlotSelector(
               facility: facility,
-              selected: controller.selectedSlot.value,
+              selected: controller.selectedStartTimeLabel,
               customTimeSelected: controller.isCustomTimeSelected,
-              customLabel: controller.customTime.value == null
-                  ? null
-                  : FacilityController.customSlotLabel(
-                      controller.customTime.value!,
-                    ),
               onSelected: controller.selectSlot,
               onPickCustomTime: () => _pickCustomTime(context),
             ),
+            const SizedBox(height: 22),
+            const Text(
+              'Duration',
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+            ),
+            const SizedBox(height: 10),
+            _DurationSelector(
+              selected: controller.selectedDurationHours.value,
+              onSelected: controller.selectDuration,
+            ),
+            const SizedBox(height: 14),
+            _ReservationInterval(
+              range: controller.reservationRange,
+              error: controller.durationError,
+            ),
             const SizedBox(height: 24),
-            // The CTA is the only way a reservation is created: picking a date
-            // or a time never submits anything.
+            // The CTA is the only way a reservation is created: picking a date,
+            // a time or a duration never submits anything.
             AppPrimaryAction(
               key: const Key('confirm-reservation'),
               onPressed: controller.canConfirmBooking
@@ -87,10 +99,19 @@ class FacilityReservationPage extends GetView<FacilityController> {
             ),
             if (!controller.canConfirmBooking) ...[
               const SizedBox(height: 10),
-              const Text(
-                'Choose a date and a time to continue.',
+              Text(
+                controller.durationError ??
+                    'Choose a date and a start time to continue.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppPalette.muted, fontSize: 12.5),
+                style: TextStyle(
+                  color: controller.durationError == null
+                      ? AppPalette.muted
+                      : AppPalette.danger,
+                  fontSize: 12.5,
+                  fontWeight: controller.durationError == null
+                      ? FontWeight.w400
+                      : FontWeight.w600,
+                ),
               ),
             ],
           ],
@@ -122,8 +143,9 @@ class FacilityReservationPage extends GetView<FacilityController> {
   /// reason so the resident can retry without losing their date and time.
   Future<void> _confirm(BuildContext context) async {
     final facility = controller.selectedFacility.value;
-    final time = controller.selectedSlot.value;
-    if (facility == null || time == null) {
+    final range = controller.reservationRange;
+    final start = controller.selectedStartTimeLabel;
+    if (facility == null || range == null || start == null) {
       return;
     }
     controller.errorMessage.value = null;
@@ -140,7 +162,14 @@ class FacilityReservationPage extends GetView<FacilityController> {
           emphasis: true,
         ),
         AppSummaryRow(label: 'Date', value: controller.selectedDateLong),
-        AppSummaryRow(label: 'Time', value: time),
+        AppSummaryRow(label: 'Start time', value: start),
+        AppSummaryRow(
+          label: 'Duration',
+          value: controller.selectedDurationHours.value == 1
+              ? '1 hour'
+              : '${controller.selectedDurationHours.value} hours',
+        ),
+        AppSummaryRow(label: 'Reservation time', value: range.label),
       ],
       confirmLabel: 'Confirm Reservation',
       onConfirm: () async {
@@ -261,12 +290,105 @@ class _DateSelector extends StatelessWidget {
   }
 }
 
+class _DurationSelector extends StatelessWidget {
+  const _DurationSelector({required this.selected, required this.onSelected});
+
+  final int selected;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final hours in FacilityController.reservationDurations)
+          ChoiceChip(
+            key: Key('facility-duration-$hours'),
+            label: Text(hours == 1 ? '1 hour' : '$hours hours'),
+            selected: hours == selected,
+            onSelected: (_) => onSelected(hours),
+            selectedColor: AppPalette.brandOnDark,
+            labelStyle: TextStyle(
+              color: hours == selected
+                  ? AppPalette.brand
+                  : AppPalette.mutedStrong,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Shows the interval the resident has ended up with, so the end time is never
+/// something they have to work out themselves.
+class _ReservationInterval extends StatelessWidget {
+  const _ReservationInterval({required this.range, required this.error});
+
+  final AppTimeRange? range;
+  final String? error;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasError = error != null;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      decoration: BoxDecoration(
+        color: hasError
+            ? AppPalette.danger.withValues(alpha: 0.06)
+            : AppPalette.brandTint,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: hasError
+              ? AppPalette.danger.withValues(alpha: 0.3)
+              : AppPalette.brandSoft,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            hasError ? Icons.error_outline_rounded : Icons.schedule_rounded,
+            size: 18,
+            color: hasError ? AppPalette.danger : AppPalette.brand,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: hasError
+                ? Text(
+                    error!,
+                    style: const TextStyle(
+                      color: AppPalette.danger,
+                      fontSize: 12.5,
+                      height: 1.35,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  )
+                : Text(
+                    range == null
+                        ? 'Pick a start time to see your time range.'
+                        : range!.label,
+                    style: TextStyle(
+                      color: range == null
+                          ? AppPalette.muted
+                          : AppPalette.brand,
+                      fontSize: range == null ? 12.5 : 15,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SlotSelector extends StatelessWidget {
   const _SlotSelector({
     required this.facility,
     required this.selected,
     required this.customTimeSelected,
-    required this.customLabel,
     required this.onSelected,
     required this.onPickCustomTime,
   });
@@ -274,10 +396,6 @@ class _SlotSelector extends StatelessWidget {
   final Facility facility;
   final String? selected;
   final bool customTimeSelected;
-
-  /// The chosen custom time, shown in place of the generic label. Null until
-  /// the resident picks one.
-  final String? customLabel;
   final ValueChanged<String> onSelected;
   final VoidCallback onPickCustomTime;
 
@@ -316,7 +434,9 @@ class _SlotSelector extends StatelessWidget {
                 ? AppPalette.brand
                 : AppPalette.mutedStrong,
           ),
-          label: Text(customTimeSelected ? customLabel! : _customLabel),
+          label: Text(
+            customTimeSelected && selected != null ? selected! : _customLabel,
+          ),
           selected: customTimeSelected,
           onSelected: (_) => onPickCustomTime(),
           selectedColor: AppPalette.brandOnDark,

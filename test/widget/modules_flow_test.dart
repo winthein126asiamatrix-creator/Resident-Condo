@@ -76,7 +76,7 @@ void main() {
     );
     await tester.enterText(
       find.byKey(const Key('visitor-phone-field')),
-      '+1 555 000 1111',
+      '+959772611100',
     );
     await tester.pumpAndSettle();
 

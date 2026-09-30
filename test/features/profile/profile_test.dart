@@ -34,7 +34,7 @@ void main() {
     final updated = await controller.updateProfile(
       name: 'Alex Johnson Updated',
       email: 'alex.updated@example.com',
-      phone: '+1 555 014 2027',
+      phone: '+959772611100',
     );
 
     expect(updated, isNotNull);

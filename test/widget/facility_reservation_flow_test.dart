@@ -20,6 +20,7 @@ import 'package:test/features/facilities/presentation/pages/facilities_page.dart
 import 'package:test/features/facilities/presentation/pages/facility_reservation_page.dart';
 import 'package:test/features/facilities/presentation/pages/my_reservations_page.dart';
 import 'package:test/features/facilities/presentation/pages/reservation_detail_page.dart';
+import 'package:test/core/utils/app_times.dart';
 
 /// Wraps the real local repository so a test can watch the calls, make the
 /// create fail, or hold it open to check the submitting state.
@@ -148,11 +149,25 @@ void main() {
   }
 
   /// Taps the CTA and opens the review dialog.
-  Future<void> openConfirmDialog(WidgetTester tester) async {
-    final cta = find.byKey(const Key('confirm-reservation'));
-    await tester.ensureVisible(cta);
+  /// Scrolls the reservation page until [target] is on screen. The list is
+  /// lazy, and the page is long enough that the CTA starts below the fold.
+  Future<void> scrollReservationTo(WidgetTester tester, Finder target) async {
+    final list = find
+        .descendant(
+          of: find.byKey(const Key('facility-reservation-scroll')),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    await tester.scrollUntilVisible(target, 200, scrollable: list);
     await tester.pumpAndSettle();
-    await tester.tap(cta);
+  }
+
+  Future<void> openConfirmDialog(WidgetTester tester) async {
+    await scrollReservationTo(
+      tester,
+      find.byKey(const Key('confirm-reservation')),
+    );
+    await tester.tap(find.byKey(const Key('confirm-reservation')));
     await tester.pumpAndSettle();
   }
 
@@ -261,7 +276,16 @@ void main() {
       );
       expect(controller.selectedSlot.value, expected);
       expect(find.text('Custom time'), findsNothing);
-      expect(find.text(expected), findsOneWidget);
+      // The chip shows the chosen time, in the same design as a predefined slot.
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('facility-slot-custom')),
+          matching: find.text(expected),
+        ),
+        findsOneWidget,
+      );
+      // And the derived interval is on screen.
+      expect(find.text(controller.reservationRange!.label), findsOneWidget);
       expect(
         tester
             .widget<ChoiceChip>(find.byKey(const Key('facility-slot-custom')))
@@ -306,6 +330,7 @@ void main() {
       final repository = TestRepository();
       final controller = await pumpReservation(tester, repository: repository);
       final cta = find.byKey(const Key('confirm-reservation'));
+      await scrollReservationTo(tester, cta);
 
       // No time yet.
       expect(controller.canConfirmBooking, isFalse);
@@ -315,7 +340,7 @@ void main() {
         reason: 'the CTA must be inert without a time',
       );
       expect(
-        find.text('Choose a date and a time to continue.'),
+        find.text('Choose a date and a start time to continue.'),
         findsOneWidget,
       );
 
@@ -326,7 +351,10 @@ void main() {
 
       expect(controller.canConfirmBooking, isTrue);
       expect(tester.widget<AppPrimaryAction>(cta).onPressed, isNotNull);
-      expect(find.text('Choose a date and a time to continue.'), findsNothing);
+      expect(
+        find.text('Choose a date and a start time to continue.'),
+        findsNothing,
+      );
     });
 
     testWidgets('is reachable after scrolling on a small phone', (
@@ -343,10 +371,74 @@ void main() {
       await tester.pumpAndSettle();
 
       final cta = find.byKey(const Key('confirm-reservation'));
+      await scrollReservationTo(tester, cta);
       expect(cta, findsOneWidget);
-      await tester.ensureVisible(cta);
-      await tester.pumpAndSettle();
       expect(cta.hitTestable(), findsOneWidget);
+    });
+  });
+
+  group('reservation duration', () {
+    testWidgets('one, two and three hour options change the end time', (
+      tester,
+    ) async {
+      final controller = await pumpReservation(tester);
+      final slot = controller.selectedFacility.value!.availableSlots.first;
+      await tester.tap(find.byKey(Key('facility-slot-$slot')));
+      await tester.pumpAndSettle();
+
+      // The end time is derived, never picked by hand.
+      expect(find.text('1 hour'), findsOneWidget);
+      expect(find.text('2 hours'), findsOneWidget);
+      expect(find.text('3 hours'), findsOneWidget);
+
+      for (final hours in [1, 2, 3]) {
+        await tester.tap(find.byKey(Key('facility-duration-$hours')));
+        await tester.pumpAndSettle();
+        expect(
+          controller.selectedDurationHours.value,
+          hours,
+          reason: 'the selected duration is $hours',
+        );
+        // The chosen chip is the active one.
+        expect(
+          tester
+              .widget<ChoiceChip>(find.byKey(Key('facility-duration-$hours')))
+              .selected,
+          isTrue,
+        );
+        // The interval shown matches start plus the duration.
+        final start = AppTimes.parse(slot)!;
+        final end = AppTimes.addHours(start, hours);
+        expect(
+          find.text('${AppTimes.format(start)} – ${AppTimes.format(end)}'),
+          findsOneWidget,
+        );
+      }
+    });
+
+    testWidgets('the confirm button is disabled when the booking will not fit', (
+      tester,
+    ) async {
+      final controller = await pumpReservation(tester);
+      // The gym closes at 10:00 PM, so a three hour slot at 8:00 PM cannot fit.
+      controller.selectCustomTime(const TimeOfDay(hour: 20, minute: 0));
+      controller.selectDuration(3);
+      await tester.pumpAndSettle();
+
+      expect(controller.durationError, isNotNull);
+      expect(controller.canConfirmBooking, isFalse);
+      await scrollReservationTo(
+        tester,
+        find.byKey(const Key('confirm-reservation')),
+      );
+      expect(
+        tester
+            .widget<AppPrimaryAction>(
+              find.byKey(const Key('confirm-reservation')),
+            )
+            .onPressed,
+        isNull,
+      );
     });
   });
 
@@ -538,16 +630,27 @@ void main() {
       await tester.pumpAndSettle();
 
       await openConfirmDialog(tester);
-      final label = controller.selectedSlot.value!;
+      final start = controller.selectedStartTimeLabel!;
       expect(
-        find.descendant(of: find.byType(Dialog), matching: find.text(label)),
+        find.descendant(of: find.byType(Dialog), matching: find.text(start)),
         findsOneWidget,
+        reason: 'the dialog shows the start time',
+      );
+      expect(
+        find.descendant(
+          of: find.byType(Dialog),
+          matching: find.text(controller.reservationRange!.label),
+        ),
+        findsOneWidget,
+        reason: 'and the interval it adds up to',
       );
       await tester.tap(find.byKey(const Key('app-confirm-dialog-confirm')));
       await tester.pumpAndSettle();
 
       final created = controller.bookingSuccess.value!;
-      expect(created.time, label);
+      // Stored as the interval, with the start time kept for availability.
+      expect(created.time, controller.reservationRange!.label);
+      expect(created.startTime, start);
       expect(created.isCustomTime, isTrue);
     });
   });

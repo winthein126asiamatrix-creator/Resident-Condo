@@ -5,7 +5,7 @@ class ProfileLocalDataSource {
   ProfileModel _profile = const ProfileModel(
     name: 'Alex Johnson',
     email: 'alex.johnson@example.com',
-    phone: '+1 555 014 2026',
+    phone: '+959772611100',
     unit: 'Tower A · 1205',
     role: 'Owner',
     initials: 'AJ',

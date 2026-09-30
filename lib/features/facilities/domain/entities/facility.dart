@@ -46,12 +46,17 @@ class FacilityReservation {
     required this.status,
     required this.createdAt,
     this.isCustomTime = false,
+    this.startTime,
+    this.durationHours = 1,
   });
 
   final String id;
   final String facilityId;
   final String facilityName;
   final String date;
+
+  /// The reservation interval as shown to the resident, for example
+  /// `2:00 PM – 4:00 PM`.
   final String time;
   final String status;
   final String createdAt;
@@ -59,4 +64,11 @@ class FacilityReservation {
   /// True when the resident typed their own time instead of taking one of the
   /// facility's slots, so the slot is not consumed from its availability.
   final bool isCustomTime;
+
+  /// The slot the reservation starts at, which is the value the facility's
+  /// availability is checked against. Null only for a record that predates it.
+  final String? startTime;
+
+  /// How long the reservation runs for, in hours.
+  final int durationHours;
 }

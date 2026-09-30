@@ -11,6 +11,7 @@ import 'package:test/features/facilities/domain/repositories/facility_repository
 import 'package:test/features/facilities/domain/usecases/facility_usecases.dart';
 import 'package:test/features/facilities/presentation/bindings/facility_binding.dart';
 import 'package:test/features/facilities/presentation/controllers/facility_controller.dart';
+import 'package:test/core/utils/app_times.dart';
 
 void main() {
   setUp(() {
@@ -82,13 +83,17 @@ void main() {
     controller.selectCustomTime(const TimeOfDay(hour: 7, minute: 45));
 
     expect(controller.isCustomTimeSelected, isTrue);
-    expect(controller.selectedSlot.value, 'Custom · 7:45 AM');
-    expect(slotsBefore, isNot(contains(controller.selectedSlot.value)));
+    expect(controller.selectedStartTimeLabel, '7:45 AM');
+    expect(controller.reservationRange?.label, '7:45 AM – 8:45 AM');
+    expect(slotsBefore, isNot(contains(controller.selectedStartTimeLabel)));
 
     final reservation = await controller.bookSelectedSlot();
 
     expect(reservation, isNotNull);
-    expect(reservation!.time, 'Custom · 7:45 AM');
+    // Stored as the interval the resident actually booked.
+    expect(reservation!.time, '7:45 AM – 8:45 AM');
+    expect(reservation.startTime, '7:45 AM');
+    expect(reservation.durationHours, 1);
     expect(reservation.date, AppDates.format(DateTime.now()));
     expect(controller.errorMessage.value, isNull);
     // The facility keeps every one of its own slots.
@@ -101,7 +106,7 @@ void main() {
     );
 
     controller.selectCustomTime(const TimeOfDay(hour: 19, minute: 0));
-    expect(controller.selectedSlot.value, 'Custom · 7:00 PM');
+    expect(controller.selectedSlot.value, '7:00 PM');
 
     controller.selectSlot('6:00 PM - 7:00 PM');
 
@@ -245,8 +250,126 @@ void main() {
       isCustomTime: true,
     );
 
-    expect(reservation.time, 'Custom · 7:05 PM');
+    expect(reservation.time, '7:05 PM');
     expect(isReservationPast(reservation), isFalse);
+  });
+
+  group('reservation duration', () {
+    Future<FacilityController> buildController() async {
+      final controller = FacilityController(
+        FacilityUseCases(FacilityRepositoryImpl(FacilityLocalDataSource())),
+      );
+      await controller.loadFacilities();
+      return controller;
+    }
+
+    test(
+      'a one, two or three hour booking all calculate an end time',
+      () async {
+        final controller = await buildController();
+        final gym = controller.facilities.firstWhere(
+          (item) => item.availableSlots.contains('6:00 PM'),
+        );
+        controller.selectFacility(gym);
+        controller.selectSlot('6:00 PM');
+
+        const expected = {
+          1: '6:00 PM – 7:00 PM',
+          2: '6:00 PM – 8:00 PM',
+          3: '6:00 PM – 9:00 PM',
+        };
+        for (final hours in FacilityController.reservationDurations) {
+          controller.selectDuration(hours);
+          expect(
+            controller.reservationRange?.label,
+            expected[hours],
+            reason: '$hours hour booking',
+          );
+          expect(controller.canConfirmBooking, isTrue);
+        }
+      },
+    );
+
+    test('the duration is always one the app offers', () async {
+      final controller = await buildController();
+      controller.selectDuration(3);
+      controller.selectDuration(9);
+      expect(controller.selectedDurationHours.value, 3);
+    });
+
+    test('a booking that would run past closing is rejected', () async {
+      final controller = await buildController();
+      final gym = controller.facilities.firstWhere(
+        (item) => item.id == 'facility-gym',
+      );
+      controller.selectFacility(gym);
+      // The gym closes at 10:00 PM.
+      controller.selectCustomTime(const TimeOfDay(hour: 22, minute: 0));
+      controller.selectDuration(1);
+
+      expect(controller.reservationRange?.label, '10:00 PM – 11:00 PM');
+      expect(controller.durationError, isNotNull);
+      expect(controller.canConfirmBooking, isFalse);
+    });
+
+    test('a booking that rolls past midnight is rejected', () async {
+      final controller = await buildController();
+      final gym = controller.facilities.firstWhere(
+        (item) => item.id == 'facility-gym',
+      );
+      controller.selectFacility(gym);
+      controller.selectCustomTime(const TimeOfDay(hour: 23, minute: 30));
+      controller.selectDuration(2);
+
+      expect(controller.reservationRange?.nextDay, isTrue);
+      expect(controller.durationError, isNotNull);
+      expect(controller.canConfirmBooking, isFalse);
+    });
+
+    test('a valid booking is refused to book when it does not fit', () async {
+      final controller = await buildController();
+      final gym = controller.facilities.firstWhere(
+        (item) => item.id == 'facility-gym',
+      );
+      controller.selectFacility(gym);
+      controller.selectCustomTime(const TimeOfDay(hour: 22, minute: 0));
+      controller.selectDuration(3);
+
+      expect(await controller.bookSelectedSlot(), isNull);
+      expect(controller.errorMessage.value, isNotNull);
+      // Nothing new was created.
+      expect(controller.reservations, hasLength(2));
+    });
+  });
+
+  group('visitor time arithmetic', () {
+    test('adds two hours to an arrival time', () {
+      expect(AppTimeRange.fromLabel('2:00 PM', 2)!.label, '2:00 PM – 4:00 PM');
+      expect(
+        AppTimeRange.fromLabel('10:30 AM', 2)!.label,
+        '10:30 AM – 12:30 PM',
+      );
+    });
+
+    test('handles midnight and noon rollover', () {
+      expect(
+        AppTimeRange.fromLabel('11:00 PM', 2)!.label,
+        '11:00 PM – 1:00 AM (next day)',
+      );
+      final range = AppTimeRange.fromLabel('11:00 PM', 2)!;
+      expect(range.nextDay, isTrue);
+      expect(range.end, const TimeOfDay(hour: 1, minute: 0));
+    });
+
+    test('parses a time out of a stored range', () {
+      expect(
+        AppTimes.parse('2:00 PM – 4:00 PM'),
+        const TimeOfDay(hour: 14, minute: 0),
+      );
+      expect(AppTimes.parse('12:00 AM'), const TimeOfDay(hour: 0, minute: 0));
+      expect(AppTimes.parse('12:00 PM'), const TimeOfDay(hour: 12, minute: 0));
+      expect(AppTimes.parse('no time here'), isNull);
+    });
   });
 
   test('binding provides the facilities dependency graph', () {

@@ -39,7 +39,7 @@ void main() {
 
     final visitor = await controller.registerVisitor(
       name: 'Nina Patel',
-      phone: '+1 555 000 1111',
+      phone: '+959772611100',
       relation: VisitorRelation.friend,
       purpose: 'Coffee',
       date: 'Sep 26, 2026',

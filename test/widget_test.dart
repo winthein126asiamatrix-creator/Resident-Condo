@@ -168,7 +168,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Reserve facility'), findsOneWidget);
     expect(find.text('Select a date'), findsOneWidget);
-    expect(find.text('Select a time slot'), findsOneWidget);
+    expect(find.text('Start time'), findsOneWidget);
+    expect(find.text('Duration'), findsOneWidget);
 
     await tester.pageBack();
     await tester.pumpAndSettle();

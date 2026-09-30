@@ -13,7 +13,7 @@ class VisitorLocalDataSource {
     const VisitorModel(
       id: 'visitor-001',
       name: 'Jamie Johnson',
-      phone: '+1 555 018 2244',
+      phone: '+959772611100',
       relation: VisitorRelation.family,
       purpose: 'Family dinner',
       date: 'Sep 25, 2026',
@@ -27,7 +27,7 @@ class VisitorLocalDataSource {
     const VisitorModel(
       id: 'visitor-002',
       name: 'Marco Diaz',
-      phone: '+1 555 019 7731',
+      phone: '+9597726111001',
       relation: VisitorRelation.serviceProvider,
       purpose: 'Aircon maintenance visit',
       date: 'Sep 25, 2026',
@@ -42,7 +42,7 @@ class VisitorLocalDataSource {
     const VisitorModel(
       id: 'visitor-003',
       name: 'Sofia Chen',
-      phone: '+1 555 011 9025',
+      phone: '+959772611100',
       relation: VisitorRelation.friend,
       purpose: 'Weekend visit',
       date: 'Sep 22, 2026',
@@ -57,7 +57,7 @@ class VisitorLocalDataSource {
     const VisitorModel(
       id: 'visitor-004',
       name: 'Rider · BoxNow',
-      phone: '+1 555 013 3320',
+      phone: '+959772611100',
       relation: VisitorRelation.delivery,
       purpose: 'Parcel delivery',
       date: 'Sep 21, 2026',

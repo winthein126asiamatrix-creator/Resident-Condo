@@ -135,17 +135,17 @@ class FacilityLocalDataSource {
       throw const AppException('Facility could not be found.');
     }
     final facility = _facilities[facilityIndex];
+    // The reservation is stored as a range, but availability is tracked against
+    // the slot it starts at.
+    final slot = reservation.startTime ?? reservation.time;
     // A custom time is the resident's own choice, so it is accepted as is. A
     // predefined slot still has to be free.
-    if (!reservation.isCustomTime &&
-        !facility.availableSlots.contains(reservation.time)) {
+    if (!reservation.isCustomTime && !facility.availableSlots.contains(slot)) {
       throw const AppException('That time slot is no longer available.');
     }
     final updatedSlots = reservation.isCustomTime
         ? facility.availableSlots
-        : facility.availableSlots
-              .where((slot) => slot != reservation.time)
-              .toList();
+        : facility.availableSlots.where((item) => item != slot).toList();
     _facilities[facilityIndex] = FacilityModel(
       id: facility.id,
       name: facility.name,
@@ -169,6 +169,8 @@ class FacilityLocalDataSource {
       status: 'Confirmed',
       createdAt: reservation.createdAt,
       isCustomTime: reservation.isCustomTime,
+      startTime: slot,
+      durationHours: reservation.durationHours,
     );
     _reservations.insert(0, created);
     return created;
