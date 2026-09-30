@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
+import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/facility.dart';
 import '../controllers/facility_controller.dart';
@@ -12,7 +15,13 @@ class FacilityReservationPage extends GetView<FacilityController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Reserve facility')),
+      // The same custom bar the maintenance form uses, so the two screens are
+      // indistinguishable at the top of the page.
+      appBar: AppDetailAppBar(
+        title: 'Reserve facility',
+        subtitle: 'Pick a date and a time that suits you',
+        onBack: () => Get.back<void>(),
+      ),
       body: Obx(() {
         final facility = controller.selectedFacility.value;
         if (facility == null) {
@@ -25,7 +34,12 @@ class FacilityReservationPage extends GetView<FacilityController> {
           );
         }
         return ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.gutter,
+            AppSpacing.pageTop,
+            AppSpacing.gutter,
+            32,
+          ),
           children: [
             _FacilityReservationIntro(facility: facility),
             const SizedBox(height: 22),
@@ -35,6 +49,7 @@ class FacilityReservationPage extends GetView<FacilityController> {
             ),
             const SizedBox(height: 10),
             _DateSelector(
+              dates: controller.reservationDates,
               selected: controller.selectedDate.value,
               onSelected: controller.selectDate,
             ),
@@ -47,7 +62,14 @@ class FacilityReservationPage extends GetView<FacilityController> {
             _SlotSelector(
               facility: facility,
               selected: controller.selectedSlot.value,
+              customTimeSelected: controller.isCustomTimeSelected,
+              customLabel: controller.customTime.value == null
+                  ? null
+                  : FacilityController.customSlotLabel(
+                      controller.customTime.value!,
+                    ),
               onSelected: controller.selectSlot,
+              onPickCustomTime: () => _pickCustomTime(context),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
@@ -85,6 +107,24 @@ class FacilityReservationPage extends GetView<FacilityController> {
         );
       }),
     );
+  }
+
+  /// Opens the platform time picker. Dismissing it returns null, which leaves
+  /// the current selection exactly as it was.
+  ///
+  /// The context is handed in by the builder because [GetView] is not a
+  /// `State`, so it has no `context` of its own.
+  Future<void> _pickCustomTime(BuildContext context) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime:
+          controller.customTime.value ?? const TimeOfDay(hour: 18, minute: 0),
+      helpText: 'Choose a custom time',
+    );
+    if (picked == null) {
+      return;
+    }
+    controller.selectCustomTime(picked);
   }
 
   Future<void> _confirm() async {
@@ -177,19 +217,19 @@ class _FacilityReservationIntro extends StatelessWidget {
 }
 
 class _DateSelector extends StatelessWidget {
-  const _DateSelector({required this.selected, required this.onSelected});
+  const _DateSelector({
+    required this.dates,
+    required this.selected,
+    required this.onSelected,
+  });
 
+  /// The bookable window, generated from the current date by the controller.
+  final List<String> dates;
   final String selected;
   final ValueChanged<String> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    const dates = [
-      'Sep 24, 2026',
-      'Sep 25, 2026',
-      'Sep 26, 2026',
-      'Sep 27, 2026',
-    ];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -198,14 +238,15 @@ class _DateSelector extends StatelessWidget {
               (date) => Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: ChoiceChip(
+                  key: Key('facility-date-$date'),
                   label: Text(date),
                   selected: date == selected,
                   onSelected: (_) => onSelected(date),
-                  selectedColor: const Color(0xFFBFE8DF),
+                  selectedColor: AppPalette.brandOnDark,
                   labelStyle: TextStyle(
                     color: date == selected
-                        ? const Color(0xFF0F766E)
-                        : const Color(0xFF52635F),
+                        ? AppPalette.brand
+                        : AppPalette.mutedStrong,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -221,34 +262,69 @@ class _SlotSelector extends StatelessWidget {
   const _SlotSelector({
     required this.facility,
     required this.selected,
+    required this.customTimeSelected,
+    required this.customLabel,
     required this.onSelected,
+    required this.onPickCustomTime,
   });
 
   final Facility facility;
   final String? selected;
+  final bool customTimeSelected;
+
+  /// The chosen custom time, shown in place of the generic label. Null until
+  /// the resident picks one.
+  final String? customLabel;
   final ValueChanged<String> onSelected;
+  final VoidCallback onPickCustomTime;
+
+  /// Custom time is offered after the facility's own slots and is always last,
+  /// so the facility's schedule is not obscured.
+  static const _customLabel = 'Custom time';
 
   @override
   Widget build(BuildContext context) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: facility.availableSlots
-          .map(
-            (slot) => ChoiceChip(
-              label: Text(slot),
-              selected: slot == selected,
-              onSelected: (_) => onSelected(slot),
-              selectedColor: const Color(0xFFBFE8DF),
-              labelStyle: TextStyle(
-                color: slot == selected
-                    ? const Color(0xFF0F766E)
-                    : const Color(0xFF52635F),
-                fontWeight: FontWeight.w700,
-              ),
+      children: [
+        for (final slot in facility.availableSlots)
+          ChoiceChip(
+            key: Key('facility-slot-$slot'),
+            label: Text(slot),
+            selected: slot == selected,
+            onSelected: (_) => onSelected(slot),
+            selectedColor: AppPalette.brandOnDark,
+            labelStyle: TextStyle(
+              color: slot == selected
+                  ? AppPalette.brand
+                  : AppPalette.mutedStrong,
+              fontWeight: FontWeight.w700,
             ),
-          )
-          .toList(),
+          ),
+        // The icon and the label prefix set this apart from the facility's own
+        // slots, and the label carries the chosen time once there is one.
+        ChoiceChip(
+          key: const Key('facility-slot-custom'),
+          avatar: Icon(
+            Icons.schedule_rounded,
+            size: 17,
+            color: customTimeSelected
+                ? AppPalette.brand
+                : AppPalette.mutedStrong,
+          ),
+          label: Text(customTimeSelected ? customLabel! : _customLabel),
+          selected: customTimeSelected,
+          onSelected: (_) => onPickCustomTime(),
+          selectedColor: AppPalette.brandOnDark,
+          labelStyle: TextStyle(
+            color: customTimeSelected
+                ? AppPalette.brand
+                : AppPalette.mutedStrong,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
     );
   }
 }

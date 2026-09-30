@@ -41,45 +41,90 @@ class AppPrimaryAction extends StatelessWidget {
     final background = enabled ? backgroundColor : AppPalette.surfaceMuted;
     final foreground = enabled ? Colors.white : AppPalette.faint;
 
+    final labelText = Text(
+      label,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        color: foreground,
+        fontSize: 15.5,
+        letterSpacing: 0.1,
+        fontWeight: FontWeight.w800,
+      ),
+    );
+
+    final hasLeading = isLoading || icon != null;
+    final hasTrailing = trailingIcon != null && !isLoading;
+
+    Widget leading() {
+      if (isLoading) {
+        return SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.2,
+            valueColor: AlwaysStoppedAnimation<Color>(foreground),
+          ),
+        );
+      }
+      if (icon == null) {
+        return const SizedBox.shrink();
+      }
+      return Icon(icon, size: 20, color: foreground);
+    }
+
+    Widget trailing() {
+      if (trailingIcon == null || isLoading) {
+        return const SizedBox.shrink();
+      }
+      return Icon(trailingIcon, size: 20, color: foreground);
+    }
+
+    /// Width an icon occupies next to the label, gap included.
+    double iconSlot() => isLoading ? 28 : 30;
+
+    // Centred mode reserves the same space on both sides, so an icon sitting in
+    // the left slot cannot drag the label off centre: the text stays in the
+    // middle of the button and the icon fills the gap beside it.
     final content = SizedBox(
       height: height,
       width: expand ? double.infinity : null,
-      child: Row(
-        mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
-        children: [
-          if (isLoading)
-            SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.2,
-                valueColor: AlwaysStoppedAnimation<Color>(foreground),
-              ),
+      child: centerContent
+          ? Row(
+              mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (hasLeading)
+                  SizedBox(
+                    width: iconSlot(),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: leading(),
+                    ),
+                  ),
+                Flexible(child: labelText),
+                if (hasTrailing || hasLeading)
+                  SizedBox(
+                    width: iconSlot(),
+                    child: hasTrailing
+                        ? Align(
+                            alignment: Alignment.centerRight,
+                            child: trailing(),
+                          )
+                        : null,
+                  ),
+              ],
             )
-          else if (icon != null) ...[
-            Icon(icon, size: 20, color: foreground),
-            const SizedBox(width: 10),
-          ],
-          Flexible(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: foreground,
-                fontSize: 15.5,
-                letterSpacing: 0.1,
-                fontWeight: FontWeight.w800,
-              ),
+          : Row(
+              mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
+              children: [
+                if (hasLeading) ...[leading(), const SizedBox(width: 10)],
+                Flexible(child: labelText),
+                if (expand) const Spacer(),
+                if (hasTrailing) ...[const SizedBox(width: 10), trailing()],
+              ],
             ),
-          ),
-          if (!centerContent && expand) const Spacer(),
-          if (trailingIcon != null && !isLoading) ...[
-            const SizedBox(width: 10),
-            Icon(trailingIcon, size: 20, color: foreground),
-          ],
-        ],
-      ),
     );
 
     return DecoratedBox(

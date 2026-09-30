@@ -1,22 +1,45 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/utils/app_dates.dart';
 import '../../domain/entities/facility.dart';
 import '../../domain/usecases/facility_usecases.dart';
 
 class FacilityController extends GetxController {
   FacilityController(this.useCases);
 
+  /// Today plus the next five days.
+  static const reservationWindowDays = 4;
+
   final FacilityUseCases useCases;
   final facilities = <Facility>[].obs;
   final reservations = <FacilityReservation>[].obs;
   final selectedFacility = Rxn<Facility>();
-  final selectedDate = 'Sep 26, 2026'.obs;
+  final selectedDate = AppDates.format(_today).obs;
   final selectedSlot = RxnString();
+
+  /// Set when the resident picks their own time instead of one of the
+  /// predefined slots, and cleared as soon as they pick a predefined one.
+  final customTime = Rxn<TimeOfDay>();
   final isLoading = false.obs;
   final isBooking = false.obs;
   final errorMessage = RxnString();
   final bookingSuccess = Rxn<FacilityReservation>();
+
+  /// The bookable window, generated from the current date so the chips always
+  /// start at today.
+  List<String> get reservationDates => List.generate(
+    reservationWindowDays,
+    (index) => AppDates.format(
+      DateTime(_today.year, _today.month, _today.day + index),
+    ),
+  );
+
+  static DateTime get _today {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
 
   @override
   void onInit() {
@@ -56,7 +79,32 @@ class FacilityController extends GetxController {
   }
 
   void selectSlot(String slot) {
+    customTime.value = null;
     selectedSlot.value = slot;
+  }
+
+  /// Stores a time the resident typed into the picker. The slot mirrors the
+  /// chip label so the booking reads back the same way the selection did.
+  void selectCustomTime(TimeOfDay time) {
+    customTime.value = time;
+    selectedSlot.value = customSlotLabel(time);
+  }
+
+  bool get isCustomTimeSelected {
+    final time = customTime.value;
+    return time != null && selectedSlot.value == customSlotLabel(time);
+  }
+
+  static String customSlotLabel(TimeOfDay time) =>
+      'Custom · ${formatTime(time)}';
+
+  /// Mirrors `TimeOfDay.format` for the default locale, kept here so the label
+  /// can be produced without a build context.
+  static String formatTime(TimeOfDay time) {
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
+    return '$hour:$minute $period';
   }
 
   Future<Facility?> getFacility(String id) {
@@ -70,7 +118,11 @@ class FacilityController extends GetxController {
       errorMessage.value = 'Choose a facility first.';
       return null;
     }
-    if (slot == null || !facility.availableSlots.contains(slot)) {
+    // A custom time is not one of the facility's predefined slots, so it only
+    // has to match the time the resident just chose.
+    final usesCustomTime = isCustomTimeSelected;
+    if (slot == null ||
+        (!usesCustomTime && !facility.availableSlots.contains(slot))) {
       errorMessage.value = 'Choose an available time slot.';
       return null;
     }
@@ -87,14 +139,19 @@ class FacilityController extends GetxController {
           time: slot,
           status: 'Confirmed',
           createdAt: 'Sep 25, 2026',
+          isCustomTime: usesCustomTime,
         ),
       );
       reservations.insert(0, reservation);
-      final updatedFacility = facility.copyWith(
-        availableSlots: facility.availableSlots
-            .where((item) => item != slot)
-            .toList(),
-      );
+      // Only a predefined slot is consumed from the list; a custom time does
+      // not take one of the facility's slots away.
+      final updatedFacility = usesCustomTime
+          ? facility
+          : facility.copyWith(
+              availableSlots: facility.availableSlots
+                  .where((item) => item != slot)
+                  .toList(),
+            );
       final index = facilities.indexWhere((item) => item.id == facility.id);
       if (index != -1) {
         facilities[index] = updatedFacility;

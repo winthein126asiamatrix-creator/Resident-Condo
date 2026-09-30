@@ -23,5 +23,6 @@ class FacilityReservationModel extends FacilityReservation {
     required super.time,
     required super.status,
     required super.createdAt,
+    super.isCustomTime,
   });
 }

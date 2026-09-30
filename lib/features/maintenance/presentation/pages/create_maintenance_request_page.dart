@@ -1,16 +1,26 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
+import '../../../../core/services/photo_picker.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/app_dates.dart';
 import '../../../../core/utils/app_validators.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_form_field.dart';
 import '../../../../core/widgets/app_primary_action.dart';
 import '../../domain/entities/maintenance_request.dart';
 import '../controllers/maintenance_controller.dart';
 
 class CreateMaintenanceRequestPage extends StatefulWidget {
-  const CreateMaintenanceRequestPage({super.key});
+  const CreateMaintenanceRequestPage({this.photoPicker, super.key});
+
+  /// Overridden in tests; the app uses the device gallery and camera.
+  final PhotoPicker? photoPicker;
 
   @override
   State<CreateMaintenanceRequestPage> createState() =>
@@ -26,7 +36,7 @@ class _CreateMaintenanceRequestPageState
   final _titleFocus = FocusNode();
   final _descriptionFocus = FocusNode();
   final _locationFocus = FocusNode();
-  final _photoLabels = <String>[];
+  final _photos = <AttachedPhoto>[];
   MaintenanceCategory _category = MaintenanceCategory.plumbing;
   MaintenancePriority _priority = MaintenancePriority.medium;
   DateTime _preferredDate = DateTime(2026, 9, 30);
@@ -50,7 +60,11 @@ class _CreateMaintenanceRequestPageState
     return Scaffold(
       backgroundColor: AppPalette.surface,
       resizeToAvoidBottomInset: true,
-      appBar: _buildAppBar(),
+      appBar: AppDetailAppBar(
+        title: 'New Request',
+        subtitle: 'Tell us what needs attention',
+        onBack: () => Get.back<void>(),
+      ),
       body: Form(
         key: _formKey,
         child: Obx(
@@ -58,9 +72,9 @@ class _CreateMaintenanceRequestPageState
             key: const Key('maintenance-create-scroll'),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: EdgeInsets.fromLTRB(
-              20,
-              18,
-              20,
+              AppSpacing.gutter,
+              AppSpacing.pageTop,
+              AppSpacing.gutter,
               28 + MediaQuery.paddingOf(context).bottom,
             ),
             // A single scroll view keeps every field alive, so validation
@@ -145,28 +159,36 @@ class _CreateMaintenanceRequestPageState
                   subtitle: 'Photos are optional and help us diagnose faster.',
                   icon: Icons.photo_camera_outlined,
                 ),
-                if (_photoLabels.isNotEmpty)
+                if (_photos.isNotEmpty) ...[
+                  const SizedBox(height: 14),
                   Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _photoLabels
-                        .map(
-                          (label) => Chip(
-                            avatar: const Icon(Icons.photo_outlined, size: 17),
-                            label: Text(label),
-                            backgroundColor: AppPalette.brandTint,
-                            side: BorderSide.none,
-                            labelStyle: const TextStyle(
-                              color: AppPalette.brand,
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        )
-                        .toList(),
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      for (var index = 0; index < _photos.length; index++)
+                        _PhotoThumbnail(
+                          key: Key('maintenance-photo-$index'),
+                          photo: _photos[index],
+                          position: index + 1,
+                          onRemove: () => _removePhoto(index),
+                        ),
+                    ],
                   ),
-                if (_photoLabels.isNotEmpty) const SizedBox(height: 12),
-                _AttachPhotoButton(onPressed: _addMockPhoto),
+                  const SizedBox(height: 10),
+                  Text(
+                    _photos.length == 1
+                        ? '1 photo attached'
+                        : '${_photos.length} photos attached',
+                    key: const Key('maintenance-photo-count'),
+                    style: const TextStyle(
+                      color: AppPalette.muted,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+                if (_photos.isNotEmpty) const SizedBox(height: 12),
+                _AttachPhotoButton(onPressed: _attachPhoto),
                 const SizedBox(height: 28),
                 if (controller.errorMessage.value != null) ...[
                   _ErrorBanner(message: controller.errorMessage.value!),
@@ -187,60 +209,104 @@ class _CreateMaintenanceRequestPageState
     );
   }
 
-  /// Custom app bar: safe area aware, hairline separated and carrying a short
-  /// helper line instead of the default Material toolbar.
-  PreferredSizeWidget _buildAppBar() {
-    final topInset = MediaQuery.paddingOf(context).top;
-    return PreferredSize(
-      preferredSize: Size.fromHeight(70 + topInset),
-      child: Container(
-        decoration: const BoxDecoration(
-          color: AppPalette.surface,
-          border: Border(bottom: BorderSide(color: AppPalette.border)),
-        ),
-        padding: EdgeInsets.fromLTRB(16, topInset, 20, 14),
-        child: Row(
+  /// Asks where the photo should come from, then hands the pick to the platform
+  /// picker. Cancelling either step leaves the form untouched.
+  Future<void> _attachPhoto() async {
+    final source = await _choosePhotoSource();
+    if (source == null || !mounted) {
+      return;
+    }
+    final picker = widget.photoPicker ?? const DevicePhotoPicker();
+    final result = await picker.pick(source);
+    if (!mounted) {
+      return;
+    }
+    final photo = result.photo;
+    if (photo != null) {
+      setState(() => _photos.add(photo));
+      return;
+    }
+    final error = result.error;
+    if (error != null) {
+      showAppFeedback(
+        context,
+        title: 'Could not attach photo',
+        message: error,
+        isError: true,
+      );
+    }
+  }
+
+  Future<ImageSource?> _choosePhotoSource() {
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: AppPalette.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const _BackButton(),
-            const SizedBox(width: 12),
-            // Single lines with ellipsis so a narrow phone or a large text
-            // scale can never push the toolbar out of its bounds.
-            const Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'New Request',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: AppPalette.ink,
-                      fontSize: 18,
-                      height: 1.2,
-                      letterSpacing: -0.2,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  SizedBox(height: 3),
-                  Text(
-                    'Tell us what needs attention',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: AppPalette.muted,
-                      fontSize: 12.5,
-                      height: 1.2,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 10),
+            Container(
+              width: 38,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppPalette.border,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
+            const SizedBox(height: 6),
+            ListTile(
+              key: const Key('photo-source-gallery'),
+              leading: const Icon(
+                Icons.photo_library_outlined,
+                color: AppPalette.brand,
+              ),
+              title: const Text(
+                'Choose from gallery',
+                style: TextStyle(
+                  color: AppPalette.ink,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: const Text(
+                'Pick an existing photo',
+                style: TextStyle(color: AppPalette.muted, fontSize: 12.5),
+              ),
+              onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
+            ),
+            ListTile(
+              key: const Key('photo-source-camera'),
+              leading: const Icon(
+                Icons.photo_camera_outlined,
+                color: AppPalette.brand,
+              ),
+              title: const Text(
+                'Take a photo',
+                style: TextStyle(
+                  color: AppPalette.ink,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              subtitle: const Text(
+                'Use the device camera',
+                style: TextStyle(color: AppPalette.muted, fontSize: 12.5),
+              ),
+              onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
+            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
     );
+  }
+
+  void _removePhoto(int index) {
+    setState(() => _photos.removeAt(index));
   }
 
   Future<void> _pickDate() async {
@@ -261,12 +327,6 @@ class _CreateMaintenanceRequestPageState
     if (selected != null) setState(() => _preferredTime = selected);
   }
 
-  void _addMockPhoto() {
-    setState(
-      () => _photoLabels.add('Photo ${_photoLabels.length + 1} attached'),
-    );
-  }
-
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final request = await controller.createRequest(
@@ -277,7 +337,9 @@ class _CreateMaintenanceRequestPageState
       priority: _priority,
       preferredDate: AppDates.format(_preferredDate),
       preferredTime: _preferredTime.format(context),
-      photoNames: _photoLabels,
+      // The request carries the file names; the repository does not upload the
+      // images themselves yet.
+      photoNames: _photos.map((photo) => photo.name).toList(),
     );
     if (request != null && mounted) {
       Get.back(result: request);
@@ -344,28 +406,84 @@ class _FormSection extends StatelessWidget {
   }
 }
 
-class _BackButton extends StatelessWidget {
-  const _BackButton();
+/// A picked photo shown as a thumbnail, with a remove affordance in the corner
+/// so the resident can drop a photo they attached by mistake.
+class _PhotoThumbnail extends StatelessWidget {
+  const _PhotoThumbnail({
+    required this.photo,
+    required this.position,
+    required this.onRemove,
+    super.key,
+  });
+
+  final AttachedPhoto photo;
+
+  /// 1 based position, used for the remove button's tooltip and semantics.
+  final int position;
+  final VoidCallback onRemove;
+
+  static const _size = 76.0;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: AppPalette.border),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Tooltip(
-        message: 'Back',
-        child: InkWell(
-          onTap: () => Get.back<void>(),
-          child: const SizedBox(
-            width: 42,
-            height: 42,
-            child: Icon(Icons.arrow_back_rounded, size: 20),
+    return SizedBox(
+      width: _size,
+      height: _size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: _size,
+            height: _size,
+            decoration: BoxDecoration(
+              color: AppPalette.surfaceMuted,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppPalette.border),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Image.file(
+              File(photo.path),
+              fit: BoxFit.cover,
+              // A file that is gone or unsupported must not break the form.
+              errorBuilder: (context, error, stackTrace) => const Center(
+                child: Icon(
+                  Icons.image_not_supported_outlined,
+                  size: 22,
+                  color: AppPalette.faint,
+                ),
+              ),
+            ),
           ),
-        ),
+          Positioned(
+            top: -6,
+            right: -6,
+            child: Material(
+              color: AppPalette.ink,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: Tooltip(
+                message: 'Remove photo $position',
+                child: InkWell(
+                  key: Key('maintenance-photo-remove-$position'),
+                  onTap: onRemove,
+                  child: Semantics(
+                    button: true,
+                    label: 'Remove photo $position',
+                    child: const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 15,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

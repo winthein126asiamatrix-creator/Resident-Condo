@@ -45,6 +45,7 @@ class FacilityReservation {
     required this.time,
     required this.status,
     required this.createdAt,
+    this.isCustomTime = false,
   });
 
   final String id;
@@ -54,4 +55,8 @@ class FacilityReservation {
   final String time;
   final String status;
   final String createdAt;
+
+  /// True when the resident typed their own time instead of taking one of the
+  /// facility's slots, so the slot is not consumed from its availability.
+  final bool isCustomTime;
 }
