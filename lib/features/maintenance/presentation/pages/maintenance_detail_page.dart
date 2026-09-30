@@ -4,8 +4,12 @@ import 'package:get/get.dart';
 import '../../domain/entities/maintenance_request.dart';
 import '../controllers/maintenance_controller.dart';
 import '../widgets/maintenance_status_badge.dart';
-import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/widgets/app_image_preview.dart';
+import '../../../../core/widgets/app_primary_action.dart';
+import '../../../../core/widgets/app_step_progress.dart';
 
 class MaintenanceDetailPage extends GetView<MaintenanceController> {
   const MaintenanceDetailPage({required this.request, super.key});
@@ -19,6 +23,7 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
       return Scaffold(
         appBar: AppDetailAppBar(title: 'Request details'),
         body: ListView(
+          key: const Key('maintenance-detail-scroll'),
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.gutter,
             AppSpacing.pageTop,
@@ -58,40 +63,45 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
             ),
             const SizedBox(height: 16),
             _Section(
-              title: 'Photos',
-              child: current.photoNames.isEmpty
+              title: current.photoPaths.isEmpty ? 'Attachments' : 'Attachment',
+              child: current.photoPaths.isEmpty
                   ? const Text(
                       'No photos attached',
-                      style: TextStyle(color: Color(0xFF71807D)),
+                      style: TextStyle(color: AppPalette.muted),
                     )
-                  : Wrap(
-                      spacing: 8,
-                      children: current.photoNames
-                          .map(
-                            (photo) => Chip(
-                              avatar: const Icon(
-                                Icons.photo_outlined,
-                                size: 17,
-                              ),
-                              label: Text(photo),
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (
+                          var index = 0;
+                          index < current.photoPaths.length;
+                          index++
+                        )
+                          Padding(
+                            padding: EdgeInsets.only(
+                              bottom: index == current.photoPaths.length - 1
+                                  ? 0
+                                  : 12,
                             ),
-                          )
-                          .toList(),
+                            child: AppImagePreview(
+                              key: Key('request-photo-$index'),
+                              path: current.photoPaths[index],
+                              caption: _photoCaption(current, index),
+                            ),
+                          ),
+                      ],
                     ),
             ),
             const SizedBox(height: 20),
-            _StatusProgress(status: current.status),
+            _StatusProgress(request: current),
             if (current.status.next != null) ...[
               const SizedBox(height: 20),
-              FilledButton.icon(
+              AppPrimaryAction(
+                key: const Key('advance-maintenance-request'),
                 onPressed: () => controller.advanceRequest(current),
-                icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                label: Text('Move to ${current.status.next!.label}'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFE07A5F),
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(52),
-                ),
+                label: 'Move to ${current.status.next!.label}',
+                icon: Icons.arrow_forward_rounded,
+                backgroundColor: AppPalette.accent,
               ),
             ],
           ],
@@ -105,6 +115,15 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
       (item) => item.id == request.id,
       orElse: () => request,
     );
+  }
+
+  /// File name when the request knows it, otherwise something honest rather
+  /// than a blank box.
+  String _photoCaption(MaintenanceRequest request, int index) {
+    if (index < request.photoNames.length) {
+      return request.photoNames[index];
+    }
+    return 'Attached photo ${index + 1}';
   }
 }
 
@@ -230,20 +249,36 @@ class _Line extends StatelessWidget {
   }
 }
 
+/// Renders the request's real status as a vertical timeline.
+///
+/// The step the request has reached comes from [MaintenanceRequest.status], so
+/// nothing here is hardcoded: moving the request forward moves the timeline.
 class _StatusProgress extends StatelessWidget {
-  const _StatusProgress({required this.status});
+  const _StatusProgress({required this.request});
 
-  final MaintenanceStatus status;
+  final MaintenanceRequest request;
 
   @override
   Widget build(BuildContext context) {
-    const steps = MaintenanceStatus.values;
+    final status = request.status;
+    // The submitted step carries the request's own timestamp; the rest are
+    // shown without a date because the mock data does not track one per step.
+    final steps = <AppProgressStep>[
+      for (final step in MaintenanceStatus.values)
+        AppProgressStep(
+          title: step.label,
+          subtitle: step == MaintenanceStatus.submitted
+              ? request.createdAt
+              : (step.index < status.index ? 'Completed' : null),
+        ),
+    ];
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE6EEEB)),
+        border: Border.all(color: AppPalette.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,84 +287,10 @@ class _StatusProgress extends StatelessWidget {
             'Request progress',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
           ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              for (var index = 0; index < steps.length; index++) ...[
-                Expanded(
-                  child: _ProgressStep(
-                    step: steps[index],
-                    index: index,
-                    status: status,
-                  ),
-                ),
-                if (index < steps.length - 1)
-                  Expanded(
-                    child: Container(
-                      height: 2,
-                      color: steps[index + 1].index <= status.index
-                          ? const Color(0xFF0F766E)
-                          : const Color(0xFFE6EEEB),
-                    ),
-                  ),
-              ],
-            ],
-          ),
+          const SizedBox(height: 16),
+          AppStepProgress(steps: steps, currentIndex: status.index),
         ],
       ),
-    );
-  }
-}
-
-class _ProgressStep extends StatelessWidget {
-  const _ProgressStep({
-    required this.step,
-    required this.index,
-    required this.status,
-  });
-
-  final MaintenanceStatus step;
-  final int index;
-  final MaintenanceStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    final completed = step.index <= status.index;
-    return Column(
-      children: [
-        Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            color: completed
-                ? const Color(0xFF0F766E)
-                : const Color(0xFFE6EEEB),
-            shape: BoxShape.circle,
-          ),
-          child: completed
-              ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
-              : Text(
-                  '${index + 1}',
-                  style: const TextStyle(
-                    color: Color(0xFF71807D),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-        ),
-        const SizedBox(height: 7),
-        Text(
-          step.label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: completed
-                ? const Color(0xFF0F766E)
-                : const Color(0xFF71807D),
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
     );
   }
 }

@@ -14,5 +14,6 @@ class MaintenanceRequestModel extends MaintenanceRequest {
     required super.preferredTime,
     required super.photoNames,
     super.technician,
+    super.photoPaths,
   });
 }

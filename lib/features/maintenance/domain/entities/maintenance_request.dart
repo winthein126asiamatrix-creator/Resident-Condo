@@ -88,6 +88,7 @@ class MaintenanceRequest {
     required this.preferredTime,
     required this.photoNames,
     this.technician,
+    this.photoPaths = const [],
   });
 
   final String id;
@@ -102,6 +103,12 @@ class MaintenanceRequest {
   final String preferredTime;
   final List<String> photoNames;
   final String? technician;
+
+  /// Where each attached photo lives on the device, in the same order as
+  /// [photoNames]. A backend would hand these over as URLs; keeping them on the
+  /// request is what lets the details screen show the photo the resident
+  /// actually picked, instead of a placeholder.
+  final List<String> photoPaths;
 
   int get photoCount => photoNames.length;
 
@@ -119,6 +126,7 @@ class MaintenanceRequest {
       preferredTime: preferredTime,
       photoNames: photoNames,
       technician: technician ?? this.technician,
+      photoPaths: photoPaths,
     );
   }
 }

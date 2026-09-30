@@ -357,9 +357,11 @@ class _CreateMaintenanceRequestPageState
       priority: _priority,
       preferredDate: AppDates.format(_preferredDate),
       preferredTime: _preferredTime.format(context),
-      // The request carries the file names; the repository does not upload the
-      // images themselves yet.
+      // The request carries the file names and where each photo lives, so the
+      // details screen can show the very image that was picked. The repository
+      // does not upload the images themselves yet.
       photoNames: _photos.map((photo) => photo.name).toList(),
+      photoPaths: _photos.map((photo) => photo.path).toList(),
     );
     if (request != null && mounted) {
       Get.back(result: request);

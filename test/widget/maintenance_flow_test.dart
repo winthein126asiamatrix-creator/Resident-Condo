@@ -15,6 +15,8 @@ import 'package:test/features/maintenance/presentation/bindings/maintenance_bind
 import 'package:test/features/maintenance/presentation/controllers/maintenance_controller.dart';
 import 'package:test/features/maintenance/presentation/pages/create_maintenance_request_page.dart';
 import 'package:test/features/maintenance/presentation/pages/maintenance_page.dart';
+import 'package:test/core/widgets/app_image_preview.dart';
+import 'package:test/features/maintenance/presentation/pages/maintenance_detail_page.dart';
 
 void main() {
   setUp(() {
@@ -38,6 +40,12 @@ void main() {
           GetPage<dynamic>(
             name: AppRoutes.maintenanceCreate,
             page: () => CreateMaintenanceRequestPage(photoPicker: photoPicker),
+          ),
+          GetPage<dynamic>(
+            name: AppRoutes.maintenanceDetail,
+            page: () => MaintenanceDetailPage(
+              request: Get.arguments as MaintenanceRequest,
+            ),
           ),
         ],
       ),
@@ -403,6 +411,294 @@ void main() {
     );
   });
 
+  /// Scrolls the details page until [target] is on screen. The list is lazy, so
+  /// anything below the fold has to be scrolled to before it can be found.
+  Future<void> scrollDetailsTo(WidgetTester tester, Finder target) async {
+    final list = find
+        .descendant(
+          of: find.byKey(const Key('maintenance-detail-scroll')),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    await tester.scrollUntilVisible(target, 200, scrollable: list);
+    await tester.pumpAndSettle();
+  }
+
+  group('request details attachments', () {
+    /// Books a request with one real photo attached and opens its details.
+    Future<MaintenanceRequest> bookWithPhoto(
+      WidgetTester tester, {
+      required PhotoPicker picker,
+    }) async {
+      final controller = await pumpMaintenanceApp(tester, photoPicker: picker);
+      await openRequestForm(tester);
+      await tester.enterText(
+        find.byKey(const Key('maintenance-title')),
+        'Balcony door will not lock',
+      );
+      await tester.enterText(
+        find.byKey(const Key('maintenance-description')),
+        'The latch snapped and the door no longer closes.',
+      );
+      await tester.enterText(
+        find.byKey(const Key('maintenance-location')),
+        'Balcony',
+      );
+      await tester.pumpAndSettle();
+
+      await attachPhoto(tester, picker);
+      await scrollFormTo(
+        tester,
+        find.byKey(const Key('submit-maintenance-request')),
+      );
+      await tester.tap(find.byKey(const Key('submit-maintenance-request')));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
+
+      final created = controller.requests.first;
+      // The picked file is carried through to the request, not just its name.
+      expect(created.photoNames, hasLength(1));
+      expect(created.photoPaths, hasLength(1));
+      expect(created.photoPaths.first, isNotEmpty);
+
+      await tester.tap(find.text(created.title));
+      await tester.pumpAndSettle();
+      expect(find.byType(MaintenanceDetailPage), findsOneWidget);
+      return created;
+    }
+
+    testWidgets('an attached photo is shown on the details page', (
+      tester,
+    ) async {
+      final picker = _FakePhotoPicker();
+      picker.results[ImageSource.gallery] = PhotoPickResult.success(
+        AttachedPhoto(path: writeTempPhoto(), name: 'balcony-latch.png'),
+      );
+
+      await bookWithPhoto(tester, picker: picker);
+
+      // The attachment section sits below the fold on a phone.
+      await scrollDetailsTo(tester, find.byKey(const Key('request-photo-0')));
+
+      expect(find.text('Attachment'), findsOneWidget);
+      expect(find.byKey(const Key('request-photo-0')), findsOneWidget);
+      expect(find.text('balcony-latch.png'), findsOneWidget);
+      // The real file is rendered, not a placeholder.
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('request-photo-0')),
+          matching: find.byType(Image),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Image unavailable'), findsNothing);
+    });
+
+    testWidgets('tapping the photo opens a preview that can be closed', (
+      tester,
+    ) async {
+      final picker = _FakePhotoPicker();
+      picker.results[ImageSource.gallery] = PhotoPickResult.success(
+        AttachedPhoto(path: writeTempPhoto(), name: 'balcony-latch.png'),
+      );
+      await bookWithPhoto(tester, picker: picker);
+
+      await scrollDetailsTo(tester, find.byKey(const Key('request-photo-0')));
+      await tester.tap(find.byKey(const Key('request-photo-0')));
+      await tester.pumpAndSettle();
+
+      // Full screen preview, with a way out.
+      expect(find.byKey(const Key('image-viewer-close')), findsOneWidget);
+      // Pinch to zoom comes from Flutter's own InteractiveViewer.
+      expect(find.byType(InteractiveViewer), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('image-viewer-close')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('image-viewer-close')), findsNothing);
+      expect(find.byType(MaintenanceDetailPage), findsOneWidget);
+    });
+
+    testWidgets('a request without a photo shows no image container', (
+      tester,
+    ) async {
+      await pumpMaintenanceApp(tester);
+      // maintenance-002 has no attachments.
+      await tester.tap(find.text('AC not cooling'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MaintenanceDetailPage), findsOneWidget);
+      await scrollDetailsTo(tester, find.text('No photos attached'));
+      expect(find.text('No photos attached'), findsOneWidget);
+      expect(find.byType(AppImagePreview), findsNothing);
+      expect(find.text('Image unavailable'), findsNothing);
+    });
+  });
+
+  group('request progress timeline', () {
+    /// Opens the details of a seeded request by its title.
+    ///
+    /// The list is lazy, so the card has to be scrolled into the viewport
+    /// before it can be found and tapped.
+    Future<void> openDetails(WidgetTester tester, String title) async {
+      await pumpMaintenanceApp(tester);
+      final list = find
+          .descendant(
+            of: find.byKey(const Key('maintenance-scroll')),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      await tester.scrollUntilVisible(find.text(title), 200, scrollable: list);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(title));
+      await tester.pumpAndSettle();
+      expect(find.byType(MaintenanceDetailPage), findsOneWidget);
+    }
+
+    testWidgets('every step number is centred inside its circle', (
+      tester,
+    ) async {
+      // 'Leaking kitchen sink' is in progress, so steps 1 and 2 are done and
+      // 3 and 4 still show their number.
+      await openDetails(tester, 'Leaking kitchen sink');
+      await scrollDetailsTo(tester, find.text('Request progress'));
+
+      for (final index in [2, 3]) {
+        final circle = tester.getRect(find.byKey(Key('progress-step-$index')));
+        final number = tester.getRect(
+          find.descendant(
+            of: find.byKey(Key('progress-step-$index')),
+            matching: find.text('${index + 1}'),
+          ),
+        );
+        expect(
+          (number.center.dx - circle.center.dx).abs(),
+          lessThan(1),
+          reason: 'step ${index + 1} number must be centred horizontally',
+        );
+        expect(
+          (number.center.dy - circle.center.dy).abs(),
+          lessThan(1),
+          reason: 'step ${index + 1} number must be centred vertically',
+        );
+        // And it must not spill outside the circle.
+        expect(number.left, greaterThanOrEqualTo(circle.left));
+        expect(number.right, lessThanOrEqualTo(circle.right));
+        expect(circle.width, circle.height);
+      }
+
+      // All four circles share one diameter.
+      final widths = [
+        for (var index = 0; index < MaintenanceStatus.values.length; index++)
+          tester.getSize(find.byKey(Key('progress-step-$index'))).width,
+      ];
+      expect(widths.toSet(), hasLength(1));
+    });
+
+    testWidgets('completed, current and upcoming steps look different', (
+      tester,
+    ) async {
+      // 'Hallway light flickering' is assigned, so step 1 is done, step 2 is
+      // current and steps 3 and 4 are upcoming.
+      await openDetails(tester, 'Hallway light flickering');
+      await scrollDetailsTo(tester, find.text('Request progress'));
+
+      // A completed step shows a tick rather than a number.
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('progress-step-0')),
+          matching: find.byIcon(Icons.check_rounded),
+        ),
+        findsOneWidget,
+        reason: 'a completed step is marked with a tick',
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('progress-step-0')),
+          matching: find.text('1'),
+        ),
+        findsNothing,
+      );
+
+      // The current step is more prominent than the ones after it: it has the
+      // brand tint behind it and a heavier ring.
+      final current = _circleDecoration(tester, 1);
+      expect(current.color, AppPalette.brandTint);
+      expect((current.border?.top.width ?? 0), greaterThan(1.5));
+
+      // Upcoming steps stay neutral but still show their number.
+      for (final index in [2, 3]) {
+        expect(
+          find.descendant(
+            of: find.byKey(Key('progress-step-$index')),
+            matching: find.text('${index + 1}'),
+          ),
+          findsOneWidget,
+        );
+        final decoration = _circleDecoration(tester, index);
+        expect(decoration.color, AppPalette.surface);
+        expect(decoration.border?.top.color, AppPalette.border);
+      }
+    });
+
+    testWidgets('the timeline follows the request status', (tester) async {
+      // 'Hallway light flickering' is assigned: step 1 is done, step 2 current.
+      await openDetails(tester, 'Hallway light flickering');
+      await scrollDetailsTo(tester, find.text('Request progress'));
+      expect(
+        _circleDecoration(tester, 0).color,
+        AppPalette.brand,
+        reason: 'the finished step is filled',
+      );
+      expect(
+        _circleDecoration(tester, 1).color,
+        AppPalette.brandTint,
+        reason: 'the step the request has reached is current',
+      );
+      expect(_circleDecoration(tester, 2).color, AppPalette.surface);
+
+      // Moving the request forward moves the timeline rather than hardcoding
+      // anything: step 2 becomes done and step 3 becomes current.
+      await tester.ensureVisible(
+        find.byKey(const Key('advance-maintenance-request')),
+      );
+      await tester.tap(find.byKey(const Key('advance-maintenance-request')));
+      await tester.pumpAndSettle();
+      await scrollDetailsTo(tester, find.text('Request progress'));
+
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('progress-step-1')),
+          matching: find.byIcon(Icons.check_rounded),
+        ),
+        findsOneWidget,
+        reason: 'the step that was current is now done',
+      );
+      expect(_circleDecoration(tester, 2).color, AppPalette.brandTint);
+      expect(find.text('In Progress'), findsOneWidget);
+    });
+
+    testWidgets('the details page has no overflow on a small android screen', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await openDetails(tester, 'Hallway light flickering');
+      await scrollDetailsTo(tester, find.text('Request progress'));
+
+      // The longest status name has to wrap rather than overflow.
+      expect(find.text('In Progress'), findsOneWidget);
+      for (var index = 0; index < MaintenanceStatus.values.length; index++) {
+        final circle = find.byKey(Key('progress-step-$index'));
+        expect(circle, findsOneWidget);
+        await tester.ensureVisible(circle);
+        await tester.pumpAndSettle();
+      }
+    });
+  });
+
   testWidgets('the flow has no overflow on a small android screen', (
     tester,
   ) async {
@@ -492,6 +788,15 @@ const _priorityColors = <MaintenancePriority, Color>{
   MaintenancePriority.medium: AppPalette.warning,
   MaintenancePriority.high: AppPalette.danger,
 };
+
+/// Reads the decoration of a timeline circle, so the tests can check that the
+/// three states really look different.
+BoxDecoration _circleDecoration(WidgetTester tester, int position) {
+  final container = tester.widget<Container>(
+    find.byKey(Key('progress-step-$position')),
+  );
+  return container.decoration! as BoxDecoration;
+}
 
 /// Stands in for the platform picker so the tests drive the real flow without
 /// a device camera or gallery.

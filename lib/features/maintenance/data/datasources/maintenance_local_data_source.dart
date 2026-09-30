@@ -87,6 +87,7 @@ class MaintenanceLocalDataSource {
       preferredDate: request.preferredDate,
       preferredTime: request.preferredTime,
       photoNames: List<String>.unmodifiable(request.photoNames),
+      photoPaths: List<String>.unmodifiable(request.photoPaths),
     );
     _requests.insert(0, created);
     return created;
@@ -116,6 +117,7 @@ class MaintenanceLocalDataSource {
       technician:
           request.technician ??
           (status == MaintenanceStatus.assigned ? 'Maintenance team' : null),
+      photoPaths: request.photoPaths,
     );
     _requests[index] = updated;
     return updated;

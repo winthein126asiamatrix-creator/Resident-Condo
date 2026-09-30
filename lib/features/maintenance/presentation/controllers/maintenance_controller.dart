@@ -50,6 +50,7 @@ class MaintenanceController extends GetxController {
     required String preferredDate,
     required String preferredTime,
     required List<String> photoNames,
+    List<String> photoPaths = const [],
   }) async {
     isSubmitting.value = true;
     errorMessage.value = null;
@@ -67,6 +68,7 @@ class MaintenanceController extends GetxController {
           preferredDate: preferredDate,
           preferredTime: preferredTime,
           photoNames: List<String>.unmodifiable(photoNames),
+          photoPaths: List<String>.unmodifiable(photoPaths),
         ),
       );
       requests.insert(0, request);

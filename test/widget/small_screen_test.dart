@@ -25,6 +25,7 @@ import 'package:test/features/rules/presentation/pages/appeal_violation_page.dar
 import 'package:test/features/services/presentation/bindings/condo_service_binding.dart';
 import 'package:test/features/services/presentation/pages/service_request_page.dart';
 import 'package:test/features/visitors/presentation/pages/register_visitor_page.dart';
+import 'package:test/core/widgets/app_primary_action.dart';
 
 /// Walks every resident facing screen at a small phone size. Any RenderFlex
 /// overflow fails the test, which is the point of this file.
@@ -87,6 +88,20 @@ void main() {
 
   testWidgets('register visitor form', (tester) async {
     await smallPhone(tester, const RegisterVisitorPage(), VisitorBinding());
+  });
+
+  testWidgets('visitors list', (tester) async {
+    await smallPhone(tester, const VisitorsPage(), VisitorBinding());
+
+    // The primary action is the shared component, sitting in the content flow
+    // rather than floating over the cards.
+    final cta = find.byKey(const Key('register-visitor'));
+    expect(cta, findsOneWidget);
+    expect(find.byType(AppPrimaryAction), findsWidgets);
+    expect(find.byType(FloatingActionButton), findsNothing);
+    await tester.ensureVisible(cta);
+    await tester.pumpAndSettle();
+    expect(cta.hitTestable(), findsOneWidget);
   });
 
   testWidgets('lease renewal form', (tester) async {

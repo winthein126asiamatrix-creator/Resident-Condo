@@ -46,7 +46,7 @@ class VisitorsPage extends GetView<VisitorController> {
               AppSpacing.gutter,
               AppSpacing.pageTop,
               AppSpacing.gutter,
-              96,
+              AppSpacing.pageBottom,
             ),
             children: [
               _VisitorHero(controller: controller),
@@ -76,6 +76,20 @@ class VisitorsPage extends GetView<VisitorController> {
                   ],
                 ),
               ),
+              const SizedBox(height: 16),
+              // The primary action sits in the content flow rather than
+              // floating over it, so it reads as part of the page and never
+              // covers a visitor card.
+              Semantics(
+                button: true,
+                label: 'Register a new visitor',
+                child: AppPrimaryAction(
+                  key: const Key('register-visitor'),
+                  onPressed: () => Get.toNamed(AppRoutes.visitorRegister),
+                  label: 'Register visitor',
+                  icon: Icons.person_add_alt_1_rounded,
+                ),
+              ),
               const SizedBox(height: 18),
               _FilterRow(controller: controller),
               const SizedBox(height: 14),
@@ -98,12 +112,6 @@ class VisitorsPage extends GetView<VisitorController> {
           ),
         );
       }),
-      floatingActionButton: FloatingActionButton.extended(
-        key: const Key('register-visitor'),
-        onPressed: () => Get.toNamed(AppRoutes.visitorRegister),
-        icon: const Icon(Icons.person_add_alt_1_rounded),
-        label: const Text('Register visitor'),
-      ),
     );
   }
 }
