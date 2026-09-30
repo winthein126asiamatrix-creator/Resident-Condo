@@ -34,4 +34,12 @@ class PaymentRepositoryImpl implements PaymentRepository {
   Future<List<Invoice>> applyRole(String roleKey) {
     return localDataSource.applyRole(roleKey);
   }
+
+  @override
+  Future<Invoice> addStoreFee({
+    required double amount,
+    required String reference,
+  }) {
+    return localDataSource.addStoreFee(amount: amount, reference: reference);
+  }
 }

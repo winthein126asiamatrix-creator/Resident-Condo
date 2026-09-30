@@ -37,5 +37,8 @@ abstract final class AppRoutes {
   static const ruleDetail = '/rules/detail';
   static const violationDetail = '/rules/violation';
   static const violationAppeal = '/rules/violation/appeal';
+  static const store = '/store';
+  static const storeCheckout = '/store/checkout';
+  static const storeOrderDetail = '/store/orders/detail';
   static const sample = '/sample';
 }

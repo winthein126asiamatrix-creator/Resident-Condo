@@ -72,6 +72,13 @@ class MoreServicesPage extends StatelessWidget {
             const AppSectionHeader(title: 'Building services'),
             const SizedBox(height: 10),
             _ModuleTile(
+              route: AppRoutes.store,
+              icon: Icons.storefront_rounded,
+              color: AppPalette.accent,
+              title: 'Condo Mart',
+              subtitle: 'Groceries, snacks and drinks to your door',
+            ),
+            _ModuleTile(
               route: AppRoutes.services,
               icon: Icons.room_service_rounded,
               color: AppPalette.brand,

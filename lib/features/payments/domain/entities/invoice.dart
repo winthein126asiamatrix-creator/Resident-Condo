@@ -21,8 +21,8 @@ extension InvoiceStatusLabel on InvoiceStatus {
 /// or all of them separately.
 ///
 /// Business rule: Monthly Rent and Monthly Condo Fee are always separate line
-/// items, and parking / utility / facility / service / violation charges are
-/// never bundled into the condo fee.
+/// items, and parking / utility / facility / service / store / violation charges
+/// are never bundled into the condo fee.
 enum InvoiceItemType {
   rent,
   condoFee,
@@ -30,6 +30,7 @@ enum InvoiceItemType {
   utility,
   facility,
   service,
+  storeFee,
   violation,
   lateFee,
 }
@@ -49,6 +50,8 @@ extension InvoiceItemTypeLabel on InvoiceItemType {
         return 'Facility Fee';
       case InvoiceItemType.service:
         return 'Service Fee';
+      case InvoiceItemType.storeFee:
+        return 'Store Fee';
       case InvoiceItemType.violation:
         return 'Violation Fine';
       case InvoiceItemType.lateFee:
@@ -70,6 +73,8 @@ extension InvoiceItemTypeLabel on InvoiceItemType {
         return 'Facility';
       case InvoiceItemType.service:
         return 'Service';
+      case InvoiceItemType.storeFee:
+        return 'Store';
       case InvoiceItemType.violation:
         return 'Fine';
       case InvoiceItemType.lateFee:

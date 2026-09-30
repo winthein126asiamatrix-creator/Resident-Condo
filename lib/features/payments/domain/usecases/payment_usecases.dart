@@ -26,4 +26,13 @@ class PaymentUseCases {
   Future<List<Invoice>> applyRole(String roleKey) {
     return repository.applyRole(roleKey);
   }
+
+  /// Bills a Condo Mart order as its own `Store Fee` line on the resident's
+  /// statement, rather than merging it into any other charge.
+  Future<Invoice> addStoreFee({
+    required double amount,
+    required String reference,
+  }) {
+    return repository.addStoreFee(amount: amount, reference: reference);
+  }
 }

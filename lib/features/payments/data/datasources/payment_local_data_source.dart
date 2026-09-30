@@ -49,6 +49,57 @@ class PaymentLocalDataSource {
     return getInvoices();
   }
 
+  /// Appends a Condo Mart `Store Fee` line to the resident's open statement.
+  ///
+  /// The fee is its own line item, keyed by the store order reference, so it can
+  /// be selected and paid on its own and traced back to the order. The invoice
+  /// is reopened if it had already been settled, since a new charge makes it
+  /// outstanding again.
+  Future<InvoiceModel> addStoreFee({
+    required double amount,
+    required String reference,
+  }) async {
+    if (amount <= 0) {
+      throw const AppException('A store fee must be greater than zero.');
+    }
+
+    final index = _invoices.indexWhere((invoice) => invoice.isPayable);
+    if (index == -1) {
+      throw const AppException('There is no open statement to add the store fee to.');
+    }
+
+    final invoice = _invoices[index];
+    final item = InvoiceItem(
+      type: InvoiceItemType.storeFee,
+      amount: amount,
+      note: 'Condo Mart order $reference',
+    );
+
+    // Re-submitting the same order must not double-charge the resident.
+    final existing = invoice.items.indexWhere(
+      (candidate) => candidate.type == InvoiceItemType.storeFee && candidate.note == item.note,
+    );
+    final items = List<InvoiceItem>.of(invoice.items);
+    if (existing == -1) {
+      items.add(item);
+    } else {
+      items[existing] = item;
+    }
+
+    _invoices[index] = InvoiceModel(
+      id: invoice.id,
+      number: invoice.number,
+      title: invoice.title,
+      billingPeriod: invoice.billingPeriod,
+      unitLabel: invoice.unitLabel,
+      dueDate: invoice.dueDate,
+      status: InvoiceStatus.partiallyPaid,
+      items: items,
+      paidDate: null,
+    );
+    return _invoices[index];
+  }
+
   /// Only the selected items are settled. An invoice becomes `paid` once every
   /// payable item is settled, otherwise it stays `partiallyPaid`.
   /// A failed payment is only written to the history and never settles items.

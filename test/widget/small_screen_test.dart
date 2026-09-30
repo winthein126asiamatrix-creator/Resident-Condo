@@ -24,6 +24,10 @@ import 'package:test/features/rules/presentation/bindings/rules_binding.dart';
 import 'package:test/features/rules/presentation/pages/appeal_violation_page.dart';
 import 'package:test/features/services/presentation/bindings/condo_service_binding.dart';
 import 'package:test/features/services/presentation/pages/service_request_page.dart';
+import 'package:test/features/store/presentation/bindings/store_binding.dart';
+import 'package:test/features/store/presentation/controllers/store_controller.dart';
+import 'package:test/features/store/presentation/pages/store_checkout_page.dart';
+import 'package:test/features/store/presentation/pages/store_page.dart';
 import 'package:test/features/visitors/presentation/pages/register_visitor_page.dart';
 import 'package:test/core/widgets/app_primary_action.dart';
 
@@ -33,7 +37,9 @@ void main() {
   setUp(() => Get.testMode = true);
   tearDown(Get.reset);
 
-  Future<void> smallPhone(
+  /// Pumps [page] at a small phone size. Returns the store controller when the
+  /// page registered one, so a store test can drive the flow.
+  Future<StoreController?> smallPhone(
     WidgetTester tester,
     Widget page,
     Bindings binding,
@@ -52,6 +58,7 @@ void main() {
     await tester.pumpAndSettle();
     // Every screen uses the one custom app bar.
     expect(find.byType(AppBar), findsNothing);
+    return Get.isRegistered<StoreController>() ? Get.find<StoreController>() : null;
   }
 
   testWidgets('complaints list', (tester) async {
@@ -114,5 +121,72 @@ void main() {
 
   testWidgets('service request form', (tester) async {
     await smallPhone(tester, const ServiceRequestPage(), CondoServiceBinding());
+  });
+
+  testWidgets('condo mart shop', (tester) async {
+    final store = (await smallPhone(
+      tester,
+      const StorePage(),
+      StoreBinding(),
+    ))!;
+    // The category row scrolls horizontally rather than overflowing.
+    expect(find.byKey(const Key('store-category-scroll')), findsOneWidget);
+    // Every visible product leads with a photo frame.
+    expect(find.byKey(Key('store-photo-store-lays-chips')), findsOneWidget);
+
+    // An added product swaps its Add button for the stepper.
+    await tester.tap(find.byKey(const Key('add-to-cart-store-lays-chips')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('cart-plus-store-lays-chips')), findsOneWidget);
+    expect(find.byKey(const Key('cart-minus-store-lays-chips')), findsOneWidget);
+    expect(store.cartCount, 1);
+  });
+
+  testWidgets('condo mart basket', (tester) async {
+    final store = (await smallPhone(
+      tester,
+      const StorePage(),
+      StoreBinding(),
+    ))!;
+    store.addToCart(store.products.first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('store-tab-basket')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('store-basket-summary')), findsOneWidget);
+  });
+
+  testWidgets('condo mart orders', (tester) async {
+    await smallPhone(tester, const StorePage(), StoreBinding());
+    await tester.tap(find.byKey(const Key('store-tab-orders')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('store-order-ST-20260930-01')), findsOneWidget);
+  });
+
+  testWidgets('condo mart checkout', (tester) async {
+    final store = (await smallPhone(
+      tester,
+      const StoreCheckoutPage(),
+      StoreBinding(),
+    ))!;
+    // The empty state is the first thing a resident can land on with no basket.
+    expect(find.text('Nothing to check out'), findsOneWidget);
+
+    store.addToCart(store.products.first);
+    await tester.pumpAndSettle();
+    expect(find.text('Nothing to check out'), findsNothing);
+
+    // The place-order action sits below the fold on a small phone, so walk the
+    // page down to it rather than assuming it is already built.
+    final scroll = find.byKey(const Key('store-checkout-scroll'));
+    final cta = find.byKey(const Key('store-place-order'));
+    for (var i = 0; i < 12 && cta.evaluate().isEmpty; i++) {
+      await tester.drag(scroll, const Offset(0, -220));
+      await tester.pumpAndSettle();
+    }
+    expect(cta, findsOneWidget);
+    await tester.ensureVisible(cta);
+    await tester.pumpAndSettle();
+    expect(cta.hitTestable(), findsOneWidget);
   });
 }

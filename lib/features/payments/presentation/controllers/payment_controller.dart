@@ -252,6 +252,20 @@ class PaymentController extends GetxController {
     return useCases.getInvoice(id);
   }
 
+  /// Adds a Condo Mart `Store Fee` to the open statement and refreshes the
+  /// ledger, so the charge shows up as an outstanding payment straight away.
+  Future<Invoice> addStoreFee({
+    required double amount,
+    required String reference,
+  }) async {
+    final updated = await useCases.addStoreFee(
+      amount: amount,
+      reference: reference,
+    );
+    await loadPayments();
+    return updated;
+  }
+
   // ---------------------------------------------------------------- payment
 
   /// Submits the selected items only. A declined attempt is stored as failed

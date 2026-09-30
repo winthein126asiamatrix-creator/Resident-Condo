@@ -420,4 +420,25 @@ class _StubPaymentRepository implements PaymentRepository {
 
   @override
   Future<List<Invoice>> applyRole(String roleKey) async => List<Invoice>.of(invoices);
+
+  @override
+  Future<Invoice> addStoreFee({
+    required double amount,
+    required String reference,
+  }) async {
+    final item = InvoiceItem(
+      type: InvoiceItemType.storeFee,
+      amount: amount,
+      note: 'Condo Mart order $reference',
+    );
+    final index = invoices.indexWhere((invoice) => invoice.isPayable);
+    if (index == -1) return invoices.first;
+    final updated = invoices[index].copyWith(
+      status: InvoiceStatus.partiallyPaid,
+      items: [...invoices[index].items, item],
+      paidDate: null,
+    );
+    invoices[index] = updated;
+    return updated;
+  }
 }

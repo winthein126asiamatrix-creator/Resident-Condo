@@ -105,6 +105,7 @@ Future<bool> showAppConfirmSummaryDialog(
   required Future<AppConfirmResult> Function() onConfirm,
   String confirmLabel = 'Confirm',
   String cancelLabel = 'Cancel',
+  String pendingLabel = 'Booking...',
 }) async {
   final confirmed = await showDialog<bool>(
     context: context,
@@ -116,7 +117,7 @@ Future<bool> showAppConfirmSummaryDialog(
       summary: summary,
       confirmLabel: confirmLabel,
       cancelLabel: cancelLabel,
-      pendingLabel: 'Booking...',
+      pendingLabel: pendingLabel,
       onConfirm: onConfirm,
     ),
   );

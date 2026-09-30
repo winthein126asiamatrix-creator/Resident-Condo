@@ -16,4 +16,14 @@ abstract interface class PaymentRepository {
   /// Swaps the mock ledger to the one that matches the signed-in role so the
   /// tenant sees a separate Monthly Rent line next to the condo fee.
   Future<List<Invoice>> applyRole(String roleKey);
+
+  /// Adds a Condo Mart `Store Fee` line to the resident's open statement.
+  ///
+  /// A store order is always billed on its own line. It is never folded into the
+  /// condo fee, rent, utilities, parking or any fine. [reference] is the store
+  /// order id, which keeps the statement line traceable back to the order.
+  Future<Invoice> addStoreFee({
+    required double amount,
+    required String reference,
+  });
 }

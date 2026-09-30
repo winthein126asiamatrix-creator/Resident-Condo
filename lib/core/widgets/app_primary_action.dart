@@ -18,6 +18,7 @@ class AppPrimaryAction extends StatelessWidget {
     this.backgroundColor = AppPalette.brand,
     this.centerContent = true,
     this.expand = true,
+    this.padding,
     super.key,
   });
 
@@ -33,6 +34,10 @@ class AppPrimaryAction extends StatelessWidget {
   /// [trailingIcon] to the far edge.
   final bool centerContent;
   final bool expand;
+
+  /// Overrides the default horizontal padding, for a compact button that sits
+  /// inside a card rather than at the foot of a form.
+  final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +157,8 @@ class AppPrimaryAction extends StatelessWidget {
         child: InkWell(
           onTap: enabled ? onPressed : null,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding:
+                padding ?? const EdgeInsets.symmetric(horizontal: 20),
             child: content,
           ),
         ),

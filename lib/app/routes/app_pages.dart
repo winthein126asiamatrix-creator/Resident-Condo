@@ -41,6 +41,11 @@ import '../../features/services/domain/entities/condo_service.dart';
 import '../../features/services/presentation/pages/service_request_detail_page.dart';
 import '../../features/services/presentation/pages/service_request_page.dart';
 import '../../features/services/presentation/pages/services_page.dart';
+import '../../features/store/domain/entities/store_product.dart';
+import '../../features/store/presentation/bindings/store_binding.dart';
+import '../../features/store/presentation/pages/store_checkout_page.dart';
+import '../../features/store/presentation/pages/store_order_detail_page.dart';
+import '../../features/store/presentation/pages/store_page.dart';
 import '../../features/unit/presentation/bindings/unit_binding.dart';
 import '../../features/unit/presentation/pages/unit_page.dart';
 import '../../features/visitors/domain/entities/visitor.dart';
@@ -157,6 +162,21 @@ abstract final class AppPages {
       page: () => ViolationDetailPage(violation: Get.arguments as Violation),
     ),
     GetPage<dynamic>(name: AppRoutes.violationAppeal, page: () => const AppealViolationPage()),
+    GetPage<dynamic>(
+      name: AppRoutes.store,
+      page: () => const StorePage(),
+      binding: StoreBinding(),
+    ),
+    GetPage<dynamic>(
+      name: AppRoutes.storeCheckout,
+      page: () => const StoreCheckoutPage(),
+      binding: StoreBinding(),
+    ),
+    GetPage<dynamic>(
+      name: AppRoutes.storeOrderDetail,
+      page: () => StoreOrderDetailPage(order: Get.arguments as StoreOrder),
+      binding: StoreBinding(),
+    ),
     GetPage<dynamic>(
       name: AppRoutes.sample,
       page: () => const SamplePage(),
