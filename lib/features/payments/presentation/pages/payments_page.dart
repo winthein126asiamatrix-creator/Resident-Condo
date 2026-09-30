@@ -187,10 +187,7 @@ class _BalanceSummary extends StatelessWidget {
           const SizedBox(height: 4),
           const Text(
             'Across all open invoices',
-            style: TextStyle(
-              color: AppPalette.brandOnDarkMuted,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: AppPalette.brandOnDarkMuted, fontSize: 12),
           ),
           const SizedBox(height: 19),
           Row(
@@ -223,7 +220,9 @@ class _BalanceSummary extends StatelessWidget {
             width: double.infinity,
             child: FilledButton.icon(
               key: const Key('payments-pay-now'),
-              onPressed: outstanding <= 0 ? null : () => _openOldestInvoice(context),
+              onPressed: outstanding <= 0
+                  ? null
+                  : () => _openOldestInvoice(context),
               icon: const Icon(Icons.arrow_forward_rounded, size: 18),
               label: const Text('Pay Now'),
               style: FilledButton.styleFrom(
@@ -404,10 +403,8 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-            color: AppPalette.ink,
-          ),
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w800, color: AppPalette.ink),
         ),
         const SizedBox(width: 7),
         Container(
@@ -456,7 +453,9 @@ class _InvoiceCard extends StatelessWidget {
               icon: invoice.isFullyPaid
                   ? Icons.receipt_long_rounded
                   : Icons.receipt_long_outlined,
-              color: invoice.isFullyPaid ? AppPalette.success : AppPalette.brand,
+              color: invoice.isFullyPaid
+                  ? AppPalette.success
+                  : AppPalette.brand,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -478,9 +477,7 @@ class _InvoiceCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   if (openItems.isNotEmpty)
                     Text(
-                      openItems
-                          .map((item) => item.type.shortLabel)
-                          .join(' · '),
+                      openItems.map((item) => item.type.shortLabel).join(' · '),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -500,9 +497,7 @@ class _InvoiceCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  invoice.isFullyPaid
-                      ? 'Settled'
-                      : 'Due ${invoice.dueDate}',
+                  invoice.isFullyPaid ? 'Settled' : 'Due ${invoice.dueDate}',
                   style: const TextStyle(color: AppPalette.muted, fontSize: 10),
                 ),
                 const SizedBox(height: 5),

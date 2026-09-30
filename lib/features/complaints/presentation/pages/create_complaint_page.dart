@@ -6,6 +6,10 @@ import '../../../../core/theme/app_palette.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../domain/entities/complaint.dart';
 import '../controllers/complaint_controller.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/widgets/app_form_field.dart';
+import '../../../../core/widgets/app_segmented_control.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class CreateComplaintPage extends StatefulWidget {
   const CreateComplaintPage({super.key});
@@ -36,45 +40,41 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('File a complaint')),
+      appBar: AppDetailAppBar(title: 'File a complaint'),
       body: Obx(
         () => ListView(
           padding: EdgeInsets.fromLTRB(
-            20,
-            8,
-            20,
-            MediaQuery.viewInsetsOf(context).bottom + 32,
+            AppSpacing.gutter,
+            AppSpacing.pageTop,
+            AppSpacing.gutter,
+            MediaQuery.viewInsetsOf(context).bottom + AppSpacing.pageBottom,
           ),
           children: [
             const Text(
               'What happened?',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
-            const SizedBox(height: 10),
-            TextField(
-              key: const Key('complaint-subject-field'),
+            const SizedBox(height: AppSpacing.fieldLabelGap),
+            AppTextField(
+              label: 'Subject',
+              fieldKey: const Key('complaint-subject-field'),
               controller: _subjectController,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                hintText: 'Short summary of the issue',
-              ),
+              hint: 'Short summary of the issue',
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.fieldGap),
             const Text(
               'Details',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
-            const SizedBox(height: 10),
-            TextField(
-              key: const Key('complaint-description-field'),
+            const SizedBox(height: AppSpacing.fieldLabelGap),
+            AppTextField(
+              label: 'Description',
+              fieldKey: const Key('complaint-description-field'),
               controller: _descriptionController,
+              hint: 'Describe what happened, when, and how often.',
               maxLines: 5,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                hintText: 'Describe what happened, when, and how often.',
-              ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.fieldGap),
             const Text(
               'Category',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
@@ -94,42 +94,32 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
                   )
                   .toList(),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.fieldGap),
             const Text(
               'Where did it happen?',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
-            const SizedBox(height: 10),
-            TextField(
+            const SizedBox(height: AppSpacing.fieldLabelGap),
+            AppTextField(
+              label: 'Location',
               controller: _locationController,
-              decoration: const InputDecoration(
-                hintText: 'Tower A · Level 12 · Corridor',
-              ),
+              hint: 'Tower A � Level 12 � Corridor',
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: AppSpacing.fieldGap),
             const Text(
               'Priority',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
             const SizedBox(height: 10),
-            SegmentedButton<ComplaintPriority>(
-              segments: const [
-                ButtonSegment(
-                  value: ComplaintPriority.low,
-                  label: Text('Low'),
-                ),
-                ButtonSegment(
-                  value: ComplaintPriority.medium,
-                  label: Text('Medium'),
-                ),
-                ButtonSegment(
-                  value: ComplaintPriority.high,
-                  label: Text('High'),
-                ),
-              ],
-              selected: {_priority},
-              onSelectionChanged: (value) =>
-                  setState(() => _priority = value.first),
+            AppSegmentedControl<ComplaintPriority>(
+              label: null,
+              segments: const {
+                ComplaintPriority.low: 'Low',
+                ComplaintPriority.medium: 'Medium',
+                ComplaintPriority.high: 'High',
+              },
+              value: _priority,
+              onChanged: (value) => setState(() => _priority = value),
             ),
             const SizedBox(height: 10),
             SwitchListTile.adaptive(
@@ -161,7 +151,9 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
                     )
                   : const Icon(Icons.send_rounded, size: 18),
               label: Text(
-                controller.isSubmitting.value ? 'Submitting...' : 'Submit complaint',
+                controller.isSubmitting.value
+                    ? 'Submitting...'
+                    : 'Submit complaint',
               ),
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),

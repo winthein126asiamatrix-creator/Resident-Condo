@@ -9,6 +9,9 @@ import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/invoice.dart';
 import '../../domain/entities/payment.dart';
 import '../controllers/payment_controller.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_form_field.dart';
 
 class PaymentMethodPage extends StatefulWidget {
   const PaymentMethodPage({super.key});
@@ -31,7 +34,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Payment method')),
+      appBar: AppDetailAppBar(title: 'Payment method'),
       body: Obx(() {
         if (controller.selectedInvoice.value == null) {
           return AppStateMessage(
@@ -147,7 +150,10 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             Text(
               '${controller.selectedCount} selected item'
               '${controller.selectedCount == 1 ? '' : 's'}',
-              style: const TextStyle(color: AppPalette.mutedStrong, fontSize: 12),
+              style: const TextStyle(
+                color: AppPalette.mutedStrong,
+                fontSize: 12,
+              ),
             ),
             const Divider(height: 24),
             for (final item in controller.selectedItems)
@@ -340,33 +346,44 @@ class _CardForm extends StatelessWidget {
   Widget build(BuildContext context) {
     return _FormCard(
       children: [
-        const Text('Card details', style: TextStyle(fontWeight: FontWeight.w800)),
+        const Text(
+          'Card details',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
         const SizedBox(height: 12),
-        TextField(
-          key: const Key('card-number-field'),
+        AppTextField(
+          fieldKey: const Key('card-number-field'),
+          label: 'Card number',
           controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Card number',
-            hintText: '4242 4242 4242 4242',
-          ),
+          hint: '4242 4242 4242 4242',
+          icon: Icons.credit_card_rounded,
           keyboardType: TextInputType.number,
           inputFormatters: [
             FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
             LengthLimitingTextInputFormatter(19),
           ],
         ),
-        const SizedBox(height: 10),
-        const TextField(
-          decoration: InputDecoration(labelText: 'Name on card'),
+        const SizedBox(height: AppSpacing.fieldGap),
+        const AppTextField(
+          label: 'Name on card',
+          icon: Icons.person_outline_rounded,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: AppSpacing.fieldGap),
         const Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(child: TextField(decoration: InputDecoration(labelText: 'Expiry date'))),
+            Expanded(
+              child: AppTextField(
+                label: 'Expiry date',
+                hint: 'MM/YY',
+                keyboardType: TextInputType.number,
+              ),
+            ),
             SizedBox(width: 10),
             Expanded(
-              child: TextField(
-                decoration: InputDecoration(labelText: 'CVV'),
+              child: AppTextField(
+                label: 'CVV',
+                hint: '123',
                 keyboardType: TextInputType.number,
               ),
             ),
@@ -417,7 +434,10 @@ class _BankTransferInfo extends StatelessWidget {
       children: [
         Icon(Icons.account_balance_rounded, color: AppPalette.brand, size: 32),
         SizedBox(height: 10),
-        Text('Mock bank transfer', style: TextStyle(fontWeight: FontWeight.w800)),
+        Text(
+          'Mock bank transfer',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
         SizedBox(height: 5),
         Text(
           'Transfer to the condo management account shown in your resident portal.',
@@ -425,7 +445,10 @@ class _BankTransferInfo extends StatelessWidget {
           style: TextStyle(color: AppPalette.muted, height: 1.4),
         ),
         SizedBox(height: 12),
-        Text('Account ending in 4821', style: TextStyle(fontWeight: FontWeight.w700)),
+        Text(
+          'Account ending in 4821',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
       ],
     );
   }
@@ -446,7 +469,10 @@ class _WalletInfo extends StatelessWidget {
         SizedBox(height: 10),
         Text('Connected wallet', style: TextStyle(fontWeight: FontWeight.w800)),
         SizedBox(height: 5),
-        Text('Alex Johnson Wallet', style: TextStyle(color: AppPalette.mutedStrong)),
+        Text(
+          'Alex Johnson Wallet',
+          style: TextStyle(color: AppPalette.mutedStrong),
+        ),
         SizedBox(height: 8),
         Text(
           'Available balance: \$2,450.00',

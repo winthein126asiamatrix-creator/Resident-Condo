@@ -5,6 +5,8 @@ import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/announcement.dart';
 import '../controllers/announcement_controller.dart';
 import '../widgets/announcement_card.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class AnnouncementsPage extends GetView<AnnouncementController> {
   const AnnouncementsPage({super.key});
@@ -12,8 +14,8 @@ class AnnouncementsPage extends GetView<AnnouncementController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Announcements'),
+      appBar: AppDetailAppBar(
+        title: 'Announcements',
         actions: [
           Obx(
             () => TextButton(
@@ -45,7 +47,7 @@ class AnnouncementsPage extends GetView<AnnouncementController> {
           onRefresh: controller.loadAnnouncements,
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
             children: [
               _AnnouncementSummary(
                 unreadCount: controller.unreadCount,

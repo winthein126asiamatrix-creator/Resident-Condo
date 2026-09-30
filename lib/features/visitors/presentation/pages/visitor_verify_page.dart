@@ -11,6 +11,8 @@ import '../../../../core/widgets/app_status_pill.dart';
 import '../../domain/entities/visitor.dart';
 import '../controllers/visitor_controller.dart';
 import '../widgets/visitor_status_badge.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/widgets/app_form_field.dart';
 
 /// Lobby desk screen: type the code the visitor reads out and confirm entry.
 class VisitorVerifyPage extends GetView<VisitorController> {
@@ -19,7 +21,7 @@ class VisitorVerifyPage extends GetView<VisitorController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Verify visitor')),
+      appBar: AppDetailAppBar(title: 'Verify visitor'),
       body: Obx(
         () => ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
@@ -44,8 +46,10 @@ class VisitorVerifyPage extends GetView<VisitorController> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  TextField(
-                    key: const Key('verify-code-field'),
+                  AppTextField(
+                    fieldKey: const Key('verify-code-field'),
+                    label: 'Verification code',
+                    hint: 'VIS ABC-123',
                     autofocus: true,
                     textCapitalization: TextCapitalization.characters,
                     inputFormatters: [
@@ -53,20 +57,12 @@ class VisitorVerifyPage extends GetView<VisitorController> {
                       LengthLimitingTextInputFormatter(12),
                     ],
                     onChanged: controller.onVerificationChanged,
+                    // Read as a code, so the spacing is wider than a prose field.
                     style: const TextStyle(
+                      color: AppPalette.ink,
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 2,
-                    ),
-                    decoration: const InputDecoration(
-                      hintText: 'VIS ABC-123',
-                      hintStyle: TextStyle(
-                        fontSize: 20,
-                        letterSpacing: 2,
-                        color: AppPalette.faint,
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -154,7 +150,10 @@ class VisitorVerifyPage extends GetView<VisitorController> {
                     visitor.status == VisitorStatus.checkedIn)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: _ExpectedTile(controller: controller, visitor: visitor),
+                    child: _ExpectedTile(
+                      controller: controller,
+                      visitor: visitor,
+                    ),
                   ),
             if (controller.errorMessage.value != null) ...[
               const SizedBox(height: 12),
@@ -184,7 +183,9 @@ class _VerificationResult extends StatelessWidget {
       children: [
         AppCard(
           color: result.isValid ? AppPalette.brandTint : AppPalette.accentSoft,
-          borderColor: result.isValid ? AppPalette.brandSoft : const Color(0xFFF0C6C0),
+          borderColor: result.isValid
+              ? AppPalette.brandSoft
+              : const Color(0xFFF0C6C0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

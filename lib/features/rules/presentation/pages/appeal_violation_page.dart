@@ -7,6 +7,8 @@ import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../controllers/rules_controller.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/widgets/app_form_field.dart';
 
 class AppealViolationPage extends StatefulWidget {
   const AppealViolationPage({super.key});
@@ -41,7 +43,7 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
       final violation = controller.selectedViolation.value;
       if (violation == null) {
         return Scaffold(
-          appBar: AppBar(title: const Text('Appeal violation')),
+          appBar: AppDetailAppBar(title: 'Appeal violation'),
           body: AppStateMessage(
             title: 'No violation selected',
             message: 'Open a violation before submitting an appeal.',
@@ -53,7 +55,7 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
       }
       if (!violation.canAppeal) {
         return Scaffold(
-          appBar: AppBar(title: const Text('Appeal violation')),
+          appBar: AppDetailAppBar(title: 'Appeal violation'),
           body: AppStateMessage(
             title: 'Not eligible for appeal',
             message:
@@ -66,7 +68,7 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
       }
 
       return Scaffold(
-        appBar: AppBar(title: const Text('Appeal violation')),
+        appBar: AppDetailAppBar(title: 'Appeal violation'),
         body: ListView(
           padding: EdgeInsets.fromLTRB(
             20,
@@ -108,16 +110,15 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
             const SizedBox(height: 10),
-            TextField(
-              key: const Key('appeal-reason-field'),
+            AppTextField(
+              fieldKey: const Key('appeal-reason-field'),
+              label: 'Why should this be reviewed?',
               controller: _reasonController,
               maxLines: 6,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                hintText:
-                    'Explain the circumstances. Add dates, witness names or '
-                    'evidence that support your appeal.',
-              ),
+              hint:
+                  'Explain the circumstances. Add dates, witness names or '
+                  'evidence that support your appeal.',
             ),
             const SizedBox(height: 10),
             const Text(
@@ -140,7 +141,9 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
                     )
                   : const Icon(Icons.send_rounded, size: 18),
               label: Text(
-                controller.isSubmitting.value ? 'Submitting...' : 'Submit appeal',
+                controller.isSubmitting.value
+                    ? 'Submitting...'
+                    : 'Submit appeal',
               ),
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
@@ -170,7 +173,9 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
       return;
     }
     if (_reasonController.text.trim().length < 20) {
-      setState(() => _error = 'Please explain your appeal in at least 20 characters.');
+      setState(
+        () => _error = 'Please explain your appeal in at least 20 characters.',
+      );
       return;
     }
     final confirmed = await showAppConfirmDialog(

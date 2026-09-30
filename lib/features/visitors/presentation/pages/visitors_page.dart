@@ -10,6 +10,10 @@ import '../../../../core/widgets/app_status_pill.dart';
 import '../../domain/entities/visitor.dart';
 import '../controllers/visitor_controller.dart';
 import '../widgets/visitor_status_badge.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_buttons.dart';
+import '../../../../core/widgets/app_primary_action.dart';
 
 class VisitorsPage extends GetView<VisitorController> {
   const VisitorsPage({super.key});
@@ -17,7 +21,7 @@ class VisitorsPage extends GetView<VisitorController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Visitors')),
+      appBar: AppDetailAppBar(title: 'Visitors'),
       body: Obx(() {
         if (controller.isLoading.value && controller.visitors.isEmpty) {
           return const Center(child: CircularProgressIndicator());
@@ -38,7 +42,12 @@ class VisitorsPage extends GetView<VisitorController> {
           child: ListView(
             key: const Key('visitors-scroll'),
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.gutter,
+              AppSpacing.pageTop,
+              AppSpacing.gutter,
+              96,
+            ),
             children: [
               _VisitorHero(controller: controller),
               const SizedBox(height: 16),
@@ -47,10 +56,7 @@ class VisitorsPage extends GetView<VisitorController> {
                 borderColor: AppPalette.brandSoft,
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.badge_outlined,
-                      color: AppPalette.brand,
-                    ),
+                    const Icon(Icons.badge_outlined, color: AppPalette.brand),
                     const SizedBox(width: 10),
                     const Expanded(
                       child: Text(
@@ -64,8 +70,7 @@ class VisitorsPage extends GetView<VisitorController> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () =>
-                          Get.toNamed(AppRoutes.visitorVerify),
+                      onPressed: () => Get.toNamed(AppRoutes.visitorVerify),
                       child: const Text('Verify'),
                     ),
                   ],
@@ -84,7 +89,10 @@ class VisitorsPage extends GetView<VisitorController> {
                 for (final visitor in visible)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
-                    child: _VisitorCard(controller: controller, visitor: visitor),
+                    child: _VisitorCard(
+                      controller: controller,
+                      visitor: visitor,
+                    ),
                   ),
             ],
           ),
@@ -109,7 +117,8 @@ class _VisitorHero extends StatelessWidget {
     return AppHeroPanel(
       icon: Icons.people_alt_rounded,
       title: 'Visitor access',
-      subtitle: '${controller.activeCount} active  ·  ${controller.onSiteCount} on site now',
+      subtitle:
+          '${controller.activeCount} active  ·  ${controller.onSiteCount} on site now',
       footnote: 'Codes expire automatically after the visitor checks out.',
       trailing: IconButton(
         tooltip: 'Refresh visitors',
@@ -175,10 +184,7 @@ class _VisitorCard extends StatelessWidget {
                 backgroundColor: color.withValues(alpha: 0.14),
                 child: Text(
                   visitor.initials,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: TextStyle(color: color, fontWeight: FontWeight.w800),
                 ),
               ),
               const SizedBox(width: 12),
@@ -205,7 +211,8 @@ class _VisitorCard extends StatelessWidget {
               ),
               AppStatusPill(label: visitor.status.label, color: color),
             ],
-          ),          const SizedBox(height: 12),
+          ),
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
@@ -220,18 +227,31 @@ class _VisitorCard extends StatelessWidget {
                   color: AppPalette.brand,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  visitor.accessCode,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.2,
-                    fontSize: 13,
+                Flexible(
+                  child: Text(
+                    visitor.accessCode,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 const Spacer(),
-                Text(
-                  '${visitor.date} · ${visitor.arrivalWindow}',
-                  style: const TextStyle(color: AppPalette.muted, fontSize: 11),
+                Flexible(
+                  child: Text(
+                    '${visitor.date} ? ${visitor.arrivalWindow}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      color: AppPalette.muted,
+                      fontSize: 11,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -241,46 +261,40 @@ class _VisitorCard extends StatelessWidget {
             children: [
               if (visitor.canCheckIn)
                 Expanded(
-                  child: FilledButton.icon(
+                  child: AppPrimaryAction(
                     key: Key('check-in-${visitor.id}'),
+                    height: 44,
                     onPressed: controller.isSubmitting.value
                         ? null
                         : () => _confirmCheckIn(context),
-                    icon: const Icon(Icons.login_rounded, size: 18),
-                    label: const Text('Check in'),
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(44),
-                    ),
+                    label: 'Check in',
+                    icon: Icons.login_rounded,
                   ),
                 ),
-              if (visitor.canCheckIn && visitor.canCheckOut) const SizedBox(width: 10),
+              if (visitor.canCheckIn && visitor.canCheckOut)
+                const SizedBox(width: 10),
               if (visitor.canCheckOut)
                 Expanded(
-                  child: FilledButton.icon(
+                  child: AppPrimaryAction(
                     key: Key('check-out-${visitor.id}'),
+                    height: 44,
+                    backgroundColor: AppPalette.accent,
                     onPressed: controller.isSubmitting.value
                         ? null
                         : () => _confirmCheckOut(context),
-                    icon: const Icon(Icons.logout_rounded, size: 18),
-                    label: const Text('Check out'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppPalette.accent,
-                      minimumSize: const Size.fromHeight(44),
-                    ),
+                    label: 'Check out',
+                    icon: Icons.logout_rounded,
                   ),
                 ),
               if (!visitor.canCheckIn && !visitor.canCheckOut)
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: AppOutlinedButton(
                     onPressed: () {
                       controller.selectVisitor(visitor);
                       Get.toNamed(AppRoutes.visitorPass, arguments: visitor);
                     },
-                    icon: const Icon(Icons.badge_outlined, size: 18),
-                    label: const Text('View pass'),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(44),
-                    ),
+                    label: 'View pass',
+                    icon: Icons.badge_outlined,
                   ),
                 ),
             ],

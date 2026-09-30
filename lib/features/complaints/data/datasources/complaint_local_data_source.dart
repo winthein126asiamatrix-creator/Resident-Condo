@@ -25,7 +25,8 @@ class ComplaintLocalDataSource {
         ComplaintComment(
           author: 'Maya R.',
           authorRole: 'Community manager',
-          message: 'Thank you for reporting this. We have spoken with the '
+          message:
+              'Thank you for reporting this. We have spoken with the '
               'neighbour and logged a warning.',
           postedOn: 'Sep 22, 2026',
         ),
@@ -56,7 +57,8 @@ class ComplaintLocalDataSource {
         ComplaintComment(
           author: 'Facilities team',
           authorRole: 'Management',
-          message: 'Collection frequency increased to twice daily and new '
+          message:
+              'Collection frequency increased to twice daily and new '
               'signage installed.',
           postedOn: 'Sep 09, 2026',
         ),
@@ -64,7 +66,8 @@ class ComplaintLocalDataSource {
     ),
   ];
 
-  Future<List<Complaint>> getComplaints() async => List.unmodifiable(_complaints);
+  Future<List<Complaint>> getComplaints() async =>
+      List.unmodifiable(_complaints);
 
   Future<Complaint?> getComplaint(String id) async {
     for (final complaint in _complaints) {
@@ -84,7 +87,8 @@ class ComplaintLocalDataSource {
     }
     final created = Complaint(
       id: 'complaint-${DateTime.now().microsecondsSinceEpoch}',
-      reference: 'CMP-2026-${(19 + _complaints.length).toString().padLeft(3, '0')}',
+      reference:
+          'CMP-2026-${(19 + _complaints.length).toString().padLeft(3, '0')}',
       category: complaint.category,
       subject: complaint.subject.trim(),
       description: complaint.description.trim(),
@@ -114,7 +118,10 @@ class ComplaintLocalDataSource {
     );
   }
 
-  Future<Complaint> addComment(Complaint complaint, ComplaintComment comment) async {
+  Future<Complaint> addComment(
+    Complaint complaint,
+    ComplaintComment comment,
+  ) async {
     if (comment.message.trim().isEmpty) {
       throw const AppException('Write a message before sending.');
     }

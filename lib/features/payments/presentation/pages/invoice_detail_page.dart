@@ -9,6 +9,8 @@ import '../../domain/entities/invoice.dart';
 import '../../domain/entities/payment.dart';
 import '../controllers/payment_controller.dart';
 import '../widgets/payment_status_badge.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class InvoiceDetailPage extends GetView<PaymentController> {
   const InvoiceDetailPage({required this.invoice, super.key});
@@ -20,7 +22,7 @@ class InvoiceDetailPage extends GetView<PaymentController> {
     return Obx(() {
       final currentInvoice = _currentInvoice();
       return Scaffold(
-        appBar: AppBar(title: const Text('Invoice details')),
+        appBar: AppDetailAppBar(title: 'Invoice details'),
         body: _buildBody(context, currentInvoice),
       );
     });
@@ -29,7 +31,12 @@ class InvoiceDetailPage extends GetView<PaymentController> {
   Widget _buildBody(BuildContext context, Invoice currentInvoice) {
     return ListView(
       key: const Key('invoice-detail-scroll'),
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.gutter,
+        AppSpacing.pageTop,
+        AppSpacing.gutter,
+        32,
+      ),
       children: [
         _InvoiceHero(invoice: currentInvoice),
         const SizedBox(height: 20),
@@ -37,13 +44,19 @@ class InvoiceDetailPage extends GetView<PaymentController> {
           title: 'Invoice information',
           child: Column(
             children: [
-              AppLabelValueRow(label: 'Invoice number', value: currentInvoice.number),
+              AppLabelValueRow(
+                label: 'Invoice number',
+                value: currentInvoice.number,
+              ),
               AppLabelValueRow(
                 label: 'Billing period',
                 value: currentInvoice.billingPeriod,
               ),
               AppLabelValueRow(label: 'Unit', value: currentInvoice.unitLabel),
-              AppLabelValueRow(label: 'Due date', value: currentInvoice.dueDate),
+              AppLabelValueRow(
+                label: 'Due date',
+                value: currentInvoice.dueDate,
+              ),
               AppLabelValueRow(
                 label: 'Status',
                 valueWidget: PaymentStatusBadge(status: currentInvoice.status),
@@ -62,8 +75,7 @@ class InvoiceDetailPage extends GetView<PaymentController> {
           subtitle: 'Every charge is billed and paid separately.',
           child: Column(
             children: [
-              for (final item in currentInvoice.items)
-                _ItemLine(item: item),
+              for (final item in currentInvoice.items) _ItemLine(item: item),
               const Divider(height: 20),
               AppLabelValueRow(
                 label: 'Invoice total',
@@ -231,7 +243,10 @@ class _ItemLine extends StatelessWidget {
                     item.isPaid && item.paidDate != null
                         ? '${item.note} · paid ${item.paidDate}'
                         : item.note,
-                    style: const TextStyle(color: AppPalette.muted, fontSize: 11),
+                    style: const TextStyle(
+                      color: AppPalette.muted,
+                      fontSize: 11,
+                    ),
                   ),
                 ],
               ],
@@ -239,9 +254,7 @@ class _ItemLine extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Text(
-            item.isZero
-                ? 'No charge'
-                : AppFormatters.currency(item.amount),
+            item.isZero ? 'No charge' : AppFormatters.currency(item.amount),
             style: TextStyle(
               fontWeight: FontWeight.w800,
               color: item.isPaid ? AppPalette.muted : AppPalette.ink,

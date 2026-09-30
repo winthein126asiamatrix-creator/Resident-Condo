@@ -5,6 +5,8 @@ import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/notification_item.dart';
 import '../controllers/notification_controller.dart';
 import '../widgets/notification_item_card.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class NotificationsPage extends GetView<NotificationController> {
   const NotificationsPage({super.key});
@@ -12,8 +14,8 @@ class NotificationsPage extends GetView<NotificationController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifications'),
+      appBar: AppDetailAppBar(
+        title: 'Notifications',
         actions: [
           Obx(
             () => TextButton(
@@ -51,7 +53,7 @@ class NotificationsPage extends GetView<NotificationController> {
           onRefresh: controller.loadNotifications,
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
             children: [
               _NotificationSummary(
                 unreadCount: controller.unreadCount,

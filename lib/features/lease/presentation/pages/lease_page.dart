@@ -12,6 +12,8 @@ import '../../../../core/widgets/app_state_message.dart';
 import '../../../../core/widgets/app_status_pill.dart';
 import '../../domain/entities/lease.dart';
 import '../controllers/lease_controller.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class LeasePage extends GetView<LeaseController> {
   const LeasePage({super.key});
@@ -19,8 +21,8 @@ class LeasePage extends GetView<LeaseController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Rental & lease'),
+      appBar: AppDetailAppBar(
+        title: 'Rental & lease',
         actions: [
           IconButton(
             onPressed: controller.loadLeases,
@@ -59,7 +61,12 @@ class LeasePage extends GetView<LeaseController> {
           child: ListView(
             key: const Key('lease-scroll'),
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.gutter,
+              AppSpacing.pageTop,
+              AppSpacing.gutter,
+              32,
+            ),
             children: [
               for (final lease in controller.leases) ...[
                 _LeaseProgressCard(
@@ -170,15 +177,13 @@ class _LeaseProgressCard extends StatelessWidget {
     return AppHeroPanel(
       icon: Icons.description_rounded,
       title: lease.unitLabel,
-      subtitle: '${lease.reference} · $perspective '
+      subtitle:
+          '${lease.reference} · $perspective '
           '${AppFormatters.currency(lease.monthlyRent)} / month',
       footnote: lease.hasExpired
           ? 'This term has ended. Submit a renewal to continue the tenancy.'
           : 'Ends ${AppDates.format(lease.endDate)} · ${lease.daysRemaining} days left',
-      trailing: AppStatusPill(
-        label: lease.status.label,
-        color: color,
-      ),
+      trailing: AppStatusPill(label: lease.status.label, color: color),
       leading: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

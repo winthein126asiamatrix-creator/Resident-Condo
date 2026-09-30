@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_status_pill.dart';
 import '../../domain/entities/rules.dart';
 import '../controllers/rules_controller.dart';
 import '../widgets/rules_widgets.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class RuleDetailPage extends GetView<RulesController> {
   const RuleDetailPage({required this.rule, super.key});
@@ -25,7 +26,7 @@ class RuleDetailPage extends GetView<RulesController> {
         .toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Community rule')),
+      appBar: AppDetailAppBar(title: 'Community rule'),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [

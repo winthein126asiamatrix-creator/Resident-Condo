@@ -5,6 +5,7 @@ import '../../../../core/utils/app_validators.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/sample.dart';
 import '../controllers/sample_controller.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class SamplePage extends GetView<SampleController> {
   const SamplePage({super.key});
@@ -12,8 +13,8 @@ class SamplePage extends GetView<SampleController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sample'),
+      appBar: AppDetailAppBar(
+        title: 'Sample',
         actions: [
           IconButton(
             key: const Key('refresh-samples'),

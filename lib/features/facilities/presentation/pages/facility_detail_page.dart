@@ -5,6 +5,8 @@ import '../../../../app/routes/app_routes.dart';
 import '../../domain/entities/facility.dart';
 import '../controllers/facility_controller.dart';
 import '../widgets/facility_labels.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class FacilityDetailPage extends GetView<FacilityController> {
   const FacilityDetailPage({required this.facility, super.key});
@@ -16,9 +18,9 @@ class FacilityDetailPage extends GetView<FacilityController> {
     return Obx(() {
       final current = _currentFacility();
       return Scaffold(
-        appBar: AppBar(title: const Text('Facility details')),
+        appBar: AppDetailAppBar(title: 'Facility details'),
         body: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
           children: [
             _FacilityHero(facility: current),
             const SizedBox(height: 20),

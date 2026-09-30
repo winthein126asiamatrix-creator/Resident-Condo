@@ -7,6 +7,8 @@ import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../domain/entities/invoice.dart';
 import '../../domain/entities/payment.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 /// Shown when the gateway declines the payment.
 ///
@@ -20,9 +22,14 @@ class PaymentFailurePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Payment failed')),
+      appBar: AppDetailAppBar(title: 'Payment failed'),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.gutter,
+          AppSpacing.pageTop,
+          AppSpacing.gutter,
+          32,
+        ),
         children: [
           const SizedBox(height: 18),
           Center(
@@ -113,7 +120,10 @@ class PaymentFailurePage extends StatelessWidget {
                     ),
                   ),
                 const Divider(height: 24),
-                _Line(label: 'Attempted amount', value: AppFormatters.currency(payment.amount)),
+                _Line(
+                  label: 'Attempted amount',
+                  value: AppFormatters.currency(payment.amount),
+                ),
                 _Line(label: 'Method', value: payment.method.label),
                 _Line(label: 'Reference', value: payment.transactionId),
               ],
@@ -157,7 +167,10 @@ class _Line extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(color: AppPalette.mutedStrong, fontSize: 12),
+              style: const TextStyle(
+                color: AppPalette.mutedStrong,
+                fontSize: 12,
+              ),
             ),
           ),
           Text(

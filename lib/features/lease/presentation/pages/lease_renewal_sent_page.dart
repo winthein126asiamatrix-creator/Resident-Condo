@@ -6,6 +6,8 @@ import '../../../../core/theme/app_palette.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../domain/entities/lease.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class LeaseRenewalSentPage extends StatelessWidget {
   const LeaseRenewalSentPage({required this.renewal, super.key});
@@ -15,9 +17,14 @@ class LeaseRenewalSentPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Renewal requested')),
+      appBar: AppDetailAppBar(title: 'Renewal requested'),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.gutter,
+          AppSpacing.pageTop,
+          AppSpacing.gutter,
+          32,
+        ),
         children: [
           const SizedBox(height: 22),
           Center(
@@ -56,7 +63,11 @@ class LeaseRenewalSentPage extends StatelessWidget {
           AppCard(
             child: Column(
               children: [
-                _Line(label: 'Proposed rent', value: '${AppFormatters.currency(renewal.proposedRent)} / month'),
+                _Line(
+                  label: 'Proposed rent',
+                  value:
+                      '${AppFormatters.currency(renewal.proposedRent)} / month',
+                ),
                 _Line(label: 'New start', value: renewal.proposedStart),
                 _Line(label: 'New end', value: renewal.proposedEnd),
                 _Line(label: 'Status', value: renewal.status.label),
@@ -91,10 +102,7 @@ class _Line extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(color: AppPalette.muted),
-            ),
+            child: Text(label, style: const TextStyle(color: AppPalette.muted)),
           ),
           Flexible(
             child: Text(

@@ -7,6 +7,8 @@ import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../domain/entities/invoice.dart';
 import '../../domain/entities/payment.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class PaymentSuccessPage extends StatelessWidget {
   const PaymentSuccessPage({required this.payment, super.key});
@@ -16,10 +18,15 @@ class PaymentSuccessPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Payment successful')),
+      appBar: AppDetailAppBar(title: 'Payment successful'),
       body: ListView(
         key: const Key('payment-success-scroll'),
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.gutter,
+          AppSpacing.pageTop,
+          AppSpacing.gutter,
+          32,
+        ),
         children: [
           const SizedBox(height: 18),
           Center(

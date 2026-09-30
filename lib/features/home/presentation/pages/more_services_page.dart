@@ -15,6 +15,7 @@ import '../../../rules/presentation/controllers/rules_controller.dart';
 import '../../../services/presentation/controllers/condo_service_controller.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../../visitors/presentation/controllers/visitor_controller.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
 
 /// Hub for every resident module that is not part of the bottom navigation.
 class MoreServicesPage extends StatelessWidget {
@@ -24,7 +25,7 @@ class MoreServicesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final session = Get.find<SessionController>();
     return Scaffold(
-      appBar: AppBar(title: const Text('More services')),
+      appBar: AppDetailAppBar(title: 'More services'),
       body: SafeArea(
         child: Obx(
           () => ListView(

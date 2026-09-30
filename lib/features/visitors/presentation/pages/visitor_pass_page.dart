@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_section.dart';
 import '../../domain/entities/visitor.dart';
 import '../controllers/visitor_controller.dart';
 import '../widgets/visitor_status_badge.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class VisitorPassPage extends GetView<VisitorController> {
   const VisitorPassPage({required this.visitor, super.key});
@@ -20,7 +21,7 @@ class VisitorPassPage extends GetView<VisitorController> {
       final current = _current();
       final color = visitorStatusColor(current.status);
       return Scaffold(
-        appBar: AppBar(title: const Text('Visitor pass')),
+        appBar: AppDetailAppBar(title: 'Visitor pass'),
         body: ListView(
           key: const Key('visitor-pass-scroll'),
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
@@ -33,7 +34,10 @@ class VisitorPassPage extends GetView<VisitorController> {
                 children: [
                   AppLabelValueRow(label: 'Name', value: current.name),
                   AppLabelValueRow(label: 'Phone', value: current.phone),
-                  AppLabelValueRow(label: 'Relation', value: current.relation.label),
+                  AppLabelValueRow(
+                    label: 'Relation',
+                    value: current.relation.label,
+                  ),
                   AppLabelValueRow(label: 'Purpose', value: current.purpose),
                   AppLabelValueRow(label: 'Date', value: current.date),
                   AppLabelValueRow(

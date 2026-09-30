@@ -10,6 +10,11 @@ import '../../../../core/widgets/app_state_message.dart';
 import '../../../../core/widgets/app_status_pill.dart';
 import '../../domain/entities/parking.dart';
 import '../controllers/parking_controller.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_buttons.dart';
+import '../../../../core/widgets/app_form_field.dart';
+import '../../../../core/widgets/app_primary_action.dart';
 
 class ParkingPage extends GetView<ParkingController> {
   const ParkingPage({super.key});
@@ -17,8 +22,8 @@ class ParkingPage extends GetView<ParkingController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Parking'),
+      appBar: AppDetailAppBar(
+        title: 'Parking',
         actions: [
           IconButton(
             onPressed: controller.loadParking,
@@ -57,7 +62,12 @@ class ParkingPage extends GetView<ParkingController> {
           child: ListView(
             key: const Key('parking-scroll'),
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.gutter,
+              AppSpacing.pageTop,
+              AppSpacing.gutter,
+              32,
+            ),
             children: [
               _MySpaceCard(controller: controller, space: space),
               const SizedBox(height: 16),
@@ -101,18 +111,27 @@ class ParkingPage extends GetView<ParkingController> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            '${event.type.label} · ${event.slot}',
+                            '${event.type.label} ? ${event.slot}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 12,
                             ),
                           ),
                         ),
-                        Text(
-                          event.timestamp,
-                          style: const TextStyle(
-                            color: AppPalette.muted,
-                            fontSize: 11,
+                        const SizedBox(width: 8),
+                        // Flexible so a long timestamp cannot overflow the card.
+                        Flexible(
+                          child: Text(
+                            event.timestamp,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.right,
+                            style: const TextStyle(
+                              color: AppPalette.muted,
+                              fontSize: 11,
+                            ),
                           ),
                         ),
                       ],
@@ -158,7 +177,8 @@ class _MySpaceCard extends StatelessWidget {
       icon: Icons.directions_car_filled_rounded,
       title: 'Slot ${space.slot}',
       subtitle: '${space.level} · ${space.type.label}',
-      footnote: 'Monthly parking fee '
+      footnote:
+          'Monthly parking fee '
           '${AppFormatters.currency(space.monthlyFee)} · billed separately',
       trailing: AppStatusPill(
         label: space.status.label,
@@ -224,7 +244,10 @@ class _MySpaceCard extends StatelessWidget {
     if (!confirmed || !context.mounted) {
       return;
     }
-    final updated = await controller.updateVehicle(result.vehicle, result.plate);
+    final updated = await controller.updateVehicle(
+      result.vehicle,
+      result.plate,
+    );
     if (!context.mounted) {
       return;
     }
@@ -248,20 +271,19 @@ class _QuickActions extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: OutlinedButton.icon(
+          child: AppOutlinedButton(
             onPressed: () => _requestGuest(context),
-            icon: const Icon(Icons.local_taxi_outlined, size: 18),
-            label: const Text('Guest parking'),
-            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+            label: 'Guest parking',
+            icon: Icons.local_taxi_outlined,
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: OutlinedButton.icon(
+          child: AppOutlinedButton(
             onPressed: controller.loadParking,
-            icon: const Icon(Icons.refresh_rounded, size: 18),
-            label: const Text('Refresh'),
-            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+            label: 'Refresh',
+            icon: Icons.refresh_rounded,
+            foregroundColor: AppPalette.mutedStrong,
           ),
         ),
       ],
@@ -269,10 +291,11 @@ class _QuickActions extends StatelessWidget {
   }
 
   Future<void> _requestGuest(BuildContext context) async {
-    final details = await showDialog<({String name, String vehicle, String plate})>(
-      context: context,
-      builder: (dialogContext) => const _GuestParkingDialog(),
-    );
+    final details =
+        await showDialog<({String name, String vehicle, String plate})>(
+          context: context,
+          builder: (dialogContext) => const _GuestParkingDialog(),
+        );
     if (details == null || !context.mounted) {
       return;
     }
@@ -327,22 +350,19 @@ class _GuestParkingDialogState extends State<_GuestParkingDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              key: const Key('guest-name-field'),
+            AppTextField(
+              fieldKey: const Key('guest-name-field'),
+              label: 'Guest name',
               controller: _name,
-              decoration: const InputDecoration(labelText: 'Guest name'),
             ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _vehicle,
-              decoration: const InputDecoration(labelText: 'Vehicle model'),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              key: const Key('guest-plate-field'),
+            const SizedBox(height: AppSpacing.fieldGap),
+            AppTextField(label: 'Vehicle model', controller: _vehicle),
+            const SizedBox(height: AppSpacing.fieldGap),
+            AppTextField(
+              fieldKey: const Key('guest-plate-field'),
+              label: 'License plate',
               controller: _plate,
               textCapitalization: TextCapitalization.characters,
-              decoration: const InputDecoration(labelText: 'License plate'),
             ),
             if (_error.isNotEmpty) ...[
               const SizedBox(height: 10),
@@ -359,10 +379,7 @@ class _GuestParkingDialogState extends State<_GuestParkingDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        FilledButton(
-          onPressed: _submit,
-          child: const Text('Request'),
-        ),
+        FilledButton(onPressed: _submit, child: const Text('Request')),
       ],
     );
   }
@@ -376,14 +393,11 @@ class _GuestParkingDialogState extends State<_GuestParkingDialog> {
       setState(() => _error = 'Enter the guest vehicle plate.');
       return;
     }
-    Navigator.pop(
-      context,
-      (
-        name: _name.text.trim(),
-        vehicle: _vehicle.text.trim(),
-        plate: _plate.text.trim(),
-      ),
-    );
+    Navigator.pop(context, (
+      name: _name.text.trim(),
+      vehicle: _vehicle.text.trim(),
+      plate: _plate.text.trim(),
+    ));
   }
 }
 
@@ -416,9 +430,14 @@ class _SpaceTile extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      space.slot,
-                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    // Flexible so a long slot code cannot push the badge out.
+                    Flexible(
+                      child: Text(
+                        space.slot,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
                     ),
                     if (isMine) ...[
                       const SizedBox(width: 8),
@@ -433,8 +452,10 @@ class _SpaceTile extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   space.licensePlate.isEmpty
-                      ? '${space.level} · ${space.assignedTo}'
-                      : '${space.level} · ${space.licensePlate}',
+                      ? '${space.level} ? ${space.assignedTo}'
+                      : '${space.level} ? ${space.licensePlate}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: AppPalette.muted, fontSize: 11),
                 ),
               ],
@@ -488,17 +509,13 @@ class _GuestRequestCard extends StatelessWidget {
           ],
           if (!cancelled) ...[
             const SizedBox(height: 12),
-            OutlinedButton.icon(
+            AppOutlinedButton(
               onPressed: controller.isSubmitting.value
                   ? null
                   : () => _cancel(context),
-              icon: const Icon(Icons.cancel_outlined, size: 18),
-              label: const Text('Cancel request'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppPalette.danger,
-                side: const BorderSide(color: Color(0xFFF0C6C0)),
-                minimumSize: const Size.fromHeight(44),
-              ),
+              label: 'Cancel request',
+              icon: Icons.cancel_outlined,
+              foregroundColor: AppPalette.danger,
             ),
           ],
         ],
@@ -583,28 +600,26 @@ class _VehicleSheetState extends State<_VehicleSheet> {
             style: const TextStyle(color: AppPalette.muted, fontSize: 12),
           ),
           const SizedBox(height: 16),
-          TextField(
-            key: const Key('vehicle-model-field'),
+          AppTextField(
+            fieldKey: const Key('vehicle-model-field'),
+            label: 'Vehicle model',
             controller: _vehicle,
-            decoration: const InputDecoration(labelText: 'Vehicle model'),
           ),
-          const SizedBox(height: 10),
-          TextField(
-            key: const Key('vehicle-plate-field'),
+          const SizedBox(height: AppSpacing.fieldGap),
+          AppTextField(
+            fieldKey: const Key('vehicle-plate-field'),
+            label: 'License plate',
             controller: _plate,
             textCapitalization: TextCapitalization.characters,
-            decoration: const InputDecoration(labelText: 'License plate'),
           ),
           const SizedBox(height: 18),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () => Navigator.pop(
-                context,
-                (vehicle: _vehicle.text, plate: _plate.text),
-              ),
-              child: const Text('Continue'),
-            ),
+          AppPrimaryAction(
+            onPressed: () => Navigator.pop(context, (
+              vehicle: _vehicle.text,
+              plate: _plate.text,
+            )),
+            label: 'Continue',
+            icon: Icons.arrow_forward_rounded,
           ),
         ],
       ),

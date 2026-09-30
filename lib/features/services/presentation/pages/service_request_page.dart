@@ -10,6 +10,8 @@ import '../../../../core/widgets/app_state_message.dart';
 import '../../../../core/widgets/app_status_pill.dart';
 import '../controllers/condo_service_controller.dart';
 import '../widgets/service_widgets.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/widgets/app_form_field.dart';
 
 class ServiceRequestPage extends StatefulWidget {
   const ServiceRequestPage({super.key});
@@ -50,7 +52,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
       final service = controller.selectedService.value;
       if (service == null) {
         return Scaffold(
-          appBar: AppBar(title: const Text('Book a service')),
+          appBar: AppDetailAppBar(title: 'Book a service'),
           body: AppStateMessage(
             title: 'No service selected',
             message: 'Pick a service from the catalogue first.',
@@ -61,7 +63,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
         );
       }
       return Scaffold(
-        appBar: AppBar(title: const Text('Book a service')),
+        appBar: AppDetailAppBar(title: 'Book a service'),
         body: ListView(
           padding: EdgeInsets.fromLTRB(
             20,
@@ -161,13 +163,12 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
             const SizedBox(height: 10),
-            TextField(
-              key: const Key('service-notes-field'),
+            AppTextField(
+              fieldKey: const Key('service-notes-field'),
+              label: 'Notes for the team',
               controller: _notesController,
+              hint: 'Anything the team should know…',
               maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Anything the team should know…',
-              ),
             ),
             const SizedBox(height: 16),
             AppCard(

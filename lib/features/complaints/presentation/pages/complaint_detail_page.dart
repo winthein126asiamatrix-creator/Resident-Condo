@@ -8,6 +8,9 @@ import '../../../../core/widgets/app_status_pill.dart';
 import '../../domain/entities/complaint.dart';
 import '../controllers/complaint_controller.dart';
 import '../widgets/complaint_widgets.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_form_field.dart';
 
 class ComplaintDetailPage extends GetView<ComplaintController> {
   const ComplaintDetailPage({required this.complaint, super.key});
@@ -19,15 +22,21 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
     return Obx(() {
       final current = _current();
       return Scaffold(
-        appBar: AppBar(title: const Text('Complaint')),
+        appBar: AppDetailAppBar(title: 'Complaint'),
         body: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.gutter,
+            AppSpacing.pageTop,
+            AppSpacing.gutter,
+            32,
+          ),
           children: [
             AppHeroPanel(
               icon: Icons.report_gmailerrorred_rounded,
               title: current.reference,
               subtitle: current.subject,
-              footnote: 'Filed ${current.createdOn} · ${current.category.label}',
+              footnote:
+                  'Filed ${current.createdOn} · ${current.category.label}',
               trailing: ComplaintStatusPill(status: current.status),
             ),
             const SizedBox(height: 18),
@@ -77,7 +86,10 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
               ),
             ],
             const SizedBox(height: 18),
-            AppSectionHeader(title: 'Conversation', count: current.comments.length),
+            AppSectionHeader(
+              title: 'Conversation',
+              count: current.comments.length,
+            ),
             const SizedBox(height: 10),
             if (current.comments.isEmpty)
               const Text(
@@ -234,14 +246,13 @@ class _MessageBoxState extends State<_MessageBox> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TextField(
-          key: const Key('complaint-message-field'),
+        AppTextField(
+          fieldKey: const Key('complaint-message-field'),
+          label: 'Reply to the team',
           controller: _message,
           maxLines: 3,
           textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(
-            hintText: 'Reply to the community team…',
-          ),
+          hint: 'Reply to the community team…',
         ),
         const SizedBox(height: 10),
         SizedBox(

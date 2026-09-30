@@ -20,7 +20,11 @@ Color complaintStatusColor(ComplaintStatus status) {
 }
 
 class ComplaintStatusPill extends StatelessWidget {
-  const ComplaintStatusPill({required this.status, this.dense = true, super.key});
+  const ComplaintStatusPill({
+    required this.status,
+    this.dense = true,
+    super.key,
+  });
 
   final ComplaintStatus status;
   final bool dense;

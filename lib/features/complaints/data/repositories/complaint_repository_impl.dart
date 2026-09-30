@@ -11,7 +11,8 @@ class ComplaintRepositoryImpl implements ComplaintRepository {
   Future<List<Complaint>> getComplaints() => localDataSource.getComplaints();
 
   @override
-  Future<Complaint?> getComplaint(String id) => localDataSource.getComplaint(id);
+  Future<Complaint?> getComplaint(String id) =>
+      localDataSource.getComplaint(id);
 
   @override
   Future<Complaint> fileComplaint(Complaint complaint) =>

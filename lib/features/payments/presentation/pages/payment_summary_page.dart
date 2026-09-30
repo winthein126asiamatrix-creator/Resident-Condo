@@ -7,6 +7,8 @@ import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/invoice.dart';
 import '../controllers/payment_controller.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class PaymentSummaryPage extends GetView<PaymentController> {
   const PaymentSummaryPage({super.key});
@@ -14,8 +16,8 @@ class PaymentSummaryPage extends GetView<PaymentController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Payment summary'),
+      appBar: AppDetailAppBar(
+        title: 'Payment summary',
         actions: [
           Obx(
             () => TextButton(
@@ -40,7 +42,12 @@ class PaymentSummaryPage extends GetView<PaymentController> {
         }
         return ListView(
           key: const Key('payment-summary-scroll'),
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.gutter,
+            AppSpacing.pageTop,
+            AppSpacing.gutter,
+            32,
+          ),
           children: [
             _SummaryIntro(invoice: invoice),
             const SizedBox(height: 20),
@@ -85,9 +92,7 @@ class PaymentSummaryPage extends GetView<PaymentController> {
             ),
             if (controller.missingMandatoryItems.isNotEmpty) ...[
               const SizedBox(height: 12),
-              _MandatoryWarning(
-                message: controller.mandatoryValidationMessage,
-              ),
+              _MandatoryWarning(message: controller.mandatoryValidationMessage),
             ],
             const SizedBox(height: 20),
             FilledButton(
@@ -145,7 +150,10 @@ class _SummaryIntro extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 5),
-          Text(invoice.unitLabel, style: const TextStyle(color: AppPalette.muted)),
+          Text(
+            invoice.unitLabel,
+            style: const TextStyle(color: AppPalette.muted),
+          ),
           const SizedBox(height: 4),
           Text(
             'Due ${invoice.dueDate} · ${invoice.unpaidItems.length} unpaid items',
@@ -214,9 +222,7 @@ class _SelectableItem extends StatelessWidget {
                 const SizedBox(width: 8),
               ],
               Text(
-                item.isZero
-                    ? 'No charge'
-                    : AppFormatters.currency(item.amount),
+                item.isZero ? 'No charge' : AppFormatters.currency(item.amount),
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   color: item.isPaid ? AppPalette.muted : AppPalette.ink,

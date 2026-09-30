@@ -11,6 +11,8 @@ import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../../../core/widgets/app_status_pill.dart';
 import '../controllers/lease_controller.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/widgets/app_form_field.dart';
 
 class LeaseRenewalPage extends StatefulWidget {
   const LeaseRenewalPage({super.key});
@@ -69,7 +71,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
       final lease = controller.selectedLease.value;
       if (lease == null) {
         return Scaffold(
-          appBar: AppBar(title: const Text('Lease renewal')),
+          appBar: AppDetailAppBar(title: 'Lease renewal'),
           body: AppStateMessage(
             title: 'No lease selected',
             message: 'Open your lease before requesting a renewal.',
@@ -81,7 +83,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
       }
 
       return Scaffold(
-        appBar: AppBar(title: const Text('Lease renewal')),
+        appBar: AppDetailAppBar(title: 'Lease renewal'),
         body: ListView(
           padding: EdgeInsets.fromLTRB(
             20,
@@ -169,30 +171,25 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
             const SizedBox(height: 10),
-            TextField(
-              key: const Key('renewal-rent-field'),
+            AppTextField(
+              fieldKey: const Key('renewal-rent-field'),
+              label: 'Proposed monthly rent',
               controller: _rentController,
+              icon: Icons.payments_outlined,
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-              decoration: const InputDecoration(
-                prefixText: '\$ ',
-                hintText: '2400',
-              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+              ],
+              hint: '2400',
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Note (optional)',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-            TextField(
+            AppTextField(
+              label: 'Note (optional)',
               controller: _noteController,
               maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Add context for the other party…',
-              ),
+              hint: 'Add context for the other party…',
             ),
             const SizedBox(height: 24),
             FilledButton.icon(

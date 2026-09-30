@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import '../../domain/entities/maintenance_request.dart';
 import '../controllers/maintenance_controller.dart';
 import '../widgets/maintenance_status_badge.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class MaintenanceDetailPage extends GetView<MaintenanceController> {
   const MaintenanceDetailPage({required this.request, super.key});
@@ -15,9 +17,14 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
     return Obx(() {
       final current = _currentRequest();
       return Scaffold(
-        appBar: AppBar(title: const Text('Request details')),
+        appBar: AppDetailAppBar(title: 'Request details'),
         body: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.gutter,
+            AppSpacing.pageTop,
+            AppSpacing.gutter,
+            32,
+          ),
           children: [
             _DetailHero(request: current),
             const SizedBox(height: 20),

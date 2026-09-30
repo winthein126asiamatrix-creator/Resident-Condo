@@ -12,9 +12,11 @@ import '../../../../core/utils/app_validators.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_form_field.dart';
+import '../../../../core/widgets/app_picker_field.dart';
 import '../../../../core/widgets/app_primary_action.dart';
 import '../../domain/entities/maintenance_request.dart';
 import '../controllers/maintenance_controller.dart';
+import '../../../../core/widgets/app_segmented_control.dart';
 
 class CreateMaintenanceRequestPage extends StatefulWidget {
   const CreateMaintenanceRequestPage({this.photoPicker, super.key});
@@ -125,7 +127,25 @@ class _CreateMaintenanceRequestPageState
                   onChanged: (value) => setState(() => _category = value),
                 ),
                 const SizedBox(height: 18),
-                _PriorityPicker(
+                AppSegmentedControl<MaintenancePriority>(
+                  label: 'Priority',
+                  segments: const {
+                    MaintenancePriority.low: 'Low',
+                    MaintenancePriority.medium: 'Medium',
+                    MaintenancePriority.high: 'High',
+                  },
+                  icons: const {
+                    MaintenancePriority.low: Icons.low_priority_rounded,
+                    MaintenancePriority.medium: Icons.drag_handle_rounded,
+                    MaintenancePriority.high: Icons.priority_high_rounded,
+                  },
+                  // The colour carries the severity, so it stays per option.
+                  colors: const {
+                    MaintenancePriority.low: AppPalette.success,
+                    MaintenancePriority.medium: AppPalette.warning,
+                    MaintenancePriority.high: AppPalette.danger,
+                  },
+                  optionKey: (value) => 'priority-${value.name}',
                   value: _priority,
                   onChanged: (value) => setState(() => _priority = value),
                 ),
@@ -490,128 +510,6 @@ class _PhotoThumbnail extends StatelessWidget {
 }
 
 /// Three way priority choice: a segmented control is far easier to hit on a
-/// phone than a dropdown, and it keeps the value visible at all times.
-class _PriorityPicker extends StatelessWidget {
-  const _PriorityPicker({required this.value, required this.onChanged});
-
-  final MaintenancePriority value;
-  final ValueChanged<MaintenancePriority> onChanged;
-
-  static const _options = <MaintenancePriority, (IconData, Color, String)>{
-    MaintenancePriority.low: (
-      Icons.low_priority_rounded,
-      AppPalette.success,
-      'Low',
-    ),
-    MaintenancePriority.medium: (
-      Icons.drag_handle_rounded,
-      AppPalette.warning,
-      'Medium',
-    ),
-    MaintenancePriority.high: (
-      Icons.priority_high_rounded,
-      AppPalette.danger,
-      'High',
-    ),
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Priority',
-          style: TextStyle(
-            color: AppPalette.ink,
-            fontSize: 13.5,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            for (final entry in _options.entries) ...[
-              Expanded(
-                child: _PriorityOption(
-                  key: ValueKey('priority-${entry.key.name}'),
-                  label: entry.value.$3,
-                  icon: entry.value.$1,
-                  color: entry.value.$2,
-                  selected: entry.key == value,
-                  onTap: () => onChanged(entry.key),
-                ),
-              ),
-              if (entry.key != _options.keys.last) const SizedBox(width: 10),
-            ],
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _PriorityOption extends StatelessWidget {
-  const _PriorityOption({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.selected,
-    required this.onTap,
-    super.key,
-  });
-
-  final String label;
-  final IconData icon;
-  final Color color;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: selected ? color.withValues(alpha: 0.1) : AppPalette.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: selected ? color : AppPalette.border,
-          width: selected ? 1.6 : 1,
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Semantics(
-          selected: selected,
-          button: true,
-          child: SizedBox(
-            height: 56,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  size: 19,
-                  color: selected ? color : AppPalette.muted,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: selected ? color : AppPalette.muted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _DateTimeRow extends StatelessWidget {
   const _DateTimeRow({
     required this.date,
@@ -631,75 +529,26 @@ class _DateTimeRow extends StatelessWidget {
       children: [
         Expanded(
           flex: 3,
-          child: _PickerButton(
+          child: AppPickerField(
             key: const Key('maintenance-date'),
+            label: null,
             icon: Icons.calendar_today_outlined,
-            label: AppDates.format(date),
+            value: AppDates.format(date),
             onPressed: onPickDate,
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
           flex: 2,
-          child: _PickerButton(
+          child: AppPickerField(
             key: const Key('maintenance-time'),
+            label: null,
             icon: Icons.schedule_outlined,
-            label: time.format(context),
+            value: time.format(context),
             onPressed: onPickTime,
           ),
         ),
       ],
-    );
-  }
-}
-
-class _PickerButton extends StatelessWidget {
-  const _PickerButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-    super.key,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppPalette.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppPalette.border),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onPressed,
-        child: Container(
-          height: 54,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          alignment: Alignment.centerLeft,
-          child: Row(
-            children: [
-              Icon(icon, size: 18, color: AppPalette.muted),
-              const SizedBox(width: 9),
-              Flexible(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppPalette.ink,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

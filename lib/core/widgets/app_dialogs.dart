@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_palette.dart';
+import '../theme/app_radius.dart';
 import 'app_primary_action.dart';
 
 /// A label / value pair shown inside [showAppConfirmSummaryDialog].
@@ -341,4 +342,101 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
       ),
     );
   }
+}
+
+/// Dialog with a short form inside it, for actions such as changing a password.
+///
+/// Shares the shell, spacing and action buttons with
+/// [showAppConfirmSummaryDialog] so every dialog in the app matches. The dialog
+/// scrolls, so a form that grows with the keyboard or a long validation message
+/// never overflows.
+Future<bool> showAppFormDialog(
+  BuildContext context, {
+  required String title,
+  required Widget child,
+  String? message,
+  IconData? icon,
+  String confirmLabel = 'Save',
+  String cancelLabel = 'Cancel',
+}) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => Dialog(
+      backgroundColor: Colors.white,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (icon != null) ...[
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppPalette.brandTint,
+                    borderRadius: BorderRadius.circular(17),
+                  ),
+                  child: Icon(icon, color: AppPalette.brand, size: 26),
+                ),
+                const SizedBox(height: 14),
+              ],
+              Text(
+                title,
+                key: const Key('app-form-dialog-title'),
+                style: const TextStyle(
+                  color: AppPalette.ink,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (message != null) ...[
+                const SizedBox(height: 6),
+                Text(
+                  message,
+                  style: const TextStyle(
+                    color: AppPalette.muted,
+                    fontSize: 13.5,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 18),
+              child,
+              const SizedBox(height: 18),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppPalette.mutedStrong,
+                    side: const BorderSide(color: AppPalette.border),
+                    minimumSize: const Size.fromHeight(46),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Text(cancelLabel),
+                ),
+              ),
+              const SizedBox(height: 10),
+              AppPrimaryAction(
+                key: const Key('app-form-dialog-confirm'),
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                label: confirmLabel,
+                icon: Icons.check_rounded,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+  return confirmed ?? false;
 }

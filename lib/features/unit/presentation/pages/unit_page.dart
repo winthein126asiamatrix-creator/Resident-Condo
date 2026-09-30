@@ -6,6 +6,8 @@ import '../../domain/entities/unit.dart';
 import '../controllers/unit_controller.dart';
 import '../widgets/unit_info_tile.dart';
 import '../widgets/unit_person_tile.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class UnitPage extends GetView<UnitController> {
   const UnitPage({super.key});
@@ -14,8 +16,8 @@ class UnitPage extends GetView<UnitController> {
   Widget build(BuildContext context) {
     return Obx(
       () => Scaffold(
-        appBar: AppBar(
-          title: const Text('My Unit'),
+        appBar: AppDetailAppBar(
+          title: 'My Unit',
           actions: [
             IconButton(
               onPressed: controller.loadMyUnit,
@@ -57,7 +59,7 @@ class UnitPage extends GetView<UnitController> {
       onRefresh: controller.loadMyUnit,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
         children: [
           _UnitHero(unit: unit),
           const SizedBox(height: 24),

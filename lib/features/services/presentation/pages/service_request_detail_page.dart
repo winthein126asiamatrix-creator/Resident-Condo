@@ -10,6 +10,8 @@ import '../../domain/entities/condo_service.dart';
 import '../controllers/condo_service_controller.dart';
 import '../widgets/service_widgets.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/widgets/app_form_field.dart';
 
 class ServiceRequestDetailPage extends GetView<CondoServiceController> {
   const ServiceRequestDetailPage({required this.request, super.key});
@@ -21,15 +23,14 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
     return Obx(() {
       final current = _current();
       return Scaffold(
-        appBar: AppBar(title: const Text('Service request')),
+        appBar: AppDetailAppBar(title: 'Service request'),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
           children: [
             AppHeroPanel(
               icon: serviceIcon(current.category),
               title: current.serviceName,
-              subtitle:
-                  '${current.scheduledDate} · ${current.scheduledSlot}',
+              subtitle: '${current.scheduledDate} · ${current.scheduledSlot}',
               footnote: 'Provider: ${current.provider}',
               trailing: ServiceStatusPill(status: current.status, dense: false),
             ),
@@ -42,7 +43,10 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                     label: 'Category',
                     value: current.category.label,
                   ),
-                  AppLabelValueRow(label: 'Scheduled', value: current.scheduledDate),
+                  AppLabelValueRow(
+                    label: 'Scheduled',
+                    value: current.scheduledDate,
+                  ),
                   AppLabelValueRow(label: 'Slot', value: current.scheduledSlot),
                   AppLabelValueRow(
                     label: 'Service fee',
@@ -177,7 +181,8 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
   Future<void> _rate(BuildContext context, ServiceRequest current) async {
     final result = await showDialog<({int rating, String feedback})>(
       context: context,
-      builder: (dialogContext) => _RatingDialog(serviceName: current.serviceName),
+      builder: (dialogContext) =>
+          _RatingDialog(serviceName: current.serviceName),
     );
     if (result == null || !context.mounted) {
       return;
@@ -192,7 +197,9 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
     }
     showAppFeedback(
       context,
-      title: updated == null ? 'Unable to save rating' : 'Thanks for the feedback',
+      title: updated == null
+          ? 'Unable to save rating'
+          : 'Thanks for the feedback',
       message: updated == null
           ? (controller.errorMessage.value ?? 'Please try again.')
           : 'Your rating was saved.',
@@ -274,7 +281,11 @@ class _Timeline extends StatelessWidget {
               padding: EdgeInsets.only(top: 8),
               child: Row(
                 children: [
-                  Icon(Icons.cancel_rounded, size: 18, color: AppPalette.danger),
+                  Icon(
+                    Icons.cancel_rounded,
+                    size: 18,
+                    color: AppPalette.danger,
+                  ),
                   SizedBox(width: 10),
                   Text(
                     'Cancelled',
@@ -325,17 +336,19 @@ class _RatingDialogState extends State<_RatingDialog> {
                 IconButton(
                   onPressed: () => setState(() => _rating = i),
                   icon: Icon(
-                    i <= _rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                    i <= _rating
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
                     color: AppPalette.warning,
                   ),
                 ),
             ],
           ),
           const SizedBox(height: 8),
-          TextField(
+          AppTextField(
+            label: 'Optional comment',
             controller: _feedback,
             maxLines: 2,
-            decoration: const InputDecoration(hintText: 'Optional comment'),
           ),
         ],
       ),
@@ -345,10 +358,10 @@ class _RatingDialogState extends State<_RatingDialog> {
           child: const Text('Cancel'),
         ),
         FilledButton(
-          onPressed: () => Navigator.pop(
-            context,
-            (rating: _rating, feedback: _feedback.text),
-          ),
+          onPressed: () => Navigator.pop(context, (
+            rating: _rating,
+            feedback: _feedback.text,
+          )),
           child: const Text('Submit'),
         ),
       ],

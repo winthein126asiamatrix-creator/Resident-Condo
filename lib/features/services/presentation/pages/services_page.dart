@@ -11,6 +11,7 @@ import '../../../../core/widgets/app_status_pill.dart';
 import '../../domain/entities/condo_service.dart';
 import '../controllers/condo_service_controller.dart';
 import '../widgets/service_widgets.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class ServicesPage extends GetView<CondoServiceController> {
   const ServicesPage({super.key});
@@ -18,8 +19,8 @@ class ServicesPage extends GetView<CondoServiceController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Condo services'),
+      appBar: AppDetailAppBar(
+        title: 'Condo services',
         actions: [
           IconButton(
             onPressed: controller.loadAll,
@@ -76,8 +77,7 @@ class _ServicesHero extends StatelessWidget {
       title: 'Book a service',
       subtitle:
           '${controller.services.length} services · ${controller.openRequestCount} open requests',
-      footnote:
-          'Services are handled by the concierge team, separately from maintenance repairs.',
+      footnote: 'Services are handled by the concierge team, separately from maintenance repairs.',
       trailing: IconButton(
         tooltip: 'Refresh services',
         onPressed: controller.loadAll,
@@ -212,7 +212,10 @@ class _ServiceCard extends StatelessWidget {
                   ),
                   Text(
                     service.unit,
-                    style: const TextStyle(color: AppPalette.faint, fontSize: 10),
+                    style: const TextStyle(
+                      color: AppPalette.faint,
+                      fontSize: 10,
+                    ),
                   ),
                 ],
               ),

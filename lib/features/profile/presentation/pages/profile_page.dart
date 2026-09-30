@@ -10,6 +10,9 @@ import '../../../payments/presentation/controllers/payment_controller.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../domain/entities/profile.dart';
 import '../controllers/profile_controller.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_form_field.dart';
+import '../../../../core/widgets/app_primary_action.dart';
 
 class ProfilePage extends GetView<ProfileController> {
   const ProfilePage({super.key});
@@ -357,44 +360,37 @@ class ProfilePage extends GetView<ProfileController> {
     }
   }
 
-  void _changePassword(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Change password'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              obscureText: true,
-              decoration: InputDecoration(labelText: 'Current password'),
-            ),
-            SizedBox(height: 12),
-            TextField(
-              obscureText: true,
-              decoration: InputDecoration(labelText: 'New password'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+  Future<void> _changePassword(BuildContext context) async {
+    final confirmed = await showAppFormDialog(
+      context,
+      title: 'Change password',
+      message: 'Use at least 8 characters with a number and a letter.',
+      icon: Icons.lock_outline_rounded,
+      confirmLabel: 'Save',
+      child: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppTextField(
+            label: 'Current password',
+            obscureText: true,
+            icon: Icons.lock_outline_rounded,
           ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _showMessage(
-                context,
-                'Password updated',
-                'Your password was changed in this local demo.',
-              );
-            },
-            child: const Text('Save'),
+          SizedBox(height: 14),
+          AppTextField(
+            label: 'New password',
+            obscureText: true,
+            icon: Icons.lock_reset_rounded,
           ),
         ],
       ),
     );
+    if (confirmed && context.mounted) {
+      _showMessage(
+        context,
+        'Password updated',
+        'Your password was changed in this local demo.',
+      );
+    }
   }
 
   void _showMessage(BuildContext context, String title, String message) {
@@ -574,7 +570,11 @@ class _ProfileHero extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.title, required this.children, this.subtitle});
+  const _SectionCard({
+    required this.title,
+    required this.children,
+    this.subtitle,
+  });
   final String title;
   final String? subtitle;
   final List<Widget> children;
@@ -804,29 +804,34 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
             ),
             const SizedBox(height: 15),
-            TextField(
+            AppTextField(
+              fieldKey: const Key('profile-name-field'),
+              label: 'Full name',
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Full name'),
+              icon: Icons.person_outline_rounded,
             ),
-            const SizedBox(height: 10),
-            TextField(
+            const SizedBox(height: AppSpacing.fieldGap),
+            AppTextField(
+              fieldKey: const Key('profile-email-field'),
+              label: 'Email',
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              icon: Icons.alternate_email_rounded,
               keyboardType: TextInputType.emailAddress,
             ),
-            const SizedBox(height: 10),
-            TextField(
+            const SizedBox(height: AppSpacing.fieldGap),
+            AppTextField(
+              fieldKey: const Key('profile-phone-field'),
+              label: 'Phone',
               controller: _phoneController,
-              decoration: const InputDecoration(labelText: 'Phone'),
+              icon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: _save,
-                child: const Text('Save changes'),
-              ),
+            const SizedBox(height: 20),
+            AppPrimaryAction(
+              key: const Key('profile-save'),
+              onPressed: _save,
+              label: 'Save changes',
+              icon: Icons.check_rounded,
             ),
           ],
         ),

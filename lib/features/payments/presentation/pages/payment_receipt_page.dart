@@ -3,10 +3,12 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../domain/entities/invoice.dart';
 import '../../domain/entities/payment.dart';
 import '../widgets/payment_record_badge.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class PaymentReceiptPage extends StatelessWidget {
   const PaymentReceiptPage({required this.payment, super.key});
@@ -17,12 +19,17 @@ class PaymentReceiptPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final isSuccess = payment.isSuccessful;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(isSuccess ? 'Payment receipt' : 'Failed attempt'),
+      appBar: AppDetailAppBar(
+        title: isSuccess ? 'Payment receipt' : 'Failed attempt',
       ),
       body: ListView(
         key: const Key('payment-receipt-scroll'),
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.gutter,
+          AppSpacing.pageTop,
+          AppSpacing.gutter,
+          32,
+        ),
         children: [
           Container(
             padding: const EdgeInsets.all(20),
@@ -66,7 +73,9 @@ class PaymentReceiptPage extends StatelessWidget {
                 const SizedBox(height: 8),
                 for (final item in payment.items)
                   _ReceiptLine(
-                    label: item.note.isEmpty ? item.type.label : item.type.label,
+                    label: item.note.isEmpty
+                        ? item.type.label
+                        : item.type.label,
                     value: AppFormatters.currency(item.amount),
                     detail: item.note,
                   ),
@@ -149,7 +158,10 @@ class _ReceiptLine extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     detail!,
-                    style: const TextStyle(color: AppPalette.faint, fontSize: 11),
+                    style: const TextStyle(
+                      color: AppPalette.faint,
+                      fontSize: 11,
+                    ),
                   ),
                 ],
               ],

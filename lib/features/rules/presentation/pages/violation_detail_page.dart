@@ -11,6 +11,7 @@ import '../../domain/entities/rules.dart';
 import '../controllers/rules_controller.dart';
 import '../widgets/rules_widgets.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class ViolationDetailPage extends GetView<RulesController> {
   const ViolationDetailPage({required this.violation, super.key});
@@ -23,7 +24,7 @@ class ViolationDetailPage extends GetView<RulesController> {
       final current = _current();
       final appeal = controller.appealFor(current);
       return Scaffold(
-        appBar: AppBar(title: const Text('Violation')),
+        appBar: AppDetailAppBar(title: 'Violation'),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
           children: [
@@ -77,10 +78,16 @@ class ViolationDetailPage extends GetView<RulesController> {
               child: Column(
                 children: [
                   AppLabelValueRow(label: 'Rule', value: current.ruleTitle),
-                  AppLabelValueRow(label: 'Category', value: current.category.label),
+                  AppLabelValueRow(
+                    label: 'Category',
+                    value: current.category.label,
+                  ),
                   AppLabelValueRow(label: 'Location', value: current.location),
                   AppLabelValueRow(label: 'Issued on', value: current.issuedOn),
-                  AppLabelValueRow(label: 'Payment due', value: current.dueDate),
+                  AppLabelValueRow(
+                    label: 'Payment due',
+                    value: current.dueDate,
+                  ),
                   if (current.evidenceNote.isNotEmpty)
                     AppLabelValueRow(
                       label: 'Evidence',

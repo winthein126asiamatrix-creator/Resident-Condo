@@ -10,6 +10,8 @@ import '../../../../core/widgets/app_status_pill.dart';
 import '../../domain/entities/complaint.dart';
 import '../controllers/complaint_controller.dart';
 import '../widgets/complaint_widgets.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 class ComplaintsPage extends GetView<ComplaintController> {
   const ComplaintsPage({super.key});
@@ -17,8 +19,8 @@ class ComplaintsPage extends GetView<ComplaintController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Complaints'),
+      appBar: AppDetailAppBar(
+        title: 'Complaints',
         actions: [
           IconButton(
             onPressed: controller.loadComplaints,
@@ -46,12 +48,18 @@ class ComplaintsPage extends GetView<ComplaintController> {
           child: ListView(
             key: const Key('complaints-scroll'),
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.gutter,
+              AppSpacing.pageTop,
+              AppSpacing.gutter,
+              96,
+            ),
             children: [
               AppHeroPanel(
                 icon: Icons.support_agent_rounded,
                 title: 'Complaints',
-                subtitle: '${controller.openCount} open of '
+                subtitle:
+                    '${controller.openCount} open of '
                     '${controller.complaints.length} filed',
                 footnote:
                     'Complaints are your reports to management. Rule breaks are '
@@ -139,11 +147,15 @@ class _ComplaintCard extends StatelessWidget {
               children: [
                 Text(
                   complaint.subject,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '${complaint.reference} · ${complaint.category.label}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(color: AppPalette.muted, fontSize: 11),
                 ),
                 const SizedBox(height: 8),
@@ -151,11 +163,16 @@ class _ComplaintCard extends StatelessWidget {
                   children: [
                     ComplaintStatusPill(status: complaint.status),
                     const SizedBox(width: 8),
-                    Text(
-                      'Updated ${complaint.updatedOn}',
-                      style: const TextStyle(
-                        color: AppPalette.faint,
-                        fontSize: 10,
+                    // Flexible so a long date cannot push the row past the card.
+                    Expanded(
+                      child: Text(
+                        'Updated ${complaint.updatedOn}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppPalette.faint,
+                          fontSize: 10,
+                        ),
                       ),
                     ),
                   ],

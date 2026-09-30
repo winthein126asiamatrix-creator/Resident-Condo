@@ -9,6 +9,10 @@ import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../domain/entities/visitor.dart';
 import '../controllers/visitor_controller.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/widgets/app_form_field.dart';
+import '../../../../core/widgets/app_primary_action.dart';
 
 class RegisterVisitorPage extends StatefulWidget {
   const RegisterVisitorPage({super.key});
@@ -31,7 +35,13 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
   String _error = '';
 
   static const _dates = ['Sep 25, 2026', 'Sep 26, 2026', 'Sep 27, 2026'];
-  static const _slots = ['10:00 AM', '12:00 PM', '2:00 PM', '4:00 PM', '6:00 PM'];
+  static const _slots = [
+    '10:00 AM',
+    '12:00 PM',
+    '2:00 PM',
+    '4:00 PM',
+    '6:00 PM',
+  ];
 
   @override
   void dispose() {
@@ -45,7 +55,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Register visitor')),
+      appBar: AppDetailAppBar(title: 'Register visitor'),
       body: Obx(
         () => ListView(
           key: const Key('register-visitor-scroll'),
@@ -79,26 +89,28 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            const _Label('Full name'),
-            const SizedBox(height: 8),
-            TextField(
-              key: const Key('visitor-name-field'),
+            const SizedBox(height: AppSpacing.fieldGap),
+            AppTextField(
+              fieldKey: const Key('visitor-name-field'),
+              label: 'Full name',
               controller: _nameController,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(hintText: 'Jamie Johnson'),
+              hint: 'Jamie Johnson',
+              icon: Icons.person_outline_rounded,
             ),
-            const SizedBox(height: 16),
-            const _Label('Contact number'),
-            const SizedBox(height: 8),
-            TextField(
-              key: const Key('visitor-phone-field'),
+            const SizedBox(height: AppSpacing.fieldGap),
+            AppTextField(
+              fieldKey: const Key('visitor-phone-field'),
+              label: 'Contact number',
               controller: _phoneController,
               keyboardType: TextInputType.phone,
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]'))],
-              decoration: const InputDecoration(hintText: '+1 555 018 2244'),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]')),
+              ],
+              hint: '+1 555 018 2244',
+              icon: Icons.phone_outlined,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.fieldGap),
             const _Label('Relation'),
             const SizedBox(height: 8),
             Wrap(
@@ -121,14 +133,12 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                   )
                   .toList(),
             ),
-            const SizedBox(height: 16),
-            const _Label('Purpose of visit'),
-            const SizedBox(height: 8),
-            TextField(
+            const SizedBox(height: AppSpacing.fieldGap),
+            AppTextField(
+              label: 'Purpose of visit',
               controller: _notesController,
-              decoration: const InputDecoration(
-                hintText: 'Dinner, delivery, maintenance visit…',
-              ),
+              hint: 'Dinner, delivery, maintenance visit…',
+              icon: Icons.notes_rounded,
             ),
             const SizedBox(height: 16),
             const _Label('Visit date'),
@@ -165,37 +175,24 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                   )
                   .toList(),
             ),
-            const SizedBox(height: 16),
-            const _Label('Vehicle plate (optional)'),
-            const SizedBox(height: 8),
-            TextField(
+            const SizedBox(height: AppSpacing.fieldGap),
+            AppTextField(
+              label: 'Vehicle plate (optional)',
               controller: _plateController,
               textCapitalization: TextCapitalization.characters,
-              inputFormatters: [const UpperCaseTextFormatter()],
-              decoration: const InputDecoration(hintText: 'ABC-1234'),
+              inputFormatters: const [UpperCaseTextFormatter()],
+              hint: 'ABC-1234',
+              icon: Icons.directions_car_outlined,
             ),
             const SizedBox(height: 24),
-            FilledButton.icon(
+            AppPrimaryAction(
               key: const Key('submit-visitor'),
               onPressed: controller.isSubmitting.value ? null : _submit,
-              icon: controller.isSubmitting.value
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.person_add_alt_1_rounded, size: 18),
-              label: Text(
-                controller.isSubmitting.value
-                    ? 'Registering...'
-                    : 'Register and generate code',
-              ),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-              ),
+              isLoading: controller.isSubmitting.value,
+              label: controller.isSubmitting.value
+                  ? 'Registering...'
+                  : 'Register visitor',
+              icon: Icons.person_add_alt_1_rounded,
             ),
             if (_error.isNotEmpty) ...[
               const SizedBox(height: 10),

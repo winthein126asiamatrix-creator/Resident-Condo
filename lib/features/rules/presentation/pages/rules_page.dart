@@ -10,6 +10,7 @@ import '../../../../core/widgets/app_state_message.dart';
 import '../controllers/rules_controller.dart';
 import '../widgets/rules_widgets.dart';
 import '../../../../core/widgets/app_status_pill.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class RulesPage extends GetView<RulesController> {
   const RulesPage({super.key});
@@ -17,8 +18,8 @@ class RulesPage extends GetView<RulesController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Rules & violations'),
+      appBar: AppDetailAppBar(
+        title: 'Rules & violations',
         actions: [
           IconButton(
             onPressed: controller.loadAll,
@@ -31,8 +32,7 @@ class RulesPage extends GetView<RulesController> {
         if (controller.isLoading.value && controller.rules.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
-        if (controller.errorMessage.value != null &&
-            controller.rules.isEmpty) {
+        if (controller.errorMessage.value != null && controller.rules.isEmpty) {
           return AppStateMessage(
             title: 'Unable to load rules',
             message: controller.errorMessage.value!,
@@ -51,9 +51,11 @@ class RulesPage extends GetView<RulesController> {
               AppHeroPanel(
                 icon: Icons.gavel_rounded,
                 title: 'Community rules',
-                subtitle: '${controller.rules.length} rules · '
+                subtitle:
+                    '${controller.rules.length} rules · '
                     '${controller.openViolationCount} open violations',
-                footnote: 'Fines are billed as a separate Violation Fine item, '
+                footnote:
+                    'Fines are billed as a separate Violation Fine item, '
                     'never inside the monthly condo fee.',
                 trailing: controller.outstandingFines > 0
                     ? AppStatusPill(

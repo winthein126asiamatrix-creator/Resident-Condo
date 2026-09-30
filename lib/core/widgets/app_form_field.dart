@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_palette.dart';
+import '../theme/app_radius.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
 
 /// Rounded, filled input used by every resident facing form.
 ///
@@ -27,6 +31,12 @@ class AppTextField extends StatelessWidget {
     this.onSubmitted,
     this.focusNode,
     this.enabled = true,
+    this.obscureText = false,
+    this.suffixIconLabel,
+    this.onSuffixTap,
+    this.inputFormatters,
+    this.style,
+    this.autofocus = false,
     super.key,
   });
 
@@ -48,6 +58,22 @@ class AppTextField extends StatelessWidget {
   final FocusNode? focusNode;
   final bool enabled;
 
+  /// Hides the entered text, for a password or a code.
+  final bool obscureText;
+
+  /// Adds a clear button on the trailing edge, e.g. to empty a search field.
+  final String? suffixIconLabel;
+  final VoidCallback? onSuffixTap;
+
+  /// Masks applied while typing, e.g. digits only for a card number.
+  final List<TextInputFormatter>? inputFormatters;
+
+  /// Overrides the default field typography, for a field that is read as a
+  /// code rather than as prose.
+  final TextStyle? style;
+
+  final bool autofocus;
+
   @override
   Widget build(BuildContext context) {
     final multiline = maxLines > 1;
@@ -55,31 +81,33 @@ class AppTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _FieldLabel(label: label, icon: multiline ? icon : null),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.fieldLabelGap),
         TextFormField(
           key: fieldKey,
           controller: controller,
           focusNode: focusNode,
           validator: validator,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           textInputAction: textInputAction,
           textCapitalization: textCapitalization,
-          maxLines: maxLines,
+          maxLines: obscureText ? 1 : maxLines,
           minLines: minLines,
           maxLength: maxLength,
           onChanged: onChanged,
           onFieldSubmitted: onSubmitted,
           enabled: enabled,
+          obscureText: obscureText,
+          autofocus: autofocus,
           cursorColor: AppPalette.brand,
-          style: const TextStyle(
-            color: AppPalette.ink,
-            fontSize: 15.5,
-            fontWeight: FontWeight.w600,
-          ),
+          style: style ?? AppTextStyles.fieldValue,
           decoration: appFormFieldDecoration(
             hint: hint,
             icon: multiline ? null : icon,
             helperText: helperText,
+            suffixIconLabel: suffixIconLabel,
+            onSuffixTap: onSuffixTap,
+            enabled: enabled,
           ),
         ),
       ],
@@ -118,18 +146,14 @@ class AppSelectField<T> extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _FieldLabel(label: label, icon: icon),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.fieldLabelGap),
         DropdownButtonFormField<T>(
           key: fieldKey,
           initialValue: value,
           isExpanded: true,
           dropdownColor: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          style: const TextStyle(
-            color: AppPalette.ink,
-            fontSize: 15.5,
-            fontWeight: FontWeight.w600,
-          ),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          style: AppTextStyles.fieldValue,
           items: items
               .map(
                 (item) => DropdownMenuItem<T>(
@@ -163,19 +187,22 @@ InputDecoration appFormFieldDecoration({
   String? hint,
   IconData? icon,
   String? helperText,
+  String? suffixIconLabel,
+  VoidCallback? onSuffixTap,
   bool isSelect = false,
+  bool enabled = true,
 }) {
   OutlineInputBorder border(Color color, [double width = 1]) {
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppRadius.lg),
       borderSide: BorderSide(color: color, width: width),
     );
   }
 
   return InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(
-      color: AppPalette.faint,
+    hintStyle: TextStyle(
+      color: enabled ? AppPalette.faint : AppPalette.muted,
       fontSize: 15,
       fontWeight: FontWeight.w500,
     ),
@@ -183,29 +210,46 @@ InputDecoration appFormFieldDecoration({
     helperMaxLines: 2,
     helperStyle: const TextStyle(color: AppPalette.muted, fontSize: 12),
     filled: true,
-    fillColor: AppPalette.surface,
+    fillColor: enabled ? AppPalette.surface : AppPalette.surfaceMuted,
     isDense: true,
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
-    prefixIcon: icon == null ? null : Icon(icon, size: 20),
+    prefixIcon: icon == null
+        ? null
+        : Icon(
+            icon,
+            size: 20,
+            color: enabled ? AppPalette.muted : AppPalette.faint,
+          ),
     prefixIconColor: AppPalette.muted,
     prefixIconConstraints: const BoxConstraints(minWidth: 46, minHeight: 24),
     suffixIconConstraints: const BoxConstraints(minWidth: 44, minHeight: 24),
     border: border(AppPalette.border),
     enabledBorder: border(AppPalette.border),
+    // The focus ring is the only emphasis a field gets, which is enough to
+    // show it is active without shouting.
     focusedBorder: border(AppPalette.brand, 1.6),
     errorBorder: border(AppPalette.danger, 1.2),
     focusedErrorBorder: border(AppPalette.danger, 1.6),
     disabledBorder: border(AppPalette.border),
+    // Two lines of room keeps the field from jumping when an error appears.
     errorMaxLines: 2,
     errorStyle: const TextStyle(
       color: AppPalette.danger,
       fontSize: 12,
+      height: 1.35,
       fontWeight: FontWeight.w600,
     ),
     // The select field already renders its own chevron.
     suffixIcon: isSelect
         ? const Icon(Icons.keyboard_arrow_down_rounded, color: AppPalette.muted)
-        : null,
+        : suffixIconLabel == null
+        ? null
+        : IconButton(
+            onPressed: onSuffixTap,
+            tooltip: suffixIconLabel,
+            icon: const Icon(Icons.close_rounded, size: 18),
+            color: AppPalette.muted,
+          ),
   );
 }
 
@@ -223,16 +267,7 @@ class _FieldLabel extends StatelessWidget {
           Icon(icon, size: 15, color: AppPalette.muted),
           const SizedBox(width: 6),
         ],
-        Flexible(
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: AppPalette.ink,
-              fontSize: 13.5,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
+        Flexible(child: Text(label, style: AppTextStyles.fieldLabel)),
       ],
     );
   }

@@ -15,6 +15,9 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     this.subtitle,
     this.onBack,
+    this.leading,
+    this.actions = const [],
+    this.showBackButton = true,
     super.key,
   });
 
@@ -28,8 +31,24 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// navigation call when it needs to do more than that.
   final VoidCallback? onBack;
 
+  /// Replaces the back button, for a screen that opens with something else
+  /// (a menu, a logo). Ignored when [showBackButton] is false.
+  final Widget? leading;
+
+  /// Trailing actions, such as a refresh or overflow button. They are laid out
+  /// from the trailing edge, each with a comfortable touch target.
+  final List<Widget> actions;
+
+  /// Set to false for a screen that is the root of a tab and has nothing to go
+  /// back to.
+  final bool showBackButton;
+
   /// Height of the bar itself, excluding the status bar and the top spacing.
   static const _barHeight = 70.0;
+
+  /// Height of the row inside the bar. Fixed so trailing actions cannot make
+  /// one screen's bar taller than another's.
+  static const _contentHeight = 42.0;
 
   @override
   Size get preferredSize =>
@@ -51,47 +70,57 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
           border: Border(bottom: BorderSide(color: AppPalette.border)),
         ),
         padding: EdgeInsets.fromLTRB(16, topInset + AppSpacing.pageTop, 20, 14),
-        child: Row(
-          children: [
-            _AppBarBackButton(onBack: onBack),
-            const SizedBox(width: 12),
-            // Single lines with ellipsis so a narrow phone or a large text
-            // scale can never push the toolbar out of its bounds.
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppPalette.ink,
-                      fontSize: 18,
-                      height: 1.2,
-                      letterSpacing: -0.2,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 3),
+        // Fixed height so a screen with trailing actions ends up with exactly
+        // the same bar as a screen without them.
+        child: SizedBox(
+          height: _contentHeight,
+          child: Row(
+            children: [
+              if (showBackButton)
+                leading ?? _AppBarBackButton(onBack: onBack)
+              else
+                ?leading,
+              const SizedBox(width: 12),
+              // Single lines with ellipsis so a narrow phone or a large text
+              // scale can never push the toolbar out of its bounds.
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      subtitle!,
+                      title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: AppPalette.muted,
-                        fontSize: 12.5,
+                        color: AppPalette.ink,
+                        fontSize: 18,
                         height: 1.2,
-                        fontWeight: FontWeight.w500,
+                        letterSpacing: -0.2,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        subtitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppPalette.muted,
+                          fontSize: 12.5,
+                          height: 1.2,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-          ],
+              for (final action in actions)
+                Padding(padding: const EdgeInsets.only(left: 4), child: action),
+            ],
+          ),
         ),
       ),
     );

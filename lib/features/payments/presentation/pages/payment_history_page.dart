@@ -8,6 +8,7 @@ import '../../domain/entities/invoice.dart';
 import '../../domain/entities/payment.dart';
 import '../controllers/payment_controller.dart';
 import '../widgets/payment_record_badge.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class PaymentHistoryPage extends GetView<PaymentController> {
   const PaymentHistoryPage({super.key});
@@ -15,7 +16,7 @@ class PaymentHistoryPage extends GetView<PaymentController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Payment history')),
+      appBar: AppDetailAppBar(title: 'Payment history'),
       body: Obx(() {
         if (controller.isLoading.value && controller.paymentHistory.isEmpty) {
           return const Center(child: CircularProgressIndicator());
