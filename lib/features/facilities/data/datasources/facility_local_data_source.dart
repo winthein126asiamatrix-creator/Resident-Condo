@@ -1,11 +1,12 @@
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/utils/app_dates.dart';
 import '../../domain/entities/facility.dart';
 import '../models/facility_model.dart';
 
 class FacilityLocalDataSource {
   FacilityLocalDataSource()
     : _facilities = List<FacilityModel>.of(_initialFacilities),
-      _reservations = List<FacilityReservationModel>.of(_initialReservations);
+      _reservations = List<FacilityReservationModel>.of(_seedReservations());
 
   final List<FacilityModel> _facilities;
   final List<FacilityReservationModel> _reservations;
@@ -80,26 +81,32 @@ class FacilityLocalDataSource {
     ),
   ];
 
-  static final List<FacilityReservationModel> _initialReservations = [
-    const FacilityReservationModel(
-      id: 'reservation-001',
-      facilityId: 'facility-gym',
-      facilityName: 'Fitness Centre',
-      date: 'Sep 24, 2026',
-      time: '6:00 PM',
-      status: 'Confirmed',
-      createdAt: 'Sep 18, 2026',
-    ),
-    const FacilityReservationModel(
-      id: 'reservation-002',
-      facilityId: 'facility-bbq',
-      facilityName: 'Rooftop BBQ',
-      date: 'Sep 27, 2026',
-      time: '5:00 PM',
-      status: 'Upcoming',
-      createdAt: 'Sep 20, 2026',
-    ),
-  ];
+  /// Seeded relative to today so the list always has something upcoming and
+  /// something past to show. A real backend would return these from storage.
+  static List<FacilityReservationModel> _seedReservations() {
+    final now = DateTime.now();
+    DateTime day(int offset) => DateTime(now.year, now.month, now.day + offset);
+    return [
+      FacilityReservationModel(
+        id: 'RES-001',
+        facilityId: 'facility-gym',
+        facilityName: 'Fitness Centre',
+        date: AppDates.format(day(-4)),
+        time: '6:00 PM',
+        status: 'Completed',
+        createdAt: AppDates.format(day(-6)),
+      ),
+      FacilityReservationModel(
+        id: 'RES-002',
+        facilityId: 'facility-bbq',
+        facilityName: 'Rooftop BBQ',
+        date: AppDates.format(day(3)),
+        time: '5:00 PM',
+        status: 'Confirmed',
+        createdAt: AppDates.format(day(-1)),
+      ),
+    ];
+  }
 
   Future<List<FacilityModel>> getFacilities() async {
     return List<FacilityModel>.unmodifiable(_facilities);
@@ -151,7 +158,10 @@ class FacilityLocalDataSource {
       availableSlots: updatedSlots,
     );
     final created = FacilityReservationModel(
-      id: reservation.id,
+      // The data source plays the backend's part here and hands out the
+      // reference, the way an Odoo / API create call would. Anything the caller
+      // sent as an id is ignored for the same reason.
+      id: _nextReservationId(),
       facilityId: reservation.facilityId,
       facilityName: reservation.facilityName,
       date: reservation.date,
@@ -162,5 +172,18 @@ class FacilityLocalDataSource {
     );
     _reservations.insert(0, created);
     return created;
+  }
+
+  String _nextReservationId() {
+    var highest = 0;
+    for (final reservation in _reservations) {
+      final number = int.tryParse(
+        reservation.id.replaceFirst(RegExp(r'^[A-Za-z-]+'), ''),
+      );
+      if (number != null && number > highest) {
+        highest = number;
+      }
+    }
+    return 'RES-${(highest + 1).toString().padLeft(3, '0')}';
   }
 }

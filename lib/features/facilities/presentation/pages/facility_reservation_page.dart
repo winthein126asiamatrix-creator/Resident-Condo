@@ -5,9 +5,12 @@ import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/widgets/app_dialogs.dart';
+import '../../../../core/widgets/app_primary_action.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/facility.dart';
 import '../controllers/facility_controller.dart';
+import '../widgets/facility_labels.dart';
 
 class FacilityReservationPage extends GetView<FacilityController> {
   const FacilityReservationPage({super.key});
@@ -72,35 +75,22 @@ class FacilityReservationPage extends GetView<FacilityController> {
               onPickCustomTime: () => _pickCustomTime(context),
             ),
             const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed:
-                  controller.isBooking.value || facility.availableSlots.isEmpty
-                  ? null
-                  : _confirm,
-              icon: controller.isBooking.value
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.event_available_rounded, size: 18),
-              label: Text(
-                controller.isBooking.value
-                    ? 'Booking...'
-                    : 'Confirm reservation',
-              ),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-              ),
+            // The CTA is the only way a reservation is created: picking a date
+            // or a time never submits anything.
+            AppPrimaryAction(
+              key: const Key('confirm-reservation'),
+              onPressed: controller.canConfirmBooking
+                  ? () => _confirm(context)
+                  : null,
+              label: 'Confirm Reservation',
+              icon: Icons.event_available_rounded,
             ),
-            if (controller.errorMessage.value != null) ...[
+            if (!controller.canConfirmBooking) ...[
               const SizedBox(height: 10),
-              Text(
-                controller.errorMessage.value!,
-                style: const TextStyle(color: Color(0xFFC2410C)),
+              const Text(
+                'Choose a date and a time to continue.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppPalette.muted, fontSize: 12.5),
               ),
             ],
           ],
@@ -127,41 +117,54 @@ class FacilityReservationPage extends GetView<FacilityController> {
     controller.selectCustomTime(picked);
   }
 
-  Future<void> _confirm() async {
-    final confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        title: const Text('Confirm reservation'),
-        content: Text(
-          'Reserve ${_displayName(controller.selectedFacility.value!.name)} for ${controller.selectedDate.value} at ${controller.selectedSlot.value}?',
+  /// Reviews the reservation in the summary dialog and only then submits it.
+  /// Cancelling changes nothing; a failed submit keeps the dialog open with the
+  /// reason so the resident can retry without losing their date and time.
+  Future<void> _confirm(BuildContext context) async {
+    final facility = controller.selectedFacility.value;
+    final time = controller.selectedSlot.value;
+    if (facility == null || time == null) {
+      return;
+    }
+    controller.errorMessage.value = null;
+
+    final confirmed = await showAppConfirmSummaryDialog(
+      context,
+      title: 'Confirm Reservation',
+      message: 'Please review your reservation details before confirming.',
+      icon: Icons.event_available_rounded,
+      summary: [
+        AppSummaryRow(
+          label: 'Facility',
+          value: displayFacilityName(facility.name),
+          emphasis: true,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Get.back(result: true),
-            child: const Text('Confirm'),
-          ),
-        ],
-      ),
+        AppSummaryRow(label: 'Date', value: controller.selectedDateLong),
+        AppSummaryRow(label: 'Time', value: time),
+      ],
+      confirmLabel: 'Confirm Reservation',
+      onConfirm: () async {
+        final reservation = await controller.bookSelectedSlot();
+        if (reservation == null) {
+          return AppConfirmResult.failure(
+            controller.errorMessage.value ??
+                'Unable to complete the reservation.',
+          );
+        }
+        return const AppConfirmResult.success();
+      },
     );
-    if (confirmed != true) return;
-    final reservation = await controller.bookSelectedSlot();
+
+    if (!confirmed) {
+      return;
+    }
+    final reservation = controller.bookingSuccess.value;
     if (reservation != null) {
+      // Replaces the reservation page so the back button from the success page
+      // does not return to a form that has already been used.
       Get.offNamed(AppRoutes.bookingConfirmed, arguments: reservation);
     }
   }
-}
-
-String _displayName(String name) {
-  if (name == 'Fitness Centre') {
-    return 'Gym';
-  }
-  if (name == 'Rooftop BBQ') {
-    return 'BBQ Area';
-  }
-  return name;
 }
 
 class _FacilityReservationIntro extends StatelessWidget {
@@ -193,7 +196,7 @@ class _FacilityReservationIntro extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _displayName(facility.name),
+                  displayFacilityName(facility.name),
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     color: Color(0xFF1D2B2A),

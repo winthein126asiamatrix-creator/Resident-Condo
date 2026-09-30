@@ -15,6 +15,8 @@ abstract final class AppRoutes {
   static const facilityDetail = '/facilities/detail';
   static const facilityReserve = '/facilities/reserve';
   static const bookingConfirmed = '/facilities/confirmed';
+  static const myReservations = '/facilities/reservations';
+  static const reservationDetail = '/facilities/reservations/detail';
   static const announcements = '/announcements';
   static const notifications = '/notifications';
   static const lease = '/lease';

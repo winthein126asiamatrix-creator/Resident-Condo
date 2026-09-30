@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
+import '../../../../core/theme/app_palette.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/facility.dart';
 import '../controllers/facility_controller.dart';
+import '../widgets/facility_labels.dart';
 
 class FacilitiesPage extends GetView<FacilityController> {
   const FacilitiesPage({super.key});
@@ -38,7 +40,31 @@ class FacilitiesPage extends GetView<FacilityController> {
                         facilityCount: controller.facilities.length,
                         reservationCount: controller.reservations.length,
                       ),
-                      const SizedBox(height: 25),
+                      const SizedBox(height: 14),
+                      // Secondary entry point, kept out of the way of browsing.
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: OutlinedButton.icon(
+                          key: const Key('facilities-my-reservations'),
+                          onPressed: () =>
+                              Get.toNamed(AppRoutes.myReservations),
+                          icon: const Icon(Icons.event_note_rounded, size: 18),
+                          label: const Text('My Reservations'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppPalette.brand,
+                            backgroundColor: Colors.white,
+                            side: const BorderSide(color: AppPalette.border),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 13,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 22),
                       _SectionHeader(
                         title: 'Amenities',
                         count: controller.facilities.length,
@@ -348,7 +374,7 @@ class _FacilityCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          _displayName(facility.name),
+                          displayFacilityName(facility.name),
                           style: const TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 17,
@@ -477,14 +503,4 @@ class _AvailabilityBadge extends StatelessWidget {
       ),
     );
   }
-}
-
-String _displayName(String name) {
-  if (name == 'Fitness Centre') {
-    return 'Gym';
-  }
-  if (name == 'Rooftop BBQ') {
-    return 'BBQ Area';
-  }
-  return name;
 }

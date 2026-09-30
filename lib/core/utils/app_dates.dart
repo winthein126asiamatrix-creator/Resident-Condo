@@ -16,6 +16,16 @@ abstract final class AppDates {
     'Dec',
   ];
 
+  static const _weekdays = <String>[
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+
   /// Parses strings such as `2026-10-31` or `Oct 31, 2026`.
   static DateTime parse(String value) {
     final iso = DateTime.tryParse(value);
@@ -42,9 +52,16 @@ abstract final class AppDates {
   static String formatShort(DateTime value) =>
       '${_months[value.month - 1]} ${value.day}';
 
+  /// `Wednesday, October 1`, used where a date is read out in full.
+  static String formatLong(DateTime value) =>
+      '${_weekdays[value.weekday - 1]}, ${_months[value.month - 1]} ${value.day}';
+
+  static String weekday(DateTime value) => _weekdays[value.weekday - 1];
+
   /// Number of whole days between two dates, ignoring the time of day.
-  static int daysBetween(DateTime from, DateTime to) =>
-      DateTime(to.year, to.month, to.day)
-          .difference(DateTime(from.year, from.month, from.day))
-          .inDays;
+  static int daysBetween(DateTime from, DateTime to) => DateTime(
+    to.year,
+    to.month,
+    to.day,
+  ).difference(DateTime(from.year, from.month, from.day)).inDays;
 }

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../../app/routes/app_routes.dart';
 import '../../domain/entities/facility.dart';
 import '../controllers/facility_controller.dart';
+import '../widgets/facility_labels.dart';
 
 class FacilityDetailPage extends GetView<FacilityController> {
   const FacilityDetailPage({required this.facility, super.key});
@@ -159,7 +160,7 @@ class _FacilityHero extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _displayName(facility.name),
+                    displayFacilityName(facility.name),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 25,
@@ -240,14 +241,4 @@ class _Line extends StatelessWidget {
       ),
     );
   }
-}
-
-String _displayName(String name) {
-  if (name == 'Fitness Centre') {
-    return 'Gym';
-  }
-  if (name == 'Rooftop BBQ') {
-    return 'BBQ Area';
-  }
-  return name;
 }

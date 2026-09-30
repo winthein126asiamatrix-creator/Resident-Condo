@@ -4,13 +4,14 @@ import 'package:get/get.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/app_dates.dart';
 import '../../domain/entities/facility.dart';
+import '../../domain/entities/facility_reservation_status.dart';
 import '../../domain/usecases/facility_usecases.dart';
 
 class FacilityController extends GetxController {
   FacilityController(this.useCases);
 
   /// Today plus the next five days.
-  static const reservationWindowDays = 4;
+  static const reservationWindowDays = 6;
 
   final FacilityUseCases useCases;
   final facilities = <Facility>[].obs;
@@ -23,8 +24,13 @@ class FacilityController extends GetxController {
   /// predefined slots, and cleared as soon as they pick a predefined one.
   final customTime = Rxn<TimeOfDay>();
   final isLoading = false.obs;
+
+  /// Tracked separately from [isLoading] so the facilities grid is not blanked
+  /// out while My Reservations refreshes.
+  final isReservationsLoading = false.obs;
   final isBooking = false.obs;
   final errorMessage = RxnString();
+  final reservationsError = RxnString();
   final bookingSuccess = Rxn<FacilityReservation>();
 
   /// The bookable window, generated from the current date so the chips always
@@ -35,6 +41,35 @@ class FacilityController extends GetxController {
       DateTime(_today.year, _today.month, _today.day + index),
     ),
   );
+
+  /// The selected date read out in full, for the dialog and the success page.
+  String get selectedDateLong =>
+      AppDates.formatLong(AppDates.parse(selectedDate.value));
+
+  /// Nothing is submitted until the resident has picked a date and a time.
+  bool get canConfirmBooking =>
+      selectedFacility.value != null &&
+      selectedDate.value.isNotEmpty &&
+      selectedSlot.value != null &&
+      selectedSlot.value!.isNotEmpty;
+
+  /// Reservations whose start time is still ahead of us, soonest first.
+  List<FacilityReservation> get upcomingReservations {
+    final upcoming = reservations
+        .where((reservation) => !isReservationPast(reservation))
+        .toList();
+    upcoming.sort((a, b) => reservationStart(a).compareTo(reservationStart(b)));
+    return upcoming;
+  }
+
+  /// Reservations that have already happened, most recent first.
+  List<FacilityReservation> get pastReservations {
+    final past = reservations
+        .where((reservation) => isReservationPast(reservation))
+        .toList();
+    past.sort((a, b) => reservationStart(b).compareTo(reservationStart(a)));
+    return past;
+  }
 
   static DateTime get _today {
     final now = DateTime.now();
@@ -68,10 +103,28 @@ class FacilityController extends GetxController {
     }
   }
 
+  /// Reloads just the reservations, used by My Reservations. The facility list
+  /// is left alone so opening the page never blanks the amenities grid.
+  Future<void> loadReservations() async {
+    isReservationsLoading.value = true;
+    reservationsError.value = null;
+    try {
+      reservations.assignAll(await useCases.getReservations());
+    } on AppException catch (error) {
+      reservationsError.value = error.message;
+    } catch (_) {
+      reservationsError.value = 'Unable to load your reservations.';
+    } finally {
+      isReservationsLoading.value = false;
+    }
+  }
+
   void selectFacility(Facility facility) {
     selectedFacility.value = facility;
     selectedSlot.value = null;
+    customTime.value = null;
     bookingSuccess.value = null;
+    errorMessage.value = null;
   }
 
   void selectDate(String date) {
@@ -111,7 +164,17 @@ class FacilityController extends GetxController {
     return useCases.getFacility(id);
   }
 
+  /// Used by the reservation list to show the facility's photo and name.
+  Facility? facilityById(String id) => _findFacility(id);
+
+  bool isBookingNow() => isBooking.value;
+
+  /// Guards the submit so a second tap while the request is in flight is a
+  /// no-op rather than a duplicate booking.
   Future<FacilityReservation?> bookSelectedSlot() async {
+    if (isBooking.value) {
+      return null;
+    }
     final facility = selectedFacility.value;
     final slot = selectedSlot.value;
     if (facility == null) {
@@ -132,13 +195,15 @@ class FacilityController extends GetxController {
     try {
       final reservation = await useCases.createReservation(
         FacilityReservation(
-          id: 'local-reservation',
+          // The reference is assigned by the data source, standing in for the
+          // backend that will own it.
+          id: '',
           facilityId: facility.id,
           facilityName: facility.name,
           date: selectedDate.value,
           time: slot,
           status: 'Confirmed',
-          createdAt: 'Sep 25, 2026',
+          createdAt: AppDates.format(_today),
           isCustomTime: usesCustomTime,
         ),
       );

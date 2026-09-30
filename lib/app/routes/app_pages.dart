@@ -10,6 +10,8 @@ import '../../features/facilities/domain/entities/facility.dart';
 import '../../features/facilities/presentation/pages/booking_confirmed_page.dart';
 import '../../features/facilities/presentation/pages/facility_detail_page.dart';
 import '../../features/facilities/presentation/pages/facility_reservation_page.dart';
+import '../../features/facilities/presentation/pages/my_reservations_page.dart';
+import '../../features/facilities/presentation/pages/reservation_detail_page.dart';
 import '../../features/lease/domain/entities/lease.dart';
 import '../../features/lease/presentation/pages/lease_page.dart';
 import '../../features/lease/presentation/pages/lease_renewal_page.dart';
@@ -110,6 +112,14 @@ abstract final class AppPages {
     GetPage<dynamic>(
       name: AppRoutes.bookingConfirmed,
       page: () => BookingConfirmedPage(reservation: Get.arguments as FacilityReservation),
+    ),
+    GetPage<dynamic>(
+      name: AppRoutes.myReservations,
+      page: () => const MyReservationsPage(),
+    ),
+    GetPage<dynamic>(
+      name: AppRoutes.reservationDetail,
+      page: () => ReservationDetailPage(reservation: Get.arguments as FacilityReservation),
     ),
     GetPage<dynamic>(name: AppRoutes.lease, page: () => const LeasePage()),
     GetPage<dynamic>(name: AppRoutes.leaseRenewal, page: () => const LeaseRenewalPage()),
