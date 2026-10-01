@@ -16,7 +16,7 @@ import '../widgets/store_cards.dart';
 import '../widgets/store_product_card.dart';
 import '../widgets/store_widgets.dart';
 
-/// The Condo Mart: browse by aisle, fill a basket, follow the order.
+/// The Convenience Store: browse by aisle, fill a basket, follow the order.
 ///
 /// The three tabs live in a page view so switching slides between them and each
 /// tab keeps its own scroll position, instead of one list being torn down and
@@ -64,7 +64,7 @@ class _StorePageState extends State<StorePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppDetailAppBar(
-        title: 'Condo Mart',
+        title: 'Convenience Store',
         actions: [
           // Its own Obx, so the header count follows the basket the moment it
           // changes rather than waiting for the body to rebuild.
@@ -226,7 +226,7 @@ class _StorePageState extends State<StorePage> {
       return const [
         AppStateMessage(
           title: 'No store orders yet',
-          message: 'Once you order from the Condo Mart it shows up here.',
+          message: 'Once you order from the Convenience Store it shows up here.',
           icon: Icons.receipt_long_outlined,
         ),
       ];
@@ -321,7 +321,7 @@ class _StoreSearch extends StatelessWidget {
         fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
-        hintText: 'Search the Condo Mart',
+        hintText: 'Search the Convenience Store',
         hintStyle: const TextStyle(
           color: AppPalette.faint,
           fontSize: 14,

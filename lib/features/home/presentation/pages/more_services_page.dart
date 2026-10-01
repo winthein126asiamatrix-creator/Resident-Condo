@@ -75,7 +75,7 @@ class MoreServicesPage extends StatelessWidget {
               route: AppRoutes.store,
               icon: Icons.storefront_rounded,
               color: AppPalette.accent,
-              title: 'Condo Mart',
+              title: 'Convenience Store',
               subtitle: 'Groceries, snacks and drinks to your door',
             ),
             _ModuleTile(

@@ -238,7 +238,7 @@ class StoreSavedMethod {
   final bool isDefault;
 }
 
-/// Something a resident can buy in the Condo Mart.
+/// Something a resident can buy in the Convenience Store.
 class StoreProduct {
   const StoreProduct({
     required this.id,

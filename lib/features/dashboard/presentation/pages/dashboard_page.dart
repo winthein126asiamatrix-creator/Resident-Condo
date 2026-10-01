@@ -477,10 +477,10 @@ class _QuickActions extends StatelessWidget {
           children: [
             Expanded(
               child: _QuickAction(
-                icon: Icons.description_outlined,
-                label: 'Lease',
+                icon: Icons.storefront_outlined,
+                label: 'Convenience Store',
                 color: const Color(0xFFE6F3EF),
-                onTap: () => Get.toNamed(AppRoutes.lease),
+                onTap: () => Get.toNamed(AppRoutes.store),
               ),
             ),
             const SizedBox(width: 10),

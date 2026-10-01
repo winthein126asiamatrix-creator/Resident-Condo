@@ -429,7 +429,7 @@ class _StubPaymentRepository implements PaymentRepository {
     final item = InvoiceItem(
       type: InvoiceItemType.storeFee,
       amount: amount,
-      note: 'Condo Mart order $reference',
+      note: 'Convenience Store order $reference',
     );
     final index = invoices.indexWhere((invoice) => invoice.isPayable);
     if (index == -1) return invoices.first;

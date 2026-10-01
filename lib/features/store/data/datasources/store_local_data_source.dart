@@ -2,7 +2,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../domain/entities/store_product.dart';
 import '../models/store_model.dart';
 
-/// In-memory Condo Mart shelf and order book.
+/// In-memory Convenience Store shelf and order book.
 ///
 /// The catalogue is fixed for the resident app. Restocking and pricing are
 /// management concerns, so there is deliberately no write path for products

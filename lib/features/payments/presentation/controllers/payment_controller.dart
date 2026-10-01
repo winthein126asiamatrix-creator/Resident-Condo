@@ -252,7 +252,7 @@ class PaymentController extends GetxController {
     return useCases.getInvoice(id);
   }
 
-  /// Adds a Condo Mart `Store Fee` to the open statement and refreshes the
+  /// Adds a Convenience Store `Store Fee` to the open statement and refreshes the
   /// ledger, so the charge shows up as an outstanding payment straight away.
   Future<Invoice> addStoreFee({
     required double amount,

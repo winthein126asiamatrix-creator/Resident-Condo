@@ -17,7 +17,7 @@ import 'package:test/features/store/presentation/pages/store_checkout_page.dart'
 import 'package:test/features/store/presentation/pages/store_order_detail_page.dart';
 import 'package:test/features/store/presentation/pages/store_page.dart';
 
-/// Walks the whole Condo Mart: browse, basket, checkout, then track the order.
+/// Walks the whole Convenience Store: browse, basket, checkout, then track the order.
 void main() {
   setUp(() => Get.testMode = true);
   tearDown(Get.reset);
@@ -489,7 +489,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Order details'), findsNothing);
-    expect(find.text('Condo Mart'), findsOneWidget);
+    expect(find.text('Convenience Store'), findsOneWidget);
   });
 
   testWidgets('an order shows its status and what was bought', (tester) async {

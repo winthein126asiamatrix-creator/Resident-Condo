@@ -111,7 +111,7 @@ class StoreOrderDetailPage extends GetView<StoreController> {
                     ? null
                     : () => controller.markOrderPaid(current),
                 isLoading: controller.isSubmitting.value,
-                label: 'Pay Store Fee now',
+                label: 'Pay for Order Now',
                 icon: Icons.payments_rounded,
                 backgroundColor: AppPalette.accent,
               ),

@@ -49,7 +49,7 @@ class PaymentLocalDataSource {
     return getInvoices();
   }
 
-  /// Appends a Condo Mart `Store Fee` line to the resident's open statement.
+  /// Appends a Convenience Store `Store Fee` line to the resident's open statement.
   ///
   /// The fee is its own line item, keyed by the store order reference, so it can
   /// be selected and paid on its own and traced back to the order. The invoice
@@ -72,7 +72,7 @@ class PaymentLocalDataSource {
     final item = InvoiceItem(
       type: InvoiceItemType.storeFee,
       amount: amount,
-      note: 'Condo Mart order $reference',
+      note: 'Convenience Store order $reference',
     );
 
     // Re-submitting the same order must not double-charge the resident.

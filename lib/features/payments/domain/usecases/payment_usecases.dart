@@ -27,7 +27,7 @@ class PaymentUseCases {
     return repository.applyRole(roleKey);
   }
 
-  /// Bills a Condo Mart order as its own `Store Fee` line on the resident's
+  /// Bills a Convenience Store order as its own `Store Fee` line on the resident's
   /// statement, rather than merging it into any other charge.
   Future<Invoice> addStoreFee({
     required double amount,

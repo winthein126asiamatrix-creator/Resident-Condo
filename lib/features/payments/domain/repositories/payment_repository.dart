@@ -17,7 +17,7 @@ abstract interface class PaymentRepository {
   /// tenant sees a separate Monthly Rent line next to the condo fee.
   Future<List<Invoice>> applyRole(String roleKey);
 
-  /// Adds a Condo Mart `Store Fee` line to the resident's open statement.
+  /// Adds a Convenience Store `Store Fee` line to the resident's open statement.
   ///
   /// A store order is always billed on its own line. It is never folded into the
   /// condo fee, rent, utilities, parking or any fine. [reference] is the store
