@@ -64,6 +64,13 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// Selects one of the visit date cards by its stored value.
+  Future<void> pickDate(WidgetTester tester, String date) async {
+    await scrollTo(tester, find.byKey(Key('visit-date-$date')));
+    await tester.tap(find.byKey(Key('visit-date-$date')));
+    await tester.pumpAndSettle();
+  }
+
   /// The four selectable dates, generated the same way the page does.
   List<String> expectedDates() {
     final now = DateTime.now();
@@ -121,6 +128,9 @@ void main() {
     tester,
   ) async {
     await pumpForm(tester);
+    // Tomorrow, so the concierge presets apply. Today is limited to the hours
+    // that have not gone yet.
+    await pickDate(tester, expectedDates()[1]);
     await scrollTo(tester, find.text('Arrival time'));
 
     for (final slot in const ['9:00 AM', '12:00 PM', '2:00 PM']) {
@@ -139,10 +149,119 @@ void main() {
     expect(find.text('2 hours'), findsOneWidget);
   });
 
+  testWidgets('today offers only whole hours that have not gone yet', (
+    tester,
+  ) async {
+    await pumpForm(tester);
+    await scrollTo(tester, find.text('Arrival time'));
+
+    // Today starts on the next full hour, never later, and stops at midnight.
+    final now = DateTime.now();
+    final first = DateTime(now.year, now.month, now.day, now.hour + 1);
+    final expected = first.day != now.day
+        ? const <String>[]
+        : List.generate(
+            6.clamp(0, 24 - first.hour),
+            (index) =>
+                AppTimes.format(TimeOfDay(hour: first.hour + index, minute: 0)),
+          );
+
+    for (final label in expected) {
+      expect(
+        find.byKey(Key('arrival-slot-$label')),
+        findsOneWidget,
+        reason: '$label is still to come today',
+      );
+    }
+
+    // Late in the evening the day has run out and the form says so instead of
+    // offering an hour that has gone.
+    if (expected.isEmpty) {
+      expect(
+        find.text(
+          'No arrival times are left today. Choose a later visit date.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('arrival-slot-custom')), findsNothing);
+    }
+
+    // A concierge hour that has already passed is not on offer.
+    for (final label in const [
+      '9:00 AM',
+      '10:00 AM',
+      '11:00 AM',
+      '12:00 PM',
+      '1:00 PM',
+      '2:00 PM',
+    ]) {
+      final time = AppTimes.parse(label)!;
+      final gone = AppTimes.isAfter(TimeOfDay.fromDateTime(now), time);
+      if (gone) {
+        expect(
+          find.byKey(Key('arrival-slot-$label')),
+          findsNothing,
+          reason: '$label has gone for today',
+        );
+      }
+    }
+
+    // The form opens on the first slot still to come.
+    if (expected.isNotEmpty) {
+      final firstSlot = tester.widget<ChoiceChip>(
+        find.byKey(Key('arrival-slot-${expected.first}')),
+      );
+      expect(
+        firstSlot.selected,
+        isTrue,
+        reason: 'the next hour is preselected',
+      );
+      expect(
+        tester
+            .widget<ChoiceChip>(find.byKey(const Key('arrival-slot-custom')))
+            .selected,
+        isFalse,
+        reason: 'it opens on a slot, not on a custom time',
+      );
+    }
+  });
+
+  testWidgets('coming back to today drops a time that has gone', (
+    tester,
+  ) async {
+    await pumpForm(tester);
+
+    // Take 9:00 AM on a future date, where it is perfectly valid.
+    final today = expectedDates().first;
+    await pickDate(tester, expectedDates()[1]);
+    await scrollTo(tester, find.byKey(const Key('arrival-slot-9:00 AM')));
+    await tester.tap(find.byKey(const Key('arrival-slot-9:00 AM')));
+    await tester.pumpAndSettle();
+    expect(find.text('9:00 AM – 11:00 AM'), findsOneWidget);
+
+    // Back to today: if 9:00 AM is behind us it cannot stay selected.
+    await pickDate(tester, today);
+    final now = TimeOfDay.now();
+    final nineAm = AppTimes.parse('9:00 AM')!;
+    if (AppTimes.isAfter(now, nineAm)) {
+      expect(find.text('9:00 AM – 11:00 AM'), findsNothing);
+      expect(find.byKey(const Key('arrival-slot-9:00 AM')), findsNothing);
+    } else {
+      expect(find.text('9:00 AM – 11:00 AM'), findsOneWidget);
+    }
+  });
+
   testWidgets('a custom arrival time is picked and shown like a preset', (
     tester,
   ) async {
     await pumpForm(tester);
+    // Tomorrow, so confirming keeps the seeded time rather than being refused
+    // for being earlier than the clock.
+    await pickDate(tester, expectedDates()[1]);
+    // Pin the arrival first, because on today it opens on whatever hour is next.
+    await scrollTo(tester, find.byKey(const Key('arrival-slot-10:00 AM')));
+    await tester.tap(find.byKey(const Key('arrival-slot-10:00 AM')));
+    await tester.pumpAndSettle();
     await scrollTo(tester, find.byKey(const Key('arrival-slot-custom')));
 
     await tester.tap(find.byKey(const Key('arrival-slot-custom')));
@@ -170,6 +289,7 @@ void main() {
     tester,
   ) async {
     await pumpForm(tester);
+    await pickDate(tester, expectedDates()[1]);
     await scrollTo(tester, find.byKey(Key('arrival-slot-10:00 AM')));
     await tester.tap(find.byKey(Key('arrival-slot-10:00 AM')));
     await tester.pumpAndSettle();
@@ -196,6 +316,7 @@ void main() {
       '+959772611100',
     );
     await tester.pumpAndSettle();
+    await pickDate(tester, expectedDates()[1]);
     await scrollTo(tester, find.byKey(Key('arrival-slot-2:00 PM')));
     await tester.tap(find.byKey(Key('arrival-slot-2:00 PM')));
     await tester.pumpAndSettle();
@@ -221,6 +342,8 @@ void main() {
     await pumpForm(tester);
 
     // Walking the form is the assertion: any RenderFlex overflow fails.
+    // Tomorrow keeps the full concierge day, so the custom chip is always there.
+    await pickDate(tester, expectedDates()[1]);
     for (final target in [
       find.byKey(Key('visit-date-${expectedDates().last}')),
       find.byKey(const Key('arrival-slot-custom')),

@@ -33,7 +33,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
 
   VisitorRelation _relation = VisitorRelation.family;
   String _date = '';
-  String _arrival = '10:00 AM';
+  String _arrival = '';
   String _error = '';
 
   /// Today plus the next three days, generated on open so the list never goes
@@ -43,7 +43,12 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
   /// A visit always runs two hours from the arrival time.
   static const _visitHours = 2;
 
-  static const _arrivalSlots = [
+  /// How many hourly slots are offered for a visit today.
+  static const _arrivalSlotCount = 6;
+
+  /// The concierge day, offered for any visit that is not today. A future date is
+  /// not held to the clock, so the full set is available.
+  static const _futureSlots = <String>[
     '9:00 AM',
     '10:00 AM',
     '11:00 AM',
@@ -56,6 +61,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
   void initState() {
     super.initState();
     _date = _visitDates.first.value;
+    _arrival = _arrivalSlots.isEmpty ? '' : _arrivalSlots.first;
   }
 
   /// The selectable visit dates, each with the label a resident would use.
@@ -76,6 +82,48 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
         month: AppDates.formatShort(date).split(' ').last,
       );
     });
+  }
+
+  /// True when the visit is for today, where the clock decides what is still
+  /// bookable.
+  bool get _isToday {
+    final now = DateTime.now();
+    return _date == AppDates.format(DateTime(now.year, now.month, now.day));
+  }
+
+  /// The arrival slots to offer.
+  ///
+  /// Today offers the next six full hours, so nothing that has already gone can
+  /// be chosen. Any other date offers the concierge day, because the clock says
+  /// nothing about a visit that has not happened yet. An empty list means the day
+  /// is over and the resident needs a later date.
+  List<String> get _arrivalSlots {
+    if (!_isToday) {
+      return _futureSlots;
+    }
+    final now = DateTime.now();
+    final first = AppTimes.nextFullHour(now);
+    if (first.day != now.day) {
+      return const [];
+    }
+    final count = _arrivalSlotCount.clamp(0, 24 - first.hour);
+    return [
+      for (var index = 0; index < count; index++)
+        AppTimes.format(TimeOfDay(hour: first.hour + index, minute: 0)),
+    ];
+  }
+
+  /// True when [label] is still an arrival this visit can take. A future date
+  /// takes any time; today takes only a time strictly later than the clock.
+  bool _canArriveAt(String label) {
+    if (!_isToday) {
+      return true;
+    }
+    final time = AppTimes.parse(label);
+    if (time == null) {
+      return false;
+    }
+    return AppTimes.isAfter(time, TimeOfDay.now());
   }
 
   /// The visit window, always the arrival time plus two hours.
@@ -189,58 +237,62 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
             _VisitDatePicker(
               dates: _visitDates,
               selected: _date,
-              onSelected: (date) => setState(() => _date = date),
+              onSelected: _selectDate,
             ),
             const SizedBox(height: AppSpacing.fieldGap),
             const _Label('Arrival time'),
             const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final slot in _arrivalSlots)
+            if (_arrivalSlots.isEmpty)
+              const _NoSlotsToday()
+            else ...[
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final slot in _arrivalSlots)
+                    ChoiceChip(
+                      key: Key('arrival-slot-$slot'),
+                      label: Text(slot),
+                      selected: slot == _arrival && !_arrivalIsCustom,
+                      onSelected: (_) => setState(() {
+                        _arrival = slot;
+                        _arrivalIsCustom = false;
+                      }),
+                      selectedColor: AppPalette.brandSoft,
+                      labelStyle: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: slot == _arrival && !_arrivalIsCustom
+                            ? AppPalette.brand
+                            : AppPalette.mutedStrong,
+                      ),
+                    ),
+                  // Uses the platform time picker already in the project, so no
+                  // new package is needed for a custom arrival time.
                   ChoiceChip(
-                    key: Key('arrival-slot-$slot'),
-                    label: Text(slot),
-                    selected: slot == _arrival && !_arrivalIsCustom,
-                    onSelected: (_) => setState(() {
-                      _arrival = slot;
-                      _arrivalIsCustom = false;
-                    }),
+                    key: const Key('arrival-slot-custom'),
+                    avatar: Icon(
+                      Icons.schedule_rounded,
+                      size: 17,
+                      color: _arrivalIsCustom
+                          ? AppPalette.brand
+                          : AppPalette.mutedStrong,
+                    ),
+                    label: Text(_arrivalIsCustom ? _arrival : 'Custom time'),
+                    selected: _arrivalIsCustom,
+                    onSelected: (_) => _pickCustomArrival(context),
                     selectedColor: AppPalette.brandSoft,
                     labelStyle: TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: slot == _arrival && !_arrivalIsCustom
+                      color: _arrivalIsCustom
                           ? AppPalette.brand
                           : AppPalette.mutedStrong,
                     ),
                   ),
-                // Uses the platform time picker already in the project, so no
-                // new package is needed for a custom arrival time.
-                ChoiceChip(
-                  key: const Key('arrival-slot-custom'),
-                  avatar: Icon(
-                    Icons.schedule_rounded,
-                    size: 17,
-                    color: _arrivalIsCustom
-                        ? AppPalette.brand
-                        : AppPalette.mutedStrong,
-                  ),
-                  label: Text(_arrivalIsCustom ? _arrival : 'Custom time'),
-                  selected: _arrivalIsCustom,
-                  onSelected: (_) => _pickCustomArrival(context),
-                  selectedColor: AppPalette.brandSoft,
-                  labelStyle: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: _arrivalIsCustom
-                        ? AppPalette.brand
-                        : AppPalette.mutedStrong,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            _VisitWindow(range: _visitWindow),
+                ],
+              ),
+              const SizedBox(height: 10),
+              _VisitWindow(range: _visitWindow),
+            ],
             const SizedBox(height: AppSpacing.fieldGap),
             AppTextField(
               label: 'Vehicle plate (optional)',
@@ -282,21 +334,55 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
   /// even when that time happens to match a preset.
   bool _arrivalIsCustom = false;
 
+  /// Changes the visit date and re-checks the arrival time against it. Coming
+  /// back to today with a time that has since gone moves the selection to the
+  /// first slot still on offer, and a custom time stays put whenever the new date
+  /// can still take it.
+  void _selectDate(String date) {
+    setState(() {
+      _date = date;
+      _error = '';
+      if (_canArriveAt(_arrival)) {
+        return;
+      }
+      _arrival = _arrivalSlots.isEmpty ? '' : _arrivalSlots.first;
+      _arrivalIsCustom = false;
+    });
+  }
+
   /// Opens the platform time picker. Dismissing it leaves the current arrival
-  /// time exactly as it was.
+  /// time exactly as it was, and a time that has already gone is refused rather
+  /// than quietly accepted, so the custom picker cannot be used to book a visitor
+  /// into the past.
   Future<void> _pickCustomArrival(BuildContext context) async {
+    final now = TimeOfDay.now();
+    final current = AppTimes.parse(_arrival);
+    // Today opens on the next full hour rather than on a time that is past,
+    // because that is the earliest thing this date can take.
+    final opening = _canArriveAt(_arrival)
+        ? current
+        : (_isToday
+              ? TimeOfDay(hour: now.hour + 1, minute: 0)
+              : const TimeOfDay(hour: 10, minute: 0));
     final picked = await showTimePicker(
       context: context,
-      initialTime:
-          AppTimes.parse(_arrival) ?? const TimeOfDay(hour: 10, minute: 0),
+      initialTime: opening ?? const TimeOfDay(hour: 10, minute: 0),
       helpText: 'Choose an arrival time',
     );
     if (picked == null || !mounted) {
       return;
     }
+    if (!_canArriveAt(AppTimes.format(picked))) {
+      setState(
+        () => _error =
+            'Choose an arrival time later than the current time for today.',
+      );
+      return;
+    }
     setState(() {
       _arrival = AppTimes.format(picked);
       _arrivalIsCustom = true;
+      _error = '';
     });
   }
 
@@ -317,6 +403,13 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
     }
     if (_arrival.isEmpty) {
       setState(() => _error = 'Choose an arrival time.');
+      return;
+    }
+    if (!_canArriveAt(_arrival)) {
+      setState(
+        () => _error =
+            'Choose an arrival time later than the current time for today.',
+      );
       return;
     }
     final window = _visitWindow;
@@ -470,6 +563,44 @@ class _VisitDateCard extends StatelessWidget {
 
 /// Shows the visit window the arrival time produces, so the end time is never
 /// something the resident has to work out.
+/// Stands in for the chips when the day is too far gone to book against. Late in
+/// the evening there is no full hour left today, and rather than offer a time
+/// that has already gone the resident is told to pick another date.
+class _NoSlotsToday extends StatelessWidget {
+  const _NoSlotsToday();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppPalette.amberSoft,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.schedule_rounded,
+            size: 18,
+            color: AppPalette.warning,
+          ),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Text(
+              'No arrival times are left today. Choose a later visit date.',
+              style: const TextStyle(
+                color: AppPalette.mutedStrong,
+                fontSize: 12,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _VisitWindow extends StatelessWidget {
   const _VisitWindow({required this.range});
 

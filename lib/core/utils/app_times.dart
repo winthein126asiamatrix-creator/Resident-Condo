@@ -44,6 +44,39 @@ abstract final class AppTimes {
   static bool rollsOver(TimeOfDay start, TimeOfDay end) {
     return end.hour * 60 + end.minute < start.hour * 60 + start.minute;
   }
+
+  /// Minutes since midnight, which is how two times of day are compared.
+  static int minutesOfDay(TimeOfDay time) => time.hour * 60 + time.minute;
+
+  /// True when [candidate] is strictly later in the day than [reference]. Equal
+  /// times are not later, so a slot offered at the very moment it is chosen never
+  /// counts as an arrival that has not gone yet.
+  static bool isAfter(TimeOfDay candidate, TimeOfDay reference) {
+    return minutesOfDay(candidate) > minutesOfDay(reference);
+  }
+
+  /// The next full hour strictly after [now].
+  ///
+  /// 9:10 and 9:45 both give 10:00, and 9:00 exactly gives 10:00 as well, since
+  /// the slot has to be later than the moment it is offered at. Dart rolls the
+  /// hour over into the next day on its own, which is what makes this safe near
+  /// midnight.
+  static DateTime nextFullHour(DateTime now) {
+    return DateTime(now.year, now.month, now.day, now.hour + 1);
+  }
+
+  /// The next [count] full hour slots strictly after [now], as times of day.
+  ///
+  /// The caller decides how many of them are still on the date it cares about;
+  /// this only counts forward from the clock.
+  static List<TimeOfDay> hourlySlotsAfter(DateTime now, {int count = 6}) {
+    final first = nextFullHour(now);
+    return List.generate(
+      count,
+      (index) => TimeOfDay(hour: (first.hour + index) % 24, minute: 0),
+      growable: false,
+    );
+  }
 }
 
 /// A start and end time with the label shown to a resident.
