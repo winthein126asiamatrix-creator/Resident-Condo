@@ -14,8 +14,32 @@ import '../widgets/complaint_widgets.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/theme/app_spacing.dart';
 
-class ComplaintsPage extends GetView<ComplaintController> {
+class ComplaintsPage extends StatefulWidget {
   const ComplaintsPage({super.key});
+
+  @override
+  State<ComplaintsPage> createState() => _ComplaintsPageState();
+}
+
+class _ComplaintsPageState extends State<ComplaintsPage> {
+  late final ComplaintController controller = Get.find<ComplaintController>();
+
+  /// Once the list is scrolled the call to action drops its label and keeps only
+  /// the glyph, so it stops sitting on top of the cards.
+  bool _fabCompact = false;
+
+  bool _onScroll(ScrollNotification notification) {
+    if (notification.depth != 0) {
+      return false;
+    }
+    final compact = notification.metrics.pixels > 24;
+    if (compact != _fabCompact) {
+      setState(() => _fabCompact = compact);
+    }
+    // Never swallow the notification: the refresh indicator and the list still
+    // need to see it.
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,73 +70,80 @@ class ComplaintsPage extends GetView<ComplaintController> {
         }
         return RefreshIndicator(
           onRefresh: controller.loadComplaints,
-          child: ListView(
-            key: const Key('complaints-scroll'),
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.gutter,
-              AppSpacing.pageTop,
-              AppSpacing.gutter,
-              96,
-            ),
-            children: [
-              AppHeroPanel(
-                icon: Icons.support_agent_rounded,
-                title: 'Complaints',
-                subtitle:
-                    '${controller.openCount} open of '
-                    '${controller.complaints.length} filed',
-                footnote:
-                    'Complaints are your reports to management. Rule breaks are '
-                    'tracked separately under Rules & violations.',
-                trailing: IconButton(
-                  tooltip: 'Refresh complaints',
-                  onPressed: controller.loadComplaints,
-                  icon: const Icon(Icons.refresh_rounded, color: Colors.white),
-                ),
+          child: NotificationListener<ScrollNotification>(
+            onNotification: _onScroll,
+            child: ListView(
+              key: const Key('complaints-scroll'),
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.gutter,
+                AppSpacing.pageTop,
+                AppSpacing.gutter,
+                96,
               ),
-              const SizedBox(height: 20),
-              AppSectionHeader(
-                title: 'Open complaints',
-                count: controller.openComplaints.length,
-              ),
-              const SizedBox(height: 10),
-              if (controller.openComplaints.isEmpty)
-                const AppStateMessage(
-                  title: 'Nothing open',
-                  message: 'You have no open complaints.',
-                  icon: Icons.check_circle_outline_rounded,
-                )
-              else
-                for (final complaint in controller.openComplaints)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _ComplaintCard(
-                      controller: controller,
-                      complaint: complaint,
+              children: [
+                AppHeroPanel(
+                  icon: Icons.support_agent_rounded,
+                  title: 'Complaints',
+                  subtitle:
+                      '${controller.openCount} open of '
+                      '${controller.complaints.length} filed',
+                  footnote:
+                      'Complaints are your reports to management. Rule breaks are '
+                      'tracked separately under Rules & violations.',
+                  trailing: IconButton(
+                    tooltip: 'Refresh complaints',
+                    onPressed: controller.loadComplaints,
+                    icon: const Icon(
+                      Icons.refresh_rounded,
+                      color: Colors.white,
                     ),
                   ),
-              if (controller.closedComplaints.isNotEmpty) ...[
-                const SizedBox(height: 16),
+                ),
+                const SizedBox(height: 20),
                 AppSectionHeader(
-                  title: 'Closed',
-                  count: controller.closedComplaints.length,
+                  title: 'Open complaints',
+                  count: controller.openComplaints.length,
                 ),
                 const SizedBox(height: 10),
-                for (final complaint in controller.closedComplaints)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _ComplaintCard(
-                      controller: controller,
-                      complaint: complaint,
+                if (controller.openComplaints.isEmpty)
+                  const AppStateMessage(
+                    title: 'Nothing open',
+                    message: 'You have no open complaints.',
+                    icon: Icons.check_circle_outline_rounded,
+                  )
+                else
+                  for (final complaint in controller.openComplaints)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _ComplaintCard(
+                        controller: controller,
+                        complaint: complaint,
+                      ),
                     ),
+                if (controller.closedComplaints.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  AppSectionHeader(
+                    title: 'Closed',
+                    count: controller.closedComplaints.length,
                   ),
+                  const SizedBox(height: 10),
+                  for (final complaint in controller.closedComplaints)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _ComplaintCard(
+                        controller: controller,
+                        complaint: complaint,
+                      ),
+                    ),
+                ],
               ],
-            ],
+            ),
           ),
         );
       }),
       floatingActionButton: _FileComplaintFab(
+        expanded: !_fabCompact,
         onPressed: () => Get.toNamed(AppRoutes.complaintCreate),
       ),
     );
@@ -122,13 +153,18 @@ class ComplaintsPage extends GetView<ComplaintController> {
 /// The floating call to action on the complaints list.
 ///
 /// Filing a complaint is the one thing a resident comes here to do, so it gets a
-/// branded pill that rises into place once and answers the finger with a small
-/// dip. The widget underneath is still a [FloatingActionButton], so the tap
-/// target, ripple and accessibility stay exactly as the platform defines them.
+/// branded pill with a frosted glyph tile, which rises into place once, dips under
+/// the finger and folds its label away once the list is scrolled. The widget
+/// underneath is still a [FloatingActionButton], so the tap target, ripple and
+/// accessibility stay exactly as the platform defines them.
 class _FileComplaintFab extends StatefulWidget {
-  const _FileComplaintFab({required this.onPressed});
+  const _FileComplaintFab({required this.onPressed, required this.expanded});
 
   final VoidCallback onPressed;
+
+  /// Whether the label is showing. Folding it away leaves a round button, so it
+  /// stops covering the cards underneath.
+  final bool expanded;
 
   @override
   State<_FileComplaintFab> createState() => _FileComplaintFabState();
@@ -187,15 +223,26 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
         hoverElevation: 0,
         highlightElevation: 0,
         shape: const StadiumBorder(),
-        extendedPadding: const EdgeInsets.fromLTRB(18, 15, 22, 15),
-        icon: const Icon(Icons.add_comment_rounded, size: 20),
-        label: const Text(
-          'File complaint',
-          style: TextStyle(
-            fontSize: 14.5,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.1,
-          ),
+        extendedPadding: const EdgeInsets.fromLTRB(14, 14, 20, 14),
+        icon: const _FrostedGlyph(),
+        // Only the label collapses. The button re-measures itself on every frame
+        // of the fold, so the pill shrinks around the label instead of clipping
+        // it away.
+        label: AnimatedSize(
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.centerLeft,
+          child: widget.expanded
+              ? const Text(
+                  'File complaint',
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.1,
+                  ),
+                )
+              : const SizedBox.shrink(),
         ),
       ),
     );
@@ -221,13 +268,38 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
             onPointerUp: (_) => _setPressed(false),
             onPointerCancel: (_) => _setPressed(false),
             child: AnimatedScale(
-              scale: _pressed ? 0.95 : 1,
-              duration: const Duration(milliseconds: 140),
-              curve: Curves.easeOut,
+              scale: _pressed ? 0.94 : 1,
+              // A touch of overshoot on the way back up, so letting go reads as a
+              // spring rather than a step.
+              duration: const Duration(milliseconds: 220),
+              curve: _pressed ? Curves.easeOut : Curves.easeOutBack,
               child: pill,
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The glyph in a translucent disc, the same language the icon tiles on the
+/// cards use, so the button and the list read as one set.
+class _FrostedGlyph extends StatelessWidget {
+  const _FrostedGlyph();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.22),
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.add_comment_rounded,
+        size: 16,
+        color: Colors.white,
       ),
     );
   }

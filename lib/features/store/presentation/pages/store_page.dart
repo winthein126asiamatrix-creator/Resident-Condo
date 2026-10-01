@@ -500,7 +500,7 @@ class _CategoryRow extends StatelessWidget {
         children: [
           _CategoryPill(
             key: const Key('store-category-all'),
-            label: 'All aisles',
+            label: 'All',
             selected: controller.selectedCategory.value == null,
             onTap: () => controller.selectCategory(null),
           ),
