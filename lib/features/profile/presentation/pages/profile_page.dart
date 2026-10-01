@@ -211,6 +211,11 @@ class ProfilePage extends GetView<ProfileController> {
                       onTap: () => Get.toNamed(AppRoutes.services),
                     ),
                     _ActionRow(
+                      icon: Icons.storefront_outlined,
+                      label: 'Convenience Store',
+                      onTap: () => Get.toNamed(AppRoutes.store),
+                    ),
+                    _ActionRow(
                       icon: Icons.directions_car_outlined,
                       label: 'Parking',
                       onTap: () => Get.toNamed(AppRoutes.parking),

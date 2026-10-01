@@ -195,20 +195,30 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
   @override
   Widget build(BuildContext context) {
     // A gradient rather than a flat fill, so the button reads as raised off the
-    // list instead of painted onto it.
+    // list instead of painted onto it. Both stops are checked against white
+    // label text: the lightest is 4.2:1 and the darkest 6.5:1, which keeps the
+    // word "complaint" readable right across the pill.
     final pill = DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadius.pill),
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF17A396), AppPalette.brandDark],
+          colors: [Color(0xFF128A80), AppPalette.brandDark],
         ),
+        // A hairline rim catches the light along the top edge, and a wide glow
+        // underneath lifts the whole pill off the list.
+        border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
         boxShadow: [
           BoxShadow(
-            color: AppPalette.brand.withValues(alpha: 0.34),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
+            color: AppPalette.brand.withValues(alpha: 0.32),
+            blurRadius: 26,
+            offset: const Offset(0, 12),
+          ),
+          BoxShadow(
+            color: AppPalette.brandDark.withValues(alpha: 0.30),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -216,15 +226,19 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
         key: const Key('file-complaint'),
         onPressed: widget.onPressed,
         // The wrapper draws the fill and the shadow, so the button itself only
-        // needs to lay its content out and keep the ripple.
+        // needs to lay its content out and keep the ripple. Stating the
+        // foreground keeps the label and the glyph white instead of inheriting
+        // the theme's dark onSurface, which is what left the button looking
+        // greyed out.
         backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
         elevation: 0,
         focusElevation: 0,
         hoverElevation: 0,
         highlightElevation: 0,
         shape: const StadiumBorder(),
         extendedPadding: const EdgeInsets.fromLTRB(14, 14, 20, 14),
-        icon: const _FrostedGlyph(),
+        icon: const _BadgeGlyph(),
         // Only the label collapses. The button re-measures itself on every frame
         // of the fold, so the pill shrinks around the label instead of clipping
         // it away.
@@ -237,6 +251,7 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
                   'File complaint',
                   maxLines: 1,
                   style: TextStyle(
+                    color: Colors.white,
                     fontSize: 14.5,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.1,
@@ -282,24 +297,34 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
   }
 }
 
-/// The glyph in a translucent disc, the same language the icon tiles on the
-/// cards use, so the button and the list read as one set.
-class _FrostedGlyph extends StatelessWidget {
-  const _FrostedGlyph();
+/// The glyph in a near white disc, the same shape as the icon tiles on the
+/// cards but in the other direction, so it inverts the pill instead of blending
+/// into it. Deep teal on near white is well clear of the body text contrast
+/// threshold, where white on a pale disc would not have been.
+class _BadgeGlyph extends StatelessWidget {
+  const _BadgeGlyph();
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 28,
       height: 28,
+      alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.22),
+        color: Colors.white.withValues(alpha: 0.94),
         shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: AppPalette.brandDark.withValues(alpha: 0.28),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
       child: const Icon(
         Icons.add_comment_rounded,
         size: 16,
-        color: Colors.white,
+        color: AppPalette.brandDark,
       ),
     );
   }
