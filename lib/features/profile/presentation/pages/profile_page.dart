@@ -156,11 +156,11 @@ class ProfilePage extends GetView<ProfileController> {
                       label: 'Unit',
                       value: profile.unit,
                     ),
-                    _InfoRow(
-                      icon: Icons.badge_outlined,
-                      label: 'Role',
-                      value: profile.role,
-                    ),
+                    // _InfoRow(
+                    //   icon: Icons.badge_outlined,
+                    //   label: 'Role',
+                    //   value: profile.role,
+                    // ),
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -231,12 +231,12 @@ class ProfilePage extends GetView<ProfileController> {
                 _SectionCard(
                   title: 'Account',
                   children: [
-                    _ActionRow(
-                      icon: Icons.badge_outlined,
-                      label: 'Account type',
-                      value: role.label,
-                      onTap: () => _switchRole(context, role),
-                    ),
+                    // _ActionRow(
+                    //   icon: Icons.badge_outlined,
+                    //   label: 'Account type',
+                    //   value: role.label,
+                    //   onTap: () => _switchRole(context, role),
+                    // ),
                     _ActionRow(
                       icon: Icons.edit_outlined,
                       label: 'Edit profile',
@@ -545,7 +545,7 @@ class _ProfileHero extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  '${profile.role} · ${profile.unit}',
+                  profile.unit,
                   style: const TextStyle(
                     color: Color(0xFFD8F3EC),
                     fontSize: 13,
