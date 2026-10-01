@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_section.dart';
 import '../../../../core/widgets/app_state_message.dart';
@@ -111,11 +112,122 @@ class ComplaintsPage extends GetView<ComplaintController> {
           ),
         );
       }),
-      floatingActionButton: FloatingActionButton.extended(
-        key: const Key('file-complaint'),
+      floatingActionButton: _FileComplaintFab(
         onPressed: () => Get.toNamed(AppRoutes.complaintCreate),
-        icon: const Icon(Icons.add_comment_outlined),
-        label: const Text('File complaint'),
+      ),
+    );
+  }
+}
+
+/// The floating call to action on the complaints list.
+///
+/// Filing a complaint is the one thing a resident comes here to do, so it gets a
+/// branded pill that rises into place once and answers the finger with a small
+/// dip. The widget underneath is still a [FloatingActionButton], so the tap
+/// target, ripple and accessibility stay exactly as the platform defines them.
+class _FileComplaintFab extends StatefulWidget {
+  const _FileComplaintFab({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  State<_FileComplaintFab> createState() => _FileComplaintFabState();
+}
+
+class _FileComplaintFabState extends State<_FileComplaintFab>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _entrance = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 420),
+  )..forward();
+
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (_pressed == value) {
+      return;
+    }
+    setState(() => _pressed = value);
+  }
+
+  @override
+  void dispose() {
+    _entrance.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // A gradient rather than a flat fill, so the button reads as raised off the
+    // list instead of painted onto it.
+    final pill = DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF17A396), AppPalette.brandDark],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppPalette.brand.withValues(alpha: 0.34),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: FloatingActionButton.extended(
+        key: const Key('file-complaint'),
+        onPressed: widget.onPressed,
+        // The wrapper draws the fill and the shadow, so the button itself only
+        // needs to lay its content out and keep the ripple.
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        focusElevation: 0,
+        hoverElevation: 0,
+        highlightElevation: 0,
+        shape: const StadiumBorder(),
+        extendedPadding: const EdgeInsets.fromLTRB(18, 15, 22, 15),
+        icon: const Icon(Icons.add_comment_rounded, size: 20),
+        label: const Text(
+          'File complaint',
+          style: TextStyle(
+            fontSize: 14.5,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.1,
+          ),
+        ),
+      ),
+    );
+
+    return FadeTransition(
+      opacity: CurvedAnimation(
+        parent: _entrance,
+        curve: const Interval(0, 0.65, curve: Curves.easeOut),
+      ),
+      child: SlideTransition(
+        position: Tween<Offset>(begin: const Offset(0, 0.35), end: Offset.zero)
+            .animate(
+              CurvedAnimation(parent: _entrance, curve: Curves.easeOutCubic),
+            ),
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.9, end: 1).animate(
+            CurvedAnimation(parent: _entrance, curve: Curves.easeOutCubic),
+          ),
+          // Pointer events rather than a gesture, so the dip cannot fight the
+          // button's own tap handling.
+          child: Listener(
+            onPointerDown: (_) => _setPressed(true),
+            onPointerUp: (_) => _setPressed(false),
+            onPointerCancel: (_) => _setPressed(false),
+            child: AnimatedScale(
+              scale: _pressed ? 0.95 : 1,
+              duration: const Duration(milliseconds: 140),
+              curve: Curves.easeOut,
+              child: pill,
+            ),
+          ),
+        ),
       ),
     );
   }

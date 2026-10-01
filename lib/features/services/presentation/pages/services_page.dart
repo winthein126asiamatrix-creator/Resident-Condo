@@ -12,6 +12,7 @@ import '../../domain/entities/condo_service.dart';
 import '../controllers/condo_service_controller.dart';
 import '../widgets/service_widgets.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/widgets/app_segmented_tabs.dart';
 
 class ServicesPage extends GetView<CondoServiceController> {
   const ServicesPage({super.key});
@@ -54,10 +55,29 @@ class ServicesPage extends GetView<CondoServiceController> {
               const SizedBox(height: 18),
               _TabRow(controller: controller),
               const SizedBox(height: 18),
-              if (controller.tab.value == ServicesTab.catalogue)
-                _Catalogue(controller: controller)
-              else
-                _Requests(controller: controller),
+              // The pill slides into the next tab, so the panel that follows it
+              // across rather than swapping the instant the tap lands.
+              AnimatedSwitcher(
+                duration: AppSegmentedTabs.slideDuration,
+                switchInCurve: AppSegmentedTabs.slideCurve,
+                switchOutCurve: Curves.easeIn,
+                transitionBuilder: (child, animation) {
+                  final slide = Tween<Offset>(
+                    begin: const Offset(0, 0.06),
+                    end: Offset.zero,
+                  ).animate(animation);
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(position: slide, child: child),
+                  );
+                },
+                child: KeyedSubtree(
+                  key: ValueKey(controller.tab.value),
+                  child: controller.tab.value == ServicesTab.catalogue
+                      ? _Catalogue(controller: controller)
+                      : _Requests(controller: controller),
+                ),
+              ),
             ],
           ),
         );
@@ -93,44 +113,22 @@ class _TabRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppPalette.brandTint,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          for (final tab in ServicesTab.values)
-            Expanded(
-              child: GestureDetector(
-                key: Key('services-tab-${tab.name}'),
-                onTap: () => controller.selectTab(tab),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(vertical: 11),
-                  decoration: BoxDecoration(
-                    color: controller.tab.value == tab
-                        ? Colors.white
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(11),
-                  ),
-                  child: Text(
-                    tab == ServicesTab.catalogue ? 'Catalogue' : 'My requests',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13,
-                      color: controller.tab.value == tab
-                          ? AppPalette.brand
-                          : AppPalette.mutedStrong,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
+    return AppSegmentedTabs(
+      keyPrefix: 'services',
+      selectedIndex: controller.tab.value.index,
+      onSelect: (index) => controller.selectTab(ServicesTab.values[index]),
+      tabs: const [
+        AppSegmentedTab(
+          name: 'catalogue',
+          label: 'Catalogue',
+          icon: Icons.grid_view_rounded,
+        ),
+        AppSegmentedTab(
+          name: 'requests',
+          label: 'My requests',
+          icon: Icons.event_note_rounded,
+        ),
+      ],
     );
   }
 }

@@ -410,7 +410,7 @@ class _SpaceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = switch (space.status) {
       ParkingStatus.occupied => AppPalette.success,
-      ParkingStatus.vacant => AppPalette.brand,
+      ParkingStatus.available => AppPalette.brand,
       ParkingStatus.reserved => AppPalette.warning,
       ParkingStatus.blocked => AppPalette.danger,
     };

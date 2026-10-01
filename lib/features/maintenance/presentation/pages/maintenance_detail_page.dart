@@ -94,16 +94,16 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
             ),
             const SizedBox(height: 20),
             _StatusProgress(request: current),
-            if (current.status.next != null) ...[
-              const SizedBox(height: 20),
-              AppPrimaryAction(
-                key: const Key('advance-maintenance-request'),
-                onPressed: () => controller.advanceRequest(current),
-                label: 'Move to ${current.status.next!.label}',
-                icon: Icons.arrow_forward_rounded,
-                backgroundColor: AppPalette.accent,
-              ),
-            ],
+            // if (current.status.next != null) ...[
+            //   const SizedBox(height: 20),
+            //   AppPrimaryAction(
+            //     key: const Key('advance-maintenance-request'),
+            //     onPressed: () => controller.advanceRequest(current),
+            //     label: 'Move to ${current.status.next!.label}',
+            //     icon: Icons.arrow_forward_rounded,
+            //     backgroundColor: AppPalette.accent,
+            //   ),
+            // ],
           ],
         ),
       );

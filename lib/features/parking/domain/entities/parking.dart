@@ -15,15 +15,15 @@ extension ParkingSpaceTypeLabel on ParkingSpaceType {
   }
 }
 
-enum ParkingStatus { occupied, vacant, reserved, blocked }
+enum ParkingStatus { occupied, available, reserved, blocked }
 
 extension ParkingStatusLabel on ParkingStatus {
   String get label {
     switch (this) {
       case ParkingStatus.occupied:
         return 'Occupied';
-      case ParkingStatus.vacant:
-        return 'Vacant';
+      case ParkingStatus.available:
+        return 'Available';
       case ParkingStatus.reserved:
         return 'Reserved';
       case ParkingStatus.blocked:

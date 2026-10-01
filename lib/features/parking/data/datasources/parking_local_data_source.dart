@@ -31,7 +31,7 @@ class ParkingLocalDataSource {
       slot: 'B2-126',
       level: 'Basement 2',
       type: ParkingSpaceType.guest,
-      status: ParkingStatus.vacant,
+      status: ParkingStatus.available,
       monthlyFee: 10,
       vehicle: '',
       licensePlate: '',

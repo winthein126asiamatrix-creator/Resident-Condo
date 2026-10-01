@@ -9,6 +9,7 @@ import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_section.dart';
+import '../../../../core/widgets/app_segmented_tabs.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/store_product.dart';
 import '../controllers/store_controller.dart';
@@ -16,22 +17,19 @@ import '../widgets/store_cards.dart';
 import '../widgets/store_product_card.dart';
 import '../widgets/store_widgets.dart';
 
-/// One slide, shared by the page view and the tab strip so the highlight can
-/// never arrive before the page it belongs to.
-const Duration _tabSlideDuration = Duration(milliseconds: 280);
-const Curve _tabSlideCurve = Curves.easeOutCubic;
-
-/// Glyph for a tab in the strip.
-IconData _tabIcon(StoreTab tab) {
-  switch (tab) {
-    case StoreTab.shop:
-      return Icons.storefront_rounded;
-    case StoreTab.basket:
-      return Icons.shopping_basket_rounded;
-    case StoreTab.orders:
-      return Icons.receipt_long_rounded;
-  }
-}
+const _storeTabs = <AppSegmentedTab>[
+  AppSegmentedTab(name: 'shop', label: 'Shop', icon: Icons.storefront_rounded),
+  AppSegmentedTab(
+    name: 'basket',
+    label: 'Basket',
+    icon: Icons.shopping_basket_rounded,
+  ),
+  AppSegmentedTab(
+    name: 'orders',
+    label: 'Orders',
+    icon: Icons.receipt_long_rounded,
+  ),
+];
 
 /// The Convenience Store: browse by aisle, fill a basket, follow the order.
 ///
@@ -64,8 +62,8 @@ class _StorePageState extends State<StorePage> {
     controller.selectTab(tab);
     _pages.animateToPage(
       tab.index,
-      duration: _tabSlideDuration,
-      curve: _tabSlideCurve,
+      duration: AppSegmentedTabs.slideDuration,
+      curve: AppSegmentedTabs.slideCurve,
     );
   }
 
@@ -83,8 +81,8 @@ class _StorePageState extends State<StorePage> {
       }
       _pages.animateToPage(
         tab.index,
-        duration: _tabSlideDuration,
-        curve: _tabSlideCurve,
+        duration: AppSegmentedTabs.slideDuration,
+        curve: AppSegmentedTabs.slideCurve,
       );
     });
   }
@@ -122,11 +120,14 @@ class _StorePageState extends State<StorePage> {
           );
         }
         _syncFromController(tab);
-        return Column(          children: [
-            _StoreTabs(
-              controller: controller,
+        return Column(
+          children: [
+            AppSegmentedTabs(
+              tabs: _storeTabs,
+              selectedIndex: controller.tab.value.index,
               pages: _pages,
-              onSelect: _selectTab,
+              keyPrefix: 'store',
+              onSelect: (index) => _selectTab(StoreTab.values[index]),
             ),
             Expanded(
               // Not scrollable by gesture: the strip is the only way between
@@ -184,10 +185,7 @@ class _StorePageState extends State<StorePage> {
         )
       else ...[
         if (controller.isFiltering) ...[
-          AppSectionHeader(
-            title: 'Results',
-            count: products.length,
-          ),
+          AppSectionHeader(title: 'Results', count: products.length),
           const SizedBox(height: 12),
         ],
         for (final product in products)
@@ -259,7 +257,8 @@ class _StorePageState extends State<StorePage> {
       return const [
         AppStateMessage(
           title: 'No store orders yet',
-          message: 'Once you order from the Convenience Store it shows up here.',
+          message:
+              'Once you order from the Convenience Store it shows up here.',
           icon: Icons.receipt_long_outlined,
         ),
       ];
@@ -272,10 +271,7 @@ class _StorePageState extends State<StorePage> {
           borderColor: const Color(0xFFF2E0B8),
           child: Row(
             children: [
-              const Icon(
-                Icons.receipt_long_rounded,
-                color: Color(0xFFB45309),
-              ),
+              const Icon(Icons.receipt_long_rounded, color: Color(0xFFB45309)),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -294,10 +290,7 @@ class _StorePageState extends State<StorePage> {
         ),
         const SizedBox(height: 16),
       ],
-      AppSectionHeader(
-        title: 'Active',
-        count: controller.activeOrders.length,
-      ),
+      AppSectionHeader(title: 'Active', count: controller.activeOrders.length),
       const SizedBox(height: 10),
       for (final order in controller.activeOrders)
         Padding(
@@ -312,10 +305,7 @@ class _StorePageState extends State<StorePage> {
         ),
       if (controller.pastOrders.isNotEmpty) ...[
         const SizedBox(height: 16),
-        AppSectionHeader(
-          title: 'History',
-          count: controller.pastOrders.length,
-        ),
+        AppSectionHeader(title: 'History', count: controller.pastOrders.length),
         const SizedBox(height: 10),
         for (final order in controller.pastOrders)
           Padding(
@@ -400,6 +390,7 @@ class _StoreSearch extends StatelessWidget {
     );
   }
 }
+
 /// One tab's scrollable body.
 ///
 /// Wrapping keeps the key on the scroll view itself, so the visible tab is
@@ -492,217 +483,6 @@ class _StoreHero extends StatelessWidget {
   }
 }
 
-/// The tab strip.
-///
-/// One white pill slides along the track and is positioned straight from the
-/// page view, so it moves in step with the content instead of snapping to the
-/// next tab and letting the page catch up.
-class _StoreTabs extends StatefulWidget {
-  const _StoreTabs({
-    required this.controller,
-    required this.pages,
-    required this.onSelect,
-  });
-
-  final StoreController controller;
-  final PageController pages;
-  final ValueChanged<StoreTab> onSelect;
-
-  @override
-  State<_StoreTabs> createState() => _StoreTabsState();
-}
-
-class _StoreTabsState extends State<_StoreTabs> {
-  /// Where the pill sits, in tab units. A whole number is a resting tab and a
-  /// fraction is a tab caught mid slide.
-  double _position = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    // The strip can be built before the page view is laid out, so it starts on
-    // the tab the controller already holds.
-    _position = widget.controller.tab.value.index.toDouble();
-    widget.pages.addListener(_followPages);
-  }
-
-  @override
-  void didUpdateWidget(covariant _StoreTabs oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.pages != widget.pages) {
-      oldWidget.pages.removeListener(_followPages);
-      widget.pages.addListener(_followPages);
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.pages.removeListener(_followPages);
-    super.dispose();
-  }
-
-  /// Reads the page view on every frame of a slide, so the pill and the page
-  /// always draw from the same number. The controller covers the short moment
-  /// before the page view has been laid out.
-  void _followPages() {
-    if (!mounted || !widget.pages.hasClients) {
-      return;
-    }
-    final page = widget.pages.page;
-    if (page == null) {
-      return;
-    }
-    final next = page.clamp(0.0, (StoreTab.values.length - 1).toDouble());
-    if ((next - _position).abs() < 0.0005) {
-      return;
-    }
-    setState(() => _position = next);
-  }
-
-  /// True while the pill is closer to [tab] than to either neighbour, which is
-  /// what decides the label colours halfway through a slide.
-  bool _isSelected(StoreTab tab) => (_position - tab.index).abs() < 0.5;
-
-  @override
-  Widget build(BuildContext context) {
-    final tabs = StoreTab.values;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.gutter,
-        12,
-        AppSpacing.gutter,
-        0,
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          const inset = 4.0;
-          final trackWidth = constraints.maxWidth - inset * 2;
-          final segmentWidth = trackWidth / tabs.length;
-
-          return Container(
-            padding: const EdgeInsets.all(inset),
-            decoration: BoxDecoration(
-              color: AppPalette.brandTint,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: SizedBox(
-              height: 46,
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: _position * segmentWidth,
-                    top: 0,
-                    bottom: 0,
-                    width: segmentWidth,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(13),
-                        boxShadow: AppPalette.cardShadow,
-                      ),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      for (final tab in tabs)
-                        SizedBox(
-                          width: segmentWidth,
-                          child: _StoreTabSegment(
-                            tab: tab,
-                            selected: _isSelected(tab),
-                            onTap: () => widget.onSelect(tab),
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-/// One tappable segment of the strip. It dips slightly under the finger so a tap
-/// is answered before the page has finished sliding.
-class _StoreTabSegment extends StatefulWidget {
-  const _StoreTabSegment({
-    required this.tab,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final StoreTab tab;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  State<_StoreTabSegment> createState() => _StoreTabSegmentState();
-}
-
-class _StoreTabSegmentState extends State<_StoreTabSegment> {
-  bool _pressed = false;
-
-  void _setPressed(bool value) {
-    if (_pressed == value) {
-      return;
-    }
-    setState(() => _pressed = value);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final color = widget.selected ? AppPalette.brand : AppPalette.mutedStrong;
-    return GestureDetector(
-      key: Key('store-tab-${widget.tab.name}'),
-      onTap: widget.onTap,
-      // Opaque so the whole segment is tappable, not just the glyph the text
-      // happens to cover.
-      behavior: HitTestBehavior.opaque,
-      onTapDown: (_) => _setPressed(true),
-      onTapUp: (_) => _setPressed(false),
-      onTapCancel: () => _setPressed(false),
-      child: AnimatedScale(
-        scale: _pressed ? 0.94 : 1,
-        duration: const Duration(milliseconds: 140),
-        curve: Curves.easeOut,
-        child: Center(
-          // Shrinks the row rather than overflowing when the phone is narrow or
-          // the resident runs a large text size.
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TweenAnimationBuilder<Color?>(
-                  tween: ColorTween(end: color),
-                  duration: _tabSlideDuration,
-                  curve: _tabSlideCurve,
-                  builder: (context, animated, _) =>
-                      Icon(_tabIcon(widget.tab), size: 18, color: animated),
-                ),
-                const SizedBox(width: 6),
-                AnimatedDefaultTextStyle(
-                  duration: _tabSlideDuration,
-                  curve: _tabSlideCurve,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    color: color,
-                  ),
-                  child: Text(widget.tab.label),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _CategoryRow extends StatelessWidget {
   const _CategoryRow({required this.controller});
 
@@ -786,9 +566,7 @@ class _CategoryPill extends StatelessWidget {
                 child: AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 200),
                   style: TextStyle(
-                    color: selected
-                        ? Colors.white
-                        : AppPalette.mutedStrong,
+                    color: selected ? Colors.white : AppPalette.mutedStrong,
                     fontSize: 13.5,
                     fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                     letterSpacing: selected ? 0.1 : 0,
@@ -911,7 +689,8 @@ class _BasketLine extends StatelessWidget {
                     ),
                     IconButton(
                       key: Key('store-remove-${line.product.id}'),
-                      onPressed: () => controller.removeFromCart(line.product.id),
+                      onPressed: () =>
+                          controller.removeFromCart(line.product.id),
                       tooltip: 'Remove ${line.product.name}',
                       iconSize: 18,
                       color: AppPalette.muted,
@@ -951,7 +730,6 @@ class _QuantityButton extends StatelessWidget {
   }
 }
 
-
 /// Larger product view, opened from a catalogue tile.
 void showStoreProductDetail(
   BuildContext context, {
@@ -987,9 +765,7 @@ void showStoreProductDetail(
                 ),
               ),
               const SizedBox(height: 18),
-              Center(
-                child: StoreProductImage(product: product, size: 132),
-              ),
+              Center(child: StoreProductImage(product: product, size: 132)),
               const SizedBox(height: 18),
               Text(
                 product.name,

@@ -64,4 +64,38 @@ abstract final class AppDates {
     to.month,
     to.day,
   ).difference(DateTime(from.year, from.month, from.day)).inDays;
+
+  /// Calendar days a span covers, counting the first and the last day. A lease
+  /// running from the 1st to the 31st covers 31 days, not 30.
+  static int inclusiveDaysBetween(DateTime from, DateTime to) =>
+      daysBetween(from, to) + 1;
+
+  /// Average length of a calendar month, used to turn a span of days into the
+  /// whole months rent is billed by.
+  static const averageMonthDays = 30.44;
+
+  /// Whole months a span covers, rounded the way rent is billed. A year long
+  /// term reads as 12 months rather than 11 and a bit, which is what a resident
+  /// is comparing the term against.
+  static int monthsBetween(DateTime from, DateTime to) {
+    final days = inclusiveDaysBetween(from, to);
+    if (days <= 0) {
+      return 0;
+    }
+    return (days / averageMonthDays).round();
+  }
+
+  /// Drops the time of day, so two dates on the same day compare equal.
+  static DateTime dateOnly(DateTime value) =>
+      DateTime(value.year, value.month, value.day);
+
+  /// Adds calendar months, keeping the day of the month where it exists and
+  /// landing on the last day of a shorter month where it does not.
+  static DateTime addMonths(DateTime value, int months) {
+    final target = value.month + months;
+    final year = value.year + (target - 1) ~/ 12;
+    final month = (target - 1) % 12 + 1;
+    final lastDay = DateTime(year, month + 1, 0).day;
+    return DateTime(year, month, value.day > lastDay ? lastDay : value.day);
+  }
 }

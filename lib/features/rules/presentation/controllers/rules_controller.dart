@@ -6,6 +6,11 @@ import '../../domain/usecases/rules_usecases.dart';
 
 enum RulesTab { rules, violations }
 
+extension RulesTabIndex on RulesTab {
+  /// Position in the tab strip, used to drive the highlighted segment.
+  int get index => RulesTab.values.indexOf(this);
+}
+
 class RulesController extends GetxController {
   RulesController(this.useCases);
 

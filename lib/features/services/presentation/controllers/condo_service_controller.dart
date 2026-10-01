@@ -6,6 +6,11 @@ import '../../domain/usecases/condo_service_usecases.dart';
 
 enum ServicesTab { catalogue, requests }
 
+extension ServicesTabIndex on ServicesTab {
+  /// Position in the tab strip, used to drive the highlighted segment.
+  int get index => ServicesTab.values.indexOf(this);
+}
+
 class CondoServiceController extends GetxController {
   CondoServiceController(this.useCases);
 

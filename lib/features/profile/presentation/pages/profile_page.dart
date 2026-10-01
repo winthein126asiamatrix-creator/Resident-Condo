@@ -328,7 +328,7 @@ class ProfilePage extends GetView<ProfileController> {
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
               ),
               const SizedBox(height: 10),
-              for (final option in ['English', 'Spanish', 'French'])
+              for (final option in ['English', 'Myanmar', 'Chinese'])
                 ListTile(
                   title: Text(option),
                   trailing: option == profile.language

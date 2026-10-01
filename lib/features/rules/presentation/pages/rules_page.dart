@@ -11,6 +11,7 @@ import '../controllers/rules_controller.dart';
 import '../widgets/rules_widgets.dart';
 import '../../../../core/widgets/app_status_pill.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/widgets/app_segmented_tabs.dart';
 
 class RulesPage extends GetView<RulesController> {
   const RulesPage({super.key});
@@ -69,10 +70,29 @@ class RulesPage extends GetView<RulesController> {
               const SizedBox(height: 18),
               _TabRow(controller: controller),
               const SizedBox(height: 18),
-              if (controller.tab.value == RulesTab.violations)
-                _Violations(controller: controller)
-              else
-                _Rules(controller: controller),
+              // The pill slides into the next tab, so the panel that follows it
+              // across rather than swapping the instant the tap lands.
+              AnimatedSwitcher(
+                duration: AppSegmentedTabs.slideDuration,
+                switchInCurve: AppSegmentedTabs.slideCurve,
+                switchOutCurve: Curves.easeIn,
+                transitionBuilder: (child, animation) {
+                  final slide = Tween<Offset>(
+                    begin: const Offset(0, 0.06),
+                    end: Offset.zero,
+                  ).animate(animation);
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(position: slide, child: child),
+                  );
+                },
+                child: KeyedSubtree(
+                  key: ValueKey(controller.tab.value),
+                  child: controller.tab.value == RulesTab.violations
+                      ? _Violations(controller: controller)
+                      : _Rules(controller: controller),
+                ),
+              ),
             ],
           ),
         );
@@ -87,46 +107,23 @@ class _TabRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppPalette.brandTint,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          for (final tab in RulesTab.values)
-            Expanded(
-              child: GestureDetector(
-                key: Key('rules-tab-${tab.name}'),
-                onTap: () => controller.selectTab(tab),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(vertical: 11),
-                  decoration: BoxDecoration(
-                    color: controller.tab.value == tab
-                        ? Colors.white
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(11),
-                  ),
-                  child: Text(
-                    tab == RulesTab.rules
-                        ? 'Community rules'
-                        : 'My violations (${controller.violations.length})',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13,
-                      color: controller.tab.value == tab
-                          ? AppPalette.brand
-                          : AppPalette.mutedStrong,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
+    return AppSegmentedTabs(
+      keyPrefix: 'rules',
+      selectedIndex: controller.tab.value.index,
+      onSelect: (index) => controller.selectTab(RulesTab.values[index]),
+      tabs: [
+        const AppSegmentedTab(
+          name: 'rules',
+          label: 'Community rules',
+          icon: Icons.menu_book_rounded,
+        ),
+        // The count rides on the label, so it has to be rebuilt with the list.
+        AppSegmentedTab(
+          name: 'violations',
+          label: 'My violations (${controller.violations.length})',
+          icon: Icons.report_rounded,
+        ),
+      ],
     );
   }
 }

@@ -23,7 +23,7 @@ class ParkingController extends GetxController {
   }
 
   int get availableCount => spaces
-      .where((space) => space.status == ParkingStatus.vacant)
+      .where((space) => space.status == ParkingStatus.available)
       .length;
 
   int get activeGuestRequests => guestRequests
