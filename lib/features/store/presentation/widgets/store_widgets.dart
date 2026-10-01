@@ -164,36 +164,104 @@ class StorePaymentPill extends StatelessWidget {
 /// to fill it and clipped to 12 px corners. A soft tinted placeholder holds the
 /// space while the photo loads, and a neutral one stands in if the network or
 /// the photo itself fails, so a card is never left ragged.
+///
+/// The card paints 34 to 132 logical pixels, so nothing here asks for or decodes
+/// the full size photo: the request is trimmed to the frame and the result is
+/// decoded at device resolution for that frame. That is the difference between a
+/// shelf that scrolls smoothly and one that stutters, because a catalogue photo
+/// is small on screen but expensive to decode at its original size.
 class StoreProductImage extends StatelessWidget {
   const StoreProductImage({required this.product, this.size = 64, super.key});
 
   final StoreProduct product;
   final double size;
 
+  /// Sizes the catalogue actually has. A photo is rounded up to the next one, so
+  /// a card at 76 px and the same card at 34 px do not each ask for their own
+  /// odd sized image.
+  static const _pixelBuckets = <int>[96, 128, 192, 256, 384, 512];
+
+  static int _pixelBucket(double physical) {
+    for (final bucket in _pixelBuckets) {
+      if (physical <= bucket) {
+        return bucket;
+      }
+    }
+    return _pixelBuckets.last;
+  }
+
+  /// The photo at the size it is painted, for hosts that resize on request.
+  ///
+  /// The catalogue urls already ask for a square crop from a CDN that takes `w`,
+  /// `h`, `fit` and `auto`, so only the size is swapped. A url without those
+  /// parameters is returned untouched, since a host that cannot resize must not
+  /// be handed a made up query. `auto=format` is left alone, which is what gets
+  /// the modern format the device prefers instead of a heavier one.
+  static String _atPixels(String url, int pixels) {
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      return url;
+    }
+    final query = uri.queryParameters;
+    if (!query.containsKey('w') || !query.containsKey('h')) {
+      return url;
+    }
+    if (query['w'] == '$pixels' && query['h'] == '$pixels') {
+      return url;
+    }
+    return uri
+        .replace(queryParameters: {...query, 'w': '$pixels', 'h': '$pixels'})
+        .toString();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final pixels = _pixelBucket(size * MediaQuery.devicePixelRatioOf(context));
+    final url = product.imageUrl.isEmpty
+        ? ''
+        : _atPixels(product.imageUrl, pixels);
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: SizedBox(
         width: size,
         height: size,
-        child: product.imageUrl.isEmpty
-            ? _Placeholder(size: size, icon: storeCategoryIcon(product.category))
+        child: url.isEmpty
+            ? _Placeholder(
+                size: size,
+                icon: storeCategoryIcon(product.category),
+              )
             : Image.network(
-                product.imageUrl,
+                url,
                 key: Key('store-photo-${product.id}'),
                 fit: BoxFit.cover,
                 width: size,
                 height: size,
-                // The placeholder holds the frame until the bytes arrive, then
-                // cross-fades so the swap is not abrupt.
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) {
+                // Decodes at the size on screen instead of the size the CDN
+                // sent, so a thumbnail never carries a full size bitmap around
+                // in the image cache.
+                cacheWidth: pixels,
+                cacheHeight: pixels,
+                // Keeps the last frame while a new one is decoded, so returning
+                // to the shelf does not flash the placeholder back over photos
+                // that are already cached.
+                gaplessPlayback: true,
+                // Fires once, when the frame is ready, rather than on every
+                // chunk of download progress. The two states are different
+                // widgets, so the cross fade below actually runs and no
+                // neighbouring card is rebuilt along the way.
+                frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                  if (wasSynchronouslyLoaded) {
                     return child;
                   }
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 220),
-                    child: _Placeholder(key: const ValueKey('loading'), size: size),
+                    child: frame == null
+                        ? _Placeholder(
+                            key: const ValueKey('pending'),
+                            size: size,
+                          )
+                        : child,
                   );
                 },
                 errorBuilder: (_, _, _) => _Placeholder(
