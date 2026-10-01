@@ -16,6 +16,23 @@ import '../widgets/store_cards.dart';
 import '../widgets/store_product_card.dart';
 import '../widgets/store_widgets.dart';
 
+/// One slide, shared by the page view and the tab strip so the highlight can
+/// never arrive before the page it belongs to.
+const Duration _tabSlideDuration = Duration(milliseconds: 280);
+const Curve _tabSlideCurve = Curves.easeOutCubic;
+
+/// Glyph for a tab in the strip.
+IconData _tabIcon(StoreTab tab) {
+  switch (tab) {
+    case StoreTab.shop:
+      return Icons.storefront_rounded;
+    case StoreTab.basket:
+      return Icons.shopping_basket_rounded;
+    case StoreTab.orders:
+      return Icons.receipt_long_rounded;
+  }
+}
+
 /// The Convenience Store: browse by aisle, fill a basket, follow the order.
 ///
 /// The three tabs live in a page view so switching slides between them and each
@@ -47,17 +64,29 @@ class _StorePageState extends State<StorePage> {
     controller.selectTab(tab);
     _pages.animateToPage(
       tab.index,
-      duration: const Duration(milliseconds: 260),
-      curve: Curves.easeOutCubic,
+      duration: _tabSlideDuration,
+      curve: _tabSlideCurve,
     );
   }
 
   /// Keeps the page view in step when the tab is changed from elsewhere, such
   /// as the basket badge in the app bar.
   void _syncFromController(StoreTab tab) {
-    if (_pages.hasClients && _pages.page != tab.index) {
-      _pages.jumpToPage(tab.index);
+    if (!_pages.hasClients || _pages.page == tab.index) {
+      return;
     }
+    // Started after this frame rather than during the build, so the strip can
+    // follow the slide instead of jumping in step with the content.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_pages.hasClients || _pages.page == tab.index) {
+        return;
+      }
+      _pages.animateToPage(
+        tab.index,
+        duration: _tabSlideDuration,
+        curve: _tabSlideCurve,
+      );
+    });
   }
 
   @override
@@ -94,7 +123,11 @@ class _StorePageState extends State<StorePage> {
         }
         _syncFromController(tab);
         return Column(          children: [
-            _StoreTabs(controller: controller, onSelect: _selectTab),
+            _StoreTabs(
+              controller: controller,
+              pages: _pages,
+              onSelect: _selectTab,
+            ),
             Expanded(
               // Not scrollable by gesture: the strip is the only way between
               // tabs, so a swipe can never fight the list inside a tab.
@@ -459,14 +492,80 @@ class _StoreHero extends StatelessWidget {
   }
 }
 
-class _StoreTabs extends StatelessWidget {
-  const _StoreTabs({required this.controller, required this.onSelect});
+/// The tab strip.
+///
+/// One white pill slides along the track and is positioned straight from the
+/// page view, so it moves in step with the content instead of snapping to the
+/// next tab and letting the page catch up.
+class _StoreTabs extends StatefulWidget {
+  const _StoreTabs({
+    required this.controller,
+    required this.pages,
+    required this.onSelect,
+  });
 
   final StoreController controller;
+  final PageController pages;
   final ValueChanged<StoreTab> onSelect;
 
   @override
+  State<_StoreTabs> createState() => _StoreTabsState();
+}
+
+class _StoreTabsState extends State<_StoreTabs> {
+  /// Where the pill sits, in tab units. A whole number is a resting tab and a
+  /// fraction is a tab caught mid slide.
+  double _position = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // The strip can be built before the page view is laid out, so it starts on
+    // the tab the controller already holds.
+    _position = widget.controller.tab.value.index.toDouble();
+    widget.pages.addListener(_followPages);
+  }
+
+  @override
+  void didUpdateWidget(covariant _StoreTabs oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.pages != widget.pages) {
+      oldWidget.pages.removeListener(_followPages);
+      widget.pages.addListener(_followPages);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.pages.removeListener(_followPages);
+    super.dispose();
+  }
+
+  /// Reads the page view on every frame of a slide, so the pill and the page
+  /// always draw from the same number. The controller covers the short moment
+  /// before the page view has been laid out.
+  void _followPages() {
+    if (!mounted || !widget.pages.hasClients) {
+      return;
+    }
+    final page = widget.pages.page;
+    if (page == null) {
+      return;
+    }
+    final next = page.clamp(0.0, (StoreTab.values.length - 1).toDouble());
+    if ((next - _position).abs() < 0.0005) {
+      return;
+    }
+    setState(() => _position = next);
+  }
+
+  /// True while the pill is closer to [tab] than to either neighbour, which is
+  /// what decides the label colours halfway through a slide.
+  bool _isSelected(StoreTab tab) => (_position - tab.index).abs() < 0.5;
+
+  @override
   Widget build(BuildContext context) {
+    final tabs = StoreTab.values;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.gutter,
@@ -474,59 +573,130 @@ class _StoreTabs extends StatelessWidget {
         AppSpacing.gutter,
         0,
       ),
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: AppPalette.brandTint,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          children: [
-            for (final tab in StoreTab.values)
-              Expanded(
-                child: GestureDetector(
-                  key: Key('store-tab-${tab.name}'),
-                  onTap: () => onSelect(tab),
-                  // Opaque so the whole segment is tappable, not just the glyph
-                  // the text happens to cover.
-                  behavior: HitTestBehavior.opaque,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeOut,
-                    padding: const EdgeInsets.symmetric(vertical: 11),
-                    decoration: BoxDecoration(
-                      color: controller.tab.value == tab
-                          ? Colors.white
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(11),
-                      boxShadow: controller.tab.value == tab
-                          ? [
-                              BoxShadow(
-                                color: AppPalette.brand.withValues(alpha: 0.12),
-                                blurRadius: 10,
-                                offset: const Offset(0, 2),
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 200),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 13,
-                        color: controller.tab.value == tab
-                            ? AppPalette.brand
-                            : AppPalette.mutedStrong,
-                      ),
-                      child: Text(
-                        tab.label,
-                        textAlign: TextAlign.center,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          const inset = 4.0;
+          final trackWidth = constraints.maxWidth - inset * 2;
+          final segmentWidth = trackWidth / tabs.length;
+
+          return Container(
+            padding: const EdgeInsets.all(inset),
+            decoration: BoxDecoration(
+              color: AppPalette.brandTint,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: SizedBox(
+              height: 46,
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: _position * segmentWidth,
+                    top: 0,
+                    bottom: 0,
+                    width: segmentWidth,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(13),
+                        boxShadow: AppPalette.cardShadow,
                       ),
                     ),
                   ),
-                ),
+                  Row(
+                    children: [
+                      for (final tab in tabs)
+                        SizedBox(
+                          width: segmentWidth,
+                          child: _StoreTabSegment(
+                            tab: tab,
+                            selected: _isSelected(tab),
+                            onTap: () => widget.onSelect(tab),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
               ),
-          ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// One tappable segment of the strip. It dips slightly under the finger so a tap
+/// is answered before the page has finished sliding.
+class _StoreTabSegment extends StatefulWidget {
+  const _StoreTabSegment({
+    required this.tab,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final StoreTab tab;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  State<_StoreTabSegment> createState() => _StoreTabSegmentState();
+}
+
+class _StoreTabSegmentState extends State<_StoreTabSegment> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (_pressed == value) {
+      return;
+    }
+    setState(() => _pressed = value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = widget.selected ? AppPalette.brand : AppPalette.mutedStrong;
+    return GestureDetector(
+      key: Key('store-tab-${widget.tab.name}'),
+      onTap: widget.onTap,
+      // Opaque so the whole segment is tappable, not just the glyph the text
+      // happens to cover.
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => _setPressed(true),
+      onTapUp: (_) => _setPressed(false),
+      onTapCancel: () => _setPressed(false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.94 : 1,
+        duration: const Duration(milliseconds: 140),
+        curve: Curves.easeOut,
+        child: Center(
+          // Shrinks the row rather than overflowing when the phone is narrow or
+          // the resident runs a large text size.
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TweenAnimationBuilder<Color?>(
+                  tween: ColorTween(end: color),
+                  duration: _tabSlideDuration,
+                  curve: _tabSlideCurve,
+                  builder: (context, animated, _) =>
+                      Icon(_tabIcon(widget.tab), size: 18, color: animated),
+                ),
+                const SizedBox(width: 6),
+                AnimatedDefaultTextStyle(
+                  duration: _tabSlideDuration,
+                  curve: _tabSlideCurve,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: color,
+                  ),
+                  child: Text(widget.tab.label),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
