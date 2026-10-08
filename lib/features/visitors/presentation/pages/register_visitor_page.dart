@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/text_input_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_dialogs.dart';
@@ -145,6 +146,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(title: 'Register visitor'),
       body: Obx(
@@ -158,20 +160,20 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
           ),
           children: [
             AppCard(
-              color: AppPalette.brandTint,
-              borderColor: AppPalette.brandSoft,
-              child: const Row(
+              color: tokens.brandTint,
+              borderColor: tokens.brandSoft,
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.vpn_key_outlined, color: AppPalette.brand),
-                  SizedBox(width: 10),
+                  Icon(Icons.vpn_key_outlined, color: tokens.brand),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       'An alphanumeric access code is generated automatically '
                       'when you register. Share the code with your visitor — no '
                       'QR pass is used.',
                       style: TextStyle(
-                        color: AppPalette.mutedStrong,
+                        color: tokens.mutedStrong,
                         fontSize: 12,
                         height: 1.4,
                       ),
@@ -213,12 +215,12 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                       label: Text(relation.label),
                       selected: _relation == relation,
                       onSelected: (_) => setState(() => _relation = relation),
-                      selectedColor: AppPalette.brandSoft,
+                      selectedColor: tokens.brandSoft,
                       labelStyle: TextStyle(
                         fontWeight: FontWeight.w700,
                         color: _relation == relation
-                            ? AppPalette.brand
-                            : AppPalette.mutedStrong,
+                            ? tokens.brand
+                            : tokens.mutedStrong,
                       ),
                     ),
                   )
@@ -258,12 +260,12 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                         _arrival = slot;
                         _arrivalIsCustom = false;
                       }),
-                      selectedColor: AppPalette.brandSoft,
+                      selectedColor: tokens.brandSoft,
                       labelStyle: TextStyle(
                         fontWeight: FontWeight.w700,
                         color: slot == _arrival && !_arrivalIsCustom
-                            ? AppPalette.brand
-                            : AppPalette.mutedStrong,
+                            ? tokens.brand
+                            : tokens.mutedStrong,
                       ),
                     ),
                   // Uses the platform time picker already in the project, so no
@@ -274,18 +276,18 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                       Icons.schedule_rounded,
                       size: 17,
                       color: _arrivalIsCustom
-                          ? AppPalette.brand
-                          : AppPalette.mutedStrong,
+                          ? tokens.brand
+                          : tokens.mutedStrong,
                     ),
                     label: Text(_arrivalIsCustom ? _arrival : 'Custom time'),
                     selected: _arrivalIsCustom,
                     onSelected: (_) => _pickCustomArrival(context),
-                    selectedColor: AppPalette.brandSoft,
+                    selectedColor: tokens.brandSoft,
                     labelStyle: TextStyle(
                       fontWeight: FontWeight.w700,
                       color: _arrivalIsCustom
-                          ? AppPalette.brand
-                          : AppPalette.mutedStrong,
+                          ? tokens.brand
+                          : tokens.mutedStrong,
                     ),
                   ),
                 ],
@@ -314,7 +316,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
             ),
             if (_error.isNotEmpty) ...[
               const SizedBox(height: 10),
-              Text(_error, style: const TextStyle(color: AppPalette.danger)),
+              Text(_error, style: TextStyle(color: AppPalette.danger)),
             ],
             if (controller.errorMessage.value != null) ...[
               const SizedBox(height: 10),
@@ -502,16 +504,17 @@ class _VisitDateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Semantics(
       button: true,
       selected: selected,
       label: '${date.relative}, ${date.day} ${date.month}',
       child: Material(
-        color: selected ? AppPalette.brand : AppPalette.surface,
+        color: selected ? tokens.brand : tokens.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
           side: BorderSide(
-            color: selected ? AppPalette.brand : AppPalette.border,
+            color: selected ? tokens.brand : tokens.border,
             width: selected ? 1.6 : 1,
           ),
         ),
@@ -529,7 +532,7 @@ class _VisitDateCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: selected ? AppPalette.brandOnDark : AppPalette.muted,
+                    color: selected ? tokens.brandOnDark : tokens.muted,
                     fontSize: 10.5,
                     fontWeight: FontWeight.w700,
                   ),
@@ -538,7 +541,7 @@ class _VisitDateCard extends StatelessWidget {
                 Text(
                   date.day,
                   style: TextStyle(
-                    color: selected ? Colors.white : AppPalette.ink,
+                    color: selected ? tokens.onBrand : tokens.ink,
                     fontSize: 19,
                     fontWeight: FontWeight.w800,
                   ),
@@ -547,7 +550,7 @@ class _VisitDateCard extends StatelessWidget {
                 Text(
                   date.month,
                   style: TextStyle(
-                    color: selected ? AppPalette.brandOnDark : AppPalette.muted,
+                    color: selected ? tokens.brandOnDark : tokens.muted,
                     fontSize: 10.5,
                     fontWeight: FontWeight.w600,
                   ),
@@ -571,6 +574,7 @@ class _NoSlotsToday extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -588,8 +592,8 @@ class _NoSlotsToday extends StatelessWidget {
           Expanded(
             child: Text(
               'No arrival times are left today. Choose a later visit date.',
-              style: const TextStyle(
-                color: AppPalette.mutedStrong,
+              style: TextStyle(
+                color: tokens.mutedStrong,
                 fontSize: 12,
                 height: 1.35,
               ),
@@ -608,29 +612,30 @@ class _VisitWindow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: AppPalette.brandTint,
+        color: tokens.brandTint,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppPalette.brandSoft),
+        border: Border.all(color: tokens.brandSoft),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.timelapse_rounded,
             size: 18,
-            color: AppPalette.brand,
+            color: tokens.brand,
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Visit time',
                   style: TextStyle(
-                    color: AppPalette.muted,
+                    color: tokens.muted,
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
                   ),
@@ -638,8 +643,8 @@ class _VisitWindow extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   range.label,
-                  style: const TextStyle(
-                    color: AppPalette.brand,
+                  style: TextStyle(
+                    color: tokens.brand,
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
@@ -649,8 +654,8 @@ class _VisitWindow extends StatelessWidget {
           ),
           Text(
             '2 hours',
-            style: const TextStyle(
-              color: AppPalette.mutedStrong,
+            style: TextStyle(
+              color: tokens.mutedStrong,
               fontSize: 12,
               fontWeight: FontWeight.w700,
             ),

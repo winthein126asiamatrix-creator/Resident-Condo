@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_palette.dart';
+import '../theme/app_theme_tokens.dart';
 
 /// One step of an [AppStepProgress] row.
 class AppProgressStep {
@@ -92,6 +92,7 @@ class _StepColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -106,8 +107,8 @@ class _StepColumn extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             color: state == ProgressState.upcoming
-                ? AppPalette.muted
-                : AppPalette.ink,
+                ? tokens.muted
+                : tokens.ink,
             fontSize: 10.5,
             height: 1.25,
             fontWeight: FontWeight.w700,
@@ -120,8 +121,8 @@ class _StepColumn extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppPalette.faint,
+            style: TextStyle(
+              color: tokens.faint,
               fontSize: 9.5,
               height: 1.2,
               fontWeight: FontWeight.w600,
@@ -144,12 +145,13 @@ class _Connector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: EdgeInsets.only(top: offset, right: 4, left: 4),
       child: Container(
         height: 2,
         decoration: BoxDecoration(
-          color: complete ? AppPalette.brand : AppPalette.border,
+          color: complete ? tokens.brand : tokens.border,
           borderRadius: BorderRadius.circular(1),
         ),
       ),
@@ -170,19 +172,20 @@ class _StepCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final isDone = state == ProgressState.completed;
     final isCurrent = state == ProgressState.current;
 
     final background = isDone
-        ? AppPalette.brand
+        ? tokens.brand
         : isCurrent
-        ? AppPalette.brandTint
-        : AppPalette.surface;
+        ? tokens.brandTint
+        : tokens.surface;
     final foreground = isDone
-        ? Colors.white
+        ? tokens.onBrand
         : isCurrent
-        ? AppPalette.brand
-        : AppPalette.mutedStrong;
+        ? tokens.brand
+        : tokens.mutedStrong;
 
     // State is spelled out for a screen reader as well as shown, so it never
     // depends on seeing the colour.
@@ -202,7 +205,7 @@ class _StepCircle extends StatelessWidget {
           color: background,
           shape: BoxShape.circle,
           border: Border.all(
-            color: isDone || isCurrent ? AppPalette.brand : AppPalette.border,
+            color: isDone || isCurrent ? tokens.brand : tokens.border,
             width: isCurrent ? 2 : 1.4,
           ),
         ),
@@ -210,7 +213,7 @@ class _StepCircle extends StatelessWidget {
         // whatever the circle size is.
         alignment: Alignment.center,
         child: isDone
-            ? Icon(Icons.check_rounded, size: size * 0.55, color: Colors.white)
+            ? Icon(Icons.check_rounded, size: size * 0.55, color: tokens.onBrand)
             : Text(
                 '${position + 1}',
                 textAlign: TextAlign.center,

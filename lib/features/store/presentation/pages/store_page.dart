@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/app_formatters.dart';
@@ -334,25 +335,26 @@ class _StoreSearch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return TextField(
       key: const Key('store-search'),
       onChanged: controller.search,
       textInputAction: TextInputAction.search,
-      style: const TextStyle(
-        color: AppPalette.ink,
+      style: TextStyle(
+        color: tokens.ink,
         fontSize: 14.5,
         fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
         hintText: 'Search the Convenience Store',
-        hintStyle: const TextStyle(
-          color: AppPalette.faint,
+        hintStyle: TextStyle(
+          color: tokens.faint,
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
-        prefixIcon: const Icon(
+        prefixIcon: Icon(
           Icons.search_rounded,
-          color: AppPalette.muted,
+          color: tokens.muted,
           size: 21,
         ),
         suffixIcon: Obx(() {
@@ -363,17 +365,17 @@ class _StoreSearch extends StatelessWidget {
             key: const Key('store-search-clear'),
             onPressed: () => controller.search(''),
             tooltip: 'Clear search',
-            icon: const Icon(
+            icon: Icon(
               Icons.close_rounded,
               size: 19,
-              color: AppPalette.muted,
+              color: tokens.muted,
             ),
           );
         }),
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(vertical: 14),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: tokens.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
           borderSide: const BorderSide(color: Color(0x14000000)),
@@ -384,7 +386,7 @@ class _StoreSearch extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          borderSide: const BorderSide(color: AppPalette.brand, width: 1.4),
+          borderSide: BorderSide(color: tokens.brand, width: 1.4),
         ),
       ),
     );
@@ -433,21 +435,22 @@ class _StoreHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
-      color: AppPalette.brandTint,
-      borderColor: AppPalette.brandSoft,
+      color: tokens.brandTint,
+      borderColor: tokens.brandSoft,
       child: Row(
         children: [
           Container(
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: AppPalette.brand,
+              color: tokens.brand,
               borderRadius: BorderRadius.circular(17),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.storefront_rounded,
-              color: Colors.white,
+              color: tokens.onBrand,
               size: 26,
             ),
           ),
@@ -456,10 +459,10 @@ class _StoreHero extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Lobby store',
                   style: TextStyle(
-                    color: AppPalette.ink,
+                    color: tokens.ink,
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
@@ -468,8 +471,8 @@ class _StoreHero extends StatelessWidget {
                 Text(
                   '${controller.products.length} products · '
                   'deliver to ${StoreController.doorstepLocation}',
-                  style: const TextStyle(
-                    color: AppPalette.mutedStrong,
+                  style: TextStyle(
+                    color: tokens.mutedStrong,
                     fontSize: 12,
                     height: 1.35,
                   ),
@@ -537,18 +540,19 @@ class _CategoryPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
         decoration: BoxDecoration(
-          color: selected ? AppPalette.brand : AppPalette.surfaceMuted,
+          color: selected ? tokens.brand : tokens.surfaceMuted,
           borderRadius: BorderRadius.circular(AppRadius.pill),
           boxShadow: selected
               ? [
                   BoxShadow(
-                    color: AppPalette.brand.withValues(alpha: 0.28),
+                    color: tokens.brand.withValues(alpha: 0.28),
                     blurRadius: 14,
                     offset: const Offset(0, 4),
                   ),
@@ -566,7 +570,7 @@ class _CategoryPill extends StatelessWidget {
                 child: AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 200),
                   style: TextStyle(
-                    color: selected ? Colors.white : AppPalette.mutedStrong,
+                    color: selected ? tokens.onBrand : tokens.mutedStrong,
                     fontSize: 13.5,
                     fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                     letterSpacing: selected ? 0.1 : 0,
@@ -589,6 +593,7 @@ class _BasketLines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -598,7 +603,7 @@ class _BasketLines extends StatelessWidget {
               Text(
                 'Your basket',
                 style: TextStyle(
-                  color: AppPalette.ink,
+                  color: tokens.ink,
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
                 ),
@@ -627,6 +632,7 @@ class _BasketLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -641,8 +647,8 @@ class _BasketLine extends StatelessWidget {
                   line.product.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppPalette.ink,
+                  style: TextStyle(
+                    color: tokens.ink,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
@@ -663,8 +669,8 @@ class _BasketLine extends StatelessWidget {
                       child: Text(
                         '${line.quantity}',
                         key: Key('store-qty-${line.product.id}'),
-                        style: const TextStyle(
-                          color: AppPalette.ink,
+                        style: TextStyle(
+                          color: tokens.ink,
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
                         ),
@@ -681,8 +687,8 @@ class _BasketLine extends StatelessWidget {
                     const Spacer(),
                     Text(
                       AppFormatters.currency(line.lineTotal),
-                      style: const TextStyle(
-                        color: AppPalette.ink,
+                      style: TextStyle(
+                        color: tokens.ink,
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                       ),
@@ -693,7 +699,7 @@ class _BasketLine extends StatelessWidget {
                           controller.removeFromCart(line.product.id),
                       tooltip: 'Remove ${line.product.name}',
                       iconSize: 18,
-                      color: AppPalette.muted,
+                      color: tokens.muted,
                       icon: const Icon(Icons.close_rounded),
                     ),
                   ],
@@ -715,15 +721,16 @@ class _QuantityButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Material(
-      color: AppPalette.brandTint,
+      color: tokens.brandTint,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
       child: InkWell(
         onTap: onTap,
         child: SizedBox(
           width: 32,
           height: 32,
-          child: Icon(icon, size: 16, color: AppPalette.brand),
+          child: Icon(icon, size: 16, color: tokens.brand),
         ),
       ),
     );
@@ -735,10 +742,11 @@ void showStoreProductDetail(
   BuildContext context, {
   required StoreController controller,
 }) {
+  final tokens = AppThemeTokens.of(context);
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppPalette.surface,
+    backgroundColor: tokens.canvas,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -759,7 +767,7 @@ void showStoreProductDetail(
                   width: 38,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppPalette.border,
+                    color: tokens.border,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -770,8 +778,8 @@ void showStoreProductDetail(
               Text(
                 product.name,
                 key: const Key('store-product-detail-name'),
-                style: const TextStyle(
-                  color: AppPalette.ink,
+                style: TextStyle(
+                  color: tokens.ink,
                   fontSize: 19,
                   fontWeight: FontWeight.w800,
                 ),
@@ -779,7 +787,7 @@ void showStoreProductDetail(
               const SizedBox(height: 6),
               Text(
                 product.category.label,
-                style: const TextStyle(color: AppPalette.muted, fontSize: 13),
+                style: TextStyle(color: tokens.muted, fontSize: 13),
               ),
               const SizedBox(height: 14),
               Row(
@@ -788,8 +796,8 @@ void showStoreProductDetail(
                   const Spacer(),
                   Text(
                     AppFormatters.currency(product.price),
-                    style: const TextStyle(
-                      color: AppPalette.brand,
+                    style: TextStyle(
+                      color: tokens.brand,
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
                     ),
@@ -799,8 +807,8 @@ void showStoreProductDetail(
               const SizedBox(height: 16),
               Text(
                 product.description,
-                style: const TextStyle(
-                  color: AppPalette.mutedStrong,
+                style: TextStyle(
+                  color: tokens.mutedStrong,
                   fontSize: 13.5,
                   height: 1.45,
                 ),
@@ -808,7 +816,7 @@ void showStoreProductDetail(
               const SizedBox(height: 10),
               Text(
                 '${product.unit} · ${product.stock} on the shelf',
-                style: const TextStyle(color: AppPalette.faint, fontSize: 12),
+                style: TextStyle(color: tokens.faint, fontSize: 12),
               ),
               const SizedBox(height: 20),
               StoreCheckoutButton(

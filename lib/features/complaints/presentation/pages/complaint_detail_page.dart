@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_section.dart';
 import '../../../../core/widgets/app_status_pill.dart';
@@ -19,6 +20,7 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Obx(() {
       final current = _current();
       return Scaffold(
@@ -65,10 +67,7 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
               title: 'What you reported',
               child: Text(
                 current.description,
-                style: const TextStyle(
-                  color: AppPalette.mutedStrong,
-                  height: 1.45,
-                ),
+                style: TextStyle(color: tokens.mutedStrong, height: 1.45),
               ),
             ),
             if (current.resolution != null) ...[
@@ -92,9 +91,9 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
             ),
             const SizedBox(height: 10),
             if (current.comments.isEmpty)
-              const Text(
+              Text(
                 'No messages yet. The community team will reply here.',
-                style: TextStyle(color: AppPalette.muted, fontSize: 12),
+                style: TextStyle(color: tokens.muted, fontSize: 12),
               )
             else
               for (final comment in current.comments)
@@ -174,15 +173,14 @@ class _CommentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final isStaff = comment.authorRole == 'Resident';
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isStaff ? AppPalette.brandTint : Colors.white,
+        color: isStaff ? tokens.brandTint : tokens.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isStaff ? AppPalette.brandSoft : AppPalette.border,
-        ),
+        border: Border.all(color: isStaff ? tokens.brandSoft : tokens.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,20 +198,20 @@ class _CommentTile extends StatelessWidget {
               ),
               Text(
                 comment.postedOn,
-                style: const TextStyle(color: AppPalette.faint, fontSize: 10),
+                style: TextStyle(color: tokens.faint, fontSize: 10),
               ),
             ],
           ),
           const SizedBox(height: 3),
           Text(
             comment.authorRole,
-            style: const TextStyle(color: AppPalette.muted, fontSize: 10),
+            style: TextStyle(color: tokens.muted, fontSize: 10),
           ),
           const SizedBox(height: 8),
           Text(
             comment.message,
-            style: const TextStyle(
-              color: AppPalette.mutedStrong,
+            style: TextStyle(
+              color: tokens.mutedStrong,
               fontSize: 12,
               height: 1.4,
             ),

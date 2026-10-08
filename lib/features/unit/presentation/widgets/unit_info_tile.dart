@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme_tokens.dart';
+
 class UnitInfoTile extends StatelessWidget {
   const UnitInfoTile({
     required this.label,
@@ -14,15 +16,16 @@ class UnitInfoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7FAF9),
+        color: tokens.canvas,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 19, color: const Color(0xFF0F766E)),
+          Icon(icon, size: 19, color: tokens.brand),
           const SizedBox(width: 9),
           Expanded(
             child: Column(
@@ -30,9 +33,9 @@ class UnitInfoTile extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    color: Color(0xFF71807D),
+                    color: tokens.muted,
                   ),
                 ),
                 const SizedBox(height: 3),

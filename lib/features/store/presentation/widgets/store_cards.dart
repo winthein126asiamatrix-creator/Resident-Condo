@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -34,6 +35,7 @@ class StoreCheckoutSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       key: keyName == null ? null : Key(keyName!),
       child: Column(
@@ -41,19 +43,19 @@ class StoreCheckoutSummaryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.receipt_long_rounded,
                 size: 18,
-                color: AppPalette.brand,
+                color: tokens.brand,
               ),
               const SizedBox(width: 8),
-              const Flexible(
+              Flexible(
                 child: Text(
                   'Order summary',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: AppPalette.ink,
+                    color: tokens.ink,
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
@@ -62,7 +64,7 @@ class StoreCheckoutSummaryCard extends StatelessWidget {
               const Spacer(),
               Text(
                 '$itemCount ${itemCount == 1 ? 'item' : 'items'}',
-                style: const TextStyle(color: AppPalette.muted, fontSize: 12),
+                style: TextStyle(color: tokens.muted, fontSize: 12),
               ),
             ],
           ),
@@ -78,17 +80,17 @@ class StoreCheckoutSummaryCard extends StatelessWidget {
                 : AppFormatters.currency(deliveryFee),
             muted: deliveryFee == 0,
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Divider(height: 1, color: AppPalette.border),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Divider(height: 1, color: tokens.border),
           ),
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Store Fee total',
                   style: TextStyle(
-                    color: AppPalette.ink,
+                    color: tokens.ink,
                     fontSize: 14.5,
                     fontWeight: FontWeight.w800,
                   ),
@@ -97,8 +99,8 @@ class StoreCheckoutSummaryCard extends StatelessWidget {
               Text(
                 AppFormatters.currency(total),
                 key: const Key('store-total'),
-                style: const TextStyle(
-                  color: AppPalette.brand,
+                style: TextStyle(
+                  color: tokens.brand,
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                 ),
@@ -120,6 +122,7 @@ class _TotalRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -128,7 +131,7 @@ class _TotalRow extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: muted ? AppPalette.success : AppPalette.muted,
+                color: muted ? AppPalette.success : tokens.muted,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -137,7 +140,7 @@ class _TotalRow extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              color: muted ? AppPalette.success : AppPalette.ink,
+              color: muted ? AppPalette.success : tokens.ink,
               fontSize: 13.5,
               fontWeight: FontWeight.w700,
             ),
@@ -157,6 +160,7 @@ class StoreOrderTrackerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cancelled = order.status == StoreOrderStatus.cancelled;
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       key: const Key('store-order-tracker'),
       child: Column(
@@ -168,7 +172,7 @@ class StoreOrderTrackerCard extends StatelessWidget {
                 child: Text(
                   'Order progress',
                   style: TextStyle(
-                    color: AppPalette.ink,
+                    color: tokens.ink,
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
@@ -180,7 +184,7 @@ class StoreOrderTrackerCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             order.id,
-            style: const TextStyle(color: AppPalette.muted, fontSize: 12),
+            style: TextStyle(color: tokens.muted, fontSize: 12),
           ),
           const SizedBox(height: 14),
           if (cancelled)
@@ -249,6 +253,7 @@ class StoreOrderTrackerListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       key: Key('store-order-${order.id}'),
       onTap: onTap,
@@ -263,12 +268,12 @@ class StoreOrderTrackerListCard extends StatelessWidget {
                 height: 42,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: storeOrderStatusColor(order.status).withValues(alpha: 0.12),
+                  color: storeOrderStatusColor(order.status, tokens).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   storeOrderStatusIcon(order.status),
-                  color: storeOrderStatusColor(order.status),
+                  color: storeOrderStatusColor(order.status, tokens),
                   size: 21,
                 ),
               ),
@@ -279,8 +284,8 @@ class StoreOrderTrackerListCard extends StatelessWidget {
                   children: [
                     Text(
                       order.id,
-                      style: const TextStyle(
-                        color: AppPalette.ink,
+                      style: TextStyle(
+                        color: tokens.ink,
                         fontSize: 14.5,
                         fontWeight: FontWeight.w800,
                       ),
@@ -290,8 +295,8 @@ class StoreOrderTrackerListCard extends StatelessWidget {
                       '${order.itemCount} ${order.itemCount == 1 ? 'item' : 'items'} · ${order.deliveryMethod.label}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppPalette.muted,
+                      style: TextStyle(
+                        color: tokens.muted,
                         fontSize: 11.5,
                       ),
                     ),
@@ -303,8 +308,8 @@ class StoreOrderTrackerListCard extends StatelessWidget {
                 children: [
                   Text(
                     AppFormatters.currency(order.total),
-                    style: const TextStyle(
-                      color: AppPalette.ink,
+                    style: TextStyle(
+                      color: tokens.ink,
                       fontSize: 14.5,
                       fontWeight: FontWeight.w800,
                     ),
@@ -320,7 +325,7 @@ class StoreOrderTrackerListCard extends StatelessWidget {
             order.deliveryTime,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: AppPalette.mutedStrong, fontSize: 12),
+            style: TextStyle(color: tokens.mutedStrong, fontSize: 12),
           ),
         ],
       ),
@@ -381,13 +386,14 @@ void showStoreAddedToBasket(
   if (messenger == null) {
     return;
   }
+  final tokens = AppThemeTokens.of(context);
   messenger
     ..clearSnackBars()
     ..showSnackBar(
       SnackBar(
         key: const Key('store-added-snackbar'),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppPalette.ink,
+        backgroundColor: tokens.ink,
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -406,7 +412,7 @@ void showStoreAddedToBasket(
                     product.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 13.5,
                       fontWeight: FontWeight.w800,
@@ -491,6 +497,7 @@ class StoreCartBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final empty = count == 0;
+    final tokens = AppThemeTokens.of(context);
     return Semantics(
       button: true,
       label: empty
@@ -504,9 +511,9 @@ class StoreCartBadge extends StatelessWidget {
           height: 40,
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
-            color: empty ? Colors.white : AppPalette.brand,
+            color: empty ? tokens.surface : tokens.brand,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: empty ? AppPalette.border : AppPalette.brand),
+            border: Border.all(color: empty ? tokens.border : tokens.brand),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -514,13 +521,13 @@ class StoreCartBadge extends StatelessWidget {
               Icon(
                 Icons.shopping_basket_outlined,
                 size: 19,
-                color: empty ? AppPalette.muted : Colors.white,
+                color: empty ? tokens.muted : tokens.onBrand,
               ),
               const SizedBox(width: 7),
               Text(
                 empty ? 'Basket' : '$count',
                 style: TextStyle(
-                  color: empty ? AppPalette.muted : Colors.white,
+                  color: empty ? tokens.muted : tokens.onBrand,
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
                 ),

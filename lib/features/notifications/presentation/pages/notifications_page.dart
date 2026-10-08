@@ -7,6 +7,7 @@ import '../controllers/notification_controller.dart';
 import '../widgets/notification_item_card.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 
 class NotificationsPage extends GetView<NotificationController> {
   const NotificationsPage({super.key});
@@ -103,18 +104,13 @@ class _NotificationSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F766E),
+        color: tokens.brand,
         borderRadius: BorderRadius.circular(22),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1A0F766E),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
+        boxShadow: tokens.heroShadow,
       ),
       child: Row(
         children: [
@@ -125,9 +121,9 @@ class _NotificationSummary extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(17),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.notifications_active_outlined,
-              color: Color(0xFFBFE8DF),
+              color: tokens.brandOnDark,
               size: 27,
             ),
           ),
@@ -136,10 +132,10 @@ class _NotificationSummary extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Your updates',
                   style: TextStyle(
-                    color: Color(0xFFBFE8DF),
+                    color: tokens.brandOnDark,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
@@ -149,8 +145,8 @@ class _NotificationSummary extends StatelessWidget {
                   unreadCount == 0
                       ? 'You are all caught up'
                       : '$unreadCount unread updates',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: tokens.brandOnDark,
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
@@ -160,7 +156,7 @@ class _NotificationSummary extends StatelessWidget {
           ),
           Text(
             '$totalCount total',
-            style: const TextStyle(color: Color(0xFFBFE8DF), fontSize: 11),
+            style: TextStyle(color: tokens.brandOnDark, fontSize: 11),
           ),
         ],
       ),

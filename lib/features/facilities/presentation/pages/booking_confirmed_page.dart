@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/app_dates.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -21,6 +22,7 @@ class BookingConfirmedPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       // The same custom bar as the reservation and maintenance screens.
       appBar: AppDetailAppBar(
@@ -41,8 +43,8 @@ class BookingConfirmedPage extends StatelessWidget {
             child: Container(
               width: 92,
               height: 92,
-              decoration: const BoxDecoration(
-                color: AppPalette.brandTint,
+              decoration: BoxDecoration(
+                color: tokens.brandTint,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -53,21 +55,21 @@ class BookingConfirmedPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 22),
-          const Text(
+          Text(
             'Reservation Confirmed',
             key: Key('booking-confirmed-title'),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: AppPalette.ink,
+              color: tokens.ink,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Your facility reservation has been successfully confirmed.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppPalette.muted, height: 1.4),
+            style: TextStyle(color: tokens.muted, height: 1.4),
           ),
           const SizedBox(height: 26),
           AppCard(
@@ -113,7 +115,7 @@ class BookingConfirmedPage extends StatelessWidget {
               onPressed: () => Get.offAllNamed(AppRoutes.home),
               icon: const Icon(Icons.event_available_rounded, size: 18),
               label: const Text('Back to Facilities'),
-              style: TextButton.styleFrom(foregroundColor: AppPalette.brand),
+              style: TextButton.styleFrom(foregroundColor: tokens.brand),
             ),
           ),
         ],

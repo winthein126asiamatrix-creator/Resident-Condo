@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
-import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -37,6 +37,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(title: 'Checkout'),
       body: Obx(() {
@@ -80,8 +81,8 @@ class StoreCheckoutPage extends GetView<StoreController> {
                 children: [
                   Text(
                     controller.deliveryLocation,
-                    style: const TextStyle(
-                      color: AppPalette.muted,
+                    style: TextStyle(
+                      color: tokens.muted,
                       fontSize: 12.5,
                     ),
                   ),
@@ -98,11 +99,11 @@ class StoreCheckoutPage extends GetView<StoreController> {
                           label: Text(slot),
                           selected: slot == controller.deliveryTime.value,
                           onSelected: (_) => controller.selectDeliveryTime(slot),
-                          selectedColor: AppPalette.brandOnDark,
+                          selectedColor: tokens.brandOnDark,
                           labelStyle: TextStyle(
                             color: slot == controller.deliveryTime.value
-                                ? AppPalette.brand
-                                : AppPalette.mutedStrong,
+                                ? tokens.brand
+                                : tokens.mutedStrong,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -191,12 +192,12 @@ class StoreCheckoutPage extends GetView<StoreController> {
                     ),
                     if (payingNow && method == null) ...[
                       const SizedBox(height: 10),
-                      const Text(
+                      Text(
                         'Choose a payment method to continue.',
                         key: Key('store-method-required'),
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: AppPalette.muted,
+                          color: tokens.muted,
                           fontSize: 12.5,
                         ),
                       ),
@@ -360,16 +361,17 @@ class _PaymentMethodPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (StoreController.savedMethods.isNotEmpty) ...[
-          const Padding(
-            padding: EdgeInsets.only(bottom: 8),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
             child: Text(
               'Saved',
               style: TextStyle(
-                color: AppPalette.faint,
+                color: tokens.faint,
                 fontSize: 11.5,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.4,
@@ -390,12 +392,12 @@ class _PaymentMethodPicker extends StatelessWidget {
             ),
           const SizedBox(height: 14),
         ],
-        const Padding(
-          padding: EdgeInsets.only(bottom: 8),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
           child: Text(
             'All methods',
             style: TextStyle(
-              color: AppPalette.faint,
+              color: tokens.faint,
               fontSize: 11.5,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.4,
@@ -437,14 +439,15 @@ class _MethodRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: selected ? AppPalette.brandTint : AppPalette.surface,
+        color: selected ? tokens.brandTint : tokens.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
           side: BorderSide(
-            color: selected ? AppPalette.brand : AppPalette.border,
+            color: selected ? tokens.brand : tokens.border,
             width: selected ? 1.5 : 1,
           ),
         ),
@@ -460,13 +463,13 @@ class _MethodRow extends StatelessWidget {
                   height: 38,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: selected ? Colors.white : Colors.white,
+                    color: selected ? tokens.surface : tokens.surface,
                     borderRadius: BorderRadius.circular(11),
                   ),
                   child: Icon(
                     icon,
                     size: 19,
-                    color: selected ? AppPalette.brand : AppPalette.mutedStrong,
+                    color: selected ? tokens.brand : tokens.mutedStrong,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -477,7 +480,7 @@ class _MethodRow extends StatelessWidget {
                       Text(
                         title,
                         style: TextStyle(
-                          color: selected ? AppPalette.brand : AppPalette.ink,
+                          color: selected ? tokens.brand : tokens.ink,
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
                         ),
@@ -485,8 +488,8 @@ class _MethodRow extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         description,
-                        style: const TextStyle(
-                          color: AppPalette.muted,
+                        style: TextStyle(
+                          color: tokens.muted,
                           fontSize: 12,
                           height: 1.3,
                         ),
@@ -495,10 +498,10 @@ class _MethodRow extends StatelessWidget {
                   ),
                 ),
                 if (selected)
-                  const Icon(
+                  Icon(
                     Icons.check_circle_rounded,
                     size: 20,
-                    color: AppPalette.brand,
+                    color: tokens.brand,
                   ),
               ],
             ),
@@ -517,14 +520,15 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: AppPalette.ink,
+            style: TextStyle(
+              color: tokens.ink,
               fontSize: 15,
               fontWeight: FontWeight.w800,
             ),
@@ -563,14 +567,15 @@ class _DeliveryOption extends StatelessWidget {
       StoreDeliveryMethod.doorstep => Icons.door_front_door_outlined,
       StoreDeliveryMethod.lobbyPickup => Icons.storefront_outlined,
     };
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        color: selected ? AppPalette.brandTint : AppPalette.surface,
+        color: selected ? tokens.brandTint : tokens.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(
-            color: selected ? AppPalette.brand : AppPalette.border,
+            color: selected ? tokens.brand : tokens.border,
             width: selected ? 1.6 : 1,
           ),
         ),
@@ -585,7 +590,7 @@ class _DeliveryOption extends StatelessWidget {
                 Icon(
                   icon,
                   size: 20,
-                  color: selected ? AppPalette.brand : AppPalette.muted,
+                  color: selected ? tokens.brand : tokens.muted,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -595,7 +600,7 @@ class _DeliveryOption extends StatelessWidget {
                       Text(
                         label,
                         style: TextStyle(
-                          color: selected ? AppPalette.brand : AppPalette.ink,
+                          color: selected ? tokens.brand : tokens.ink,
                           fontSize: 14.5,
                           fontWeight: FontWeight.w800,
                         ),
@@ -603,8 +608,8 @@ class _DeliveryOption extends StatelessWidget {
                       const SizedBox(height: 3),
                       Text(
                         detail,
-                        style: const TextStyle(
-                          color: AppPalette.muted,
+                        style: TextStyle(
+                          color: tokens.muted,
                           fontSize: 12.5,
                           height: 1.35,
                         ),
@@ -613,10 +618,10 @@ class _DeliveryOption extends StatelessWidget {
                   ),
                 ),
                 if (selected)
-                  const Icon(
+                  Icon(
                     Icons.check_circle_rounded,
                     size: 20,
-                    color: AppPalette.brand,
+                    color: tokens.brand,
                   ),
               ],
             ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme_tokens.dart';
+
 class SectionHeader extends StatelessWidget {
   const SectionHeader({
     required this.title,
@@ -14,6 +16,7 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Row(
       children: [
         Expanded(
@@ -21,7 +24,7 @@ class SectionHeader extends StatelessWidget {
             title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w800,
-              color: const Color(0xFF1D2B2A),
+              color: tokens.ink,
             ),
           ),
         ),

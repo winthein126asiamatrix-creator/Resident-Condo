@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
-import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_primary_action.dart';
 import '../../../../core/widgets/app_section.dart';
@@ -17,8 +17,8 @@ class MaintenancePage extends GetView<MaintenanceController> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
-      backgroundColor: AppPalette.surface,
       body: SafeArea(
         child: Obx(
           () => controller.isLoading.value && controller.requests.isEmpty
@@ -48,9 +48,9 @@ class MaintenancePage extends GetView<MaintenanceController> {
                             '${controller.inProgressCount} in progress  ·  '
                             '${controller.completedCount} completed',
                         footnote: 'Our team reviews every request and keeps you posted.',
-                        trailing: const Icon(
+                        trailing: Icon(
                           Icons.chevron_right_rounded,
-                          color: AppPalette.brandOnDark,
+                          color: tokens.brandOnDark,
                         ),
                       ),
                       const SizedBox(height: 18),
@@ -97,9 +97,10 @@ class _MaintenanceHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -108,13 +109,13 @@ class _MaintenanceHeader extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.w800,
-                  color: AppPalette.ink,
+                  color: tokens.ink,
                 ),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
                 'Keep your home running smoothly',
-                style: TextStyle(color: AppPalette.muted),
+                style: TextStyle(color: tokens.muted),
               ),
             ],
           ),
@@ -122,7 +123,7 @@ class _MaintenanceHeader extends StatelessWidget {
         IconButton(
           onPressed: onRefresh,
           tooltip: 'Refresh maintenance requests',
-          icon: const Icon(Icons.refresh_rounded, color: AppPalette.muted),
+          icon: Icon(Icons.refresh_rounded, color: tokens.muted),
         ),
       ],
     );
@@ -135,14 +136,15 @@ class _RequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       onTap: () => Get.toNamed(AppRoutes.maintenanceDetail, arguments: request),
       borderRadius: 18,
       child: Row(
         children: [
-          const AppIconTile(
+          AppIconTile(
             icon: Icons.build_circle_outlined,
-            color: AppPalette.brand,
+            color: tokens.brand,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -151,20 +153,20 @@ class _RequestCard extends StatelessWidget {
               children: [
                 Text(
                   request.title,
-                  style: const TextStyle(
-                    color: AppPalette.ink,
+                  style: TextStyle(
+                    color: tokens.ink,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '${request.category.label} · ${request.priority.label}',
-                  style: const TextStyle(color: AppPalette.muted, fontSize: 12),
+                  style: TextStyle(color: tokens.muted, fontSize: 12),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   request.createdAt,
-                  style: const TextStyle(color: AppPalette.faint, fontSize: 11),
+                  style: TextStyle(color: tokens.faint, fontSize: 11),
                 ),
               ],
             ),
@@ -174,7 +176,7 @@ class _RequestCard extends StatelessWidget {
             children: [
               MaintenanceStatusBadge(status: request.status),
               const SizedBox(height: 8),
-              const Icon(Icons.chevron_right_rounded, color: AppPalette.faint),
+              Icon(Icons.chevron_right_rounded, color: tokens.faint),
             ],
           ),
         ],

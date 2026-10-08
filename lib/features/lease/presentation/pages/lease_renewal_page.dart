@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_radius.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_dates.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -79,6 +80,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Obx(() {
       final lease = controller.selectedLease.value;
       if (lease == null) {
@@ -107,13 +109,13 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
           ),
           children: [
             AppCard(
-              color: AppPalette.brandTint,
-              borderColor: AppPalette.brandSoft,
+              color: tokens.brandTint,
+              borderColor: tokens.brandSoft,
               child: Row(
                 children: [
-                  const AppIconTile(
+                  AppIconTile(
                     icon: Icons.autorenew_rounded,
-                    color: AppPalette.brand,
+                    color: tokens.brand,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -122,17 +124,17 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
                       children: [
                         Text(
                           'Current term',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w800,
-                            color: AppPalette.ink,
+                            color: tokens.ink,
                           ),
                         ),
                         const SizedBox(height: 3),
                         Text(
                           '${AppDates.format(lease.startDate)} → '
                           '${AppDates.format(lease.endDate)}',
-                          style: const TextStyle(
-                            color: AppPalette.mutedStrong,
+                          style: TextStyle(
+                            color: tokens.mutedStrong,
                             fontSize: 12,
                           ),
                         ),
@@ -140,8 +142,8 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
                         Text(
                           '${AppFormatters.currency(lease.monthlyRent)} / month · '
                           '${lease.daysRemaining} days left',
-                          style: const TextStyle(
-                            color: AppPalette.muted,
+                          style: TextStyle(
+                            color: tokens.muted,
                             fontSize: 12,
                           ),
                         ),
@@ -152,7 +154,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Proposed term',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
@@ -171,7 +173,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
               durationLabel: _durationLabel(),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Proposed monthly rent',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
             ),
@@ -201,15 +203,15 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
               key: const Key('submit-renewal'),
               onPressed: controller.isSubmitting.value ? null : _submit,
               icon: controller.isSubmitting.value
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: tokens.onBrand,
                       ),
                     )
-                  : const Icon(Icons.send_rounded, size: 18),
+                  : Icon(Icons.send_rounded, size: 18),
               label: Text(
                 controller.isSubmitting.value
                     ? 'Sending request...'
@@ -221,13 +223,13 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
             ),
             if (_error.isNotEmpty) ...[
               const SizedBox(height: 10),
-              Text(_error, style: const TextStyle(color: AppPalette.danger)),
+              Text(_error, style: TextStyle(color: AppPalette.danger)),
             ],
             if (controller.errorMessage.value != null) ...[
               const SizedBox(height: 10),
               Text(
                 controller.errorMessage.value!,
-                style: const TextStyle(color: AppPalette.danger),
+                style: TextStyle(color: AppPalette.danger),
               ),
             ],
           ],
@@ -391,6 +393,7 @@ class _TermPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -408,12 +411,12 @@ class _TermPicker extends StatelessWidget {
                       onTap: onPickStart,
                     ),
                   ),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.symmetric(horizontal: 6),
                     child: Icon(
                       Icons.arrow_forward_rounded,
                       size: 16,
-                      color: AppPalette.faint,
+                      color: tokens.faint,
                     ),
                   ),
                   Expanded(
@@ -432,10 +435,10 @@ class _TermPicker extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           'Quick lengths',
           style: TextStyle(
-            color: AppPalette.mutedStrong,
+            color: tokens.mutedStrong,
             fontSize: 12,
             fontWeight: FontWeight.w700,
           ),
@@ -467,10 +470,11 @@ class _DateTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final radius = BorderRadius.circular(AppRadius.md);
     return Material(
       key: fieldKey,
-      color: AppPalette.surfaceMuted,
+      color: tokens.surfaceMuted,
       borderRadius: radius,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -483,8 +487,8 @@ class _DateTile extends StatelessWidget {
             children: [
               Text(
                 caption.toUpperCase(),
-                style: const TextStyle(
-                  color: AppPalette.muted,
+                style: TextStyle(
+                  color: tokens.muted,
                   fontSize: 9.5,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.1,
@@ -498,8 +502,8 @@ class _DateTile extends StatelessWidget {
                 child: Text(
                   AppDates.format(value),
                   maxLines: 1,
-                  style: const TextStyle(
-                    color: AppPalette.ink,
+                  style: TextStyle(
+                    color: tokens.ink,
                     fontSize: 14.5,
                     fontWeight: FontWeight.w800,
                   ),
@@ -510,15 +514,15 @@ class _DateTile extends StatelessWidget {
                 AppDates.weekday(value),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: AppPalette.muted, fontSize: 11),
+                style: TextStyle(color: tokens.muted, fontSize: 11),
               ),
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.event_rounded,
                     size: 13,
-                    color: AppPalette.brand,
+                    color: tokens.brand,
                   ),
                   const SizedBox(width: 4),
                   Flexible(
@@ -526,8 +530,8 @@ class _DateTile extends StatelessWidget {
                       'Pick a date',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppPalette.brand,
+                      style: TextStyle(
+                        color: tokens.brand,
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
                       ),
@@ -574,18 +578,19 @@ class _DurationStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
       decoration: BoxDecoration(
-        color: AppPalette.brandTint,
+        color: tokens.brandTint,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.timelapse_rounded,
             size: 18,
-            color: AppPalette.brand,
+            color: tokens.brand,
           ),
           const SizedBox(width: 9),
           Expanded(
@@ -599,8 +604,8 @@ class _DurationStrip extends StatelessWidget {
                   child: Text(
                     label,
                     maxLines: 1,
-                    style: const TextStyle(
-                      color: AppPalette.ink,
+                    style: TextStyle(
+                      color: tokens.ink,
                       fontSize: 13.5,
                       fontWeight: FontWeight.w800,
                     ),
@@ -610,8 +615,8 @@ class _DurationStrip extends StatelessWidget {
                 Text(
                   _timing,
                   maxLines: 2,
-                  style: const TextStyle(
-                    color: AppPalette.mutedStrong,
+                  style: TextStyle(
+                    color: tokens.mutedStrong,
                     fontSize: 11,
                     height: 1.25,
                   ),
@@ -669,13 +674,14 @@ class _QuickDateChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final radius = BorderRadius.circular(AppRadius.md);
     return Semantics(
       button: true,
       selected: selected,
       label: '${preset.label}, ${AppDates.format(preset.value)}',
       child: Material(
-        color: selected ? AppPalette.brandTint : Colors.white,
+        color: selected ? tokens.brandTint : tokens.surface,
         borderRadius: radius,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -685,7 +691,7 @@ class _QuickDateChip extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: radius,
               border: Border.all(
-                color: selected ? AppPalette.brand : AppPalette.border,
+                color: selected ? tokens.brand : tokens.border,
                 width: selected ? 1.6 : 1,
               ),
             ),
@@ -695,7 +701,7 @@ class _QuickDateChip extends StatelessWidget {
                 Text(
                   preset.label,
                   style: TextStyle(
-                    color: selected ? AppPalette.brand : AppPalette.mutedStrong,
+                    color: selected ? tokens.brand : tokens.mutedStrong,
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                   ),
@@ -704,7 +710,7 @@ class _QuickDateChip extends StatelessWidget {
                 Text(
                   AppDates.formatShort(preset.value),
                   style: TextStyle(
-                    color: selected ? AppPalette.brandDark : AppPalette.muted,
+                    color: selected ? tokens.brandDark : tokens.muted,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),

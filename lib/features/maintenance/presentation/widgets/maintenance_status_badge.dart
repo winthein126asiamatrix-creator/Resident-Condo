@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../domain/entities/maintenance_request.dart';
 
 class MaintenanceStatusBadge extends StatelessWidget {
@@ -9,8 +10,11 @@ class MaintenanceStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    // Assigned, in progress and completed carry meaning, so those colours stay
+    // fixed. Submitted has no colour of its own, so it borrows the neutral one.
     final (label, color) = switch (status) {
-      MaintenanceStatus.submitted => ('Submitted', const Color(0xFF52635F)),
+      MaintenanceStatus.submitted => ('Submitted', tokens.mutedStrong),
       MaintenanceStatus.assigned => ('Assigned', const Color(0xFF5B4CC4)),
       MaintenanceStatus.inProgress => ('In Progress', const Color(0xFFB45309)),
       MaintenanceStatus.completed => ('Completed', const Color(0xFF087F5B)),

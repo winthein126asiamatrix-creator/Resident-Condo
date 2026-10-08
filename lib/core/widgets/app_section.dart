@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_palette.dart';
+import '../theme/app_theme_tokens.dart';
 import 'app_card.dart';
 
 /// Section title with optional count chip and trailing action.
@@ -20,13 +20,14 @@ class AppSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Row(
       children: [
         Flexible(
           child: Text(
             title,
-            style: const TextStyle(
-              color: AppPalette.ink,
+            style: TextStyle(
+              color: tokens.ink,
               fontWeight: FontWeight.w800,
               fontSize: 16,
             ),
@@ -37,13 +38,13 @@ class AppSectionHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
             decoration: BoxDecoration(
-              color: AppPalette.brandTint,
+              color: tokens.brandTint,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
               '$count',
-              style: const TextStyle(
-                color: AppPalette.brand,
+              style: TextStyle(
+                color: tokens.brand,
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
               ),
@@ -75,6 +76,7 @@ class AppLabelValueRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 7),
       child: Row(
@@ -84,7 +86,7 @@ class AppLabelValueRow extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: emphasize ? AppPalette.ink : AppPalette.muted,
+                color: emphasize ? tokens.ink : tokens.muted,
                 fontWeight: emphasize ? FontWeight.w800 : FontWeight.w400,
               ),
             ),
@@ -97,7 +99,7 @@ class AppLabelValueRow extends StatelessWidget {
                   textAlign: TextAlign.right,
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    color: emphasize ? AppPalette.brand : AppPalette.ink,
+                    color: emphasize ? tokens.brand : tokens.ink,
                   ),
                 ),
               ),
@@ -122,23 +124,24 @@ class AppSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w800,
               fontSize: 15,
-              color: AppPalette.ink,
+              color: tokens.ink,
             ),
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 4),
             Text(
               subtitle!,
-              style: const TextStyle(color: AppPalette.muted, fontSize: 12),
+              style: TextStyle(color: tokens.muted, fontSize: 12),
             ),
           ],
           const SizedBox(height: 10),

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../domain/entities/invoice.dart';
@@ -21,6 +22,7 @@ class PaymentFailurePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(title: 'Payment failed'),
       body: ListView(
@@ -36,8 +38,8 @@ class PaymentFailurePage extends StatelessWidget {
             child: Container(
               width: 88,
               height: 88,
-              decoration: const BoxDecoration(
-                color: AppPalette.accentSoft,
+              decoration: BoxDecoration(
+                color: tokens.brandTint,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -48,13 +50,13 @@ class PaymentFailurePage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'Payment Not Completed',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: AppPalette.ink,
+              color: tokens.ink,
             ),
           ),
           const SizedBox(height: 8),
@@ -62,11 +64,11 @@ class PaymentFailurePage extends StatelessWidget {
             payment.failureReason ??
                 'The transaction was declined. No amount has been charged.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppPalette.muted, height: 1.4),
+            style: TextStyle(color: tokens.muted, height: 1.4),
           ),
           const SizedBox(height: 24),
           AppCard(
-            color: AppPalette.accentSoft,
+            color: tokens.brandTint,
             borderColor: const Color(0xFFF0C6C0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,11 +81,11 @@ class PaymentFailurePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
+                Text(
                   'A failed payment never changes an invoice. These items stay '
                   'unpaid and can be selected again.',
                   style: TextStyle(
-                    color: AppPalette.mutedStrong,
+                    color: tokens.mutedStrong,
                     fontSize: 12,
                     height: 1.4,
                   ),
@@ -160,6 +162,7 @@ class _Line extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
@@ -167,10 +170,7 @@ class _Line extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(
-                color: AppPalette.mutedStrong,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: tokens.mutedStrong, fontSize: 12),
             ),
           ),
           Text(

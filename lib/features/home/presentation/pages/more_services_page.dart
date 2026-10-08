@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/models/resident_role.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_section.dart';
 import '../../../../core/widgets/app_status_pill.dart';
@@ -24,6 +25,7 @@ class MoreServicesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final session = Get.find<SessionController>();
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(title: 'More services'),
       body: SafeArea(
@@ -55,7 +57,7 @@ class MoreServicesPage extends StatelessWidget {
             _ModuleTile(
               route: AppRoutes.visitors,
               icon: Icons.people_alt_rounded,
-              color: AppPalette.brand,
+              color: tokens.brand,
               title: 'Visitors',
               subtitle: 'Access codes, check-in and check-out',
               badge: _visitorBadge(),
@@ -74,14 +76,14 @@ class MoreServicesPage extends StatelessWidget {
             _ModuleTile(
               route: AppRoutes.store,
               icon: Icons.storefront_rounded,
-              color: AppPalette.accent,
+              color: tokens.brand,
               title: 'Convenience Store',
               subtitle: 'Groceries, snacks and drinks to your door',
             ),
             _ModuleTile(
               route: AppRoutes.services,
               icon: Icons.room_service_rounded,
-              color: AppPalette.brand,
+              color: tokens.brand,
               title: 'Condo services',
               subtitle: 'Cleaning, laundry, pest control and more',
               badge: _serviceBadge(),
@@ -89,7 +91,7 @@ class MoreServicesPage extends StatelessWidget {
             _ModuleTile(
               route: AppRoutes.complaints,
               icon: Icons.support_agent_rounded,
-              color: AppPalette.accent,
+              color: tokens.brand,
               title: 'Complaints',
               subtitle: 'Report an issue to the community team',
               badge: _complaintBadge(),
@@ -108,14 +110,14 @@ class MoreServicesPage extends StatelessWidget {
             _ModuleTile(
               route: AppRoutes.unit,
               icon: Icons.home_work_rounded,
-              color: AppPalette.mutedStrong,
+              color: tokens.mutedStrong,
               title: 'My unit',
               subtitle: 'Owner, tenant, residents and parking details',
             ),
             _ModuleTile(
               route: AppRoutes.announcements,
               icon: Icons.campaign_rounded,
-              color: AppPalette.brand,
+              color: tokens.brand,
               title: 'Announcements',
               subtitle: 'Notices from the management team',
             ),
@@ -128,19 +130,19 @@ class MoreServicesPage extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             AppCard(
-              color: AppPalette.surface,
+              color: tokens.surface,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.cloud_off_rounded, color: AppPalette.muted),
+                  Icon(Icons.cloud_off_rounded, color: tokens.muted),
                   const SizedBox(width: 10),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'All data in this build is mocked locally. Every module '
                       'follows the same repository structure that the Odoo API '
                       'will plug into.',
                       style: TextStyle(
-                        color: AppPalette.muted,
+                        color: tokens.muted,
                         fontSize: 11,
                         height: 1.4,
                       ),
@@ -214,6 +216,7 @@ class _ModuleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: AppCard(
@@ -234,8 +237,8 @@ class _ModuleTile extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      color: AppPalette.muted,
+                    style:  TextStyle(
+                      color: tokens.muted,
                       fontSize: 11,
                     ),
                   ),
@@ -245,7 +248,7 @@ class _ModuleTile extends StatelessWidget {
             if (badge != null)
               AppStatusPill(label: badge!, color: color, dense: true)
             else
-              const Icon(Icons.chevron_right_rounded, color: AppPalette.faint),
+              Icon(Icons.chevron_right_rounded, color: tokens.faint),
           ],
         ),
       ),

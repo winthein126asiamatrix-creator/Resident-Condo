@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_section.dart';
@@ -92,6 +93,7 @@ class _ServicesHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppHeroPanel(
       icon: Icons.room_service_rounded,
       title: 'Book a service',
@@ -101,7 +103,7 @@ class _ServicesHero extends StatelessWidget {
       trailing: IconButton(
         tooltip: 'Refresh services',
         onPressed: controller.loadAll,
-        icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+        icon: Icon(Icons.refresh_rounded, color: tokens.brandOnDark),
       ),
     );
   }
@@ -165,6 +167,7 @@ class _ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,7 +176,7 @@ class _ServiceCard extends StatelessWidget {
             children: [
               AppIconTile(
                 icon: serviceIcon(service.category),
-                color: AppPalette.brand,
+                color: tokens.brand,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -190,10 +193,7 @@ class _ServiceCard extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       '${service.category.label} · ${service.provider}',
-                      style: const TextStyle(
-                        color: AppPalette.muted,
-                        fontSize: 11,
-                      ),
+                      style: TextStyle(color: tokens.muted, fontSize: 11),
                     ),
                   ],
                 ),
@@ -210,10 +210,7 @@ class _ServiceCard extends StatelessWidget {
                   ),
                   Text(
                     service.unit,
-                    style: const TextStyle(
-                      color: AppPalette.faint,
-                      fontSize: 10,
-                    ),
+                    style: TextStyle(color: tokens.faint, fontSize: 10),
                   ),
                 ],
               ),
@@ -222,8 +219,8 @@ class _ServiceCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             service.description,
-            style: const TextStyle(
-              color: AppPalette.mutedStrong,
+            style: TextStyle(
+              color: tokens.mutedStrong,
               fontSize: 12,
               height: 1.4,
             ),
@@ -231,15 +228,11 @@ class _ServiceCard extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              const Icon(
-                Icons.schedule_rounded,
-                size: 15,
-                color: AppPalette.faint,
-              ),
+              Icon(Icons.schedule_rounded, size: 15, color: tokens.faint),
               const SizedBox(width: 5),
               Text(
                 'Needs ${service.leadTimeDays} day notice',
-                style: const TextStyle(color: AppPalette.faint, fontSize: 11),
+                style: TextStyle(color: tokens.faint, fontSize: 11),
               ),
               const Spacer(),
               TextButton.icon(
@@ -265,6 +258,7 @@ class _Requests extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     if (controller.requests.isEmpty) {
       return const AppStateMessage(
         title: 'No service requests',
@@ -281,9 +275,9 @@ class _Requests extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         if (controller.activeRequests.isEmpty)
-          const Text(
+          Text(
             'Nothing active right now.',
-            style: TextStyle(color: AppPalette.muted, fontSize: 12),
+            style: TextStyle(color: tokens.muted, fontSize: 12),
           )
         else
           for (final request in controller.activeRequests)
@@ -314,6 +308,7 @@ class _RequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       onTap: () {
         controller.selectRequest(request);
@@ -323,7 +318,7 @@ class _RequestCard extends StatelessWidget {
         children: [
           AppIconTile(
             icon: serviceIcon(request.category),
-            color: serviceStatusColor(request.status),
+            color: serviceStatusColor(request.status, tokens),
             size: 42,
           ),
           const SizedBox(width: 12),
@@ -338,7 +333,7 @@ class _RequestCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   '${request.scheduledDate} · ${request.scheduledSlot}',
-                  style: const TextStyle(color: AppPalette.muted, fontSize: 11),
+                  style: TextStyle(color: tokens.muted, fontSize: 11),
                 ),
                 const SizedBox(height: 6),
                 ServiceStatusPill(status: request.status),
@@ -363,8 +358,8 @@ class _RequestCard extends StatelessWidget {
                     ),
                     Text(
                       '${request.rating}',
-                      style: const TextStyle(
-                        color: AppPalette.mutedStrong,
+                      style: TextStyle(
+                        color: tokens.mutedStrong,
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                       ),
@@ -373,7 +368,7 @@ class _RequestCard extends StatelessWidget {
                 ),
             ],
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppPalette.faint),
+          Icon(Icons.chevron_right_rounded, color: tokens.faint),
         ],
       ),
     );

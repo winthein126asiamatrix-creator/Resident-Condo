@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -23,6 +24,7 @@ class StoreOrderDetailPage extends GetView<StoreController> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(title: 'Order details'),
       body: Obx(() {
@@ -46,10 +48,10 @@ class StoreOrderDetailPage extends GetView<StoreController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Purchased items',
                     style: TextStyle(
-                      color: AppPalette.ink,
+                      color: tokens.ink,
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
                     ),
@@ -65,10 +67,10 @@ class StoreOrderDetailPage extends GetView<StoreController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Delivery',
                     style: TextStyle(
-                      color: AppPalette.ink,
+                      color: tokens.ink,
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
                     ),
@@ -113,7 +115,7 @@ class StoreOrderDetailPage extends GetView<StoreController> {
                 isLoading: controller.isSubmitting.value,
                 label: 'Pay for Order Now',
                 icon: Icons.payments_rounded,
-                backgroundColor: AppPalette.accent,
+                backgroundColor: tokens.brand,
               ),
             ],
             if (current.status.canCancel) ...[
@@ -167,6 +169,7 @@ class _OrderHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,7 +180,7 @@ class _OrderHeader extends StatelessWidget {
                 child: Text(
                   'Order ID',
                   style: TextStyle(
-                    color: AppPalette.muted,
+                    color: tokens.muted,
                     fontSize: 12.5,
                     fontWeight: FontWeight.w600,
                   ),
@@ -186,8 +189,8 @@ class _OrderHeader extends StatelessWidget {
               Text(
                 order.id,
                 key: const Key('store-order-id'),
-                style: const TextStyle(
-                  color: AppPalette.ink,
+                style: TextStyle(
+                  color: tokens.ink,
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
                 ),
@@ -201,7 +204,7 @@ class _OrderHeader extends StatelessWidget {
                 child: Text(
                   'Placed on',
                   style: TextStyle(
-                    color: AppPalette.muted,
+                    color: tokens.muted,
                     fontSize: 12.5,
                     fontWeight: FontWeight.w600,
                   ),
@@ -209,8 +212,8 @@ class _OrderHeader extends StatelessWidget {
               ),
               Text(
                 order.placedOn,
-                style: const TextStyle(
-                  color: AppPalette.ink,
+                style: TextStyle(
+                  color: tokens.ink,
                   fontSize: 13.5,
                   fontWeight: FontWeight.w700,
                 ),
@@ -226,8 +229,8 @@ class _OrderHeader extends StatelessWidget {
               const Spacer(),
               Text(
                 AppFormatters.currency(order.total),
-                style: const TextStyle(
-                  color: AppPalette.ink,
+                style: TextStyle(
+                  color: tokens.ink,
                   fontSize: 17,
                   fontWeight: FontWeight.w800,
                 ),
@@ -248,6 +251,7 @@ class _InfoLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
@@ -257,7 +261,7 @@ class _InfoLine extends StatelessWidget {
             width: 96,
             child: Text(
               label,
-              style: const TextStyle(color: AppPalette.muted, fontSize: 12.5),
+              style: TextStyle(color: tokens.muted, fontSize: 12.5),
             ),
           ),
           const SizedBox(width: 10),
@@ -265,8 +269,8 @@ class _InfoLine extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(
-                color: AppPalette.ink,
+              style: TextStyle(
+                color: tokens.ink,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_constants.dart';
+import '../theme/app_theme_tokens.dart';
 
 class BrandedLoadingView extends StatelessWidget {
   const BrandedLoadingView({this.message = 'Loading...', super.key});
@@ -9,6 +10,7 @@ class BrandedLoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return SafeArea(
       child: Center(
         child: Padding(
@@ -23,7 +25,7 @@ class BrandedLoadingView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(22),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF0F766E).withValues(alpha: 0.18),
+                      color: tokens.brand.withValues(alpha: 0.18),
                       blurRadius: 18,
                       offset: const Offset(0, 8),
                     ),
@@ -40,22 +42,22 @@ class BrandedLoadingView extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 AppConstants.appName,
-                style: const TextStyle(
-                  color: Color(0xFF1D2B2A),
+                style: TextStyle(
+                  color: tokens.ink,
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(height: 6),
-              Text(message, style: const TextStyle(color: Color(0xFF71807D))),
+              Text(message, style: TextStyle(color: tokens.muted)),
               const SizedBox(height: 20),
-              const SizedBox(
+              SizedBox(
                 width: 132,
                 child: LinearProgressIndicator(
                   minHeight: 4,
-                  borderRadius: BorderRadius.all(Radius.circular(4)),
-                  color: Color(0xFF0F766E),
-                  backgroundColor: Color(0xFFD6EEE8),
+                  borderRadius: const BorderRadius.all(Radius.circular(4)),
+                  color: tokens.brand,
+                  backgroundColor: tokens.brandSoft,
                 ),
               ),
             ],

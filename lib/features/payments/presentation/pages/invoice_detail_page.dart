@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_section.dart';
 import '../../domain/entities/invoice.dart';
@@ -29,6 +30,7 @@ class InvoiceDetailPage extends GetView<PaymentController> {
   }
 
   Widget _buildBody(BuildContext context, Invoice currentInvoice) {
+    final tokens = AppThemeTokens.of(context);
     return ListView(
       key: const Key('invoice-detail-scroll'),
       padding: const EdgeInsets.fromLTRB(
@@ -100,8 +102,8 @@ class InvoiceDetailPage extends GetView<PaymentController> {
             icon: const Icon(Icons.lock_outline_rounded, size: 18),
             label: const Text('Choose items to pay'),
             style: FilledButton.styleFrom(
-              backgroundColor: AppPalette.accent,
-              foregroundColor: Colors.white,
+              backgroundColor: tokens.brand,
+              foregroundColor: tokens.onBrand,
               minimumSize: const Size.fromHeight(52),
             ),
           )
@@ -112,12 +114,12 @@ class InvoiceDetailPage extends GetView<PaymentController> {
           ),
         if (currentInvoice.isPayable) ...[
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Pay Now never charges the full balance automatically — you pick '
             'exactly which fees to settle.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppPalette.muted,
+              color: tokens.muted,
               fontSize: 11,
               height: 1.35,
             ),
@@ -151,23 +153,24 @@ class _InvoiceHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppPalette.brand,
+        color: tokens.brand,
         borderRadius: BorderRadius.circular(22),
-        boxShadow: AppPalette.heroShadow,
+        boxShadow: tokens.heroShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'AMOUNT DUE',
                   style: TextStyle(
-                    color: AppPalette.brandOnDark,
+                    color: tokens.brandOnDark,
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.3,
@@ -180,8 +183,8 @@ class _InvoiceHero extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             AppFormatters.currency(invoice.amountDue),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: tokens.onBrand,
               fontSize: 32,
               fontWeight: FontWeight.w800,
             ),
@@ -189,8 +192,8 @@ class _InvoiceHero extends StatelessWidget {
           const SizedBox(height: 5),
           Text(
             '${invoice.number} · ${invoice.billingPeriod}',
-            style: const TextStyle(
-              color: AppPalette.brandOnDarkMuted,
+            style: TextStyle(
+              color: tokens.brandOnDarkMuted,
               fontSize: 12,
             ),
           ),
@@ -206,6 +209,7 @@ class _ItemLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 7),
       child: Row(
@@ -221,7 +225,7 @@ class _ItemLine extends StatelessWidget {
             color: item.isPaid
                 ? AppPalette.success
                 : item.isZero
-                ? AppPalette.faint
+                ? tokens.faint
                 : AppPalette.warning,
           ),
           const SizedBox(width: 10),
@@ -233,7 +237,7 @@ class _ItemLine extends StatelessWidget {
                   item.type.label,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: item.isPaid ? AppPalette.muted : AppPalette.ink,
+                    color: item.isPaid ? tokens.muted : tokens.ink,
                     decoration: item.isPaid ? TextDecoration.lineThrough : null,
                   ),
                 ),
@@ -243,10 +247,7 @@ class _ItemLine extends StatelessWidget {
                     item.isPaid && item.paidDate != null
                         ? '${item.note} · paid ${item.paidDate}'
                         : item.note,
-                    style: const TextStyle(
-                      color: AppPalette.muted,
-                      fontSize: 11,
-                    ),
+                    style: TextStyle(color: tokens.muted, fontSize: 11),
                   ),
                 ],
               ],
@@ -257,7 +258,7 @@ class _ItemLine extends StatelessWidget {
             item.isZero ? 'No charge' : AppFormatters.currency(item.amount),
             style: TextStyle(
               fontWeight: FontWeight.w800,
-              color: item.isPaid ? AppPalette.muted : AppPalette.ink,
+              color: item.isPaid ? tokens.muted : tokens.ink,
             ),
           ),
         ],
@@ -273,18 +274,19 @@ class _PaidCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
-        color: AppPalette.brandTint,
+        color: tokens.brandTint,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: [
-          const CircleAvatar(
+          CircleAvatar(
             radius: 20,
-            backgroundColor: AppPalette.brandSoft,
-            child: Icon(Icons.check_rounded, color: AppPalette.success),
+            backgroundColor: tokens.brandSoft,
+            child: const Icon(Icons.check_rounded, color: AppPalette.success),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -303,8 +305,8 @@ class _PaidCard extends StatelessWidget {
                   invoice.paidDate == null
                       ? 'Payment complete'
                       : 'Paid on ${invoice.paidDate}',
-                  style: const TextStyle(
-                    color: AppPalette.mutedStrong,
+                  style: TextStyle(
+                    color: tokens.mutedStrong,
                     fontSize: 12,
                   ),
                 ),

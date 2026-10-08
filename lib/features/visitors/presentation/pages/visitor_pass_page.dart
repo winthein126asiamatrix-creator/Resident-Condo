@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_section.dart';
 import '../../domain/entities/visitor.dart';
@@ -17,9 +18,10 @@ class VisitorPassPage extends GetView<VisitorController> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Obx(() {
       final current = _current();
-      final color = visitorStatusColor(current.status);
+      final color = visitorStatusColor(context, current.status);
       return Scaffold(
         appBar: AppDetailAppBar(title: 'Visitor pass'),
         body: ListView(
@@ -86,8 +88,8 @@ class VisitorPassPage extends GetView<VisitorController> {
                 title: 'Notes',
                 child: Text(
                   current.notes,
-                  style: const TextStyle(
-                    color: AppPalette.mutedStrong,
+                  style: TextStyle(
+                    color: tokens.mutedStrong,
                     height: 1.4,
                   ),
                 ),
@@ -122,7 +124,7 @@ class VisitorPassPage extends GetView<VisitorController> {
                 icon: const Icon(Icons.logout_rounded, size: 18),
                 label: const Text('Mark as checked out'),
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppPalette.accent,
+                  backgroundColor: tokens.brand,
                   minimumSize: const Size.fromHeight(50),
                 ),
               ),
@@ -248,19 +250,20 @@ class _CodeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: AppPalette.brand,
+        color: tokens.brand,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: AppPalette.heroShadow,
+        boxShadow: tokens.heroShadow,
       ),
       child: Column(
         children: [
-          const Text(
+          Text(
             'VISITOR ACCESS CODE',
             style: TextStyle(
-              color: AppPalette.brandOnDark,
+              color: tokens.brandOnDark,
               fontSize: 12,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.5,
@@ -270,8 +273,8 @@ class _CodeCard extends StatelessWidget {
           Text(
             visitor.accessCode,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: tokens.brandOnDark,
               fontSize: 34,
               fontWeight: FontWeight.w800,
               letterSpacing: 3,
@@ -282,8 +285,8 @@ class _CodeCard extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             visitor.name,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: tokens.brandOnDark,
               fontSize: 18,
               fontWeight: FontWeight.w800,
             ),
@@ -291,8 +294,8 @@ class _CodeCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '${visitor.date} · ${visitor.arrivalWindow}',
-            style: const TextStyle(
-              color: AppPalette.brandOnDarkMuted,
+            style: TextStyle(
+              color: tokens.brandOnDarkMuted,
               fontSize: 12,
             ),
           ),

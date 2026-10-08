@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_palette.dart';
 import '../theme/app_radius.dart';
+import '../theme/app_theme_tokens.dart';
 
 /// One segment of a [AppSegmentedTabs] strip.
 @immutable
@@ -117,11 +117,12 @@ class _AppSegmentedTabsState extends State<AppSegmentedTabs>
         return ListenableBuilder(
           listenable: widget.pages ?? _position,
           builder: (context, _) {
+            final tokens = AppThemeTokens.of(context);
             final position = _value;
             return Container(
               padding: const EdgeInsets.all(inset),
               decoration: BoxDecoration(
-                color: AppPalette.brandTint,
+                color: tokens.brandTint,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
               child: SizedBox(
@@ -135,11 +136,11 @@ class _AppSegmentedTabsState extends State<AppSegmentedTabs>
                       width: segmentWidth,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: tokens.surface,
                           borderRadius: BorderRadius.circular(
                             AppRadius.lg - inset,
                           ),
-                          boxShadow: AppPalette.cardShadow,
+                          boxShadow: tokens.cardShadow,
                         ),
                       ),
                     ),
@@ -200,7 +201,8 @@ class _SegmentButtonState extends State<_SegmentButton> {
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.selected ? AppPalette.brand : AppPalette.mutedStrong;
+    final tokens = AppThemeTokens.of(context);
+    final color = widget.selected ? tokens.brand : tokens.mutedStrong;
     return GestureDetector(
       onTap: widget.onTap,
       // Opaque so the whole segment is tappable, not just the glyph the text

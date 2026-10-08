@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_section.dart';
 import '../../../../core/widgets/app_status_pill.dart';
@@ -17,6 +18,7 @@ class RuleDetailPage extends GetView<RulesController> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final current = controller.rules.firstWhere(
       (item) => item.id == rule.id,
       orElse: () => rule,
@@ -47,8 +49,8 @@ class RuleDetailPage extends GetView<RulesController> {
             title: 'In short',
             child: Text(
               current.summary,
-              style: const TextStyle(
-                color: AppPalette.mutedStrong,
+              style: TextStyle(
+                color: tokens.mutedStrong,
                 height: 1.45,
                 fontSize: 13,
               ),
@@ -59,10 +61,7 @@ class RuleDetailPage extends GetView<RulesController> {
             title: 'Full rule',
             child: Text(
               current.details,
-              style: const TextStyle(
-                color: AppPalette.mutedStrong,
-                height: 1.5,
-              ),
+              style: TextStyle(color: tokens.mutedStrong, height: 1.5),
             ),
           ),
           if (related.isNotEmpty) ...[
@@ -83,8 +82,8 @@ class RuleDetailPage extends GetView<RulesController> {
                       Expanded(
                         child: Text(
                           violation.description,
-                          style: const TextStyle(
-                            color: AppPalette.muted,
+                          style: TextStyle(
+                            color: tokens.muted,
                             fontSize: 12,
                             height: 1.4,
                           ),

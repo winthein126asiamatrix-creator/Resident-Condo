@@ -10,6 +10,7 @@ import 'package:test/app/routes/app_routes.dart';
 import 'package:test/app/theme/app_theme.dart';
 import 'package:test/core/services/photo_picker.dart';
 import 'package:test/core/theme/app_palette.dart';
+import 'package:test/core/theme/app_theme_tokens.dart';
 import 'package:test/features/maintenance/domain/entities/maintenance_request.dart';
 import 'package:test/features/maintenance/presentation/bindings/maintenance_binding.dart';
 import 'package:test/features/maintenance/presentation/controllers/maintenance_controller.dart';
@@ -623,7 +624,7 @@ void main() {
       // The current step is more prominent than the ones after it: it has the
       // brand tint behind it and a heavier ring.
       final current = _circleDecoration(tester, 1);
-      expect(current.color, AppPalette.brandTint);
+      expect(current.color, AppThemeTokens.fallback().brandTint);
       expect((current.border?.top.width ?? 0), greaterThan(1.5));
 
       // Upcoming steps stay neutral but still show their number.
@@ -636,8 +637,8 @@ void main() {
           findsOneWidget,
         );
         final decoration = _circleDecoration(tester, index);
-        expect(decoration.color, AppPalette.surface);
-        expect(decoration.border?.top.color, AppPalette.border);
+        expect(decoration.color, AppThemeTokens.fallback().surface);
+        expect(decoration.border?.top.color, AppThemeTokens.fallback().border);
       }
     });
 
@@ -647,15 +648,15 @@ void main() {
       await scrollDetailsTo(tester, find.text('Request progress'));
       expect(
         _circleDecoration(tester, 0).color,
-        AppPalette.brand,
+        AppThemeTokens.fallback().brand,
         reason: 'the finished step is filled',
       );
       expect(
         _circleDecoration(tester, 1).color,
-        AppPalette.brandTint,
+        AppThemeTokens.fallback().brandTint,
         reason: 'the step the request has reached is current',
       );
-      expect(_circleDecoration(tester, 2).color, AppPalette.surface);
+      expect(_circleDecoration(tester, 2).color, AppThemeTokens.fallback().surface);
 
       // Moving the request forward moves the timeline rather than hardcoding
       // anything: step 2 becomes done and step 3 becomes current.
@@ -674,7 +675,7 @@ void main() {
         findsOneWidget,
         reason: 'the step that was current is now done',
       );
-      expect(_circleDecoration(tester, 2).color, AppPalette.brandTint);
+      expect(_circleDecoration(tester, 2).color, AppThemeTokens.fallback().brandTint);
       expect(find.text('In Progress'), findsOneWidget);
     });
 

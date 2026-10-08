@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_status_pill.dart';
 import '../../domain/entities/condo_service.dart';
 
@@ -25,14 +26,14 @@ IconData serviceIcon(ServiceCategory category) {
   }
 }
 
-Color serviceStatusColor(ServiceRequestStatus status) {
+Color serviceStatusColor(ServiceRequestStatus status, AppThemeTokens tokens) {
   switch (status) {
     case ServiceRequestStatus.requested:
       return AppPalette.info;
     case ServiceRequestStatus.scheduled:
       return AppPalette.warning;
     case ServiceRequestStatus.inProgress:
-      return AppPalette.brand;
+      return tokens.brand;
     case ServiceRequestStatus.completed:
       return AppPalette.success;
     case ServiceRequestStatus.cancelled:
@@ -50,7 +51,7 @@ class ServiceStatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppStatusPill(
       label: status.label,
-      color: serviceStatusColor(status),
+      color: serviceStatusColor(status, AppThemeTokens.of(context)),
       dense: dense,
     );
   }

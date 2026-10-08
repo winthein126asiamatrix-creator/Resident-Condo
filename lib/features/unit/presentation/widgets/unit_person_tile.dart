@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../domain/entities/unit.dart';
 
 class UnitPersonTile extends StatelessWidget {
@@ -9,15 +10,16 @@ class UnitPersonTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
         radius: 19,
-        backgroundColor: const Color(0xFFE6F3EF),
+        backgroundColor: tokens.brandTint,
         child: Text(
           person.initials,
-          style: const TextStyle(
-            color: Color(0xFF0F766E),
+          style: TextStyle(
+            color: tokens.brand,
             fontWeight: FontWeight.w800,
           ),
         ),

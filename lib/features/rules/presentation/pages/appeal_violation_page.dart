@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_state_message.dart';
@@ -39,6 +40,7 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Obx(() {
       final violation = controller.selectedViolation.value;
       if (violation == null) {
@@ -99,7 +101,7 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
                       label: Text(outcome),
                       selected: outcome == _outcome,
                       onSelected: (_) => setState(() => _outcome = outcome),
-                      selectedColor: AppPalette.brandSoft,
+                      selectedColor: tokens.brandSoft,
                     ),
                   )
                   .toList(),
@@ -121,22 +123,22 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
                   'evidence that support your appeal.',
             ),
             const SizedBox(height: 10),
-            const Text(
+            Text(
               'Minimum 20 characters. The management committee reviews every '
               'appeal within 14 days.',
-              style: TextStyle(color: AppPalette.faint, fontSize: 11),
+              style: TextStyle(color: tokens.faint, fontSize: 11),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
               key: const Key('submit-appeal'),
               onPressed: controller.isSubmitting.value ? null : _submit,
               icon: controller.isSubmitting.value
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: tokens.onBrand,
                       ),
                     )
                   : const Icon(Icons.send_rounded, size: 18),

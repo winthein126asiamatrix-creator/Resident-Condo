@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/text_input_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_dialogs.dart';
@@ -20,6 +21,7 @@ class VisitorVerifyPage extends GetView<VisitorController> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(title: 'Verify visitor'),
       body: Obx(
@@ -29,17 +31,17 @@ class VisitorVerifyPage extends GetView<VisitorController> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppPalette.brand,
+                color: tokens.brand,
                 borderRadius: BorderRadius.circular(22),
-                boxShadow: AppPalette.heroShadow,
+                boxShadow: tokens.heroShadow,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'ENTER ACCESS CODE',
                     style: TextStyle(
-                      color: AppPalette.brandOnDark,
+                      color: tokens.brandOnDark,
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.4,
@@ -58,8 +60,8 @@ class VisitorVerifyPage extends GetView<VisitorController> {
                     ],
                     onChanged: controller.onVerificationChanged,
                     // Read as a code, so the spacing is wider than a prose field.
-                    style: const TextStyle(
-                      color: AppPalette.ink,
+                    style: TextStyle(
+                      color: tokens.ink,
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 2,
@@ -74,16 +76,16 @@ class VisitorVerifyPage extends GetView<VisitorController> {
                           ? null
                           : controller.verifyCode,
                       style: FilledButton.styleFrom(
-                        backgroundColor: AppPalette.accent,
+                        backgroundColor: tokens.brand,
                         minimumSize: const Size.fromHeight(50),
                       ),
                       icon: controller.isVerifying.value
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: tokens.onBrand,
                               ),
                             )
                           : const Icon(Icons.verified_user_rounded, size: 18),
@@ -101,19 +103,19 @@ class VisitorVerifyPage extends GetView<VisitorController> {
             if (controller.verification.value != null)
               _VerificationResult(controller: controller)
             else
-              const AppCard(
+              AppCard(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline_rounded, color: AppPalette.muted),
-                    SizedBox(width: 10),
+                    Icon(Icons.info_outline_rounded, color: tokens.muted),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'The code is printed on the resident app and shared '
                         'with the visitor. Codes are alphanumeric — for example '
                         'VIS K7M-4QX.',
                         style: TextStyle(
-                          color: AppPalette.muted,
+                          color: tokens.muted,
                           fontSize: 12,
                           height: 1.4,
                         ),
@@ -140,9 +142,9 @@ class VisitorVerifyPage extends GetView<VisitorController> {
             ),
             const SizedBox(height: 8),
             if (controller.visitors.isEmpty)
-              const Text(
+              Text(
                 'No visitors registered.',
-                style: TextStyle(color: AppPalette.muted),
+                style: TextStyle(color: tokens.muted),
               )
             else
               for (final visitor in controller.visitors)
@@ -175,6 +177,7 @@ class _VerificationResult extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final result = controller.verification.value!;
     final visitor = result.visitor;
     final color = result.isValid ? AppPalette.success : AppPalette.danger;
@@ -182,9 +185,9 @@ class _VerificationResult extends StatelessWidget {
     return Column(
       children: [
         AppCard(
-          color: result.isValid ? AppPalette.brandTint : AppPalette.accentSoft,
+          color: result.isValid ? tokens.brandTint : AppPalette.accentSoft,
           borderColor: result.isValid
-              ? AppPalette.brandSoft
+              ? tokens.brandSoft
               : const Color(0xFFF0C6C0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,8 +216,8 @@ class _VerificationResult extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 result.message,
-                style: const TextStyle(
-                  color: AppPalette.mutedStrong,
+                style: TextStyle(
+                  color: tokens.mutedStrong,
                   fontSize: 12,
                   height: 1.4,
                 ),
@@ -240,12 +243,12 @@ class _VerificationResult extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   '${visitor.arrivalWindow} · ${visitor.purpose}',
-                  style: const TextStyle(color: AppPalette.muted, fontSize: 12),
+                  style: TextStyle(color: tokens.muted, fontSize: 12),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Code ${visitor.accessCode} · unit ${visitor.registeredBy}\'s host',
-                  style: const TextStyle(color: AppPalette.faint, fontSize: 11),
+                  style: TextStyle(color: tokens.faint, fontSize: 11),
                 ),
               ],
             ],
@@ -273,7 +276,7 @@ class _VerificationResult extends StatelessWidget {
             icon: const Icon(Icons.logout_rounded, size: 18),
             label: const Text('Check out visitor'),
             style: FilledButton.styleFrom(
-              backgroundColor: AppPalette.accent,
+              backgroundColor: tokens.brand,
               minimumSize: const Size.fromHeight(50),
             ),
           ),
@@ -344,6 +347,7 @@ class _ExpectedTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       onTap: () {
         controller.onVerificationChanged(visitor.accessCode);
@@ -354,7 +358,7 @@ class _ExpectedTile extends StatelessWidget {
         children: [
           AppIconTile(
             icon: Icons.person_outline_rounded,
-            color: visitorStatusColor(visitor.status),
+            color: visitorStatusColor(context, visitor.status),
             size: 38,
           ),
           const SizedBox(width: 12),
@@ -369,7 +373,7 @@ class _ExpectedTile extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   visitor.arrivalWindow,
-                  style: const TextStyle(color: AppPalette.muted, fontSize: 11),
+                  style: TextStyle(color: tokens.muted, fontSize: 11),
                 ),
               ],
             ),

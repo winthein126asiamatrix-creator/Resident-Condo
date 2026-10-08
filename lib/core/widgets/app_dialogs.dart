@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_palette.dart';
 import '../theme/app_radius.dart';
+import '../theme/app_theme_tokens.dart';
 import 'app_primary_action.dart';
 
 /// A label / value pair shown inside [showAppConfirmSummaryDialog].
@@ -179,8 +180,9 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: tokens.surface,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: ConstrainedBox(
@@ -197,17 +199,17 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: AppPalette.brandTint,
+                  color: tokens.brandTint,
                   borderRadius: BorderRadius.circular(17),
                 ),
-                child: Icon(widget.icon, color: AppPalette.brand, size: 26),
+                child: Icon(widget.icon, color: tokens.brand, size: 26),
               ),
               const SizedBox(height: 14),
               Text(
                 widget.title,
                 key: const Key('app-confirm-dialog-title'),
-                style: const TextStyle(
-                  color: AppPalette.ink,
+                style: TextStyle(
+                  color: tokens.ink,
                   fontSize: 19,
                   fontWeight: FontWeight.w800,
                 ),
@@ -216,8 +218,8 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
               Text(
                 widget.message,
                 key: const Key('app-confirm-dialog-message'),
-                style: const TextStyle(
-                  color: AppPalette.muted,
+                style: TextStyle(
+                  color: tokens.muted,
                   fontSize: 13.5,
                   height: 1.35,
                 ),
@@ -230,9 +232,9 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: AppPalette.surfaceMuted,
+                  color: tokens.surfaceMuted,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: AppPalette.border),
+                  border: Border.all(color: tokens.border),
                 ),
                 child: Column(
                   children: [
@@ -245,8 +247,8 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
                             Expanded(
                               child: Text(
                                 row.label,
-                                style: const TextStyle(
-                                  color: AppPalette.muted,
+                                style: TextStyle(
+                                  color: tokens.muted,
                                   fontSize: 13,
                                 ),
                               ),
@@ -258,8 +260,8 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
                                 textAlign: TextAlign.right,
                                 style: TextStyle(
                                   color: row.emphasis
-                                      ? AppPalette.brand
-                                      : AppPalette.ink,
+                                      ? tokens.brand
+                                      : tokens.ink,
                                   fontSize: 13.5,
                                   fontWeight: FontWeight.w800,
                                 ),
@@ -317,8 +319,8 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
                       ? null
                       : () => Navigator.of(context).pop(false),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppPalette.mutedStrong,
-                    side: const BorderSide(color: AppPalette.border),
+                    foregroundColor: tokens.mutedStrong,
+                    side: BorderSide(color: tokens.border),
                     minimumSize: const Size.fromHeight(46),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -362,82 +364,85 @@ Future<bool> showAppFormDialog(
 }) async {
   final confirmed = await showDialog<bool>(
     context: context,
-    builder: (dialogContext) => Dialog(
-      backgroundColor: Colors.white,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.xxl),
-      ),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 420),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (icon != null) ...[
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: AppPalette.brandTint,
-                    borderRadius: BorderRadius.circular(17),
+    builder: (dialogContext) {
+      final tokens = AppThemeTokens.of(dialogContext);
+      return Dialog(
+        backgroundColor: tokens.surface,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.xxl),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (icon != null) ...[
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: tokens.brandTint,
+                      borderRadius: BorderRadius.circular(17),
+                    ),
+                    child: Icon(icon, color: tokens.brand, size: 26),
                   ),
-                  child: Icon(icon, color: AppPalette.brand, size: 26),
-                ),
-                const SizedBox(height: 14),
-              ],
-              Text(
-                title,
-                key: const Key('app-form-dialog-title'),
-                style: const TextStyle(
-                  color: AppPalette.ink,
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              if (message != null) ...[
-                const SizedBox(height: 6),
+                  const SizedBox(height: 14),
+                ],
                 Text(
-                  message,
-                  style: const TextStyle(
-                    color: AppPalette.muted,
-                    fontSize: 13.5,
-                    height: 1.35,
+                  title,
+                  key: const Key('app-form-dialog-title'),
+                  style: TextStyle(
+                    color: tokens.ink,
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-              ],
-              const SizedBox(height: 18),
-              child,
-              const SizedBox(height: 18),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppPalette.mutedStrong,
-                    side: const BorderSide(color: AppPalette.border),
-                    minimumSize: const Size.fromHeight(46),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                if (message != null) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    message,
+                    style: TextStyle(
+                      color: tokens.muted,
+                      fontSize: 13.5,
+                      height: 1.35,
                     ),
                   ),
-                  child: Text(cancelLabel),
+                ],
+                const SizedBox(height: 18),
+                child,
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: tokens.mutedStrong,
+                      side: BorderSide(color: tokens.border),
+                      minimumSize: const Size.fromHeight(46),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: Text(cancelLabel),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              AppPrimaryAction(
-                key: const Key('app-form-dialog-confirm'),
-                onPressed: () => Navigator.of(dialogContext).pop(true),
-                label: confirmLabel,
-                icon: Icons.check_rounded,
-              ),
-            ],
+                const SizedBox(height: 10),
+                AppPrimaryAction(
+                  key: const Key('app-form-dialog-confirm'),
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  label: confirmLabel,
+                  icon: Icons.check_rounded,
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    ),
+      );
+    },
   );
   return confirmed ?? false;
 }

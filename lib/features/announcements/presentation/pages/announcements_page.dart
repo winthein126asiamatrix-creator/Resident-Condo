@@ -7,6 +7,7 @@ import '../controllers/announcement_controller.dart';
 import '../widgets/announcement_card.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 
 class AnnouncementsPage extends GetView<AnnouncementController> {
   const AnnouncementsPage({super.key});
@@ -96,18 +97,13 @@ class _AnnouncementSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F766E),
+        color: tokens.brand,
         borderRadius: BorderRadius.circular(22),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1A0F766E),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
+        boxShadow: tokens.heroShadow,
       ),
       child: Row(
         children: [
@@ -118,9 +114,9 @@ class _AnnouncementSummary extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(17),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.campaign_rounded,
-              color: Color(0xFFBFE8DF),
+              color: tokens.brandOnDark,
               size: 27,
             ),
           ),
@@ -129,10 +125,10 @@ class _AnnouncementSummary extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Stay in the loop',
                   style: TextStyle(
-                    color: Color(0xFFBFE8DF),
+                    color: tokens.brandOnDark,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
@@ -142,8 +138,8 @@ class _AnnouncementSummary extends StatelessWidget {
                   unreadCount == 0
                       ? 'You are all caught up'
                       : '$unreadCount unread announcements',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: tokens.brandOnDark,
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
@@ -153,7 +149,7 @@ class _AnnouncementSummary extends StatelessWidget {
           ),
           Text(
             '$totalCount total',
-            style: const TextStyle(color: Color(0xFFBFE8DF), fontSize: 11),
+            style: TextStyle(color: tokens.brandOnDark, fontSize: 11),
           ),
         ],
       ),
@@ -168,6 +164,7 @@ class _CategoryFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -176,7 +173,7 @@ class _CategoryFilters extends StatelessWidget {
             label: const Text('All'),
             selected: controller.selectedCategory.value == null,
             onSelected: (_) => controller.selectCategory(null),
-            selectedColor: const Color(0xFFBFE8DF),
+                selectedColor: tokens.brandOnDark,
           ),
           const SizedBox(width: 8),
           ...AnnouncementCategory.values.map(
@@ -186,7 +183,7 @@ class _CategoryFilters extends StatelessWidget {
                 label: Text(category.label),
                 selected: controller.selectedCategory.value == category,
                 onSelected: (_) => controller.selectCategory(category),
-                selectedColor: const Color(0xFFBFE8DF),
+            selectedColor: tokens.brandOnDark,
               ),
             ),
           ),

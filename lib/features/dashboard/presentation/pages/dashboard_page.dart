@@ -9,6 +9,7 @@ import '../../domain/entities/dashboard.dart';
 import '../controllers/dashboard_controller.dart';
 import '../widgets/section_header.dart';
 import '../widgets/status_badge.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 
 class DashboardPage extends GetView<DashboardController> {
   const DashboardPage({required this.onSelectTab, super.key});
@@ -146,6 +147,7 @@ class _GreetingHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Row(
       children: [
         Expanded(
@@ -156,14 +158,14 @@ class _GreetingHeader extends StatelessWidget {
                 'Good morning, ${resident.name.split(' ').first}',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: const Color(0xFF1D2B2A),
+                  color: tokens.ink,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 "Here's what's happening with your condo today.",
                 style: Theme.of(context).textTheme.bodyMedium
-                    ?.copyWith(color: const Color(0xFF71807D)),
+                    ?.copyWith(color: tokens.muted),
               ),
             ],
           ),
@@ -173,7 +175,7 @@ class _GreetingHeader extends StatelessWidget {
           key: const Key('dashboard-all-services-icon'),
           onPressed: onMore,
           tooltip: 'All resident services',
-          icon: const Icon(Icons.grid_view_rounded, color: Color(0xFF0F766E)),
+          icon: Icon(Icons.grid_view_rounded, color: tokens.brand),
         ),
         Stack(
           clipBehavior: Clip.none,
@@ -184,11 +186,11 @@ class _GreetingHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               child: CircleAvatar(
                 radius: 22,
-                backgroundColor: const Color(0xFFBFE8DF),
+                backgroundColor: tokens.brandOnDark,
                 child: Text(
                   resident.initials,
-                  style: const TextStyle(
-                    color: Color(0xFF0F766E),
+                  style: TextStyle(
+                    color: tokens.brand,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -202,15 +204,15 @@ class _GreetingHeader extends StatelessWidget {
                   width: 18,
                   height: 18,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE07A5F),
+                    color: tokens.brand,
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
                   ),
                   child: Center(
                     child: Text(
                       unreadCount > 9 ? '9+' : '$unreadCount',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: tokens.onBrand,
                         fontSize: 9,
                         fontWeight: FontWeight.w800,
                       ),
@@ -233,21 +235,16 @@ class _HomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return InkWell(
       onTap: onViewDetails,
       borderRadius: BorderRadius.circular(24),
       child: Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: const Color(0xFF0F766E),
+          color: tokens.brand,
           borderRadius: BorderRadius.circular(24),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x1A0F766E),
-              blurRadius: 18,
-              offset: Offset(0, 8),
-            ),
-          ],
+          boxShadow: tokens.heroShadow,
         ),
         child: Stack(
           children: [
@@ -265,57 +262,57 @@ class _HomeCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'YOUR HOME',
-                          style: TextStyle(
-                            color: Color(0xFFBFE8DF),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.4,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'YOUR HOME',
+                            style: TextStyle(
+                              color: tokens.brandOnDark,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.4,
+                            ),
                           ),
                         ),
-                      ),
-                      StatusBadge(label: unit.occupancy),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    '${unit.tower} · Unit ${unit.unit}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 21,
-                      fontWeight: FontWeight.w800,
+                        StatusBadge(label: unit.occupancy),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${unit.type} · ${unit.area} · ${unit.floor}',
-                    style: const TextStyle(
-                      color: Color(0xFFD8F3EC),
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.verified_rounded,
-                        color: Color(0xFFBFE8DF),
-                        size: 17,
+                    const SizedBox(height: 18),
+                    Text(
+                      '${unit.tower} · Unit ${unit.unit}',
+                      style: TextStyle(
+                        color: tokens.brandOnDark,
+                        fontSize: 21,
+                        fontWeight: FontWeight.w800,
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '${unit.ownership} · Parking ${unit.parkingSlot}',
-                        style: const TextStyle(
-                          color: Color(0xFFD8F3EC),
-                          fontSize: 12,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${unit.type} · ${unit.area} · ${unit.floor}',
+                      style: TextStyle(
+                        color: tokens.brandOnDarkMuted,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.verified_rounded,
+                          color: tokens.brandOnDark,
+                          size: 17,
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${unit.ownership} · Parking ${unit.parkingSlot}',
+                          style: TextStyle(
+                            color: tokens.brandOnDarkMuted,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -334,19 +331,14 @@ class _BalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE6EEEB)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A163A36),
-            blurRadius: 16,
-            offset: Offset(0, 5),
-          ),
-        ],
+        border: Border.all(color: tokens.border),
+        boxShadow: tokens.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,14 +358,14 @@ class _BalanceCard extends StatelessWidget {
           Text(
             '\$${balance.outstanding.toStringAsFixed(2)}',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: const Color(0xFF1D2B2A),
+              color: tokens.ink,
               fontWeight: FontWeight.w800,
             ),
           ),
           Text(
             'Across all open invoices',
             style: Theme.of(context).textTheme.bodySmall
-                ?.copyWith(color: const Color(0xFF71807D)),
+                ?.copyWith(color: tokens.muted),
           ),
           const SizedBox(height: 16),
           Row(
@@ -382,9 +374,9 @@ class _BalanceCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Last payment',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF71807D)),
+                      style: TextStyle(fontSize: 12, color: tokens.muted),
                     ),
                     const SizedBox(height: 3),
                     Text(
@@ -402,8 +394,8 @@ class _BalanceCard extends StatelessWidget {
                 icon: const Icon(Icons.arrow_forward_rounded, size: 16),
                 label: const Text('Pay now'),
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFE07A5F),
-                  foregroundColor: Colors.white,
+                  backgroundColor: tokens.brand,
+                  foregroundColor: tokens.onBrand,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 13,
                     vertical: 11,
@@ -427,6 +419,7 @@ class _QuickActions extends StatelessWidget {
   /// away through "All resident services" below the grid.
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Column(
       children: [
         Row(
@@ -435,7 +428,7 @@ class _QuickActions extends StatelessWidget {
               child: _QuickAction(
                 icon: Icons.payments_outlined,
                 label: 'Pay fees',
-                color: const Color(0xFFFCE8DF),
+                color: tokens.brandTint,
                 onTap: () => onSelectTab(1),
               ),
             ),
@@ -444,7 +437,7 @@ class _QuickActions extends StatelessWidget {
               child: _QuickAction(
                 icon: Icons.handyman_outlined,
                 label: 'Maintenance',
-                color: const Color(0xFFE6F3EF),
+                color: tokens.brandTint,
                 onTap: () => onSelectTab(2),
               ),
             ),
@@ -479,7 +472,7 @@ class _QuickActions extends StatelessWidget {
               child: _QuickAction(
                 icon: Icons.storefront_outlined,
                 label: 'Convenience Store',
-                color: const Color(0xFFE6F3EF),
+                color: tokens.brandTint,
                 onTap: () => Get.toNamed(AppRoutes.store),
               ),
             ),
@@ -515,15 +508,16 @@ class _QuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(13),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: tokens.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE6EEEB)),
+          border: Border.all(color: tokens.border),
         ),
         child: Row(
           children: [
@@ -534,7 +528,7 @@ class _QuickAction extends StatelessWidget {
                 color: color,
                 borderRadius: BorderRadius.circular(11),
               ),
-              child: Icon(icon, color: const Color(0xFF1D2B2A), size: 20),
+              child: Icon(icon, color: tokens.ink, size: 20),
             ),
             const SizedBox(width: 9),
             Expanded(
@@ -566,11 +560,12 @@ class _MaintenanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE6EEEB)),
+        border: Border.all(color: tokens.border),
       ),
       child: Column(
         children: [
@@ -579,9 +574,9 @@ class _MaintenanceCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 15, 16, 15),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.build_circle_outlined,
-                    color: Color(0xFF0F766E),
+                    color: tokens.brand,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -595,9 +590,9 @@ class _MaintenanceCard extends StatelessWidget {
                         const SizedBox(height: 3),
                         Text(
                           '${request.category} · ${request.priority}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
-                            color: Color(0xFF71807D),
+                            color: tokens.muted,
                           ),
                         ),
                       ],
@@ -611,15 +606,15 @@ class _MaintenanceCard extends StatelessWidget {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: const BoxDecoration(
-              color: Color(0xFFF4F8F7),
+            decoration: BoxDecoration(
+              color: tokens.surfaceMuted,
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(19)),
             ),
             child: Text(
               '$inProgress in progress  ·  $completed completed',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFF52635F),
+                color: tokens.mutedStrong,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -637,25 +632,26 @@ class _ReservationsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE6EEEB)),
+        border: Border.all(color: tokens.border),
       ),
       child: Column(
         children: reservations
             .map(
               (reservation) => ListTile(
                 dense: true,
-                leading: const CircleAvatar(
+                leading: CircleAvatar(
                   radius: 19,
-                  backgroundColor: Color(0xFFEAE8FA),
+                  backgroundColor: const Color(0xFFEAE8FA),
                   child: Icon(
                     Icons.event_rounded,
                     size: 19,
-                    color: Color(0xFF5B4CC4),
+                    color: const Color(0xFF5B4CC4),
                   ),
                 ),
                 title: Text(
@@ -679,12 +675,13 @@ class _AnnouncementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE6EEEB)),
+        border: Border.all(color: tokens.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -693,9 +690,7 @@ class _AnnouncementCard extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: announcement.isUrgent
-                  ? const Color(0xFFFCE8DF)
-                  : const Color(0xFFE6F3EF),
+              color: tokens.brandTint,
               borderRadius: BorderRadius.circular(11),
             ),
             child: Icon(
@@ -704,7 +699,7 @@ class _AnnouncementCard extends StatelessWidget {
                   : Icons.campaign_outlined,
               color: announcement.isUrgent
                   ? const Color(0xFFC2410C)
-                  : const Color(0xFF0F766E),
+                  : tokens.brand,
               size: 20,
             ),
           ),
@@ -723,9 +718,9 @@ class _AnnouncementCard extends StatelessWidget {
                     ),
                     Text(
                       announcement.date,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
-                        color: Color(0xFF71807D),
+                        color: tokens.muted,
                       ),
                     ),
                   ],
@@ -733,10 +728,10 @@ class _AnnouncementCard extends StatelessWidget {
                 const SizedBox(height: 5),
                 Text(
                   announcement.description,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     height: 1.35,
-                    color: Color(0xFF71807D),
+                    color: tokens.muted,
                   ),
                 ),
                 const SizedBox(height: 8),

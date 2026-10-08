@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 
 import '../../features/announcements/presentation/pages/announcements_page.dart';
+import '../../features/appearance/presentation/bindings/appearance_binding.dart';
+import '../../features/appearance/presentation/pages/appearance_page.dart';
 import '../../features/complaints/domain/entities/complaint.dart';
 import '../../features/complaints/presentation/pages/complaint_detail_page.dart';
 import '../../features/complaints/presentation/pages/complaints_page.dart';
@@ -176,6 +178,11 @@ abstract final class AppPages {
       name: AppRoutes.storeOrderDetail,
       page: () => StoreOrderDetailPage(order: Get.arguments as StoreOrder),
       binding: StoreBinding(),
+    ),
+    GetPage<dynamic>(
+      name: AppRoutes.appearance,
+      page: () => const AppearancePage(),
+      binding: AppearanceBinding(),
     ),
     GetPage<dynamic>(
       name: AppRoutes.sample,

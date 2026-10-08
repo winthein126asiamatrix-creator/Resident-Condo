@@ -4,11 +4,10 @@ import 'package:get/get.dart';
 import '../../domain/entities/maintenance_request.dart';
 import '../controllers/maintenance_controller.dart';
 import '../widgets/maintenance_status_badge.dart';
-import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_image_preview.dart';
-import '../../../../core/widgets/app_primary_action.dart';
 import '../../../../core/widgets/app_step_progress.dart';
 
 class MaintenanceDetailPage extends GetView<MaintenanceController> {
@@ -20,6 +19,7 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
   Widget build(BuildContext context) {
     return Obx(() {
       final current = _currentRequest();
+      final tokens = AppThemeTokens.of(context);
       return Scaffold(
         appBar: AppDetailAppBar(title: 'Request details'),
         body: ListView(
@@ -58,16 +58,16 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
               title: 'Description',
               child: Text(
                 current.description,
-                style: const TextStyle(color: Color(0xFF52635F), height: 1.4),
+                style: TextStyle(color: tokens.mutedStrong, height: 1.4),
               ),
             ),
             const SizedBox(height: 16),
             _Section(
               title: current.photoPaths.isEmpty ? 'Attachments' : 'Attachment',
               child: current.photoPaths.isEmpty
-                  ? const Text(
+                  ? Text(
                       'No photos attached',
-                      style: TextStyle(color: AppPalette.muted),
+                      style: TextStyle(color: tokens.muted),
                     )
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,7 +101,7 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
             //     onPressed: () => controller.advanceRequest(current),
             //     label: 'Move to ${current.status.next!.label}',
             //     icon: Icons.arrow_forward_rounded,
-            //     backgroundColor: AppPalette.accent,
+            //     backgroundColor: AppThemeTokens.of(context).brand,
             //   ),
             // ],
           ],
@@ -134,29 +134,24 @@ class _DetailHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F766E),
+        color: tokens.brand,
         borderRadius: BorderRadius.circular(22),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1A0F766E),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
+        boxShadow: tokens.heroShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'MAINTENANCE REQUEST',
                   style: TextStyle(
-                    color: Color(0xFFBFE8DF),
+                    color: tokens.brandOnDark,
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.2,
@@ -169,8 +164,8 @@ class _DetailHero extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             request.title,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: tokens.brandOnDark,
               fontSize: 21,
               fontWeight: FontWeight.w800,
             ),
@@ -178,7 +173,7 @@ class _DetailHero extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             '${request.category.label} · ${request.priority.label}',
-            style: const TextStyle(color: Color(0xFFD8F3EC), fontSize: 13),
+            style: TextStyle(color: tokens.brandOnDarkMuted, fontSize: 13),
           ),
         ],
       ),
@@ -194,12 +189,13 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE6EEEB)),
+        border: Border.all(color: tokens.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,6 +220,7 @@ class _Line extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 7),
       child: Row(
@@ -232,7 +229,7 @@ class _Line extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(color: Color(0xFF71807D)),
+              style: TextStyle(color: tokens.muted),
             ),
           ),
           const SizedBox(width: 12),
@@ -260,6 +257,7 @@ class _StatusProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final status = request.status;
     // The submitted step carries the request's own timestamp; the rest are
     // shown without a date because the mock data does not track one per step.
@@ -276,9 +274,9 @@ class _StatusProgress extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppPalette.border),
+        border: Border.all(color: tokens.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

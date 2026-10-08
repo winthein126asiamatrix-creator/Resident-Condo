@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_theme_tokens.dart';
+
 class StatusBadge extends StatelessWidget {
   const StatusBadge({required this.label, super.key});
 
@@ -7,7 +9,8 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _colorFor(label);
+    final tokens = AppThemeTokens.of(context);
+    final color = _colorFor(label, tokens);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
@@ -22,7 +25,7 @@ class StatusBadge extends StatelessWidget {
     );
   }
 
-  Color _colorFor(String value) {
+  Color _colorFor(String value, AppThemeTokens tokens) {
     final normalized = value.toLowerCase();
     if (normalized.contains('completed') || normalized.contains('confirmed')) {
       return const Color(0xFF087F5B);
@@ -33,6 +36,6 @@ class StatusBadge extends StatelessWidget {
     if (normalized.contains('urgent') || normalized.contains('overdue')) {
       return const Color(0xFFC2410C);
     }
-    return const Color(0xFF0F766E);
+    return tokens.brand;
   }
 }

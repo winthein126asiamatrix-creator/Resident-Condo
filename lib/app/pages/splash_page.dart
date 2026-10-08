@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/theme/app_theme_tokens.dart';
 import '../routes/app_routes.dart';
 
 class SplashPage extends StatefulWidget {
@@ -43,8 +44,9 @@ class _SplashPageState extends State<SplashPage>
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFF0F766E),
+      backgroundColor: tokens.brand,
       body: SafeArea(
         child: Center(
           child: FadeTransition(
@@ -78,7 +80,7 @@ class _SplashPageState extends State<SplashPage>
                   AppConstants.appName,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.white,
+                    color: tokens.onBrand,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.3,
                   ),

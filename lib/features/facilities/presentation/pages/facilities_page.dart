@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
-import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/facility.dart';
 import '../controllers/facility_controller.dart';
@@ -13,8 +13,8 @@ class FacilitiesPage extends GetView<FacilityController> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF9),
       body: SafeArea(
         child: Obx(
           () => controller.isLoading.value && controller.facilities.isEmpty
@@ -51,9 +51,9 @@ class FacilitiesPage extends GetView<FacilityController> {
                           icon: const Icon(Icons.event_note_rounded, size: 18),
                           label: const Text('My Reservations'),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: AppPalette.brand,
-                            backgroundColor: Colors.white,
-                            side: const BorderSide(color: AppPalette.border),
+                            foregroundColor: tokens.brand,
+                            backgroundColor: tokens.surface,
+                            side: BorderSide(color: tokens.border),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 13,
@@ -102,9 +102,10 @@ class _FacilitiesHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -113,13 +114,13 @@ class _FacilitiesHeader extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 25,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF1D2B2A),
+                  color: tokens.ink,
                 ),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
                 'Find your next place to unwind',
-                style: TextStyle(color: Color(0xFF71807D)),
+                style: TextStyle(color: tokens.muted),
               ),
             ],
           ),
@@ -145,18 +146,13 @@ class _FacilitySummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F766E),
+        color: tokens.brand,
         borderRadius: BorderRadius.circular(22),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1A0F766E),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
+        boxShadow: tokens.heroShadow,
       ),
       child: Row(
         children: [
@@ -167,9 +163,9 @@ class _FacilitySummary extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(17),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.event_available_rounded,
-              color: Color(0xFFBFE8DF),
+              color: tokens.brandOnDark,
               size: 27,
             ),
           ),
@@ -178,10 +174,10 @@ class _FacilitySummary extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Your amenities',
                   style: TextStyle(
-                    color: Color(0xFFBFE8DF),
+                    color: tokens.brandOnDark,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
@@ -189,8 +185,8 @@ class _FacilitySummary extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   '$facilityCount facilities · $reservationCount reservations',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: tokens.brandOnDark,
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
@@ -198,7 +194,10 @@ class _FacilitySummary extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: Color(0xFFBFE8DF)),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: tokens.brandOnDark,
+          ),
         ],
       ),
     );
@@ -213,26 +212,27 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Row(
       children: [
         Text(
           title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w800,
-            color: const Color(0xFF1D2B2A),
+            color: tokens.ink,
           ),
         ),
         const SizedBox(width: 7),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
           decoration: BoxDecoration(
-            color: const Color(0xFFE6F3EF),
+            color: tokens.brandTint,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
             '$count',
-            style: const TextStyle(
-              color: Color(0xFF0F766E),
+            style: TextStyle(
+              color: tokens.brand,
               fontSize: 11,
               fontWeight: FontWeight.w800,
             ),
@@ -292,22 +292,17 @@ class _FacilityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final available = facility.availableSlots.isNotEmpty;
     return InkWell(
       onTap: () => Get.toNamed(AppRoutes.facilityDetail, arguments: facility),
       borderRadius: BorderRadius.circular(20),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: tokens.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE6EEEB)),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x0A163A36),
-              blurRadius: 14,
-              offset: Offset(0, 5),
-            ),
-          ],
+          border: Border.all(color: tokens.border),
+          boxShadow: tokens.cardShadow,
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -323,7 +318,7 @@ class _FacilityCard extends StatelessWidget {
                     fit: BoxFit.cover,
                     filterQuality: FilterQuality.high,
                     errorBuilder: (_, _, _) => Container(
-                      color: const Color(0xFF0F766E),
+                      color: tokens.brand,
                       child: const Icon(
                         Icons.apartment_rounded,
                         color: Colors.white70,
@@ -375,16 +370,16 @@ class _FacilityCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           displayFacilityName(facility.name),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 17,
-                            color: Color(0xFF1D2B2A),
+                            color: tokens.ink,
                           ),
                         ),
                       ),
-                      const Icon(
+                      Icon(
                         Icons.arrow_forward_rounded,
-                        color: Color(0xFF0F766E),
+                        color: tokens.brand,
                         size: 20,
                       ),
                     ],
@@ -394,8 +389,8 @@ class _FacilityCard extends StatelessWidget {
                     facility.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF71807D),
+                    style: TextStyle(
+                      color: tokens.muted,
                       fontSize: 12,
                       height: 1.35,
                     ),
@@ -403,17 +398,17 @@ class _FacilityCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.schedule_outlined,
                         size: 16,
-                        color: Color(0xFF71807D),
+                        color: tokens.muted,
                       ),
                       const SizedBox(width: 5),
                       Expanded(
                         child: Text(
                           facility.openingHours,
-                          style: const TextStyle(
-                            color: Color(0xFF52635F),
+                          style: TextStyle(
+                            color: tokens.mutedStrong,
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                           ),
@@ -424,16 +419,16 @@ class _FacilityCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.groups_outlined,
                         size: 16,
-                        color: Color(0xFF71807D),
+                        color: tokens.muted,
                       ),
                       const SizedBox(width: 5),
                       Text(
                         '${facility.capacity} capacity',
-                        style: const TextStyle(
-                          color: Color(0xFF52635F),
+                        style: TextStyle(
+                          color: tokens.mutedStrong,
                           fontSize: 11,
                         ),
                       ),
@@ -459,8 +454,8 @@ class _FacilityCard extends StatelessWidget {
                       icon: const Icon(Icons.event_available_rounded, size: 18),
                       label: const Text('Reserve'),
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF0F766E),
-                        foregroundColor: Colors.white,
+                        backgroundColor: tokens.brand,
+                        foregroundColor: tokens.onBrand,
                         minimumSize: const Size.fromHeight(46),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(13),
@@ -485,12 +480,11 @@ class _AvailabilityBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
-        color: available
-            ? const Color(0xFFE6F3EF).withValues(alpha: 0.94)
-            : const Color(0xFFFCE8DF).withValues(alpha: 0.94),
+        color: tokens.brandTint.withValues(alpha: 0.94),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(

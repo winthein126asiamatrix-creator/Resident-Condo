@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_dialogs.dart';
@@ -21,6 +22,7 @@ class ParkingPage extends GetView<ParkingController> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(
         title: 'Parking',
@@ -128,8 +130,8 @@ class ParkingPage extends GetView<ParkingController> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.right,
-                            style: const TextStyle(
-                              color: AppPalette.muted,
+                            style: TextStyle(
+                              color: tokens.muted,
                               fontSize: 11,
                             ),
                           ),
@@ -145,9 +147,9 @@ class ParkingPage extends GetView<ParkingController> {
               ),
               const SizedBox(height: 10),
               if (controller.guestRequests.isEmpty)
-                const Text(
+                Text(
                   'No guest parking requests yet.',
-                  style: TextStyle(color: AppPalette.muted, fontSize: 12),
+                  style: TextStyle(color: tokens.muted, fontSize: 12),
                 )
               else
                 for (final request in controller.guestRequests)
@@ -173,6 +175,7 @@ class _MySpaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppHeroPanel(
       icon: Icons.directions_car_filled_rounded,
       title: 'Slot ${space.slot}',
@@ -194,8 +197,8 @@ class _MySpaceCard extends StatelessWidget {
               children: [
                 Text(
                   space.vehicle,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: tokens.brandOnDark,
                     fontWeight: FontWeight.w800,
                     fontSize: 16,
                   ),
@@ -203,8 +206,8 @@ class _MySpaceCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   space.licensePlate,
-                  style: const TextStyle(
-                    color: AppPalette.brandOnDarkMuted,
+                  style: TextStyle(
+                    color: tokens.brandOnDarkMuted,
                     fontSize: 13,
                     letterSpacing: 1.2,
                   ),
@@ -214,7 +217,7 @@ class _MySpaceCard extends StatelessWidget {
           ),
           TextButton.icon(
             onPressed: () => _editVehicle(context),
-            style: TextButton.styleFrom(foregroundColor: Colors.white),
+            style: TextButton.styleFrom(foregroundColor: tokens.brandOnDark),
             icon: const Icon(Icons.edit_rounded, size: 16),
             label: const Text('Edit'),
           ),
@@ -268,6 +271,7 @@ class _QuickActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Row(
       children: [
         Expanded(
@@ -283,7 +287,7 @@ class _QuickActions extends StatelessWidget {
             onPressed: controller.loadParking,
             label: 'Refresh',
             icon: Icons.refresh_rounded,
-            foregroundColor: AppPalette.mutedStrong,
+            foregroundColor: tokens.mutedStrong,
           ),
         ),
       ],
@@ -408,9 +412,10 @@ class _SpaceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final color = switch (space.status) {
       ParkingStatus.occupied => AppPalette.success,
-      ParkingStatus.available => AppPalette.brand,
+      ParkingStatus.available => tokens.brand,
       ParkingStatus.reserved => AppPalette.warning,
       ParkingStatus.blocked => AppPalette.danger,
     };
@@ -441,9 +446,9 @@ class _SpaceTile extends StatelessWidget {
                     ),
                     if (isMine) ...[
                       const SizedBox(width: 8),
-                      const AppStatusPill(
+                      AppStatusPill(
                         label: 'Yours',
-                        color: AppPalette.brand,
+                        color: tokens.brand,
                         dense: true,
                       ),
                     ],
@@ -456,7 +461,7 @@ class _SpaceTile extends StatelessWidget {
                       : '${space.level} ? ${space.licensePlate}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: AppPalette.muted, fontSize: 11),
+                  style: TextStyle(color: tokens.muted, fontSize: 11),
                 ),
               ],
             ),
@@ -475,6 +480,7 @@ class _GuestRequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final cancelled = request.status == 'Cancelled';
     return AppCard(
       child: Column(
@@ -498,13 +504,13 @@ class _GuestRequestCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '${request.licensePlate} · ${request.date} · ${request.window}',
-            style: const TextStyle(color: AppPalette.mutedStrong, fontSize: 12),
+            style: TextStyle(color: tokens.mutedStrong, fontSize: 12),
           ),
           if (request.vehicle.isNotEmpty) ...[
             const SizedBox(height: 3),
             Text(
               request.vehicle,
-              style: const TextStyle(color: AppPalette.faint, fontSize: 11),
+              style: TextStyle(color: tokens.faint, fontSize: 11),
             ),
           ],
           if (!cancelled) ...[
@@ -579,6 +585,7 @@ class _VehicleSheetState extends State<_VehicleSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: EdgeInsets.fromLTRB(
         20,
@@ -597,7 +604,7 @@ class _VehicleSheetState extends State<_VehicleSheet> {
           const SizedBox(height: 4),
           Text(
             'Slot ${widget.space.slot}',
-            style: const TextStyle(color: AppPalette.muted, fontSize: 12),
+            style: TextStyle(color: tokens.muted, fontSize: 12),
           ),
           const SizedBox(height: 16),
           AppTextField(

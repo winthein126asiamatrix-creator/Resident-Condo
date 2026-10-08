@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/models/resident_role.dart';
-import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../../payments/presentation/controllers/payment_controller.dart';
@@ -68,8 +68,8 @@ class ProfilePage extends GetView<ProfileController> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAF9),
       body: SafeArea(
         child: Obx(() {
           if (controller.isLoading.value && controller.profile.value == null) {
@@ -111,12 +111,12 @@ class ProfilePage extends GetView<ProfileController> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
               children: [
-                const Text(
+                Text(
                   'Profile',
                   style: TextStyle(
                     fontSize: 25,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF1D2B2A),
+                    color: tokens.ink,
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -177,6 +177,11 @@ class ProfilePage extends GetView<ProfileController> {
                         value: profile.notificationsEnabled,
                         onChanged: controller.toggleNotifications,
                       ),
+                    ),
+                    _ActionRow(
+                      icon: Icons.palette_outlined,
+                      label: 'App appearance',
+                      onTap: () => Get.toNamed(AppRoutes.appearance),
                     ),
                     _ActionRow(
                       icon: Icons.language_rounded,
@@ -318,6 +323,7 @@ class ProfilePage extends GetView<ProfileController> {
   }
 
   Future<void> _chooseLanguage(BuildContext context, Profile profile) async {
+    final tokens = AppThemeTokens.of(context);
     final language = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: false,
@@ -337,9 +343,9 @@ class ProfilePage extends GetView<ProfileController> {
                 ListTile(
                   title: Text(option),
                   trailing: option == profile.language
-                      ? const Icon(
+                      ? Icon(
                           Icons.check_rounded,
-                          color: Color(0xFF0F766E),
+                          color: tokens.brand,
                         )
                       : null,
                   onTap: () => Navigator.pop(context, option),
@@ -434,6 +440,7 @@ class _RoleSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Column(
       children: [
         for (final role in ResidentRole.values)
@@ -449,12 +456,14 @@ class _RoleSelector extends StatelessWidget {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: role == selected ? AppPalette.brandTint : Colors.white,
+                  color: role == selected
+                      ? tokens.brandTint
+                      : tokens.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: role == selected
-                        ? AppPalette.brand
-                        : AppPalette.border,
+                        ? tokens.brand
+                        : tokens.border,
                   ),
                 ),
                 child: Row(
@@ -465,8 +474,8 @@ class _RoleSelector extends StatelessWidget {
                           : Icons.radio_button_unchecked_rounded,
                       size: 20,
                       color: role == selected
-                          ? AppPalette.brand
-                          : AppPalette.faint,
+                          ? tokens.brand
+                          : tokens.faint,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -475,7 +484,7 @@ class _RoleSelector extends StatelessWidget {
                         children: [
                           Text(
                             role.label,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w800,
                               fontSize: 13,
                             ),
@@ -483,8 +492,8 @@ class _RoleSelector extends StatelessWidget {
                           const SizedBox(height: 2),
                           Text(
                             role.description,
-                            style: const TextStyle(
-                              color: AppPalette.muted,
+                            style: TextStyle(
+                              color: tokens.muted,
                               fontSize: 11,
                               height: 1.35,
                             ),
@@ -508,10 +517,11 @@ class _ProfileHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F766E),
+        color: tokens.brand,
         borderRadius: BorderRadius.circular(22),
         boxShadow: const [
           BoxShadow(
@@ -525,11 +535,11 @@ class _ProfileHero extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 31,
-            backgroundColor: const Color(0xFFBFE8DF),
+            backgroundColor: tokens.brandSoft,
             child: Text(
               profile.initials,
-              style: const TextStyle(
-                color: Color(0xFF0F766E),
+              style: TextStyle(
+                color: tokens.brand,
                 fontSize: 21,
                 fontWeight: FontWeight.w800,
               ),
@@ -542,7 +552,7 @@ class _ProfileHero extends StatelessWidget {
               children: [
                 Text(
                   profile.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
                     fontSize: 21,
                     fontWeight: FontWeight.w800,
@@ -551,8 +561,8 @@ class _ProfileHero extends StatelessWidget {
                 const SizedBox(height: 5),
                 Text(
                   profile.unit,
-                  style: const TextStyle(
-                    color: Color(0xFFD8F3EC),
+                  style: TextStyle(
+                    color: tokens.brandOnDarkMuted,
                     fontSize: 13,
                   ),
                 ),
@@ -586,25 +596,26 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE6EEEB)),
+        border: Border.all(color: tokens.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 4),
             Text(
               subtitle!,
-              style: const TextStyle(color: Color(0xFF71807D), fontSize: 11),
+              style: TextStyle(color: tokens.muted, fontSize: 11),
             ),
           ],
           const SizedBox(height: 5),
@@ -627,23 +638,24 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 9),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: const Color(0xFF0F766E)),
+          Icon(icon, size: 20, color: tokens.brand),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(color: Color(0xFF71807D), fontSize: 12),
+              style: TextStyle(color: tokens.muted, fontSize: 12),
             ),
           ),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
             ),
           ),
         ],
@@ -666,11 +678,12 @@ class _PreferenceRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: const Color(0xFF0F766E)),
+          Icon(icon, size: 20, color: tokens.brand),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -678,7 +691,7 @@ class _PreferenceRow extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 12,
                   ),
@@ -686,8 +699,8 @@ class _PreferenceRow extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   value,
-                  style: const TextStyle(
-                    color: Color(0xFF71807D),
+                  style: TextStyle(
+                    color: tokens.muted,
                     fontSize: 11,
                   ),
                 ),
@@ -715,18 +728,19 @@ class _ActionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 11),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: const Color(0xFF0F766E)),
+            Icon(icon, size: 20, color: tokens.brand),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 12,
                 ),
@@ -735,12 +749,12 @@ class _ActionRow extends StatelessWidget {
             if (value != null)
               Text(
                 value!,
-                style: const TextStyle(color: Color(0xFF71807D), fontSize: 11),
+                style: TextStyle(color: tokens.muted, fontSize: 11),
               ),
             const SizedBox(width: 5),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: Color(0xFF9AA9A5),
+              color: tokens.faint,
               size: 20,
             ),
           ],
@@ -781,6 +795,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.fromLTRB(
@@ -798,7 +813,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                 width: 38,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD5E2DE),
+                  color: tokens.border,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),

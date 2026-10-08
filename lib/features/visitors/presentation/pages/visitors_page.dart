@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
-import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_state_message.dart';
@@ -20,6 +20,7 @@ class VisitorsPage extends GetView<VisitorController> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(title: 'Visitors'),
       body: Obx(() {
@@ -52,18 +53,18 @@ class VisitorsPage extends GetView<VisitorController> {
               _VisitorHero(controller: controller),
               const SizedBox(height: 16),
               AppCard(
-                color: AppPalette.brandTint,
-                borderColor: AppPalette.brandSoft,
+                color: tokens.brandTint,
+                borderColor: tokens.brandSoft,
                 child: Row(
                   children: [
-                    const Icon(Icons.badge_outlined, color: AppPalette.brand),
+                    Icon(Icons.badge_outlined, color: tokens.brand),
                     const SizedBox(width: 10),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Visitors are verified with an alphanumeric access code '
                         'read out at the lobby desk.',
                         style: TextStyle(
-                          color: AppPalette.mutedStrong,
+                          color: tokens.mutedStrong,
                           fontSize: 12,
                           height: 1.4,
                         ),
@@ -122,6 +123,7 @@ class _VisitorHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppHeroPanel(
       icon: Icons.people_alt_rounded,
       title: 'Visitor access',
@@ -131,7 +133,7 @@ class _VisitorHero extends StatelessWidget {
       trailing: IconButton(
         tooltip: 'Refresh visitors',
         onPressed: controller.loadVisitors,
-        icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+        icon: Icon(Icons.refresh_rounded, color: tokens.brandOnDark),
       ),
     );
   }
@@ -143,6 +145,7 @@ class _FilterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -154,11 +157,11 @@ class _FilterRow extends StatelessWidget {
                 label: Text('${filter.label} (${controller.countFor(filter)})'),
                 selected: controller.filter.value == filter,
                 onSelected: (_) => controller.selectFilter(filter),
-                selectedColor: AppPalette.brandSoft,
+                selectedColor: tokens.brandSoft,
                 labelStyle: TextStyle(
                   color: controller.filter.value == filter
-                      ? AppPalette.brand
-                      : AppPalette.mutedStrong,
+                      ? tokens.brand
+                      : tokens.mutedStrong,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -176,7 +179,8 @@ class _VisitorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = visitorStatusColor(visitor.status);
+    final tokens = AppThemeTokens.of(context);
+    final color = visitorStatusColor(context, visitor.status);
     return AppCard(
       onTap: () {
         controller.selectVisitor(visitor);
@@ -209,8 +213,8 @@ class _VisitorCard extends StatelessWidget {
                       '${visitor.relation.label} · ${visitor.purpose}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppPalette.muted,
+                      style: TextStyle(
+                        color: tokens.muted,
                         fontSize: 12,
                       ),
                     ),
@@ -224,15 +228,15 @@ class _VisitorCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: AppPalette.surface,
+              color: tokens.canvas,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.vpn_key_outlined,
                   size: 16,
-                  color: AppPalette.brand,
+                  color: tokens.brand,
                 ),
                 const SizedBox(width: 8),
                 Flexible(
@@ -255,8 +259,8 @@ class _VisitorCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.right,
-                    style: const TextStyle(
-                      color: AppPalette.muted,
+                    style: TextStyle(
+                      color: tokens.muted,
                       fontSize: 11,
                     ),
                   ),
@@ -286,7 +290,7 @@ class _VisitorCard extends StatelessWidget {
                   child: AppPrimaryAction(
                     key: Key('check-out-${visitor.id}'),
                     height: 44,
-                    backgroundColor: AppPalette.accent,
+                    backgroundColor: tokens.brand,
                     onPressed: controller.isSubmitting.value
                         ? null
                         : () => _confirmCheckOut(context),

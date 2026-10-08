@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -37,6 +37,7 @@ class StoreProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final outOfStock = !product.isInStock;
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       key: Key('store-product-${product.id}'),
       onTap: onOpen,
@@ -57,8 +58,8 @@ class StoreProductCard extends StatelessWidget {
                   product.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppPalette.ink,
+                  style: TextStyle(
+                    color: tokens.ink,
                     fontSize: 14.5,
                     fontWeight: FontWeight.w800,
                     height: 1.25,
@@ -71,8 +72,8 @@ class StoreProductCard extends StatelessWidget {
                     product.brand,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppPalette.faint,
+                    style: TextStyle(
+                      color: tokens.faint,
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
                     ),
@@ -84,8 +85,8 @@ class StoreProductCard extends StatelessWidget {
                   children: [
                     Text(
                       AppFormatters.currency(product.price),
-                      style: const TextStyle(
-                        color: AppPalette.ink,
+                      style: TextStyle(
+                        color: tokens.ink,
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.2,
@@ -99,8 +100,8 @@ class StoreProductCard extends StatelessWidget {
                         product.unit,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppPalette.faint,
+                        style: TextStyle(
+                          color: tokens.faint,
                           fontSize: 11.5,
                         ),
                       ),
@@ -178,11 +179,12 @@ class _AddButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return SizedBox(
       height: height,
       width: double.infinity,
       child: Material(
-        color: AppPalette.brand,
+        color: tokens.brand,
         borderRadius: BorderRadius.circular(AppRadius.md),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -191,16 +193,16 @@ class _AddButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.add_rounded,
                 size: 18,
-                color: Colors.white,
+                color: tokens.onBrand,
               ),
               const SizedBox(width: 6),
-              const Text(
+              Text(
                 'Add to basket',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: tokens.onBrand,
                   fontSize: 13.5,
                   fontWeight: FontWeight.w800,
                 ),
@@ -234,6 +236,7 @@ class _QuantityStepper extends StatelessWidget {
     // At the shelf limit the plus is disabled, so the resident is told the
     // truth rather than being allowed to ask for something that is not there.
     final atLimit = quantity >= product.stock;
+    final tokens = AppThemeTokens.of(context);
     return Row(
       children: [
         _StepButton(
@@ -256,13 +259,13 @@ class _QuantityStepper extends StatelessWidget {
             height: height,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppPalette.brandTint,
+              color: tokens.brandTint,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Text(
               '$quantity',
-              style: const TextStyle(
-                color: AppPalette.brand,
+              style: TextStyle(
+                color: tokens.brand,
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
               ),
@@ -307,13 +310,14 @@ class _StepButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onTap != null;
+    final tokens = AppThemeTokens.of(context);
     return Tooltip(
       message: tooltip,
       child: SizedBox(
         width: height,
         height: height,
         child: Material(
-          color: enabled ? AppPalette.brand : AppPalette.surfaceMuted,
+          color: enabled ? tokens.brand : tokens.surfaceMuted,
           borderRadius: BorderRadius.circular(AppRadius.md),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
@@ -321,7 +325,7 @@ class _StepButton extends StatelessWidget {
             child: Icon(
               icon,
               size: 19,
-              color: enabled ? Colors.white : AppPalette.faint,
+              color: enabled ? tokens.onBrand : tokens.faint,
             ),
           ),
         ),
@@ -340,17 +344,18 @@ class _LineTotal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       height: height,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppPalette.surfaceMuted,
+        color: tokens.surfaceMuted,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Text(
         text,
-        style: const TextStyle(
-          color: AppPalette.mutedStrong,
+        style: TextStyle(
+          color: tokens.mutedStrong,
           fontSize: 13.5,
           fontWeight: FontWeight.w800,
         ),
@@ -366,17 +371,18 @@ class _OutOfStockLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       height: height,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppPalette.surfaceMuted,
+        color: tokens.surfaceMuted,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
-      child: const Text(
+      child: Text(
         'Out of stock',
         style: TextStyle(
-          color: AppPalette.faint,
+          color: tokens.faint,
           fontSize: 13,
           fontWeight: FontWeight.w700,
         ),

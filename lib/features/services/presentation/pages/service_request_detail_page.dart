@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_section.dart';
@@ -20,6 +21,7 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Obx(() {
       final current = _current();
       return Scaffold(
@@ -65,10 +67,7 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                 title: 'Your notes',
                 child: Text(
                   current.notes,
-                  style: const TextStyle(
-                    color: AppPalette.mutedStrong,
-                    height: 1.4,
-                  ),
+                  style: TextStyle(color: tokens.mutedStrong, height: 1.4),
                 ),
               ),
             ],
@@ -94,8 +93,8 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                     Expanded(
                       child: Text(
                         current.feedback ?? '',
-                        style: const TextStyle(
-                          color: AppPalette.mutedStrong,
+                        style: TextStyle(
+                          color: tokens.mutedStrong,
                           fontSize: 12,
                         ),
                       ),
@@ -221,6 +220,7 @@ class _Timeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final currentIndex = _steps.indexOf(status);
     final cancelled = status == ServiceRequestStatus.cancelled;
     return AppCard(
@@ -237,15 +237,15 @@ class _Timeline extends StatelessWidget {
                       height: 22,
                       decoration: BoxDecoration(
                         color: !cancelled && i <= currentIndex
-                            ? AppPalette.brand
-                            : AppPalette.surfaceMuted,
+                            ? tokens.brand
+                            : tokens.surfaceMuted,
                         shape: BoxShape.circle,
                       ),
                       child: !cancelled && i <= currentIndex
-                          ? const Icon(
+                          ? Icon(
                               Icons.check_rounded,
                               size: 14,
-                              color: Colors.white,
+                              color: tokens.onBrand,
                             )
                           : null,
                     ),
@@ -254,8 +254,8 @@ class _Timeline extends StatelessWidget {
                         width: 2,
                         height: 26,
                         color: !cancelled && i < currentIndex
-                            ? AppPalette.brand
-                            : AppPalette.surfaceMuted,
+                            ? tokens.brand
+                            : tokens.surfaceMuted,
                       ),
                   ],
                 ),
@@ -269,8 +269,8 @@ class _Timeline extends StatelessWidget {
                           ? FontWeight.w800
                           : FontWeight.w400,
                       color: !cancelled && i <= currentIndex
-                          ? AppPalette.ink
-                          : AppPalette.faint,
+                          ? tokens.ink
+                          : tokens.faint,
                     ),
                   ),
                 ),

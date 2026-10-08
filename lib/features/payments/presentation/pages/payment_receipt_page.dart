@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../domain/entities/invoice.dart';
@@ -18,6 +19,7 @@ class PaymentReceiptPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isSuccess = payment.isSuccessful;
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(
         title: isSuccess ? 'Payment receipt' : 'Failed attempt',
@@ -34,22 +36,22 @@ class PaymentReceiptPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: tokens.surface,
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: AppPalette.border),
+              border: Border.all(color: tokens.border),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'PAYMENT RECEIPT',
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.6,
-                          color: AppPalette.brand,
+                          color: tokens.brand,
                         ),
                       ),
                     ),
@@ -57,9 +59,9 @@ class PaymentReceiptPage extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Condo Residents',
-                  style: TextStyle(color: AppPalette.muted, fontSize: 12),
+                  style: TextStyle(color: tokens.muted, fontSize: 12),
                 ),
                 const Divider(height: 30),
                 _ReceiptLine(label: 'Resident', value: payment.residentName),
@@ -115,7 +117,7 @@ class PaymentReceiptPage extends StatelessWidget {
             icon: const Icon(Icons.check_rounded),
             label: const Text('Done'),
             style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(50),
+              minimumSize: Size.fromHeight(50),
             ),
           ),
         ],
@@ -138,8 +140,9 @@ class _ReceiptLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -150,7 +153,7 @@ class _ReceiptLine extends StatelessWidget {
                 Text(
                   label,
                   style: TextStyle(
-                    color: emphasize ? AppPalette.ink : AppPalette.muted,
+                    color: emphasize ? tokens.ink : tokens.muted,
                     fontWeight: emphasize ? FontWeight.w800 : FontWeight.w400,
                   ),
                 ),
@@ -158,8 +161,8 @@ class _ReceiptLine extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     detail!,
-                    style: const TextStyle(
-                      color: AppPalette.faint,
+                    style: TextStyle(
+                      color: tokens.faint,
                       fontSize: 11,
                     ),
                   ),
@@ -172,7 +175,7 @@ class _ReceiptLine extends StatelessWidget {
             value,
             style: TextStyle(
               fontWeight: FontWeight.w800,
-              color: emphasize ? AppPalette.brand : AppPalette.ink,
+              color: emphasize ? tokens.brand : tokens.ink,
             ),
           ),
         ],

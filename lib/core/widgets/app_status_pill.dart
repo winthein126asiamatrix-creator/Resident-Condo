@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_palette.dart';
+import '../theme/app_theme_tokens.dart';
 
 /// Coloured pill used for statuses across the new modules.
 class AppStatusPill extends StatelessWidget {
@@ -94,12 +94,13 @@ class AppHeroPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppPalette.brand,
+        color: tokens.brand,
         borderRadius: BorderRadius.circular(22),
-        boxShadow: AppPalette.heroShadow,
+        boxShadow: tokens.heroShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +115,7 @@ class AppHeroPanel extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(17),
                   ),
-                  child: Icon(icon, color: AppPalette.brandOnDark, size: 27),
+                  child: Icon(icon, color: tokens.brandOnDark, size: 27),
                 ),
                 const SizedBox(width: 14),
               ],
@@ -124,8 +125,8 @@ class AppHeroPanel extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        color: AppPalette.brandOnDark,
+                      style: TextStyle(
+                        color: tokens.brandOnDark,
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                       ),
@@ -133,8 +134,8 @@ class AppHeroPanel extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       subtitle,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: tokens.brandOnDark,
                         fontSize: 15,
                         height: 1.35,
                         fontWeight: FontWeight.w800,
@@ -151,17 +152,17 @@ class AppHeroPanel extends StatelessWidget {
             const SizedBox(height: 14),
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.info_outline_rounded,
-                  color: AppPalette.brandOnDark,
+                  color: tokens.brandOnDark,
                   size: 15,
                 ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     footnote!,
-                    style: const TextStyle(
-                      color: AppPalette.brandOnDarkMuted,
+                    style: TextStyle(
+                      color: tokens.brandOnDarkMuted,
                       fontSize: 11,
                     ),
                   ),

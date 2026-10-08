@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/notification_item.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 
 class NotificationItemCard extends StatelessWidget {
   const NotificationItemCard({
@@ -14,18 +15,19 @@ class NotificationItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _colorFor(item.type);
+    final tokens = AppThemeTokens.of(context);
+    final color = _colorFor(item.type, tokens);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: item.isRead ? Colors.white : const Color(0xFFFBFEFD),
+          color: tokens.surface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: item.isRead
-                ? const Color(0xFFE6EEEB)
+                ? tokens.border
                 : color.withValues(alpha: 0.35),
           ),
         ),
@@ -58,8 +60,8 @@ class NotificationItemCard extends StatelessWidget {
                         Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFE07A5F),
+                          decoration: BoxDecoration(
+                            color: tokens.brand,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -68,8 +70,8 @@ class NotificationItemCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     item.message,
-                    style: const TextStyle(
-                      color: Color(0xFF71807D),
+                    style: TextStyle(
+                      color: tokens.muted,
                       fontSize: 12,
                       height: 1.35,
                     ),
@@ -92,7 +94,7 @@ class NotificationItemCard extends StatelessWidget {
     );
   }
 
-  Color _colorFor(NotificationType type) {
+  Color _colorFor(NotificationType type, AppThemeTokens tokens) {
     switch (type) {
       case NotificationType.paymentDue:
         return const Color(0xFFC2410C);
@@ -103,9 +105,9 @@ class NotificationItemCard extends StatelessWidget {
       case NotificationType.facilityBookingConfirmed:
         return const Color(0xFF5B4CC4);
       case NotificationType.visitorArrival:
-        return const Color(0xFF0F766E);
+        return tokens.brand;
       case NotificationType.newAnnouncement:
-        return const Color(0xFF52635F);
+        return tokens.mutedStrong;
       case NotificationType.complaintUpdated:
         return const Color(0xFFB45309);
       case NotificationType.leaseRenewal:

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/announcement.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 
 class AnnouncementCard extends StatelessWidget {
   const AnnouncementCard({
@@ -14,18 +15,19 @@ class AnnouncementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _colorFor(announcement.category);
+    final tokens = AppThemeTokens.of(context);
+    final color = _colorFor(announcement.category, tokens);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: announcement.isRead ? Colors.white : const Color(0xFFFBFEFD),
+          color: tokens.surface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: announcement.isRead
-                ? const Color(0xFFE6EEEB)
+                ? tokens.border
                 : color.withValues(alpha: 0.35),
           ),
         ),
@@ -62,8 +64,8 @@ class AnnouncementCard extends StatelessWidget {
                         Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFE07A5F),
+                          decoration: BoxDecoration(
+                            color: tokens.brand,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -74,8 +76,8 @@ class AnnouncementCard extends StatelessWidget {
                     announcement.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF71807D),
+                    style: TextStyle(
+                      color: tokens.muted,
                       fontSize: 12,
                       height: 1.35,
                     ),
@@ -96,8 +98,8 @@ class AnnouncementCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     announcement.date,
-                    style: const TextStyle(
-                      color: Color(0xFF9AA9A5),
+                    style: TextStyle(
+                      color: tokens.faint,
                       fontSize: 11,
                     ),
                   ),
@@ -110,18 +112,18 @@ class AnnouncementCard extends StatelessWidget {
     );
   }
 
-  Color _colorFor(AnnouncementCategory category) {
+  Color _colorFor(AnnouncementCategory category, AppThemeTokens tokens) {
     switch (category) {
       case AnnouncementCategory.maintenance:
         return const Color(0xFFB45309);
       case AnnouncementCategory.security:
         return const Color(0xFF5B4CC4);
       case AnnouncementCategory.community:
-        return const Color(0xFF0F766E);
+        return tokens.brand;
       case AnnouncementCategory.emergency:
         return const Color(0xFFC2410C);
       case AnnouncementCategory.general:
-        return const Color(0xFF52635F);
+        return tokens.mutedStrong;
     }
   }
 

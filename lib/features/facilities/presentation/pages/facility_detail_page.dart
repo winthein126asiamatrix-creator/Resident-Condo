@@ -7,6 +7,7 @@ import '../controllers/facility_controller.dart';
 import '../widgets/facility_labels.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 
 class FacilityDetailPage extends GetView<FacilityController> {
   const FacilityDetailPage({required this.facility, super.key});
@@ -17,6 +18,7 @@ class FacilityDetailPage extends GetView<FacilityController> {
   Widget build(BuildContext context) {
     return Obx(() {
       final current = _currentFacility();
+      final tokens = AppThemeTokens.of(context);
       return Scaffold(
         appBar: AppDetailAppBar(title: 'Facility details'),
         body: ListView(
@@ -28,7 +30,7 @@ class FacilityDetailPage extends GetView<FacilityController> {
               title: 'About this facility',
               child: Text(
                 current.description,
-                style: const TextStyle(color: Color(0xFF52635F), height: 1.45),
+                style: TextStyle(color: tokens.mutedStrong, height: 1.45),
               ),
             ),
             const SizedBox(height: 16),
@@ -47,9 +49,9 @@ class FacilityDetailPage extends GetView<FacilityController> {
             _Section(
               title: 'Available slots',
               child: current.availableSlots.isEmpty
-                  ? const Text(
+                  ? Text(
                       'No slots available',
-                      style: TextStyle(color: Color(0xFF71807D)),
+                      style: TextStyle(color: tokens.muted),
                     )
                   : Wrap(
                       spacing: 8,
@@ -77,8 +79,8 @@ class FacilityDetailPage extends GetView<FacilityController> {
               icon: const Icon(Icons.event_available_rounded, size: 18),
               label: const Text('Reserve facility'),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFE07A5F),
-                foregroundColor: Colors.white,
+                backgroundColor: tokens.brand,
+                foregroundColor: tokens.onBrand,
                 minimumSize: const Size.fromHeight(52),
               ),
             ),
@@ -103,6 +105,7 @@ class _FacilityHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(22),
       child: SizedBox(
@@ -115,7 +118,7 @@ class _FacilityHero extends StatelessWidget {
               fit: BoxFit.cover,
               filterQuality: FilterQuality.high,
               errorBuilder: (_, _, _) => Container(
-                color: const Color(0xFF0F766E),
+                color: tokens.brand,
                 child: const Icon(
                   Icons.apartment_rounded,
                   color: Colors.white70,
@@ -146,8 +149,8 @@ class _FacilityHero extends StatelessWidget {
                 ),
                 child: Text(
                   '${facility.capacity} capacity',
-                  style: const TextStyle(
-                    color: Color(0xFF1D2B2A),
+                  style: TextStyle(
+                    color: tokens.ink,
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                   ),
@@ -191,12 +194,13 @@ class _Section extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE6EEEB)),
+        border: Border.all(color: tokens.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,6 +224,7 @@ class _Line extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 7),
       child: Row(
@@ -228,7 +233,7 @@ class _Line extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(color: Color(0xFF71807D)),
+              style: TextStyle(color: tokens.muted),
             ),
           ),
           const SizedBox(width: 12),

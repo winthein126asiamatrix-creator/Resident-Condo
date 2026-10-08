@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../theme/app_palette.dart';
 import '../theme/app_radius.dart';
+import '../theme/app_theme_tokens.dart';
 
 /// A photo attached to a request, shown as a tappable card.
 ///
@@ -29,15 +29,16 @@ class AppImagePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Semantics(
       button: true,
       image: true,
       label: '$caption, attached photo. Opens a larger preview.',
       child: Material(
-        color: AppPalette.surfaceMuted,
+        color: tokens.surfaceMuted,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.xl),
-          side: const BorderSide(color: AppPalette.border),
+          side: BorderSide(color: tokens.border),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -58,10 +59,10 @@ class AppImagePreview extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(12, 9, 12, 10),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.photo_outlined,
                       size: 15,
-                      color: AppPalette.muted,
+                      color: tokens.muted,
                     ),
                     const SizedBox(width: 7),
                     Expanded(
@@ -69,17 +70,17 @@ class AppImagePreview extends StatelessWidget {
                         caption,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppPalette.muted,
+                        style: TextStyle(
+                          color: tokens.muted,
                           fontSize: 12.5,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Icons.zoom_out_map_rounded,
                       size: 15,
-                      color: AppPalette.faint,
+                      color: tokens.faint,
                     ),
                   ],
                 ),
@@ -212,8 +213,9 @@ class _ImageFallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return ColoredBox(
-      color: AppPalette.surfaceMuted,
+      color: tokens.surfaceMuted,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -223,13 +225,13 @@ class _ImageFallback extends StatelessWidget {
                   ? Icons.image_outlined
                   : Icons.image_not_supported_outlined,
               size: 30,
-              color: AppPalette.faint,
+              color: tokens.faint,
             ),
             if (!loading) ...[
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Image unavailable',
-                style: TextStyle(color: AppPalette.muted, fontSize: 12.5),
+                style: TextStyle(color: tokens.muted, fontSize: 12.5),
               ),
             ],
           ],

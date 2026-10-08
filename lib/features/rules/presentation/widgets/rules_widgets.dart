@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_status_pill.dart';
 import '../../domain/entities/rules.dart';
 
@@ -37,7 +38,7 @@ class ViolationStatusPill extends StatelessWidget {
   }
 }
 
-Color appealStatusColor(AppealStatus status) {
+Color appealStatusColor(AppealStatus status, AppThemeTokens tokens) {
   switch (status) {
     case AppealStatus.pending:
       return AppPalette.warning;
@@ -48,7 +49,7 @@ Color appealStatusColor(AppealStatus status) {
     case AppealStatus.rejected:
       return AppPalette.danger;
     case AppealStatus.withdrawn:
-      return AppPalette.faint;
+      return tokens.faint;
   }
 }
 
@@ -61,7 +62,7 @@ class AppealStatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppStatusPill(
       label: status.label,
-      color: appealStatusColor(status),
+      color: appealStatusColor(status, AppThemeTokens.of(context)),
       dense: true,
     );
   }

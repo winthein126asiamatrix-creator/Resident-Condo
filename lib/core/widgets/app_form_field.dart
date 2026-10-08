@@ -5,6 +5,7 @@ import '../theme/app_palette.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/app_theme_tokens.dart';
 
 /// Rounded, filled input used by every resident facing form.
 ///
@@ -76,6 +77,7 @@ class AppTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final multiline = maxLines > 1;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,9 +101,10 @@ class AppTextField extends StatelessWidget {
           enabled: enabled,
           obscureText: obscureText,
           autofocus: autofocus,
-          cursorColor: AppPalette.brand,
-          style: style ?? AppTextStyles.fieldValue,
+          cursorColor: tokens.brand,
+          style: style ?? AppTextStyles.of(context).fieldValue,
           decoration: appFormFieldDecoration(
+            context: context,
             hint: hint,
             icon: multiline ? null : icon,
             helperText: helperText,
@@ -142,6 +145,7 @@ class AppSelectField<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -151,9 +155,9 @@ class AppSelectField<T> extends StatelessWidget {
           key: fieldKey,
           initialValue: value,
           isExpanded: true,
-          dropdownColor: Colors.white,
+          dropdownColor: tokens.surface,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          style: AppTextStyles.fieldValue,
+          style: AppTextStyles.of(context).fieldValue,
           items: items
               .map(
                 (item) => DropdownMenuItem<T>(
@@ -168,6 +172,7 @@ class AppSelectField<T> extends StatelessWidget {
             }
           },
           decoration: appFormFieldDecoration(
+            context: context,
             hint: hint,
             icon: null,
             helperText: helperText,
@@ -184,6 +189,7 @@ class AppSelectField<T> extends StatelessWidget {
 /// Keeping it in one place is what makes every field in the app share the same
 /// radius, border, focus colour and error colour.
 InputDecoration appFormFieldDecoration({
+  BuildContext? context,
   String? hint,
   IconData? icon,
   String? helperText,
@@ -192,6 +198,10 @@ InputDecoration appFormFieldDecoration({
   bool isSelect = false,
   bool enabled = true,
 }) {
+  final tokens = context == null
+      ? AppThemeTokens.fallback()
+      : AppThemeTokens.of(context);
+
   OutlineInputBorder border(Color color, [double width = 1]) {
     return OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -202,15 +212,15 @@ InputDecoration appFormFieldDecoration({
   return InputDecoration(
     hintText: hint,
     hintStyle: TextStyle(
-      color: enabled ? AppPalette.faint : AppPalette.muted,
+      color: enabled ? tokens.faint : tokens.muted,
       fontSize: 15,
       fontWeight: FontWeight.w500,
     ),
     helperText: helperText,
     helperMaxLines: 2,
-    helperStyle: const TextStyle(color: AppPalette.muted, fontSize: 12),
+    helperStyle: TextStyle(color: tokens.muted, fontSize: 12),
     filled: true,
-    fillColor: enabled ? AppPalette.surface : AppPalette.surfaceMuted,
+    fillColor: enabled ? tokens.surface : tokens.surfaceMuted,
     isDense: true,
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
     prefixIcon: icon == null
@@ -218,19 +228,19 @@ InputDecoration appFormFieldDecoration({
         : Icon(
             icon,
             size: 20,
-            color: enabled ? AppPalette.muted : AppPalette.faint,
+            color: enabled ? tokens.muted : tokens.faint,
           ),
-    prefixIconColor: AppPalette.muted,
+    prefixIconColor: tokens.muted,
     prefixIconConstraints: const BoxConstraints(minWidth: 46, minHeight: 24),
     suffixIconConstraints: const BoxConstraints(minWidth: 44, minHeight: 24),
-    border: border(AppPalette.border),
-    enabledBorder: border(AppPalette.border),
+    border: border(tokens.border),
+    enabledBorder: border(tokens.border),
     // The focus ring is the only emphasis a field gets, which is enough to
     // show it is active without shouting.
-    focusedBorder: border(AppPalette.brand, 1.6),
+    focusedBorder: border(tokens.brand, 1.6),
     errorBorder: border(AppPalette.danger, 1.2),
     focusedErrorBorder: border(AppPalette.danger, 1.6),
-    disabledBorder: border(AppPalette.border),
+    disabledBorder: border(tokens.border),
     // Two lines of room keeps the field from jumping when an error appears.
     errorMaxLines: 2,
     errorStyle: const TextStyle(
@@ -241,14 +251,14 @@ InputDecoration appFormFieldDecoration({
     ),
     // The select field already renders its own chevron.
     suffixIcon: isSelect
-        ? const Icon(Icons.keyboard_arrow_down_rounded, color: AppPalette.muted)
+        ? Icon(Icons.keyboard_arrow_down_rounded, color: tokens.muted)
         : suffixIconLabel == null
         ? null
         : IconButton(
             onPressed: onSuffixTap,
             tooltip: suffixIconLabel,
             icon: const Icon(Icons.close_rounded, size: 18),
-            color: AppPalette.muted,
+            color: tokens.muted,
           ),
   );
 }
@@ -261,13 +271,16 @@ class _FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Row(
       children: [
         if (icon != null) ...[
-          Icon(icon, size: 15, color: AppPalette.muted),
+          Icon(icon, size: 15, color: tokens.muted),
           const SizedBox(width: 6),
         ],
-        Flexible(child: Text(label, style: AppTextStyles.fieldLabel)),
+        Flexible(
+          child: Text(label, style: AppTextStyles.of(context).fieldLabel),
+        ),
       ],
     );
   }

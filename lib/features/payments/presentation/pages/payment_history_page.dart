@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/invoice.dart';
@@ -56,13 +57,14 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final color = payment.isSuccessful ? AppPalette.success : AppPalette.danger;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppPalette.border),
+        border: Border.all(color: tokens.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,12 +98,12 @@ class _HistoryCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             payment.items.map((item) => item.type.shortLabel).join(' · '),
-            style: const TextStyle(color: AppPalette.muted, fontSize: 12),
+            style: TextStyle(color: tokens.muted, fontSize: 12),
           ),
           const SizedBox(height: 4),
           Text(
             '${payment.method.label} · ${payment.transactionId}',
-            style: const TextStyle(color: AppPalette.faint, fontSize: 11),
+            style: TextStyle(color: tokens.faint, fontSize: 11),
           ),
           if (payment.isFailed) ...[
             const SizedBox(height: 8),

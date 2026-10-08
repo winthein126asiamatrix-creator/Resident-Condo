@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_primary_action.dart';
@@ -27,6 +28,7 @@ class FacilityReservationPage extends GetView<FacilityController> {
         onBack: () => Get.back<void>(),
       ),
       body: Obx(() {
+        final tokens = AppThemeTokens.of(context);
         final facility = controller.selectedFacility.value;
         if (facility == null) {
           return AppStateMessage(
@@ -105,7 +107,7 @@ class FacilityReservationPage extends GetView<FacilityController> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: controller.durationError == null
-                      ? AppPalette.muted
+                      ? tokens.muted
                       : AppPalette.danger,
                   fontSize: 12.5,
                   fontWeight: controller.durationError == null
@@ -180,7 +182,7 @@ class FacilityReservationPage extends GetView<FacilityController> {
                 'Unable to complete the reservation.',
           );
         }
-        return const AppConfirmResult.success();
+        return AppConfirmResult.success();
       },
     );
 
@@ -203,39 +205,40 @@ class _FacilityReservationIntro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(17),
+      padding: EdgeInsets.all(17),
       decoration: BoxDecoration(
-        color: const Color(0xFFE6F3EF),
+        color: tokens.brandTint,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: [
-          const CircleAvatar(
+          CircleAvatar(
             radius: 22,
-            backgroundColor: Color(0xFFBFE8DF),
+            backgroundColor: tokens.brandOnDark,
             child: Icon(
               Icons.event_available_rounded,
-              color: Color(0xFF0F766E),
+              color: tokens.brand,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   displayFacilityName(facility.name),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF1D2B2A),
+                    color: tokens.ink,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   facility.location,
-                  style: const TextStyle(
-                    color: Color(0xFF52635F),
+                  style: TextStyle(
+                    color: tokens.mutedStrong,
                     fontSize: 12,
                   ),
                 ),
@@ -262,6 +265,7 @@ class _DateSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -274,11 +278,11 @@ class _DateSelector extends StatelessWidget {
                   label: Text(date),
                   selected: date == selected,
                   onSelected: (_) => onSelected(date),
-                  selectedColor: AppPalette.brandOnDark,
+                  selectedColor: tokens.brandOnDark,
                   labelStyle: TextStyle(
                     color: date == selected
-                        ? AppPalette.brand
-                        : AppPalette.mutedStrong,
+                        ? tokens.brand
+                        : tokens.mutedStrong,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -298,6 +302,7 @@ class _DurationSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -308,11 +313,11 @@ class _DurationSelector extends StatelessWidget {
             label: Text(hours == 1 ? '1 hour' : '$hours hours'),
             selected: hours == selected,
             onSelected: (_) => onSelected(hours),
-            selectedColor: AppPalette.brandOnDark,
+            selectedColor: tokens.brandOnDark,
             labelStyle: TextStyle(
               color: hours == selected
-                  ? AppPalette.brand
-                  : AppPalette.mutedStrong,
+                  ? tokens.brand
+                  : tokens.mutedStrong,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -332,18 +337,19 @@ class _ReservationInterval extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasError = error != null;
+    final tokens = AppThemeTokens.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       decoration: BoxDecoration(
         color: hasError
             ? AppPalette.danger.withValues(alpha: 0.06)
-            : AppPalette.brandTint,
+            : tokens.brandTint,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: hasError
               ? AppPalette.danger.withValues(alpha: 0.3)
-              : AppPalette.brandSoft,
+              : tokens.brandSoft,
         ),
       ),
       child: Row(
@@ -351,7 +357,7 @@ class _ReservationInterval extends StatelessWidget {
           Icon(
             hasError ? Icons.error_outline_rounded : Icons.schedule_rounded,
             size: 18,
-            color: hasError ? AppPalette.danger : AppPalette.brand,
+            color: hasError ? AppPalette.danger : tokens.brand,
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -371,8 +377,8 @@ class _ReservationInterval extends StatelessWidget {
                         : range!.label,
                     style: TextStyle(
                       color: range == null
-                          ? AppPalette.muted
-                          : AppPalette.brand,
+                          ? tokens.muted
+                          : tokens.brand,
                       fontSize: range == null ? 12.5 : 15,
                       fontWeight: FontWeight.w800,
                     ),
@@ -405,6 +411,7 @@ class _SlotSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -415,11 +422,11 @@ class _SlotSelector extends StatelessWidget {
             label: Text(slot),
             selected: slot == selected,
             onSelected: (_) => onSelected(slot),
-            selectedColor: AppPalette.brandOnDark,
+            selectedColor: tokens.brandOnDark,
             labelStyle: TextStyle(
               color: slot == selected
-                  ? AppPalette.brand
-                  : AppPalette.mutedStrong,
+                  ? tokens.brand
+                  : tokens.mutedStrong,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -431,19 +438,19 @@ class _SlotSelector extends StatelessWidget {
             Icons.schedule_rounded,
             size: 17,
             color: customTimeSelected
-                ? AppPalette.brand
-                : AppPalette.mutedStrong,
+                ? tokens.brand
+                : tokens.mutedStrong,
           ),
           label: Text(
             customTimeSelected && selected != null ? selected! : _customLabel,
           ),
           selected: customTimeSelected,
           onSelected: (_) => onPickCustomTime(),
-          selectedColor: AppPalette.brandOnDark,
+          selectedColor: tokens.brandOnDark,
           labelStyle: TextStyle(
             color: customTimeSelected
-                ? AppPalette.brand
-                : AppPalette.mutedStrong,
+                ? tokens.brand
+                : tokens.mutedStrong,
             fontWeight: FontWeight.w700,
           ),
         ),

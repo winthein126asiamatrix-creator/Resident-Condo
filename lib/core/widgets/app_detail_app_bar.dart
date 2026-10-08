@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_palette.dart';
 import '../theme/app_spacing.dart';
+import '../theme/app_theme_tokens.dart';
 
 /// The custom app bar shared by the detail and form screens.
 ///
@@ -61,13 +61,14 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final topInset = MediaQuery.paddingOf(context).top;
     return PreferredSize(
       preferredSize: preferredSize,
       child: Container(
-        decoration: const BoxDecoration(
-          color: AppPalette.surface,
-          border: Border(bottom: BorderSide(color: AppPalette.border)),
+        decoration: BoxDecoration(
+          color: tokens.canvas,
+          border: Border(bottom: BorderSide(color: tokens.border)),
         ),
         padding: EdgeInsets.fromLTRB(16, topInset + AppSpacing.pageTop, 20, 14),
         // Fixed height so a screen with trailing actions ends up with exactly
@@ -92,8 +93,8 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppPalette.ink,
+                      style: TextStyle(
+                        color: tokens.ink,
                         fontSize: 18,
                         height: 1.2,
                         letterSpacing: -0.2,
@@ -106,8 +107,8 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                         subtitle!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppPalette.muted,
+                        style: TextStyle(
+                          color: tokens.muted,
                           fontSize: 12.5,
                           height: 1.2,
                           fontWeight: FontWeight.w500,
@@ -134,11 +135,12 @@ class _AppBarBackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Material(
-      color: Colors.white,
+      color: tokens.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: AppPalette.border),
+        side: BorderSide(color: tokens.border),
       ),
       clipBehavior: Clip.antiAlias,
       child: Tooltip(

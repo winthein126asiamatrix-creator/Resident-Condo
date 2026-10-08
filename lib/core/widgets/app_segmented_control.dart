@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_palette.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/app_theme_tokens.dart';
 
 /// Segmented choice control, used where a resident picks one of a few options
 /// such as a priority or a role.
@@ -47,6 +47,7 @@ class AppSegmentedControl<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final options = segments.entries.toList();
     final control = Row(
       children: [
@@ -56,7 +57,7 @@ class AppSegmentedControl<T> extends StatelessWidget {
               key: optionKey == null ? null : ValueKey(optionKey!(entry.key)),
               label: entry.value,
               icon: icons?[entry.key],
-              activeColor: colors?[entry.key] ?? AppPalette.brand,
+              activeColor: colors?[entry.key] ?? tokens.brand,
               selected: entry.key == value,
               onTap: () => onChanged(entry.key),
             ),
@@ -72,7 +73,7 @@ class AppSegmentedControl<T> extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label!, style: AppTextStyles.fieldLabel),
+        Text(label!, style: AppTextStyles.of(context).fieldLabel),
         const SizedBox(height: AppSpacing.fieldLabelGap),
         SizedBox(height: height, child: control),
       ],
@@ -100,13 +101,14 @@ class _SegmentOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final active = activeColor;
     return Material(
-      color: selected ? active.withValues(alpha: 0.1) : AppPalette.surface,
+      color: selected ? active.withValues(alpha: 0.1) : tokens.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.lg),
         side: BorderSide(
-          color: selected ? active : AppPalette.border,
+          color: selected ? active : tokens.border,
           width: selected ? 1.6 : 1,
         ),
       ),
@@ -125,7 +127,7 @@ class _SegmentOption extends StatelessWidget {
                   Icon(
                     icon,
                     size: 18,
-                    color: selected ? active : AppPalette.muted,
+                    color: selected ? active : tokens.muted,
                   ),
                   const SizedBox(width: 6),
                 ],
@@ -136,7 +138,7 @@ class _SegmentOption extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: selected ? active : AppPalette.muted,
+                      color: selected ? active : tokens.muted,
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),

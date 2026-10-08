@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_status_pill.dart';
 import '../../domain/entities/store_product.dart';
@@ -37,14 +38,14 @@ IconData storePaymentMethodIcon(StorePaymentMethod method) {
   }
 }
 
-Color storeStockColor(StoreStockStatus status) {
+Color storeStockColor(StoreStockStatus status, AppThemeTokens tokens) {
   switch (status) {
     case StoreStockStatus.inStock:
       return AppPalette.success;
     case StoreStockStatus.lowStock:
       return AppPalette.warning;
     case StoreStockStatus.outOfStock:
-      return AppPalette.faint;
+      return tokens.faint;
   }
 }
 
@@ -59,7 +60,7 @@ IconData storeStockIcon(StoreStockStatus status) {
   }
 }
 
-Color storeOrderStatusColor(StoreOrderStatus status) {
+Color storeOrderStatusColor(StoreOrderStatus status, AppThemeTokens tokens) {
   switch (status) {
     case StoreOrderStatus.submitted:
       return AppPalette.info;
@@ -69,7 +70,7 @@ Color storeOrderStatusColor(StoreOrderStatus status) {
       return AppPalette.warning;
     case StoreOrderStatus.outForDelivery:
     case StoreOrderStatus.readyForPickup:
-      return AppPalette.brand;
+      return tokens.brand;
     case StoreOrderStatus.completed:
       return AppPalette.success;
     case StoreOrderStatus.cancelled:
@@ -107,7 +108,7 @@ class StoreOrderStatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppStatusPill(
       label: status.label,
-      color: storeOrderStatusColor(status),
+      color: storeOrderStatusColor(status, AppThemeTokens.of(context)),
       icon: storeOrderStatusIcon(status),
       dense: dense,
     );
@@ -129,7 +130,7 @@ class StoreStockPill extends StatelessWidget {
         StoreStockStatus.lowStock => 'Low Stock',
         StoreStockStatus.outOfStock => 'Out of Stock',
       },
-      color: storeStockColor(status),
+      color: storeStockColor(status, AppThemeTokens.of(context)),
       icon: storeStockIcon(status),
       dense: dense,
     );
@@ -283,12 +284,13 @@ class _Placeholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return ColoredBox(
-      color: AppPalette.brandTint,
+      color: tokens.brandTint,
       child: icon == null
           ? const SizedBox.expand()
           : Center(
-              child: Icon(icon, color: AppPalette.brand, size: size * 0.4),
+              child: Icon(icon, color: tokens.brand, size: size * 0.4),
             ),
     );
   }
@@ -302,6 +304,7 @@ class StoreOrderLineRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -312,13 +315,13 @@ class StoreOrderLineRow extends StatelessWidget {
             height: 26,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppPalette.brandTint,
+              color: tokens.brandTint,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               '${line.quantity}×',
-              style: const TextStyle(
-                color: AppPalette.brand,
+              style: TextStyle(
+                color: tokens.brand,
                 fontSize: 11.5,
                 fontWeight: FontWeight.w800,
               ),
@@ -328,8 +331,8 @@ class StoreOrderLineRow extends StatelessWidget {
           Expanded(
             child: Text(
               line.product.name,
-              style: const TextStyle(
-                color: AppPalette.ink,
+              style: TextStyle(
+                color: tokens.ink,
                 fontSize: 13.5,
                 fontWeight: FontWeight.w600,
               ),
@@ -338,8 +341,8 @@ class StoreOrderLineRow extends StatelessWidget {
           const SizedBox(width: 10),
           Text(
             AppFormatters.currency(line.lineTotal),
-            style: const TextStyle(
-              color: AppPalette.ink,
+            style: TextStyle(
+              color: tokens.ink,
               fontSize: 13.5,
               fontWeight: FontWeight.w700,
             ),

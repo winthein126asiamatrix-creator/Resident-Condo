@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../domain/entities/invoice.dart';
@@ -17,6 +18,7 @@ class PaymentSuccessPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(title: 'Payment successful'),
       body: ListView(
@@ -33,8 +35,8 @@ class PaymentSuccessPage extends StatelessWidget {
             child: Container(
               width: 88,
               height: 88,
-              decoration: const BoxDecoration(
-                color: AppPalette.brandTint,
+              decoration: BoxDecoration(
+                color: tokens.brandTint,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -45,20 +47,20 @@ class PaymentSuccessPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'Payment Successful',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: AppPalette.ink,
+              color: tokens.ink,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Only the items you selected have been settled.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppPalette.muted),
+            style: TextStyle(color: tokens.muted),
           ),
           const SizedBox(height: 24),
           _SuccessCard(payment: payment),
@@ -76,9 +78,9 @@ class PaymentSuccessPage extends StatelessWidget {
           OutlinedButton(
             onPressed: () => Get.offAllNamed(AppRoutes.home),
             style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(50),
+              minimumSize: Size.fromHeight(50),
             ),
-            child: const Text('Done'),
+            child: Text('Done'),
           ),
         ],
       ),
@@ -92,14 +94,15 @@ class _SuccessCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'PAID ITEMS (${payment.items.length})',
-            style: const TextStyle(
-              color: AppPalette.brandOnDark,
+            style: TextStyle(
+              color: tokens.brandOnDark,
               fontSize: 11,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.1,
@@ -136,7 +139,7 @@ class _SuccessCard extends StatelessWidget {
                 ],
               ),
             ),
-          const Divider(height: 24),
+          Divider(height: 24),
           _SuccessLine(
             label: 'Amount paid',
             value: AppFormatters.currency(payment.amount),
@@ -159,14 +162,15 @@ class _SuccessLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(color: AppPalette.muted, fontSize: 12),
+              style: TextStyle(color: tokens.muted, fontSize: 12),
             ),
           ),
           Flexible(

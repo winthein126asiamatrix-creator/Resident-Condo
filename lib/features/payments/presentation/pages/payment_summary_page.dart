@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/invoice.dart';
@@ -31,6 +32,7 @@ class PaymentSummaryPage extends GetView<PaymentController> {
       ),
       body: Obx(() {
         final invoice = controller.selectedInvoice.value;
+        final tokens = AppThemeTokens.of(context);
         if (invoice == null) {
           return AppStateMessage(
             title: 'No invoice selected',
@@ -70,10 +72,10 @@ class PaymentSummaryPage extends GetView<PaymentController> {
               ],
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Pick one or several fees. Mandatory fees are always included '
               'and settled items are locked.',
-              style: TextStyle(color: AppPalette.muted, fontSize: 12),
+              style: TextStyle(color: tokens.muted, fontSize: 12),
             ),
             const SizedBox(height: 10),
             for (final item in invoice.items)
@@ -123,10 +125,11 @@ class _SummaryIntro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppPalette.surface,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -137,27 +140,27 @@ class _SummaryIntro extends StatelessWidget {
               Expanded(
                 child: Text(
                   invoice.number,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
               ),
               Text(
                 AppFormatters.currency(invoice.amountDue),
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w800,
                   color: AppPalette.danger,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 5),
+          SizedBox(height: 5),
           Text(
             invoice.unitLabel,
-            style: const TextStyle(color: AppPalette.muted),
+            style: TextStyle(color: tokens.muted),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
-            'Due ${invoice.dueDate} · ${invoice.unpaidItems.length} unpaid items',
-            style: const TextStyle(color: AppPalette.muted, fontSize: 12),
+            'Due ${invoice.dueDate} Â· ${invoice.unpaidItems.length} unpaid items',
+            style: TextStyle(color: tokens.muted, fontSize: 12),
           ),
         ],
       ),
@@ -179,19 +182,20 @@ class _SelectableItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locked = onChanged == null;
+    final tokens = AppThemeTokens.of(context);
     final radius = BorderRadius.circular(16);
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       child: Material(
         color: item.isPaid
-            ? AppPalette.brandTint
+            ? tokens.brandTint
             : locked
-            ? AppPalette.surface
-            : Colors.white,
+            ? tokens.surface
+            : tokens.surface,
         shape: RoundedRectangleBorder(
           borderRadius: radius,
           side: BorderSide(
-            color: selected ? AppPalette.brand : AppPalette.border,
+            color: selected ? tokens.brand : tokens.border,
             width: selected ? 1.6 : 1,
           ),
         ),
@@ -212,20 +216,20 @@ class _SelectableItem extends StatelessWidget {
                   item.type.label,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: item.isPaid ? AppPalette.muted : AppPalette.ink,
+                    color: item.isPaid ? tokens.muted : tokens.ink,
                     decoration: item.isPaid ? TextDecoration.lineThrough : null,
                   ),
                 ),
               ),
               if (item.isMandatory) ...[
-                const _MandatoryBadge(),
-                const SizedBox(width: 8),
+                _MandatoryBadge(),
+                SizedBox(width: 8),
               ],
               Text(
                 item.isZero ? 'No charge' : AppFormatters.currency(item.amount),
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
-                  color: item.isPaid ? AppPalette.muted : AppPalette.ink,
+                  color: item.isPaid ? tokens.muted : tokens.ink,
                 ),
               ),
             ],
@@ -234,7 +238,7 @@ class _SelectableItem extends StatelessWidget {
             item.isPaid
                 ? 'Paid${item.paidDate == null ? '' : ' on ${item.paidDate}'}'
                 : item.isMandatory
-                ? 'Mandatory fee · always included'
+                ? 'Mandatory fee Â· always included'
                 : item.isZero
                 ? 'Not charged this period'
                 : item.note.isEmpty
@@ -245,24 +249,24 @@ class _SelectableItem extends StatelessWidget {
               color: item.isPaid
                   ? AppPalette.success
                   : item.isMandatory
-                  ? AppPalette.brand
-                  : AppPalette.muted,
+                  ? tokens.brand
+                  : tokens.muted,
               fontWeight: item.isPaid || item.isMandatory
                   ? FontWeight.w700
                   : FontWeight.w400,
             ),
           ),
           secondary: item.isPaid
-              ? const Icon(
+              ? Icon(
                   Icons.lock_rounded,
                   size: 18,
                   color: AppPalette.success,
                 )
               : item.isMandatory
-              ? const Icon(
+              ? Icon(
                   Icons.lock_rounded,
                   size: 18,
-                  color: AppPalette.brand,
+                  color: tokens.brand,
                 )
               : null,
         ),
@@ -276,17 +280,18 @@ class _MandatoryBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
-      key: const Key('mandatory-badge'),
+      key: Key('mandatory-badge'),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: AppPalette.brandTint,
+        color: tokens.brandTint,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: const Text(
+      child: Text(
         'Mandatory',
         style: TextStyle(
-          color: AppPalette.brand,
+          color: tokens.brand,
           fontSize: 10,
           fontWeight: FontWeight.w800,
         ),
@@ -303,7 +308,7 @@ class _MandatoryWarning extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       key: const Key('mandatory-warning'),
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppPalette.danger.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
@@ -312,16 +317,16 @@ class _MandatoryWarning extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
+          Icon(
             Icons.error_outline_rounded,
             size: 18,
             color: AppPalette.danger,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppPalette.danger,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -341,10 +346,11 @@ class _TotalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppPalette.brand,
+        color: tokens.brand,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -352,19 +358,19 @@ class _TotalCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Selected total',
                   style: TextStyle(
-                    color: AppPalette.brandOnDarkMuted,
+                    color: tokens.brandOnDarkMuted,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
               Text(
                 '$count item${count == 1 ? '' : 's'}',
-                style: const TextStyle(
-                  color: AppPalette.brandOnDark,
+                style: TextStyle(
+                  color: tokens.brandOnDark,
                   fontSize: 12,
                 ),
               ),
@@ -373,8 +379,8 @@ class _TotalCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             AppFormatters.currency(total),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: tokens.surface,
               fontSize: 26,
               fontWeight: FontWeight.w800,
             ),

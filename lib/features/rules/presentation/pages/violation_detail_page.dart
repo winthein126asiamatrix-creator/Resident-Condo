@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_section.dart';
@@ -20,6 +21,7 @@ class ViolationDetailPage extends GetView<RulesController> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Obx(() {
       final current = _current();
       final appeal = controller.appealFor(current);
@@ -39,11 +41,11 @@ class ViolationDetailPage extends GetView<RulesController> {
               ),
               leading: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'FINE',
                       style: TextStyle(
-                        color: AppPalette.brandOnDark,
+                        color: tokens.brandOnDark,
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.2,
@@ -52,8 +54,8 @@ class ViolationDetailPage extends GetView<RulesController> {
                   ),
                   Text(
                     AppFormatters.currency(current.amount),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: tokens.brandOnDark,
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
                     ),
@@ -66,10 +68,7 @@ class ViolationDetailPage extends GetView<RulesController> {
               title: 'What happened',
               child: Text(
                 current.description,
-                style: const TextStyle(
-                  color: AppPalette.mutedStrong,
-                  height: 1.45,
-                ),
+                style: TextStyle(color: tokens.mutedStrong, height: 1.45),
               ),
             ),
             const SizedBox(height: 16),
@@ -131,17 +130,20 @@ class ViolationDetailPage extends GetView<RulesController> {
               ),
             if (current.status == ViolationStatus.paid)
               AppCard(
-                color: AppPalette.brandTint,
-                borderColor: AppPalette.brandSoft,
-                child: const Row(
+                color: tokens.brandTint,
+                borderColor: tokens.brandSoft,
+                child: Row(
                   children: [
-                    Icon(Icons.check_circle_rounded, color: AppPalette.success),
-                    SizedBox(width: 12),
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      color: AppPalette.success,
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'This fine is already settled. It is shown as a Violation '
                         'Fine line on your statement.',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppPalette.success,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -209,6 +211,7 @@ class _AppealCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppSectionCard(
       title: 'Your appeal',
       subtitle: 'Submitted ${appeal.submittedOn}',
@@ -232,8 +235,8 @@ class _AppealCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             appeal.reason,
-            style: const TextStyle(
-              color: AppPalette.mutedStrong,
+            style: TextStyle(
+              color: tokens.mutedStrong,
               fontSize: 12,
               height: 1.45,
             ),
@@ -243,13 +246,13 @@ class _AppealCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppPalette.surface,
+                color: tokens.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 appeal.decisionNote!,
-                style: const TextStyle(
-                  color: AppPalette.mutedStrong,
+                style: TextStyle(
+                  color: tokens.mutedStrong,
                   fontSize: 12,
                   height: 1.4,
                 ),

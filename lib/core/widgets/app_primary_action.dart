@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_palette.dart';
+import '../theme/app_theme_tokens.dart';
 
 /// The resident facing primary call to action.
 ///
 /// It is a full width brand filled card with a comfortable touch target, a
 /// leading icon and an optional trailing affordance. Disabled and loading
 /// states are handled here so every CTA in the app looks and behaves the same.
+///
+/// The fill defaults to the theme's brand colour, so every primary button in the
+/// app follows the resident's choice. Pass [backgroundColor] only to override it
+/// for a genuinely different action.
 class AppPrimaryAction extends StatelessWidget {
   const AppPrimaryAction({
     required this.label,
@@ -15,7 +19,8 @@ class AppPrimaryAction extends StatelessWidget {
     this.trailingIcon,
     this.isLoading = false,
     this.height = 56,
-    this.backgroundColor = AppPalette.brand,
+    this.backgroundColor,
+    this.foregroundColor,
     this.centerContent = true,
     this.expand = true,
     this.padding,
@@ -28,7 +33,13 @@ class AppPrimaryAction extends StatelessWidget {
   final IconData? trailingIcon;
   final bool isLoading;
   final double height;
-  final Color backgroundColor;
+
+  /// Overrides the brand fill, for an action that must not read as the primary
+  /// one (a destructive confirm, for example).
+  final Color? backgroundColor;
+
+  /// Overrides the label and icon colour drawn on [backgroundColor].
+  final Color? foregroundColor;
 
   /// Centres the icon and label. Set to false to left align them and push the
   /// [trailingIcon] to the far edge.
@@ -41,10 +52,13 @@ class AppPrimaryAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final enabled = onPressed != null && !isLoading;
     final radius = BorderRadius.circular(18);
-    final background = enabled ? backgroundColor : AppPalette.surfaceMuted;
-    final foreground = enabled ? Colors.white : AppPalette.faint;
+    final fill = backgroundColor ?? tokens.brand;
+    final background = enabled ? fill : tokens.surfaceMuted;
+    final foreground =
+        enabled ? (foregroundColor ?? tokens.onBrand) : tokens.faint;
 
     final labelText = Text(
       label,
@@ -138,7 +152,7 @@ class AppPrimaryAction extends StatelessWidget {
         boxShadow: enabled
             ? [
                 BoxShadow(
-                  color: backgroundColor.withValues(alpha: 0.26),
+                  color: fill.withValues(alpha: 0.26),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -150,7 +164,7 @@ class AppPrimaryAction extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: radius,
           side: BorderSide(
-            color: enabled ? Colors.transparent : AppPalette.border,
+            color: enabled ? Colors.transparent : tokens.border,
           ),
         ),
         clipBehavior: Clip.antiAlias,

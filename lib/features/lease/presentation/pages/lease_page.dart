@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_dates.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -20,6 +21,7 @@ class LeasePage extends GetView<LeaseController> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(
         title: 'Rental & lease',
@@ -119,9 +121,9 @@ class LeasePage extends GetView<LeaseController> {
                 const SizedBox(height: 22),
                 const AppSectionHeader(title: 'Renewal requests'),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'The tenant and the owner can both propose a renewal.',
-                  style: TextStyle(color: AppPalette.muted, fontSize: 12),
+                  style: TextStyle(color: tokens.muted, fontSize: 12),
                 ),
                 const SizedBox(height: 10),
                 _RenewalList(controller: controller, lease: lease),
@@ -146,10 +148,10 @@ class LeasePage extends GetView<LeaseController> {
                 ),
                 if (controller.pendingRenewal == null) ...[
                   const SizedBox(height: 8),
-                  const Text(
+                  Text(
                     'Rent is billed separately from your monthly condo fee.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: AppPalette.muted, fontSize: 11),
+                    style: TextStyle(color: tokens.muted, fontSize: 11),
                   ),
                 ],
               ],
@@ -168,6 +170,7 @@ class _LeaseProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final color = switch (lease.status) {
       LeaseStatus.expired => AppPalette.danger,
       LeaseStatus.expiringSoon => AppPalette.warning,
@@ -189,10 +192,10 @@ class _LeaseProgressCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Text(
+              Text(
                 'Term progress',
                 style: TextStyle(
-                  color: AppPalette.brandOnDark,
+                  color: tokens.brandOnDark,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
@@ -200,8 +203,8 @@ class _LeaseProgressCard extends StatelessWidget {
               const Spacer(),
               Text(
                 AppFormatters.percent(lease.progress),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: tokens.brandOnDark,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -214,7 +217,7 @@ class _LeaseProgressCard extends StatelessWidget {
               value: lease.progress.clamp(0, 1),
               minHeight: 8,
               backgroundColor: Colors.white.withValues(alpha: 0.22),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              valueColor: AlwaysStoppedAnimation<Color>(tokens.brandOnDark),
             ),
           ),
           const SizedBox(height: 10),
@@ -222,16 +225,16 @@ class _LeaseProgressCard extends StatelessWidget {
             children: [
               Text(
                 AppDates.formatShort(lease.startDate),
-                style: const TextStyle(
-                  color: AppPalette.brandOnDarkMuted,
+                style: TextStyle(
+                  color: tokens.brandOnDarkMuted,
                   fontSize: 11,
                 ),
               ),
               const Spacer(),
               Text(
                 AppDates.formatShort(lease.endDate),
-                style: const TextStyle(
-                  color: AppPalette.brandOnDarkMuted,
+                style: TextStyle(
+                  color: tokens.brandOnDarkMuted,
                   fontSize: 11,
                 ),
               ),
@@ -249,15 +252,16 @@ class _PartyTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Row(
       children: [
         CircleAvatar(
           radius: 20,
-          backgroundColor: AppPalette.brandSoft,
+          backgroundColor: tokens.brandSoft,
           child: Text(
             party.initials,
-            style: const TextStyle(
-              color: AppPalette.brand,
+            style: TextStyle(
+              color: tokens.brand,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -274,12 +278,12 @@ class _PartyTile extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 party.role.label,
-                style: const TextStyle(color: AppPalette.muted, fontSize: 11),
+                style: TextStyle(color: tokens.muted, fontSize: 11),
               ),
               const SizedBox(height: 2),
               Text(
                 party.phone,
-                style: const TextStyle(color: AppPalette.faint, fontSize: 11),
+                style: TextStyle(color: tokens.faint, fontSize: 11),
               ),
             ],
           ),
@@ -287,7 +291,7 @@ class _PartyTile extends StatelessWidget {
         IconButton(
           tooltip: 'Call ${party.name}',
           onPressed: () {},
-          icon: const Icon(Icons.call_outlined, color: AppPalette.brand),
+          icon: Icon(Icons.call_outlined, color: tokens.brand),
         ),
       ],
     );
@@ -301,13 +305,14 @@ class _RenewalList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final items = controller.renewalsFor(lease);
     if (items.isEmpty) {
       return AppCard(
-        child: const Text(
+        child: Text(
           'No renewal request yet. Start one at least 60 days before the end '
           'of the term.',
-          style: TextStyle(color: AppPalette.muted, fontSize: 12, height: 1.4),
+          style: TextStyle(color: tokens.muted, fontSize: 12, height: 1.4),
         ),
       );
     }
@@ -330,10 +335,11 @@ class _RenewalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final color = switch (renewal.status) {
       RenewalStatus.approved => AppPalette.success,
       RenewalStatus.declined => AppPalette.danger,
-      RenewalStatus.withdrawn => AppPalette.faint,
+      RenewalStatus.withdrawn => tokens.faint,
       RenewalStatus.pending => AppPalette.warning,
     };
 
@@ -347,7 +353,7 @@ class _RenewalCard extends StatelessWidget {
               const Spacer(),
               Text(
                 renewal.requestedOn,
-                style: const TextStyle(color: AppPalette.faint, fontSize: 11),
+                style: TextStyle(color: tokens.faint, fontSize: 11),
               ),
             ],
           ),
@@ -359,14 +365,14 @@ class _RenewalCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '${renewal.proposedStart} → ${renewal.proposedEnd}',
-            style: const TextStyle(color: AppPalette.mutedStrong, fontSize: 12),
+            style: TextStyle(color: tokens.mutedStrong, fontSize: 12),
           ),
           if (renewal.note.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
               renewal.note,
-              style: const TextStyle(
-                color: AppPalette.muted,
+              style: TextStyle(
+                color: tokens.muted,
                 fontSize: 12,
                 height: 1.4,
               ),
@@ -376,7 +382,7 @@ class _RenewalCard extends StatelessWidget {
           Text(
             'Requested by ${renewal.requestedBy}'
             '${renewal.decidedOn == null ? '' : ' · updated ${renewal.decidedOn}'}',
-            style: const TextStyle(color: AppPalette.faint, fontSize: 11),
+            style: TextStyle(color: tokens.faint, fontSize: 11),
           ),
           if (renewal.status == RenewalStatus.pending) ...[
             const SizedBox(height: 12),

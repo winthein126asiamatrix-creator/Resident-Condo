@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/app_dates.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -112,10 +112,11 @@ class _FacilityHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final imagePath = facility?.imagePath;
     return Container(
       decoration: BoxDecoration(
-        color: AppPalette.brandTint,
+        color: tokens.brandTint,
         borderRadius: BorderRadius.circular(20),
       ),
       clipBehavior: Clip.antiAlias,
@@ -126,12 +127,12 @@ class _FacilityHero extends StatelessWidget {
             height: 150,
             width: double.infinity,
             child: imagePath == null
-                ? const ColoredBox(
-                    color: AppPalette.brand,
+                ? ColoredBox(
+                    color: tokens.brand,
                     child: Center(
                       child: Icon(
                         Icons.apartment_rounded,
-                        color: Colors.white70,
+                        color: tokens.brandOnDark,
                         size: 48,
                       ),
                     ),
@@ -139,12 +140,12 @@ class _FacilityHero extends StatelessWidget {
                 : Image.asset(
                     imagePath,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => const ColoredBox(
-                      color: AppPalette.brand,
+                    errorBuilder: (_, _, _) => ColoredBox(
+                      color: tokens.brand,
                       child: Center(
                         child: Icon(
                           Icons.apartment_rounded,
-                          color: Colors.white70,
+                          color: tokens.brandOnDark,
                           size: 48,
                         ),
                       ),
@@ -159,8 +160,8 @@ class _FacilityHero extends StatelessWidget {
                 Expanded(
                   child: Text(
                     displayFacilityName(reservation.facilityName),
-                    style: const TextStyle(
-                      color: AppPalette.ink,
+                    style: TextStyle(
+                      color: tokens.ink,
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
                     ),

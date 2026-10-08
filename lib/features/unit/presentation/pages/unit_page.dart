@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/unit.dart';
 import '../controllers/unit_controller.dart';
@@ -87,18 +88,13 @@ class _UnitHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: const Color(0xFF0F766E),
+        color: tokens.brand,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1A0F766E),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
+        boxShadow: tokens.heroShadow,
       ),
       child: Stack(
         children: [
@@ -118,11 +114,11 @@ class _UnitHero extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'MY HOME',
                         style: TextStyle(
-                          color: Color(0xFFBFE8DF),
+                          color: tokens.brandOnDark,
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.4,
@@ -131,15 +127,15 @@ class _UnitHero extends StatelessWidget {
                     ),
                     _StatusBadge(
                       label: unit.occupancyStatus,
-                      color: const Color(0xFFBFE8DF),
+                      color: tokens.brandOnDark,
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
                 Text(
                   '${unit.tower} · Unit ${unit.unitNumber}',
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: tokens.brandOnDark,
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
                   ),
@@ -147,24 +143,24 @@ class _UnitHero extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   '${unit.unitType} · ${unit.area} · ${unit.floor}',
-                  style: const TextStyle(
-                    color: Color(0xFFD8F3EC),
+                  style: TextStyle(
+                    color: tokens.brandOnDarkMuted,
                     fontSize: 13,
                   ),
                 ),
                 const SizedBox(height: 18),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.verified_rounded,
-                      color: Color(0xFFBFE8DF),
+                      color: tokens.brandOnDark,
                       size: 17,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       '${unit.ownershipStatus} · Parking ${unit.parking.slot}',
-                      style: const TextStyle(
-                        color: Color(0xFFD8F3EC),
+                      style: TextStyle(
+                        color: tokens.brandOnDarkMuted,
                         fontSize: 12,
                       ),
                     ),
@@ -248,26 +244,27 @@ class _PeopleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return _UnitCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Owner',
             style: TextStyle(
               fontSize: 12,
-              color: Color(0xFF71807D),
+              color: tokens.muted,
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 2),
           UnitPersonTile(person: unit.owner),
           const Divider(height: 24),
-          const Text(
+          Text(
             'Residents',
             style: TextStyle(
               fontSize: 12,
-              color: Color(0xFF71807D),
+              color: tokens.muted,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -275,11 +272,11 @@ class _PeopleCard extends StatelessWidget {
           ...unit.residents.map((resident) => UnitPersonTile(person: resident)),
           if (unit.tenant != null) ...[
             const Divider(height: 24),
-            const Text(
+            Text(
               'Tenant',
               style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFF71807D),
+                color: tokens.muted,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -298,6 +295,7 @@ class _ParkingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return _UnitCard(
       child: Column(
         children: [
@@ -324,8 +322,8 @@ class _ParkingCard extends StatelessWidget {
               ),
               Text(
                 parking.slot,
-                style: const TextStyle(
-                  color: Color(0xFF0F766E),
+                style: TextStyle(
+                  color: tokens.brand,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -360,12 +358,13 @@ class _ParkingValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: Color(0xFF71807D)),
+          style: TextStyle(fontSize: 11, color: tokens.muted),
         ),
         const SizedBox(height: 4),
         Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
@@ -381,19 +380,14 @@ class _UnitCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE6EEEB)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A163A36),
-            blurRadius: 16,
-            offset: Offset(0, 5),
-          ),
-        ],
+        border: Border.all(color: tokens.border),
+        boxShadow: tokens.cardShadow,
       ),
       child: child,
     );
@@ -407,11 +401,12 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Text(
       title,
       style: Theme.of(context).textTheme.titleMedium?.copyWith(
         fontWeight: FontWeight.w800,
-        color: const Color(0xFF1D2B2A),
+        color: tokens.ink,
       ),
     );
   }

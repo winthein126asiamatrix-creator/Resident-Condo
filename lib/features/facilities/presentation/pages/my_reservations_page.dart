@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
-import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/app_dates.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -136,6 +136,7 @@ class _ReservationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       key: Key('reservation-card-${reservation.id}'),
       padding: const EdgeInsets.all(14),
@@ -158,8 +159,8 @@ class _ReservationCard extends StatelessWidget {
                         displayFacilityName(reservation.facilityName),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppPalette.ink,
+                        style: TextStyle(
+                          color: tokens.ink,
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
                         ),
@@ -188,8 +189,8 @@ class _ReservationCard extends StatelessWidget {
                     '#${reservation.id}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: AppPalette.faint,
+                    style: TextStyle(
+                      color: tokens.faint,
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
                     ),
@@ -212,16 +213,17 @@ class _MetaLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Row(
       children: [
-        Icon(icon, size: 13, color: AppPalette.muted),
+        Icon(icon, size: 13, color: tokens.muted),
         const SizedBox(width: 6),
         Flexible(
           child: Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: AppPalette.muted, fontSize: 12.5),
+            style: TextStyle(color: tokens.muted, fontSize: 12.5),
           ),
         ),
       ],
@@ -237,23 +239,24 @@ class _FacilityThumb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final imagePath = facility?.imagePath;
     return Container(
       width: 56,
       height: 56,
       decoration: BoxDecoration(
-        color: AppPalette.brand,
+        color: tokens.brand,
         borderRadius: BorderRadius.circular(16),
       ),
       clipBehavior: Clip.antiAlias,
       child: imagePath == null
-          ? const Icon(Icons.apartment_rounded, color: Colors.white70, size: 26)
+          ? Icon(Icons.apartment_rounded, color: tokens.brandOnDark, size: 26)
           : Image.asset(
               imagePath,
               fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => const Icon(
+              errorBuilder: (_, _, _) => Icon(
                 Icons.apartment_rounded,
-                color: Colors.white70,
+                color: tokens.brandOnDark,
                 size: 26,
               ),
             ),

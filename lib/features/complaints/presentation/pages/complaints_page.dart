@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
-import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_section.dart';
@@ -43,6 +43,7 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(
         title: 'Complaints',
@@ -94,9 +95,9 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                   trailing: IconButton(
                     tooltip: 'Refresh complaints',
                     onPressed: controller.loadComplaints,
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.refresh_rounded,
-                      color: Colors.white,
+                      color: tokens.brandOnDark,
                     ),
                   ),
                 ),
@@ -194,6 +195,7 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     // A gradient rather than a flat fill, so the button reads as raised off the
     // list instead of painted onto it. Both stops are checked against white
     // label text: the lightest is 4.2:1 and the darkest 6.5:1, which keeps the
@@ -201,22 +203,22 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
     final pill = DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadius.pill),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF128A80), AppPalette.brandDark],
+          colors: [tokens.brand, tokens.brandDark],
         ),
         // A hairline rim catches the light along the top edge, and a wide glow
         // underneath lifts the whole pill off the list.
         border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
         boxShadow: [
           BoxShadow(
-            color: AppPalette.brand.withValues(alpha: 0.32),
+            color: tokens.brand.withValues(alpha: 0.32),
             blurRadius: 26,
             offset: const Offset(0, 12),
           ),
           BoxShadow(
-            color: AppPalette.brandDark.withValues(alpha: 0.30),
+            color: tokens.brandDark.withValues(alpha: 0.30),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -231,7 +233,7 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
         // the theme's dark onSurface, which is what left the button looking
         // greyed out.
         backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
+        foregroundColor: tokens.onBrand,
         elevation: 0,
         focusElevation: 0,
         hoverElevation: 0,
@@ -247,11 +249,11 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
           curve: Curves.easeOutCubic,
           alignment: Alignment.centerLeft,
           child: widget.expanded
-              ? const Text(
+              ? Text(
                   'File complaint',
                   maxLines: 1,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: tokens.onBrand,
                     fontSize: 14.5,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.1,
@@ -306,6 +308,7 @@ class _BadgeGlyph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       width: 28,
       height: 28,
@@ -315,17 +318,13 @@ class _BadgeGlyph extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: AppPalette.brandDark.withValues(alpha: 0.28),
+            color: tokens.brandDark.withValues(alpha: 0.28),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
         ],
       ),
-      child: const Icon(
-        Icons.add_comment_rounded,
-        size: 16,
-        color: AppPalette.brandDark,
-      ),
+      child: Icon(Icons.add_comment_rounded, size: 16, color: tokens.brandDark),
     );
   }
 }
@@ -337,6 +336,7 @@ class _ComplaintCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return AppCard(
       onTap: () {
         controller.selectComplaint(complaint);
@@ -347,7 +347,7 @@ class _ComplaintCard extends StatelessWidget {
         children: [
           AppIconTile(
             icon: Icons.report_gmailerrorred_outlined,
-            color: complaintStatusColor(complaint.status),
+            color: complaintStatusColor(complaint.status, tokens),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -365,7 +365,7 @@ class _ComplaintCard extends StatelessWidget {
                   '${complaint.reference} · ${complaint.category.label}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: AppPalette.muted, fontSize: 11),
+                  style: TextStyle(color: tokens.muted, fontSize: 11),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -378,10 +378,7 @@ class _ComplaintCard extends StatelessWidget {
                         'Updated ${complaint.updatedOn}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppPalette.faint,
-                          fontSize: 10,
-                        ),
+                        style: TextStyle(color: tokens.faint, fontSize: 10),
                       ),
                     ),
                   ],
@@ -389,7 +386,7 @@ class _ComplaintCard extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppPalette.faint),
+          Icon(Icons.chevron_right_rounded, color: tokens.faint),
         ],
       ),
     );

@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_status_pill.dart';
 import '../../domain/entities/visitor.dart';
 
-Color visitorStatusColor(VisitorStatus status) {
+Color visitorStatusColor(BuildContext context, VisitorStatus status) {
+  final tokens = AppThemeTokens.of(context);
   switch (status) {
     case VisitorStatus.preRegistered:
       return AppPalette.info;
     case VisitorStatus.checkedIn:
       return AppPalette.success;
     case VisitorStatus.checkedOut:
-      return AppPalette.mutedStrong;
+      return tokens.mutedStrong;
     case VisitorStatus.cancelled:
       return AppPalette.danger;
     case VisitorStatus.expired:
-      return AppPalette.faint;
+      return tokens.faint;
   }
 }
 
@@ -28,7 +30,7 @@ class VisitorStatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppStatusPill(
       label: status.label,
-      color: visitorStatusColor(status),
+      color: visitorStatusColor(context, status),
     );
   }
 }

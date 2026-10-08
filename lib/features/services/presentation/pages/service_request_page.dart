@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_dialogs.dart';
@@ -48,6 +49,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Obx(() {
       final service = controller.selectedService.value;
       if (service == null) {
@@ -77,7 +79,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                 children: [
                   AppIconTile(
                     icon: serviceIcon(service.category),
-                    color: AppPalette.brand,
+                    color: tokens.brand,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -94,16 +96,13 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                         const SizedBox(height: 3),
                         Text(
                           service.provider,
-                          style: const TextStyle(
-                            color: AppPalette.muted,
-                            fontSize: 11,
-                          ),
+                          style: TextStyle(color: tokens.muted, fontSize: 11),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           '${AppFormatters.currency(service.price)} ${service.unit}',
-                          style: const TextStyle(
-                            color: AppPalette.brand,
+                          style: TextStyle(
+                            color: tokens.brand,
                             fontWeight: FontWeight.w800,
                             fontSize: 13,
                           ),
@@ -132,7 +131,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                         _date = date;
                         _error = '';
                       }),
-                      selectedColor: AppPalette.brandSoft,
+                      selectedColor: tokens.brandSoft,
                     ),
                   )
                   .toList(),
@@ -152,7 +151,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                       label: Text(slot),
                       selected: slot == _slot,
                       onSelected: (_) => setState(() => _slot = slot),
-                      selectedColor: AppPalette.brandSoft,
+                      selectedColor: tokens.brandSoft,
                     ),
                   )
                   .toList(),
@@ -183,12 +182,12 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                     size: 20,
                   ),
                   const SizedBox(width: 10),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'The service fee is billed as its own line on your next '
                       'statement. It is never added to the monthly condo fee.',
                       style: TextStyle(
-                        color: AppPalette.mutedStrong,
+                        color: tokens.mutedStrong,
                         fontSize: 11,
                         height: 1.4,
                       ),
@@ -202,12 +201,12 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
               key: const Key('confirm-service-booking'),
               onPressed: controller.isSubmitting.value ? null : _submit,
               icon: controller.isSubmitting.value
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: tokens.onBrand,
                       ),
                     )
                   : const Icon(Icons.check_rounded, size: 18),

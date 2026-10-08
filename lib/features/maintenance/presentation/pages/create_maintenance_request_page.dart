@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/services/photo_picker.dart';
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_dates.dart';
 import '../../../../core/utils/app_validators.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
@@ -60,7 +61,6 @@ class _CreateMaintenanceRequestPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppPalette.surface,
       resizeToAvoidBottomInset: true,
       appBar: AppDetailAppBar(
         title: 'New Request',
@@ -200,8 +200,8 @@ class _CreateMaintenanceRequestPageState
                         ? '1 photo attached'
                         : '${_photos.length} photos attached',
                     key: const Key('maintenance-photo-count'),
-                    style: const TextStyle(
-                      color: AppPalette.muted,
+                    style: TextStyle(
+                      color: AppThemeTokens.of(context).muted,
                       fontSize: 12.5,
                       fontWeight: FontWeight.w600,
                     ),
@@ -258,9 +258,10 @@ class _CreateMaintenanceRequestPageState
   }
 
   Future<ImageSource?> _choosePhotoSource() {
+    final tokens = AppThemeTokens.of(context);
     return showModalBottomSheet<ImageSource>(
       context: context,
-      backgroundColor: AppPalette.surface,
+      backgroundColor: tokens.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -273,48 +274,48 @@ class _CreateMaintenanceRequestPageState
               width: 38,
               height: 4,
               decoration: BoxDecoration(
-                color: AppPalette.border,
+                color: tokens.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 6),
             ListTile(
               key: const Key('photo-source-gallery'),
-              leading: const Icon(
+              leading: Icon(
                 Icons.photo_library_outlined,
-                color: AppPalette.brand,
+                color: tokens.brand,
               ),
-              title: const Text(
+              title: Text(
                 'Choose from gallery',
                 style: TextStyle(
-                  color: AppPalette.ink,
+                  color: tokens.ink,
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              subtitle: const Text(
+              subtitle: Text(
                 'Pick an existing photo',
-                style: TextStyle(color: AppPalette.muted, fontSize: 12.5),
+                style: TextStyle(color: tokens.muted, fontSize: 12.5),
               ),
               onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
             ),
             ListTile(
               key: const Key('photo-source-camera'),
-              leading: const Icon(
+              leading: Icon(
                 Icons.photo_camera_outlined,
-                color: AppPalette.brand,
+                color: tokens.brand,
               ),
-              title: const Text(
+              title: Text(
                 'Take a photo',
                 style: TextStyle(
-                  color: AppPalette.ink,
+                  color: tokens.ink,
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              subtitle: const Text(
+              subtitle: Text(
                 'Use the device camera',
-                style: TextStyle(color: AppPalette.muted, fontSize: 12.5),
+                style: TextStyle(color: tokens.muted, fontSize: 12.5),
               ),
               onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
             ),
@@ -388,6 +389,7 @@ class _FormSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -397,17 +399,17 @@ class _FormSection extends StatelessWidget {
               width: 30,
               height: 30,
               decoration: BoxDecoration(
-                color: AppPalette.brandTint,
+                color: tokens.brandTint,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, size: 17, color: AppPalette.brand),
+              child: Icon(icon, size: 17, color: tokens.brand),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
-                  color: AppPalette.ink,
+                style: TextStyle(
+                  color: tokens.ink,
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
                 ),
@@ -420,7 +422,7 @@ class _FormSection extends StatelessWidget {
           padding: const EdgeInsets.only(left: 40),
           child: Text(
             subtitle,
-            style: const TextStyle(color: AppPalette.muted, fontSize: 12.5),
+            style: TextStyle(color: tokens.muted, fontSize: 12.5),
           ),
         ),
       ],
@@ -448,6 +450,7 @@ class _PhotoThumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return SizedBox(
       width: _size,
       height: _size,
@@ -458,20 +461,20 @@ class _PhotoThumbnail extends StatelessWidget {
             width: _size,
             height: _size,
             decoration: BoxDecoration(
-              color: AppPalette.surfaceMuted,
+              color: tokens.surfaceMuted,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppPalette.border),
+              border: Border.all(color: tokens.border),
             ),
             clipBehavior: Clip.antiAlias,
             child: Image.file(
               File(photo.path),
               fit: BoxFit.cover,
               // A file that is gone or unsupported must not break the form.
-              errorBuilder: (context, error, stackTrace) => const Center(
+              errorBuilder: (context, error, stackTrace) => Center(
                 child: Icon(
                   Icons.image_not_supported_outlined,
                   size: 22,
-                  color: AppPalette.faint,
+                  color: tokens.faint,
                 ),
               ),
             ),
@@ -480,7 +483,7 @@ class _PhotoThumbnail extends StatelessWidget {
             top: -6,
             right: -6,
             child: Material(
-              color: AppPalette.ink,
+              color: tokens.ink,
               shape: const CircleBorder(),
               clipBehavior: Clip.antiAlias,
               child: Tooltip(
@@ -491,13 +494,15 @@ class _PhotoThumbnail extends StatelessWidget {
                   child: Semantics(
                     button: true,
                     label: 'Remove photo $position',
-                    child: const SizedBox(
+                    child: SizedBox(
                       width: 24,
                       height: 24,
                       child: Icon(
                         Icons.close_rounded,
                         size: 15,
-                        color: Colors.white,
+                        // The remove badge sits on the ink fill, which inverts
+                        // with the theme, so the glyph is picked from it.
+                        color: AppThemeTokens.onColor(tokens.ink),
                       ),
                     ),
                   ),
@@ -561,11 +566,12 @@ class _AttachPhotoButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Material(
-      color: Colors.white,
+      color: tokens.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppPalette.border),
+        side: BorderSide(color: tokens.border),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -573,19 +579,19 @@ class _AttachPhotoButton extends StatelessWidget {
         child: Container(
           height: 54,
           alignment: Alignment.center,
-          child: const Row(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.add_a_photo_outlined,
                 size: 18,
-                color: AppPalette.brand,
+                color: tokens.brand,
               ),
-              SizedBox(width: 9),
+              const SizedBox(width: 9),
               Text(
                 'Attach photo',
                 style: TextStyle(
-                  color: AppPalette.brand,
+                  color: tokens.brand,
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                 ),

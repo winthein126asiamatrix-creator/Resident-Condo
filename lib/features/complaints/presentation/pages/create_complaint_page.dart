@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../domain/entities/complaint.dart';
 import '../controllers/complaint_controller.dart';
@@ -39,6 +40,7 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(title: 'File a complaint'),
       body: Obx(
@@ -89,7 +91,7 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
                       label: Text(category.label),
                       selected: _category == category,
                       onSelected: (_) => setState(() => _category = category),
-                      selectedColor: AppPalette.brandSoft,
+                      selectedColor: tokens.brandSoft,
                     ),
                   )
                   .toList(),
@@ -141,12 +143,12 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
               key: const Key('submit-complaint'),
               onPressed: controller.isSubmitting.value ? null : _submit,
               icon: controller.isSubmitting.value
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: tokens.onBrand,
                       ),
                     )
                   : const Icon(Icons.send_rounded, size: 18),

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/invoice.dart';
@@ -33,6 +34,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(title: 'Payment method'),
       body: Obx(() {
@@ -91,12 +93,12 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                   ? null
                   : () => _confirm(context),
               icon: controller.isPaymentProcessing.value
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: tokens.onBrand,
                       ),
                     )
                   : const Icon(Icons.lock_outline_rounded, size: 18),
@@ -128,6 +130,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
 
   Future<void> _confirm(BuildContext context) async {
     _error = '';
+    final tokens = AppThemeTokens.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -139,7 +142,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
           children: [
             Text(
               'Payment amount',
-              style: const TextStyle(color: AppPalette.muted, fontSize: 12),
+              style: TextStyle(color: tokens.muted, fontSize: 12),
             ),
             const SizedBox(height: 3),
             Text(
@@ -150,8 +153,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             Text(
               '${controller.selectedCount} selected item'
               '${controller.selectedCount == 1 ? '' : 's'}',
-              style: const TextStyle(
-                color: AppPalette.mutedStrong,
+              style: TextStyle(
+                color: tokens.mutedStrong,
                 fontSize: 12,
               ),
             ),
@@ -180,7 +183,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             const SizedBox(height: 12),
             Text(
               'Payment method',
-              style: const TextStyle(color: AppPalette.muted, fontSize: 12),
+              style: TextStyle(color: tokens.muted, fontSize: 12),
             ),
             const SizedBox(height: 3),
             Text(
@@ -190,7 +193,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             const SizedBox(height: 12),
             Text(
               'Unit',
-              style: const TextStyle(color: AppPalette.muted, fontSize: 12),
+              style: TextStyle(color: tokens.muted, fontSize: 12),
             ),
             const SizedBox(height: 3),
             Text(
@@ -242,19 +245,20 @@ class _ReviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
-        color: AppPalette.brand,
+        color: tokens.brand,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'AMOUNT TO PAY',
             style: TextStyle(
-              color: AppPalette.brandOnDark,
+              color: tokens.brandOnDark,
               fontSize: 11,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.2,
@@ -263,8 +267,8 @@ class _ReviewCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             AppFormatters.currency(controller.selectedTotal),
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: tokens.onBrand,
               fontSize: 27,
               fontWeight: FontWeight.w800,
             ),
@@ -273,8 +277,8 @@ class _ReviewCard extends StatelessWidget {
           Text(
             '${controller.selectedCount} of '
             '${controller.selectedInvoice.value?.unpaidItems.length ?? 0} unpaid items selected',
-            style: const TextStyle(
-              color: AppPalette.brandOnDarkMuted,
+            style: TextStyle(
+              color: tokens.brandOnDarkMuted,
               fontSize: 12,
             ),
           ),
@@ -291,6 +295,7 @@ class _MethodSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return RadioGroup<PaymentMethod>(
       groupValue: selected,
       onChanged: (value) {
@@ -307,7 +312,7 @@ class _MethodSelector extends StatelessWidget {
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 subtitle: Text(_description(method)),
-                secondary: Icon(_icon(method), color: AppPalette.brand),
+                secondary: Icon(_icon(method), color: tokens.brand),
               ),
             )
             .toList(),
@@ -397,23 +402,24 @@ class _CardForm extends StatelessWidget {
 class _DemoGatewayHint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppPalette.amberSoft,
         borderRadius: BorderRadius.circular(14),
       ),
-      child: const Row(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.science_outlined, size: 18, color: AppPalette.warning),
-          SizedBox(width: 8),
+          const Icon(Icons.science_outlined, size: 18, color: AppPalette.warning),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               'Demo gateway: a card number ending in 0000 is declined so you can '
               'check the failed payment state.',
               style: TextStyle(
-                color: AppPalette.mutedStrong,
+                color: tokens.mutedStrong,
                 fontSize: 11,
                 height: 1.35,
               ),
@@ -430,22 +436,27 @@ class _BankTransferInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _FormCard(
+    final tokens = AppThemeTokens.of(context);
+    return _FormCard(
       children: [
-        Icon(Icons.account_balance_rounded, color: AppPalette.brand, size: 32),
-        SizedBox(height: 10),
-        Text(
+        Icon(
+          Icons.account_balance_rounded,
+          color: tokens.brand,
+          size: 32,
+        ),
+        const SizedBox(height: 10),
+        const Text(
           'Mock bank transfer',
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
-        SizedBox(height: 5),
+        const SizedBox(height: 5),
         Text(
           'Transfer to the condo management account shown in your resident portal.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: AppPalette.muted, height: 1.4),
+          style: TextStyle(color: tokens.muted, height: 1.4),
         ),
-        SizedBox(height: 12),
-        Text(
+        const SizedBox(height: 12),
+        const Text(
           'Account ending in 4821',
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
@@ -459,22 +470,26 @@ class _WalletInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _FormCard(
+    final tokens = AppThemeTokens.of(context);
+    return _FormCard(
       children: [
         Icon(
           Icons.account_balance_wallet_rounded,
-          color: AppPalette.brand,
+          color: tokens.brand,
           size: 32,
         ),
-        SizedBox(height: 10),
-        Text('Connected wallet', style: TextStyle(fontWeight: FontWeight.w800)),
-        SizedBox(height: 5),
+        const SizedBox(height: 10),
+        const Text(
+          'Connected wallet',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 5),
         Text(
           'Alex Johnson Wallet',
-          style: TextStyle(color: AppPalette.mutedStrong),
+          style: TextStyle(color: tokens.mutedStrong),
         ),
-        SizedBox(height: 8),
-        Text(
+        const SizedBox(height: 8),
+        const Text(
           'Available balance: \$2,450.00',
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
@@ -489,12 +504,13 @@ class _FormCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppPalette.border),
+        border: Border.all(color: tokens.border),
       ),
       child: Column(children: children),
     );

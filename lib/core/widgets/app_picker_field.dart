@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_palette.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/app_theme_tokens.dart';
 
 /// Read only field that looks like a form control and opens a picker.
 ///
@@ -36,15 +36,16 @@ class AppPickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     final field = Semantics(
       button: true,
       enabled: enabled,
       label: label == null ? value : '$label, $value',
       child: Material(
-        color: enabled ? AppPalette.surface : AppPalette.surfaceMuted,
+        color: enabled ? tokens.surface : tokens.surfaceMuted,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          side: const BorderSide(color: AppPalette.border),
+          side: BorderSide(color: tokens.border),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -57,7 +58,7 @@ class AppPickerField extends StatelessWidget {
                 Icon(
                   icon,
                   size: 18,
-                  color: enabled ? AppPalette.muted : AppPalette.faint,
+                  color: enabled ? tokens.muted : tokens.faint,
                 ),
                 const SizedBox(width: 9),
                 Flexible(
@@ -66,7 +67,7 @@ class AppPickerField extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: enabled ? AppPalette.ink : AppPalette.faint,
+                      color: enabled ? tokens.ink : tokens.faint,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -76,7 +77,7 @@ class AppPickerField extends StatelessWidget {
                 Icon(
                   trailingIcon,
                   size: 18,
-                  color: enabled ? AppPalette.muted : AppPalette.faint,
+                  color: enabled ? tokens.muted : tokens.faint,
                 ),
               ],
             ),
@@ -91,14 +92,14 @@ class AppPickerField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label!, style: AppTextStyles.fieldLabel),
+        Text(label!, style: AppTextStyles.of(context).fieldLabel),
         const SizedBox(height: AppSpacing.fieldLabelGap),
         field,
         if (helperText != null) ...[
           const SizedBox(height: 6),
           Text(
             helperText!,
-            style: const TextStyle(color: AppPalette.muted, fontSize: 12),
+            style: TextStyle(color: tokens.muted, fontSize: 12),
           ),
         ],
       ],

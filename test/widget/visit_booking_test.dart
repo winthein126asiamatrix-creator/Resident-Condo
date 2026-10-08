@@ -10,7 +10,7 @@ import 'package:test/features/visitors/presentation/bindings/visitor_binding.dar
 import 'package:test/features/visitors/presentation/controllers/visitor_controller.dart';
 import 'package:test/features/visitors/presentation/pages/register_visitor_page.dart';
 import 'package:test/features/visitors/presentation/pages/visitor_pass_page.dart';
-import 'package:test/core/theme/app_palette.dart';
+import 'package:test/core/theme/app_theme_tokens.dart';
 
 /// Covers the visit date range, the custom arrival time and the window that is
 /// derived from the arrival time.
@@ -106,7 +106,7 @@ void main() {
     }
 
     // Today starts selected, shown by the filled card.
-    expect(_cardColour(tester, dates.first), AppPalette.brand);
+    expect(_cardColour(tester, dates.first), AppThemeTokens.fallback().brand);
   });
 
   testWidgets('tapping another visit date changes the selection', (
@@ -120,8 +120,8 @@ void main() {
     await tester.tap(find.byKey(Key('visit-date-$target')));
     await tester.pumpAndSettle();
 
-    expect(_cardColour(tester, target), AppPalette.brand);
-    expect(_cardColour(tester, dates.first), isNot(AppPalette.brand));
+    expect(_cardColour(tester, target), AppThemeTokens.fallback().brand);
+    expect(_cardColour(tester, dates.first), isNot(AppThemeTokens.fallback().brand));
   });
 
   testWidgets('a predefined arrival time produces a two hour window', (

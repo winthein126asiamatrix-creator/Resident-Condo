@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
+import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../domain/entities/lease.dart';
@@ -16,6 +17,7 @@ class LeaseRenewalSentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(title: 'Renewal requested'),
       body: ListView(
@@ -31,8 +33,8 @@ class LeaseRenewalSentPage extends StatelessWidget {
             child: Container(
               width: 88,
               height: 88,
-              decoration: const BoxDecoration(
-                color: AppPalette.brandTint,
+              decoration: BoxDecoration(
+                color: tokens.brandTint,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -43,21 +45,21 @@ class LeaseRenewalSentPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'Renewal request sent',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: AppPalette.ink,
+              color: tokens.ink,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Both parties will be notified and the request stays pending until '
             'it is approved or declined.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppPalette.muted, height: 1.4),
+            style: TextStyle(color: tokens.muted, height: 1.4),
           ),
           const SizedBox(height: 24),
           AppCard(
@@ -97,12 +99,13 @@ class _Line extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
           Expanded(
-            child: Text(label, style: const TextStyle(color: AppPalette.muted)),
+            child: Text(label, style: TextStyle(color: tokens.muted)),
           ),
           Flexible(
             child: Text(
