@@ -233,8 +233,8 @@ class _BalanceSummary extends StatelessWidget {
               icon: const Icon(Icons.arrow_forward_rounded, size: 18),
               label: const Text('Pay Now'),
               style: FilledButton.styleFrom(
-                backgroundColor: tokens.brand,
-                foregroundColor: tokens.onBrand,
+                backgroundColor: Colors.white,
+                foregroundColor: tokens.brand,
                 minimumSize: const Size.fromHeight(48),
               ),
             ),

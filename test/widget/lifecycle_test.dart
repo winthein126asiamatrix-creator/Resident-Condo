@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
 
 import 'package:test/app/app.dart';
@@ -18,6 +19,13 @@ import 'package:test/features/payments/presentation/controllers/payment_controll
 /// needed. Every session scoped controller is now registered permanently by
 /// `AppBinding`, so route replacement can no longer remove it.
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  // A remembered session, so the splash routes straight home rather than to
+  // the login screen, which is not what these flows are about.
+  SharedPreferences.setMockInitialValues(<String, Object>{
+    'auth.username': 'alex',
+    'auth.display_name': 'Alex Johnson',
+  });
   Future<void> scrollTo(
     WidgetTester tester,
     Finder target,

@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:test/app/app.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  // A remembered session, so the splash routes straight home rather than to
+  // the login screen, which is not what these flows are about.
+  SharedPreferences.setMockInitialValues(<String, Object>{
+    'auth.username': 'alex',
+    'auth.display_name': 'Alex Johnson',
+  });
   testWidgets('opens the resident dashboard after the splash', (
     WidgetTester tester,
   ) async {

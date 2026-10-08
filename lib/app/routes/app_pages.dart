@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import '../../features/announcements/presentation/pages/announcements_page.dart';
 import '../../features/appearance/presentation/bindings/appearance_binding.dart';
 import '../../features/appearance/presentation/pages/appearance_page.dart';
+import '../../features/auth/presentation/bindings/auth_binding.dart';
+import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/complaints/domain/entities/complaint.dart';
 import '../../features/complaints/presentation/pages/complaint_detail_page.dart';
 import '../../features/complaints/presentation/pages/complaints_page.dart';
@@ -65,12 +67,20 @@ abstract final class AppPages {
     GetPage<dynamic>(
       name: AppRoutes.splash,
       page: () => const SplashPage(),
-      bindings: [AppBinding()],
+      // AuthBinding is on both entries: the splash needs it to restore the
+      // remembered session, and the home shell needs it for logout. The binding
+      // is idempotent, so hitting it twice is safe.
+      bindings: [AppBinding(), AuthBinding()],
     ),
     GetPage<dynamic>(
       name: AppRoutes.home,
       page: () => const MainShellPage(),
-      bindings: [AppBinding()],
+      bindings: [AppBinding(), AuthBinding()],
+    ),
+    GetPage<dynamic>(
+      name: AppRoutes.login,
+      page: () => const LoginPage(),
+      binding: AuthBinding(),
     ),
     GetPage<dynamic>(name: AppRoutes.more, page: () => const MoreServicesPage()),
     GetPage<dynamic>(name: AppRoutes.notifications, page: () => const NotificationsPage()),

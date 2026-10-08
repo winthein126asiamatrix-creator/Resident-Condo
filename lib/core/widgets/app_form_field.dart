@@ -35,6 +35,7 @@ class AppTextField extends StatelessWidget {
     this.obscureText = false,
     this.suffixIconLabel,
     this.onSuffixTap,
+    this.suffixIcon,
     this.inputFormatters,
     this.style,
     this.autofocus = false,
@@ -65,6 +66,11 @@ class AppTextField extends StatelessWidget {
   /// Adds a clear button on the trailing edge, e.g. to empty a search field.
   final String? suffixIconLabel;
   final VoidCallback? onSuffixTap;
+
+  /// A custom trailing widget, for a control the field itself does not own
+  /// such as a password visibility toggle. Takes precedence over the clear
+  /// button, so a screen never has to rebuild the whole field to add one.
+  final Widget? suffixIcon;
 
   /// Masks applied while typing, e.g. digits only for a card number.
   final List<TextInputFormatter>? inputFormatters;
@@ -110,6 +116,7 @@ class AppTextField extends StatelessWidget {
             helperText: helperText,
             suffixIconLabel: suffixIconLabel,
             onSuffixTap: onSuffixTap,
+            suffixIcon: suffixIcon,
             enabled: enabled,
           ),
         ),
@@ -195,6 +202,7 @@ InputDecoration appFormFieldDecoration({
   String? helperText,
   String? suffixIconLabel,
   VoidCallback? onSuffixTap,
+  Widget? suffixIcon,
   bool isSelect = false,
   bool enabled = true,
 }) {
@@ -252,14 +260,15 @@ InputDecoration appFormFieldDecoration({
     // The select field already renders its own chevron.
     suffixIcon: isSelect
         ? Icon(Icons.keyboard_arrow_down_rounded, color: tokens.muted)
-        : suffixIconLabel == null
-        ? null
-        : IconButton(
-            onPressed: onSuffixTap,
-            tooltip: suffixIconLabel,
-            icon: const Icon(Icons.close_rounded, size: 18),
-            color: tokens.muted,
-          ),
+        : suffixIcon ??
+            (suffixIconLabel == null
+                ? null
+                : IconButton(
+                    onPressed: onSuffixTap,
+                    tooltip: suffixIconLabel,
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                    color: tokens.muted,
+                  )),
   );
 }
 

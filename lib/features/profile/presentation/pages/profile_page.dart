@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../../payments/presentation/controllers/payment_controller.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../domain/entities/profile.dart';
 import '../controllers/profile_controller.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -414,7 +415,7 @@ class ProfilePage extends GetView<ProfileController> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Logout?'),
-        content: const Text('You will be signed out of this local demo.'),
+        content: const Text('You will be signed out and asked to sign in again.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -427,9 +428,16 @@ class ProfilePage extends GetView<ProfileController> {
         ],
       ),
     );
-    if (shouldLogout == true) {
-      controller.logout();
+    if (shouldLogout != true) {
+      return;
     }
+    // Clears the remembered session first, so the splash will not quietly
+    // sign the resident back in on the next launch.
+    if (Get.isRegistered<AuthController>()) {
+      await Get.find<AuthController>().signOut();
+    }
+    controller.logout();
+    Get.offAllNamed(AppRoutes.login);
   }
 }
 

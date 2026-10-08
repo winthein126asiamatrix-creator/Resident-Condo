@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme_tokens.dart';
+import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../routes/app_routes.dart';
 
 class SplashPage extends StatefulWidget {
@@ -29,11 +30,28 @@ class _SplashPageState extends State<SplashPage>
       curve: Curves.easeOut,
     );
     _animationController.forward();
-    Future<void>.delayed(const Duration(milliseconds: 1600), () {
-      if (mounted) {
-        Get.offNamed(AppRoutes.home);
-      }
-    });
+    Future<void>.delayed(const Duration(milliseconds: 1600), _continue);
+  }
+
+  /// Sends the resident onward once the splash has shown.
+  ///
+  /// A remembered session means they were signed in on this device and asked to
+  /// stay that way, so they go straight home. Anyone else is asked to sign in.
+  Future<void> _continue() async {
+    if (!mounted) {
+      return;
+    }
+    final auth = Get.find<AuthController>();
+    final remembered = await auth.restoreSession();
+    if (!mounted) {
+      return;
+    }
+    if (remembered != null) {
+      auth.adoptIntoSession(remembered);
+      Get.offNamed(AppRoutes.home);
+    } else {
+      Get.offNamed(AppRoutes.login);
+    }
   }
 
   @override

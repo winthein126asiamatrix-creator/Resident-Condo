@@ -31,4 +31,14 @@ class SessionController extends GetxController {
     }
     session.value = session.value.copyWith(role: next);
   }
+
+  /// Adopts the name from a successful sign-in, so the greeting on the
+  /// dashboard and the name on the profile match the account just used. The
+  /// rest of the demo session stays as it is: this build has a single unit.
+  void signInAs(String displayName) {
+    if (displayName.trim().isEmpty || session.value.name == displayName) {
+      return;
+    }
+    session.value = session.value.copyWith(name: displayName);
+  }
 }

@@ -94,6 +94,9 @@ void main() {
       'appearance.seed_color': 0xFF9333EA,
       'appearance.preset_id': 'purple',
       'appearance.brightness_mode': 'light',
+      // A remembered session, so the splash routes home rather than to login.
+      'auth.username': 'alex',
+      'auth.display_name': 'Alex Johnson',
     });
 
     await tester.pumpWidget(const CondoResidentApp());

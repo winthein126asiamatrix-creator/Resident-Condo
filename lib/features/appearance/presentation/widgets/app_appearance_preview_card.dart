@@ -492,7 +492,12 @@ class _PreviewNavigationBar extends StatelessWidget {
     (
       icon: Icons.handyman_outlined,
       selected: Icons.handyman_rounded,
-      label: 'Repairs'
+      label: 'Maintenance'
+    ),
+    (
+      icon: Icons.calendar_today,
+      selected: Icons.handyman_rounded,
+      label: 'Facilities'
     ),
     (
       icon: Icons.person_outline_rounded,
