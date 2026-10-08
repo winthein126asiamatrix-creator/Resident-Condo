@@ -14,9 +14,9 @@ import 'routes/app_routes.dart';
 /// build, means the saved colour is applied on the very first frame rather than
 /// flashing the default and correcting a moment later.
 ///
-/// The [Obx] is the whole integration: a change to the controller rebuilds
-/// `GetMaterialApp` with a new `ThemeData`, which repaints every mounted screen,
-/// including the ones further down the navigation stack.
+/// The [Obx] is the whole integration: the theme is built from the controller's
+/// *applied* preference, so only "Apply Theme" — never a preview — rebuilds
+/// `GetMaterialApp` and repaints every mounted screen at once.
 class CondoResidentApp extends StatefulWidget {
   const CondoResidentApp({super.key});
 

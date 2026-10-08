@@ -9,9 +9,9 @@ import 'package:test/features/appearance/domain/entities/app_color_seed.dart';
 import 'package:test/features/appearance/presentation/bindings/appearance_binding.dart';
 import 'package:test/features/appearance/presentation/controllers/appearance_controller.dart';
 
-/// Proves the global integration: the root `CondoResidentApp` rebuilds its
-/// `ThemeData` from the single AppearanceController, so a colour change on one
-/// screen repaints every other mounted screen without navigation or restart.
+/// Proves the global integration contract: the root builds its `ThemeData`
+/// from the *applied* preference only, so a preview never repaints the running
+/// app, and "Apply Theme" repaints everything at once.
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
@@ -33,7 +33,7 @@ void main() {
         },
       );
 
-  testWidgets('changing the colour repaints the running app from the root', (
+  testWidgets('selecting a colour leaves the running theme alone until applied', (
     tester,
   ) async {
     AppearanceBinding().dependencies();
@@ -44,18 +44,27 @@ void main() {
         .widget<ColoredBox>(find.byKey(const Key('theme-probe-brand')))
         .color;
 
-    final before = probeBrand();
-    expect(before, AppThemeTokens.fallback().brand);
+    final appliedBefore = probeBrand();
+    expect(appliedBefore, AppThemeTokens.fallback().brand);
 
     // The same call the Appearance screen makes when a swatch is tapped.
-    Get.find<AppearanceController>().selectPreset(
+    final controller = Get.find<AppearanceController>();
+    controller.selectPreset(
       AppColorSeeds.all.firstWhere((seed) => seed.id == 'red'),
     );
     await tester.pumpAndSettle();
 
-    final after = probeBrand();
-    expect(after, isNot(before));
-    expect(after, const Color(0xFFDC2626));
+    // The preview moved, the running theme did not.
+    expect(controller.previewThemeColor, const Color(0xFFDC2626));
+    expect(controller.appliedThemeColor, AppThemeTokens.fallback().seed);
+    expect(probeBrand(), appliedBefore);
+
+    // Only Apply Theme promotes the preview to the running app.
+    await controller.applyTheme();
+    await tester.pumpAndSettle();
+
+    expect(probeBrand(), const Color(0xFFDC2626));
+    expect(controller.appliedThemeColor, const Color(0xFFDC2626));
 
     // The MaterialApp's own ThemeData picked it up too, which is what every
     // screen reads through Theme.of(context).

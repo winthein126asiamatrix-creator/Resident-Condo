@@ -82,6 +82,7 @@ void main() {
     controller.selectPreset(
       AppColorSeeds.all.firstWhere((seed) => seed.id == 'indigo'),
     );
+    await controller.applyTheme();
     await tester.pumpAndSettle();
 
     final afterScheme = Theme.of(tester.element(find.byType(RadioListTile<String>)));
@@ -106,6 +107,7 @@ void main() {
       AppColorSeeds.all.firstWhere((seed) => seed.id == 'teal'),
     );
     controller.selectBrightnessMode(AppBrightnessMode.dark);
+    await controller.applyTheme();
     await tester.pumpAndSettle();
 
     final context = tester.element(find.byType(RadioListTile<String>));

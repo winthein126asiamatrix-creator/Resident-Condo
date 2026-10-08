@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:test/app/app.dart';
+import 'package:test/features/auth/data/datasources/auth_local_data_source.dart';
 import 'package:test/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:test/features/session/presentation/controllers/session_controller.dart';
 
@@ -37,7 +38,7 @@ void main() {
 
   testWidgets('a remembered session skips the login screen', (tester) async {
     SharedPreferences.setMockInitialValues(<String, Object>{
-      'auth.username': 'alex',
+      'auth.username': AuthLocalDataSource.demoUsername,
       'auth.display_name': 'Alex Johnson',
     });
 
@@ -59,10 +60,10 @@ void main() {
     expect(find.text('Welcome back'), findsOneWidget);
 
     // Sign in with the demo account.
-    await tester.enterText(find.byKey(const Key('login-username')), 'alex');
+    await tester.enterText(find.byKey(const Key('login-username')), AuthLocalDataSource.demoUsername);
     await tester.enterText(
       find.byKey(const Key('login-password')),
-      'resident123',
+      AuthLocalDataSource.demoPassword,
     );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('login-submit')));
@@ -104,7 +105,7 @@ void main() {
   testWidgets('after logout a cold start asks for sign in again', (tester) async {
     // Sign in, remember nothing, sign out, then boot again.
     SharedPreferences.setMockInitialValues(<String, Object>{
-      'auth.username': 'alex',
+      'auth.username': AuthLocalDataSource.demoUsername,
       'auth.display_name': 'Alex Johnson',
     });
     await boot(tester);

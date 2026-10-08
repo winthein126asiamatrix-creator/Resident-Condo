@@ -38,8 +38,8 @@ void main() {
 
   Future<void> fillCredentials(
     WidgetTester tester, {
-    String username = 'alex',
-    String password = 'resident123',
+    String username = AuthLocalDataSource.demoUsername,
+    String password = AuthLocalDataSource.demoPassword,
   }) async {
     await tester.enterText(find.byKey(const Key('login-username')), username);
     await tester.enterText(find.byKey(const Key('login-password')), password);
@@ -74,7 +74,7 @@ void main() {
   testWidgets('a username with no password reports the password', (tester) async {
     await pumpLogin(tester);
 
-    await tester.enterText(find.byKey(const Key('login-username')), 'alex');
+    await tester.enterText(find.byKey(const Key('login-username')), AuthLocalDataSource.demoUsername);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('login-submit')));
     await tester.pumpAndSettle();
@@ -176,7 +176,7 @@ void main() {
     final restored = await AuthLocalDataSource().restoreSession();
     expect(restored, isNotNull);
     expect(restored!.rememberMe, isTrue);
-    expect(restored.username, 'alex');
+    expect(restored.username, AuthLocalDataSource.demoUsername);
   });
 
   testWidgets('the label next to the checkbox toggles it too', (tester) async {
@@ -223,7 +223,7 @@ void main() {
     expect(controller.isSubmitting.value, isTrue);
 
     gate.complete(
-      const AuthSession(username: 'alex', displayName: 'Alex Johnson', rememberMe: false),
+      const AuthSession(username: AuthLocalDataSource.demoUsername, displayName: 'Alex Johnson', rememberMe: false),
     );
     await tester.pumpAndSettle();
     expect(controller.isSubmitting.value, isFalse);

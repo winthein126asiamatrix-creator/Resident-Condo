@@ -72,6 +72,7 @@ void showAppFeedback(
   required String title,
   required String message,
   required bool isError,
+  Color? backgroundColor
 }) {
   final messenger = ScaffoldMessenger.maybeOf(context);
    final tokens = AppThemeTokens.of(context);
@@ -85,7 +86,7 @@ void showAppFeedback(
         behavior: SnackBarBehavior.floating,
         backgroundColor: isError
             ? const Color(0xFFC2410C)
-            : tokens.brand,
+            : backgroundColor ?? tokens.surface,
         content: Text('$title: $message'),
       ),
     );

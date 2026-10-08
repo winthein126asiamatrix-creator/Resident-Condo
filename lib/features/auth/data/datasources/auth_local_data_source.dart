@@ -52,10 +52,8 @@ class AuthLocalDataSource {
   }
 
   /// The name shown on the dashboard once signed in.
-  String displayNameFor(String username) => switch (username.trim().toLowerCase()) {
-        'alex' => 'Alex Johnson',
-        _ => username,
-      };
+  String displayNameFor(String username) =>
+      username.trim().toLowerCase() == demoUsername ? 'Alex Johnson' : username;
 
   Future<void> persistSession(AuthSession session) async {
     final preferences = await _store;

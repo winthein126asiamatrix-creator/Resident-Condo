@@ -70,6 +70,7 @@ void main() {
     Get.find<AppearanceController>().selectPreset(
       AppColorSeeds.all.firstWhere((seed) => seed.id == 'indigo'),
     );
+    await Get.find<AppearanceController>().applyTheme();
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('open'));

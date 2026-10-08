@@ -608,7 +608,7 @@ class _SectionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
-        color: tokens.surface,
+        color: tokens.surface ,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: tokens.border),
       ),

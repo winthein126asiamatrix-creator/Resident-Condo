@@ -14,10 +14,10 @@ void main() {
     final source = AuthLocalDataSource();
 
     final session = await source.signIn(
-      const SignInRequest(username: 'alex', password: 'resident123'),
+      const SignInRequest(username: AuthLocalDataSource.demoUsername, password: AuthLocalDataSource.demoPassword),
     );
 
-    expect(session.username, 'alex');
+    expect(session.username, AuthLocalDataSource.demoUsername);
     expect(session.displayName, isNotEmpty);
   });
 
@@ -27,7 +27,7 @@ void main() {
 
     expect(
       () => source.signIn(
-        const SignInRequest(username: 'alex', password: 'wrong'),
+        const SignInRequest(username: AuthLocalDataSource.demoUsername, password: 'not-the-demo-password'),
       ),
       throwsA(isA<Exception>()),
     );
@@ -39,7 +39,7 @@ void main() {
 
     expect(
       () => source.signIn(
-        const SignInRequest(username: 'nobody', password: 'resident123'),
+        const SignInRequest(username: 'nobody', password: AuthLocalDataSource.demoPassword),
       ),
       throwsA(isA<Exception>()),
     );
@@ -50,11 +50,11 @@ void main() {
 
     final firstLaunch = AuthLocalDataSource();
     await firstLaunch.signIn(
-      const SignInRequest(username: 'alex', password: 'resident123'),
+      const SignInRequest(username: AuthLocalDataSource.demoUsername, password: AuthLocalDataSource.demoPassword),
     );
     await firstLaunch.persistSession(
       const AuthSession(
-        username: 'alex',
+        username: AuthLocalDataSource.demoUsername,
         displayName: 'Alex Johnson',
         rememberMe: true,
       ),
@@ -65,7 +65,7 @@ void main() {
     final restored = await afterRestart.restoreSession();
 
     expect(restored, isNotNull);
-    expect(restored!.username, 'alex');
+    expect(restored!.username, AuthLocalDataSource.demoUsername);
     expect(restored.rememberMe, isTrue);
   });
 
@@ -74,11 +74,11 @@ void main() {
     final source = AuthLocalDataSource();
 
     await source.signIn(
-      const SignInRequest(username: 'alex', password: 'resident123'),
+      const SignInRequest(username: AuthLocalDataSource.demoUsername, password: AuthLocalDataSource.demoPassword),
     );
     await source.persistSession(
       const AuthSession(
-        username: 'alex',
+        username: AuthLocalDataSource.demoUsername,
         displayName: 'Alex Johnson',
         rememberMe: false,
       ),
@@ -92,7 +92,7 @@ void main() {
     final source = AuthLocalDataSource();
     await source.persistSession(
       const AuthSession(
-        username: 'alex',
+        username: AuthLocalDataSource.demoUsername,
         displayName: 'Alex Johnson',
         rememberMe: true,
       ),

@@ -46,6 +46,8 @@ class _LoginPageState extends State<LoginPage> {
     _auth = Get.find<AuthController>();
     // The controller owns the canonical text; the page keeps its own handles so
     // it can seed a pre-filled username without reaching into the controller.
+    _auth.usernameController.text = "admin";
+    _auth.passwordController.text = "admin";
     _username = _auth.usernameController;
     _password = _auth.passwordController;
   }

@@ -22,10 +22,34 @@ import '../widgets/app_color_seed_grid.dart';
 /// decision about the same thing, so splitting it across pages would make the
 /// resident lose the preview exactly when they need it.
 ///
-/// The preview sits above the action bar and follows the draft, not the saved
-/// preference, so the effect of a colour is visible before it is committed.
-class AppearancePage extends GetView<AppearanceController> {
+/// The preview follows the draft, never the applied theme, so trying a colour
+/// changes nothing outside this screen until "Apply Theme" is tapped.
+class AppearancePage extends StatefulWidget {
   const AppearancePage({super.key});
+
+  @override
+  State<AppearancePage> createState() => _AppearancePageState();
+}
+
+class _AppearancePageState extends State<AppearancePage> {
+  late final AppearanceController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<AppearanceController>();
+    // The preview always opens on the applied theme, so a previous visit's
+    // leftovers cannot pretend to be the current one.
+    controller.startPreview();
+  }
+
+  @override
+  void dispose() {
+    // Leaving without applying discards the preview: the applied theme is the
+    // only one the app knows about again.
+    controller.discardPreview();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -309,12 +333,12 @@ class _AppearanceActionBar extends StatelessWidget {
               AppPrimaryAction(
                 key: const Key('appearance-apply'),
                 onPressed: changed
-                    ? () => _apply(context, controller)
+                    ? () => _apply(context, controller,draft.seedColor)
                     : null,
                 isLoading: controller.isSaving.value,
                 label: 'Apply Theme',
                 icon: Icons.check_rounded,
-                backgroundColor: draft.seedColor,
+                backgroundColor:draft.seedColor,
               ),
             ],
           );
@@ -326,6 +350,7 @@ class _AppearanceActionBar extends StatelessWidget {
   Future<void> _apply(
     BuildContext context,
     AppearanceController controller,
+    Color backgroundColor
   ) async {
     final applied = await controller.applyTheme();
     if (!context.mounted) {
@@ -338,6 +363,7 @@ class _AppearanceActionBar extends StatelessWidget {
           ? 'The app now uses ${controller.saved.value.label}.'
           : 'Please try again.',
       isError: !applied,
+      backgroundColor: backgroundColor
     );
   }
 }
