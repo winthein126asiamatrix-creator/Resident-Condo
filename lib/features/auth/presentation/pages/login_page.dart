@@ -115,33 +115,31 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _submit() async {
     // Dismisses the keyboard so the loading state and any error are visible
     // without the resident having to scroll.
-    // FocusScope.of(context).unfocus();
+    FocusScope.of(context).unfocus();
 
-    // // Runs the field validators, which is what actually paints the inline
-    // // error text. The controller alone cannot do this: it has no Form to
-    // // validate against.
-    // final isValid = _formKey.currentState?.validate() ?? false;
-    // final session = isValid ? await _auth.signIn() : null;
+    // Runs the field validators, which is what actually paints the inline
+    // error text. The controller alone cannot do this: it has no Form to
+    // validate against.
+    final isValid = _formKey.currentState?.validate() ?? false;
+    final session = isValid ? await _auth.signIn() : null;
 
-    // if (!mounted) {
-    //   return;
-    // }
+    if (!mounted) {
+      return;
+    }
 
-    // if (session == null) {
-    //   // Put focus on the first field that needs attention, so the resident can
-    //   // start fixing it without hunting for the red line.
-    //   final field = _auth.invalidField.value;
-    //   if (field == 'username') {
-    //     _usernameFocus.requestFocus();
-    //   } else if (field == 'password') {
-    //     _passwordFocus.requestFocus();
-    //   }
-    //   return;
-    // }
+    if (session == null) {
+      // Put focus on the first field that needs attention, so the resident can
+      // start fixing it without hunting for the red line.
+      final field = _auth.invalidField.value;
+      if (field == 'username') {
+        _usernameFocus.requestFocus();
+      } else if (field == 'password') {
+        _passwordFocus.requestFocus();
+      }
+      return;
+    }
 
-    //(widget.onSignedIn ?? () =>
-     Get.offAllNamed(AppRoutes.home);
-     //)();
+    (widget.onSignedIn ?? () => Get.offAllNamed(AppRoutes.home))();
   }
 }
 

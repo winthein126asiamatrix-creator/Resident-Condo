@@ -19,8 +19,8 @@ class AuthLocalDataSource {
 
   /// The account this build ships with. Deliberately visible so the demo is
   /// usable; a real build would never hold a password here.
-  static const demoUsername = 'alex';
-  static const demoPassword = 'resident123';
+  static const demoUsername = 'admin';
+  static const demoPassword = 'admin';
 
   final SharedPreferences? _preferences;
 

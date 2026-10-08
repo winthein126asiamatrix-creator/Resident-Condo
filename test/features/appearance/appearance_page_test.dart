@@ -101,8 +101,9 @@ void main() {
     expect(find.text('\$100'), findsOneWidget);
     expect(find.text('Due Sep 30'), findsOneWidget);
     expect(find.text('Pay Now'), findsOneWidget);
-    expect(find.text('Maintenance'), findsOneWidget);
-    expect(find.text('Facilities'), findsOneWidget);
+    // The word appears once in the shortcuts and once in the bottom navigation.
+    expect(find.text('Maintenance'), findsNWidgets(2));
+    expect(find.text('Facilities'), findsNWidgets(2));
     expect(find.text('Pool maintenance on Friday'), findsOneWidget);
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Profile'), findsOneWidget);
