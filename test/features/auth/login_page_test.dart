@@ -46,6 +46,14 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// The screen opens with the demo account pre-filled, so a validation test has
+  /// to empty the fields before it can assert anything about them.
+  Future<void> clearFields(WidgetTester tester) async {
+    await tester.enterText(find.byKey(const Key('login-username')), '');
+    await tester.enterText(find.byKey(const Key('login-password')), '');
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('shows the brand, the greeting and both fields', (tester) async {
     await pumpLogin(tester);
 
@@ -60,6 +68,7 @@ void main() {
 
   testWidgets('an empty submit reports both fields', (tester) async {
     await pumpLogin(tester);
+    await clearFields(tester);
 
     await tester.tap(find.byKey(const Key('login-submit')));
     await tester.pumpAndSettle();
@@ -73,8 +82,12 @@ void main() {
 
   testWidgets('a username with no password reports the password', (tester) async {
     await pumpLogin(tester);
+    await clearFields(tester);
 
-    await tester.enterText(find.byKey(const Key('login-username')), AuthLocalDataSource.demoUsername);
+    await tester.enterText(
+      find.byKey(const Key('login-username')),
+      AuthLocalDataSource.demoUsername,
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('login-submit')));
     await tester.pumpAndSettle();

@@ -304,11 +304,15 @@ class _HomeCard extends StatelessWidget {
                           size: 17,
                         ),
                         const SizedBox(width: 6),
-                        Text(
-                          '${unit.ownership} · Parking ${unit.parkingSlot}',
-                          style: TextStyle(
-                            color: tokens.brandOnDarkMuted,
-                            fontSize: 12,
+                        Flexible(
+                          child: Text(
+                            '${unit.ownership} · Parking ${unit.parkingSlot}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: tokens.brandOnDarkMuted,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ],
