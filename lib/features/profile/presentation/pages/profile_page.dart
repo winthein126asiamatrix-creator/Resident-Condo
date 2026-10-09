@@ -431,10 +431,16 @@ class ProfilePage extends GetView<ProfileController> {
     if (shouldLogout != true) {
       return;
     }
-    // Clears the remembered session first, so the splash will not quietly
-    // sign the resident back in on the next launch.
+    // Clears the stored tokens and the remembered details first, so the splash
+    // will not quietly sign the resident back in on the next launch and no
+    // later request can reuse the old credentials.
     if (Get.isRegistered<AuthController>()) {
       await Get.find<AuthController>().signOut();
+    }
+    // Drops the in-memory resident too, so the next person to sign in on this
+    // device does not briefly see the previous one's name and email.
+    if (Get.isRegistered<SessionController>()) {
+      Get.find<SessionController>().clearResident();
     }
     controller.logout();
     Get.offAllNamed(AppRoutes.login);

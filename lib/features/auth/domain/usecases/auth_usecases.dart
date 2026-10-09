@@ -8,6 +8,8 @@ class AuthUseCases {
 
   Future<AuthSession> signIn(SignInRequest request) => repository.signIn(request);
 
+  Future<AuthSession> currentSession() => repository.currentSession();
+
   Future<void> signOut() => repository.signOut();
 
   Future<AuthSession?> restoreSession() => repository.restoreSession();

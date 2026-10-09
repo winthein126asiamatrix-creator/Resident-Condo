@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme_tokens.dart';
+import '../../features/auth/domain/entities/auth_session.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../routes/app_routes.dart';
 
@@ -18,6 +19,15 @@ class _SplashPageState extends State<SplashPage>
   late final AnimationController _animationController;
   late final Animation<double> _fadeAnimation;
 
+  /// How long the brand is shown regardless of how fast the session check is.
+  static const Duration _minimumDisplay = Duration(milliseconds: 1600);
+
+  /// The session check, started as soon as the splash appears.
+  ///
+  /// Kicked off here rather than after the animation so the network round trip
+  /// overlaps the animation instead of being added to it.
+  late final Future<AuthSession?> _restore;
+
   @override
   void initState() {
     super.initState();
@@ -30,28 +40,45 @@ class _SplashPageState extends State<SplashPage>
       curve: Curves.easeOut,
     );
     _animationController.forward();
-    Future<void>.delayed(const Duration(milliseconds: 1600), _continue);
+    _restore = _restoreSession();
+    _continue();
   }
 
-  /// Sends the resident onward once the splash has shown.
+  /// Sends the resident onward once the splash has shown and the session check
+  /// has settled.
   ///
-  /// A remembered session means they were signed in on this device and asked to
-  /// stay that way, so they go straight home. Anyone else is asked to sign in.
+  /// A remembered session means they were signed in on this device, so they go
+  /// straight home. That is not taken on trust: the stored tokens are validated
+  /// against the backend first, which also renews them if they expired while the
+  /// app was closed. Only once that settles does a route change happen, so the
+  /// dashboard is never mounted for a session that is about to be rejected.
   Future<void> _continue() async {
+    // Both must finish: the animation for the brand, the restore for the truth
+    // about the session.
+    final results = await Future.wait<Object?>(<Future<Object?>>[
+      Future<void>.delayed(_minimumDisplay),
+      _restore,
+    ]);
+
     if (!mounted) {
       return;
     }
+    final restored = results.last as AuthSession?;
+    Get.offNamed(restored == null ? AppRoutes.login : AppRoutes.home);
+  }
+
+  /// Validates the stored session, if there is one, and adopts it on success.
+  ///
+  /// Returns the session when the resident may go through to the dashboard, and
+  /// null when they have to sign in.
+  Future<AuthSession?> _restoreSession() async {
     final auth = Get.find<AuthController>();
-    final remembered = await auth.restoreSession();
-    if (!mounted) {
-      return;
+    final restored = await auth.restoreSession();
+    if (!mounted || restored == null) {
+      return null;
     }
-    if (remembered != null) {
-      auth.adoptIntoSession(remembered);
-      Get.offNamed(AppRoutes.home);
-    } else {
-      Get.offNamed(AppRoutes.login);
-    }
+    auth.adoptIntoSession(restored);
+    return restored;
   }
 
   @override

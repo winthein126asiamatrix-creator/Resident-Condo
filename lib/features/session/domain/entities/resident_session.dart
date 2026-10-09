@@ -37,13 +37,13 @@ class ResidentSession {
 
   String get firstName => name.trim().split(RegExp(r'\s+')).first;
 
-  ResidentSession copyWith({ResidentRole? role, String? name}) {
+  ResidentSession copyWith({ResidentRole? role, String? name, String? email}) {
     return ResidentSession(
       name: name ?? this.name,
       role: role ?? this.role,
       tower: tower,
       unitNumber: unitNumber,
-      email: email,
+      email: email ?? this.email,
       phone: phone,
     );
   }

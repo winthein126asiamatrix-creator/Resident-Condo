@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../core/constants/app_constants.dart';
+import '../core/network/api_binding.dart';
 import '../features/appearance/presentation/bindings/appearance_binding.dart';
 import '../features/appearance/presentation/controllers/appearance_controller.dart';
 import 'routes/app_pages.dart';
@@ -30,8 +31,9 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
   @override
   void initState() {
     super.initState();
-    // Idempotent: the Appearance screen's own route binding is a no-op once
-    // this has run.
+    // App scoped, so they are registered before the first frame. The binding is
+    // idempotent and the routes that need them run it again harmlessly.
+    ApiBinding.register();
     AppearanceBinding().dependencies();
     _appearance = Get.find<AppearanceController>();
   }

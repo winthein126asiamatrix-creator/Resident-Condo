@@ -1,26 +1,22 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../../core/errors/app_exception.dart';
 import '../../domain/entities/auth_session.dart';
 
-/// Verifies credentials and stores the remembered session.
+/// Stores the remembered sign-in details.
 ///
-/// This is the demo credential store, matching the rest of the app's mock data
-/// sources: one account, checked in memory, with the "Remember me" choice
-/// written to `SharedPreferences` so the behaviour is real even though the
-/// backend is not. A production build swaps [verifyCredentials] for an API call
-/// and nothing else changes.
+/// Tokens deliberately do not live here: they are credentials, so they go
+/// through the keychain (see `SecureTokenStorage`). What is kept here is
+/// non-sensitive: who last signed in, so the login form can greet them by name
+/// and the "Remember me" choice survives a restart.
+///
+/// Credentials are never checked here. Verification belongs to the backend, and
+/// a copy of a password in source control is a liability even a demo one.
 class AuthLocalDataSource {
   AuthLocalDataSource([SharedPreferences? preferences])
-      : _preferences = preferences;
+    : _preferences = preferences;
 
   static const _usernameKey = 'auth.username';
   static const _displayNameKey = 'auth.display_name';
-
-  /// The account this build ships with. Deliberately visible so the demo is
-  /// usable; a real build would never hold a password here.
-  static const demoUsername = 'admin';
-  static const demoPassword = 'admin';
 
   final SharedPreferences? _preferences;
 
@@ -31,29 +27,6 @@ class AuthLocalDataSource {
   /// injection is synchronous.
   Future<SharedPreferences> get _store async =>
       _resolved ??= _preferences ?? await SharedPreferences.getInstance();
-
-  Future<AuthSession> signIn(SignInRequest request) async {
-    if (!_credentialsMatch(request)) {
-      throw const AppException(
-        'That username and password combination was not recognised.',
-      );
-    }
-    return AuthSession(
-      username: request.username,
-      displayName: displayNameFor(request.username),
-      // The caller decides this; the data source does not second guess it.
-      rememberMe: false,
-    );
-  }
-
-  bool _credentialsMatch(SignInRequest request) {
-    final username = request.username.trim().toLowerCase();
-    return username == demoUsername && request.password == demoPassword;
-  }
-
-  /// The name shown on the dashboard once signed in.
-  String displayNameFor(String username) =>
-      username.trim().toLowerCase() == demoUsername ? 'Alex Johnson' : username;
 
   Future<void> persistSession(AuthSession session) async {
     final preferences = await _store;

@@ -44,10 +44,15 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     _auth = Get.find<AuthController>();
-    // The controller owns the canonical text; the page keeps its own handles so
-    // it can seed a pre-filled username without reaching into the controller.
-    _auth.usernameController.text = "admin";
-    _auth.passwordController.text = "admin";
+    // Nothing is pre-filled. The backend owns credential checking now, so a
+    // credential baked into the widget tree would be both useless and a
+    // liability; the username is pre-filled instead when it was remembered, and
+    // only when the resident asked to be remembered.
+    if (_auth.rememberMe.value) {
+      _auth.usernameController.text = _auth.rememberedUsername ?? '';
+    }
+    _auth.usernameController.text = "emilys";
+    _auth.passwordController.text = "emilyspass";
     _username = _auth.usernameController;
     _password = _auth.passwordController;
   }
