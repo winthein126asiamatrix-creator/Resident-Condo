@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:test/core/network/interceptors/api_log_interceptor.dart';
 
 import 'api_config.dart';
 import 'api_exception.dart';
 import 'interceptors/api_auth_interceptor.dart';
-import 'interceptors/api_log_interceptor.dart';
 import 'interceptors/token_refresh_interceptor.dart';
 import 'token_refresher.dart';
 import 'token_storage.dart';
@@ -78,7 +78,7 @@ DioApiService({
 
   // --- Verbs ---------------------------------------------------------------
 
-  /// GET, with [query] as the query string and the response parsed by [parse].
+/// GET, with [query] as the query string and the response parsed by [parse].
   Future<T> get<T>(
     String path, {
     Map<String, dynamic>? query,

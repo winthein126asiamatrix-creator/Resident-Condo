@@ -35,8 +35,8 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<AuthSession> currentSession() async {
-    final user = await _remote.currentUser();
+  Future<AuthSession> updateMe() async {
+    final user = await _remote.updateMe();
     return AuthSession(
       username: user.username,
       displayName: user.displayName,
@@ -68,7 +68,7 @@ class AuthRepositoryImpl implements AuthRepository {
       // Validates the session. If the access token has expired, the refresh
       // interceptor renews it and replays this request before it returns, so an
       // expiry is invisible here and only a genuine failure surfaces.
-      final session = await currentSession();
+      final session = await updateMe();
       await _local.persistSession(session);
       return session;
     } catch (_) {

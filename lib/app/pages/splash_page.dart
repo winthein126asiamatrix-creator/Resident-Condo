@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:test/core/utils/super_print.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme_tokens.dart';
@@ -74,9 +75,11 @@ class _SplashPageState extends State<SplashPage>
   Future<AuthSession?> _restoreSession() async {
     final auth = Get.find<AuthController>();
     final restored = await auth.restoreSession();
+    superPrint(restored,title: "Restore Session");
     if (!mounted || restored == null) {
       return null;
     }
+     superPrint(restored.displayName,title: "Restore Session Display Name");
     auth.adoptIntoSession(restored);
     return restored;
   }

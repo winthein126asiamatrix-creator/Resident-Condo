@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../utils/super_print.dart';
 import 'api_config.dart';
 import 'api_end_points.dart';
 import 'token_parser.dart';
@@ -22,6 +23,10 @@ class TokenRefresher {
   /// thing from it, which is to end the session.
   Future<AuthTokens?> refresh(String refreshToken) async {
     try {
+      superPrint(
+        {'path': ApiEndPoints.refreshToken},
+        title: 'Token Refresh: Request',
+      );
       final response = await _dio.post<Object?>(
         ApiEndPoints.refreshToken,
         data: <String, Object?>{
@@ -29,8 +34,16 @@ class TokenRefresher {
           'expiresInMins': ApiConfig.tokenExpiresInMins,
         },
       );
+      superPrint(
+        {'path': ApiEndPoints.refreshToken, 'status': response.statusCode},
+        title: 'Token Refresh: Response',
+      );
       return TokenParser.tokensFrom(response.data);
     } catch (_) {
+      superPrint(
+        {'path': ApiEndPoints.refreshToken, 'error': 'request failed'},
+        title: 'Token Refresh: Failed',
+      );
       return null;
     }
   }

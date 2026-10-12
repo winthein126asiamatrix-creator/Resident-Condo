@@ -14,7 +14,7 @@ abstract interface class AuthRepository {
   ///
   /// Throws when the session cannot be recovered, including when the stored
   /// tokens are absent or have expired past refreshing.
-  Future<AuthSession> currentSession();
+  Future<AuthSession> updateMe();
 
   /// Ends the current session: tokens and remembered details both cleared.
   Future<void> signOut();

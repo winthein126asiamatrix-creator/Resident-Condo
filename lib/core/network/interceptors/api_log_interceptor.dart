@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
+import '../../utils/super_print.dart';
 import '../api_config.dart';
 
 /// Logs requests and responses, in debug builds only.
@@ -8,15 +8,23 @@ import '../api_config.dart';
 /// The log is deliberately unhelpful about secrets: the Authorization header is
 /// masked and any body field whose name looks like a credential is replaced, so
 /// a device log or a bug report can be pasted around without leaking a session.
+///
+/// Every line goes through [superPrint], which gives it a title, a caller and a
+/// timestamp. Redaction happens before that call, so what reaches the log has
+/// already been made safe.
 class ApiLogInterceptor extends Interceptor {
-  ApiLogInterceptor({bool? enabled, this.logger = _print})
+  ApiLogInterceptor({bool? enabled, this.logger})
     // `ApiConfig.enableLogging` reads kDebugMode, so it cannot be a default
     // value on an optional parameter; it is resolved here instead.
     : enabled = enabled ?? ApiConfig.enableLogging;
 
   final bool enabled;
 
-  final void Function(String) logger;
+  /// Optional override for the log sink.
+  ///
+  /// Left null to log through [superPrint]. Inject a callback to send the same
+  /// redacted line somewhere else.
+  final void Function(String)? logger;
 
   static const _mask = '***';
 
@@ -27,7 +35,10 @@ class ApiLogInterceptor extends Interceptor {
     'set-cookie',
   };
 
-  /// Body keys whose value is never printed.
+  /// Body keys whose value is never printed, at any depth.
+  ///
+  /// Covers the snake_case the app has always used and the camelCase DummyJSON
+  /// answers with, so a token in either shape is masked.
   static const _secretFields = <String>{
     'password',
     'new_password',
@@ -35,6 +46,8 @@ class ApiLogInterceptor extends Interceptor {
     'token',
     'access_token',
     'refresh_token',
+    'accesstoken',
+    'refreshtoken',
     'secret',
     'api_key',
   };
@@ -42,10 +55,10 @@ class ApiLogInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     if (enabled) {
-      logger(
+      _emit(
         '→ ${options.method} ${_uri(options.uri)}'
-        ' ${_headers(options.headers)}'
-        '${_body(options.data)}',
+        ' ${_headers(options.headers)}${_body(options.data)}',
+        title: 'API Request',
       );
     }
     handler.next(options);
@@ -57,9 +70,10 @@ class ApiLogInterceptor extends Interceptor {
     ResponseInterceptorHandler handler,
   ) {
     if (enabled) {
-      logger(
+      _emit(
         '← ${response.statusCode} ${_uri(response.requestOptions.uri)}'
         '${_body(response.data)}',
+        title: 'API Response',
       );
     }
     handler.next(response);
@@ -68,12 +82,22 @@ class ApiLogInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (enabled) {
-      logger(
+      _emit(
         '✗ ${err.response?.statusCode ?? err.type.name} '
         '${_uri(err.requestOptions.uri)}',
+        title: 'API Error',
       );
     }
     handler.next(err);
+  }
+
+  /// Hands a redacted line to [superPrint], or to an injected [logger].
+  void _emit(String message, {required String title}) {
+    if (logger != null) {
+      logger!(message);
+    } else {
+      superPrint(message, title: title);
+    }
   }
 
   /// Path plus a redacted query.
@@ -110,15 +134,32 @@ class ApiLogInterceptor extends Interceptor {
           '${data.fields.length} field(s)]';
     }
     if (data is Map) {
-      final safe = <String, dynamic>{};
-      data.forEach((key, value) {
-        safe['$key'] = _secretFields.contains('$key'.toLowerCase())
-            ? _mask
-            : value;
-      });
-      return ' $safe';
+      return ' ${_redact(data)}';
+    }
+    if (data is List) {
+      return ' ${_redact(data)}';
     }
     return ' [$data]';
+  }
+
+  /// Replaces the value of any secret key, at any depth of [value].
+  ///
+  /// A token nested inside a body object is as leaky as one at the top, so the
+  /// walk does not stop at the first level.
+  Object? _redact(Object? value) {
+    if (value is Map) {
+      final safe = <String, dynamic>{};
+      value.forEach((key, child) {
+        safe['$key'] = _secretFields.contains('$key'.toLowerCase())
+            ? _mask
+            : _redact(child);
+      });
+      return safe;
+    }
+    if (value is List) {
+      return value.map(_redact).toList();
+    }
+    return value;
   }
 
   /// Query strings can carry a token too, so keys are masked the same way.
@@ -136,6 +177,4 @@ class ApiLogInterceptor extends Interceptor {
     });
     return '?${pairs.join('&')}';
   }
-
-  static void _print(String message) => debugPrint(message);
 }

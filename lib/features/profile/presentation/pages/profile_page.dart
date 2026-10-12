@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:test/features/dashboard/presentation/controllers/dashboard_controller.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/models/resident_role.dart';
@@ -49,23 +50,6 @@ class ProfilePage extends GetView<ProfileController> {
     }
   }
 
-  Future<void> _switchRole(BuildContext context, ResidentRole current) async {
-    for (final option in ResidentRole.values) {
-      if (option == current) {
-        continue;
-      }
-      final confirmed = await showAppConfirmDialog(
-        context,
-        title: 'Switch to ${option.label}?',
-        message: option.description,
-        confirmLabel: 'Switch',
-      );
-      if (confirmed) {
-        await _applyRole(option);
-        return;
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,15 +68,6 @@ class ProfilePage extends GetView<ProfileController> {
               icon: Icons.person_outline_rounded,
               actionLabel: 'Try again',
               onAction: controller.loadProfile,
-            );
-          }
-          if (controller.isLoggedOut.value) {
-            return AppStateMessage(
-              title: 'You are signed out',
-              message: 'Your session has ended in this local demo.',
-              icon: Icons.logout_rounded,
-              actionLabel: 'Sign back in',
-              onAction: controller.restoreSession,
             );
           }
           final profile = controller.profile.value;
@@ -442,86 +417,11 @@ class ProfilePage extends GetView<ProfileController> {
     if (Get.isRegistered<SessionController>()) {
       Get.find<SessionController>().clearResident();
     }
+    if (Get.isRegistered<DashboardController>()) {
+      Get.find<DashboardController>().selectedTab.value = 0;
+    }
     controller.logout();
     Get.offAllNamed(AppRoutes.login);
-  }
-}
-
-class _RoleSelector extends StatelessWidget {
-  const _RoleSelector({required this.selected, required this.onChanged});
-  final ResidentRole selected;
-  final ValueChanged<ResidentRole> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = AppThemeTokens.of(context);
-    return Column(
-      children: [
-        for (final role in ResidentRole.values)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: InkWell(
-              key: Key('role-option-${role.name}'),
-              onTap: () => onChanged(role),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: role == selected
-                      ? tokens.brandTint
-                      : tokens.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: role == selected
-                        ? tokens.brand
-                        : tokens.border,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      role == selected
-                          ? Icons.radio_button_checked_rounded
-                          : Icons.radio_button_unchecked_rounded,
-                      size: 20,
-                      color: role == selected
-                          ? tokens.brand
-                          : tokens.faint,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            role.label,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 13,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            role.description,
-                            style: TextStyle(
-                              color: tokens.muted,
-                              fontSize: 11,
-                              height: 1.35,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
   }
 }
 

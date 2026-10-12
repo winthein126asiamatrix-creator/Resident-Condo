@@ -1,3 +1,5 @@
+import 'package:test/core/utils/super_print.dart';
+
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/api_config.dart';
 import '../../../../core/network/api_end_points.dart';
@@ -44,6 +46,7 @@ class AuthRemoteDataSource {
         },
         options: _service.withoutAuth(),
       );
+      superPrint(response, title: "Login");
       return AuthResult(
         user: _userFrom(response),
         tokens: TokenParser.tokensFrom(response),
@@ -58,12 +61,13 @@ class AuthRemoteDataSource {
   /// A 401 here is not an error: the refresh interceptor transparently renews
   /// the token and replays this request, so the caller sees a user or a genuine
   /// failure, never an expiry.
-  Future<AuthUser> currentUser() async {
+  Future<AuthUser> updateMe() async {
     try {
       final response = await _service.get<AuthUser>(
         ApiEndPoints.me,
         parse: AuthUser.parse,
       );
+      superPrint(response, title: "Update Me");
       return response;
     } on ApiException catch (error) {
       throw _translate(error);
@@ -86,6 +90,7 @@ class AuthRemoteDataSource {
         },
         options: _service.withoutAuth(),
       );
+      superPrint(response, title: "Refresh");
       return TokenParser.tokensFrom(response);
     } on ApiException {
       return null;
@@ -96,9 +101,7 @@ class AuthRemoteDataSource {
     final raw = response['user'];
     // Some backends nest the profile under `user` and some return it flat;
     // accept either so a change of shape does not break sign-in.
-    final record = raw is Map
-        ? Map<String, dynamic>.from(raw)
-        : response;
+    final record = raw is Map ? Map<String, dynamic>.from(raw) : response;
     return AuthUser.fromJson(record);
   }
 
