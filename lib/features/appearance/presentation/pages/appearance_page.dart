@@ -141,7 +141,7 @@ class _Body extends StatelessWidget {
         AppSectionHeader(
           title: 'Appearance',
           actionLabel: 'Reset to Default',
-          onAction: () => _reset(context, controller),
+          onAction: () => _reset(context, controller,controller.appliedThemeColor),
         ),
         const SizedBox(height: 4),
         Text(
@@ -211,6 +211,7 @@ class _Body extends StatelessWidget {
   Future<void> _reset(
     BuildContext context,
     AppearanceController controller,
+    Color backgroundColor
   ) async {
     final confirmed = await showAppConfirmDialog(
       context,
@@ -227,13 +228,16 @@ class _Body extends StatelessWidget {
     if (!context.mounted) {
       return;
     }
+    final defaults = AppearancePreference.defaults();
     showAppFeedback(
       context,
       title: applied ? 'Appearance reset' : 'Could not reset',
       message: applied
-          ? 'The default teal theme is back.'
+          ? 'The default  theme is back.'
           : 'Please try again.',
       isError: !applied,
+      backgroundColor: defaults.seedColor
+      
     );
   }
 }

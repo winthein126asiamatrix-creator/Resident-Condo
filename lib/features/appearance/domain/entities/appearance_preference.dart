@@ -23,7 +23,7 @@ class AppearancePreference {
 
   final AppBrightnessMode brightnessMode;
 
-  /// What the app looked like before Appearance existed: the original teal,
+  /// What the app looks like before Appearance is saved over: brand blue,
   /// following the system brightness.
   factory AppearancePreference.defaults() => AppearancePreference(
         seedColor: AppColorSeeds.defaultSeed.color,

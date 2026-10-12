@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_palette.dart';
-
 /// The brand colours a resident can pick, plus the option to define their own.
 ///
 /// Seeds are chosen so `ColorScheme.fromSeed` produces a usable tonal palette
@@ -49,12 +47,15 @@ abstract final class AppColorSeeds {
     AppColorSeed(id: 'slate', name: 'Slate', color: Color(0xFF475569)),
   ];
 
-  /// The shipped brand colour, offered as a preset so "Reset to Default" and
-  /// picking Teal by hand land on exactly the same theme.
+  /// The brand colour the app starts on when nothing has been saved.
+  ///
+  /// Points at the Blue preset already in [all], so "Reset to Default" and
+  /// tapping the Blue swatch land on exactly the same theme and the stored
+  /// preset id resolves back to a named preset.
   static const AppColorSeed defaultSeed = AppColorSeed(
-    id: 'teal',
-    name: 'Teal',
-    color: AppPalette.brand,
+    id: 'blue',
+    name: 'Blue',
+    color: Color(0xFF2563EB),
   );
 
   static AppColorSeed? byId(String id) {

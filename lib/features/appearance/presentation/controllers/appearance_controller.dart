@@ -144,7 +144,7 @@ class AppearanceController extends GetxController {
     }
   }
 
-  /// Puts the live selection back to the shipped teal and System combination,
+  /// Puts the live selection back to the shipped blue and System combination,
   /// and saves it straight away: a reset the resident could not see would be a
   /// trap.
   Future<bool> resetToDefault() async {

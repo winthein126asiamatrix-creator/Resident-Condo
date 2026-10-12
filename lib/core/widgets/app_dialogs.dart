@@ -87,7 +87,7 @@ void showAppFeedback(
         backgroundColor: isError
             ? const Color(0xFFC2410C)
             : backgroundColor ?? tokens.surface,
-        content: Text('$title: $message'),
+        content: Text('$title: $message',style: TextStyle(color: Colors.white),),
       ),
     );
 }
