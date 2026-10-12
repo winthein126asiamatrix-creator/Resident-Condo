@@ -1,3 +1,4 @@
+import '../../../../core/network/session_token_storage.dart';
 import '../../../../core/network/token_storage.dart';
 import '../../domain/entities/auth_session.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -17,9 +18,22 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthLocalDataSource _local;
   final TokenStorage _tokens;
 
+  /// The registered store when it is the switchable one, null otherwise.
+  ///
+  /// Null in tests that register a plain [TokenStorage] fake, which then keeps
+  /// the behaviour it had before Remember Me existed.
+  SessionTokenStorage? get _switchable =>
+      _tokens is SessionTokenStorage ? _tokens : null;
+
   @override
   Future<AuthSession> signIn(SignInRequest request) async {
     final result = await _remote.signIn(request);
+
+    // Remember Me decides where the pair is allowed to live, and it has to be
+    // decided before the write: an in-memory-only sign-in must not leave a
+    // pair persisted by an earlier remembered one behind, or the next launch
+    // would restore a session this sign-in was told not to keep.
+    await _switchable?.useSession(persistent: request.rememberMe);
 
     // A failed write is not fatal: the resident is signed in for this launch,
     // they just have to sign in again after a restart. It is not logged, because
@@ -29,7 +43,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return AuthSession(
       username: result.user.username,
       displayName: result.user.displayName,
-      rememberMe: false,
+      rememberMe: request.rememberMe,
       user: result.user,
     );
   }

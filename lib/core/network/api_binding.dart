@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import 'dio_api_service.dart';
 import 'secure_token_storage.dart';
+import 'session_token_storage.dart';
 import 'token_storage.dart';
 
 /// Registers the shared network layer.
@@ -25,7 +26,9 @@ abstract final class ApiBinding extends Bindings {
     final storage = tokenStorage ??
         (Get.isRegistered<TokenStorage>()
             ? Get.find<TokenStorage>()
-            : SecureTokenStorage());
+            // Wrapped rather than registered bare, so a sign-in can route the
+            // pair between the keychain and memory according to Remember Me.
+            : SessionTokenStorage(SecureTokenStorage()));
     Get.put<TokenStorage>(storage, permanent: true);
     Get.put<DioApiService>(
       service ?? DioApiService(tokenStorage: storage),

@@ -25,7 +25,11 @@ class AuthController extends GetxController {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
 
-  final rememberMe = false.obs;
+  /// Whether the resident asked to stay signed in across restarts.
+  ///
+  /// On by default: the Sign In form ships the checkbox ticked, and opting out
+  /// is a deliberate untick rather than a setting nobody reads.
+  final rememberMe = true.obs;
 
   /// True from the first tap until the attempt settles. Every submit path is
   /// gated on it, which is what stops a double tap from sending two requests.
@@ -100,7 +104,11 @@ class AuthController extends GetxController {
     errorMessage.value = null;
     try {
       final session = await useCases.signIn(
-        SignInRequest(username: username, password: password),
+        SignInRequest(
+          username: username,
+          password: password,
+          rememberMe: rememberMe.value,
+        ),
       );
       final remembered = session.copyWith(rememberMe: rememberMe.value,displayName: "Win Thein");
       await useCases.persistSession(remembered);

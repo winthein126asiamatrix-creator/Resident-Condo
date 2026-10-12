@@ -4,10 +4,20 @@
 /// repository and never stored, logged or kept on the controller, so it cannot
 /// leak into a widget tree dump or an error report.
 class SignInRequest {
-  const SignInRequest({required this.username, required this.password});
+  const SignInRequest({
+    required this.username,
+    required this.password,
+    this.rememberMe = true,
+  });
 
   final String username;
   final String password;
+
+  /// Whether the resident asked to stay signed in across restarts.
+  ///
+  /// Defaults to on: the Sign In form ships the checkbox ticked, and a
+  /// resident who wants a session that dies with the app unticks it.
+  final bool rememberMe;
 
   @override
   String toString() => 'SignInRequest(username: $username)';
