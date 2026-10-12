@@ -13,7 +13,6 @@ class ProfileController extends GetxController {
   final isLoading = false.obs;
   final isSaving = false.obs;
   final errorMessage = RxnString();
-  final isLoggedOut = false.obs;
 
   @override
   void onInit() {
@@ -91,9 +90,7 @@ class ProfileController extends GetxController {
     );
   }
 
-  void logout() {
-    isLoggedOut.value = true;
-  }
+ 
 
   /// Keeps the profile role label in sync with the active session role.
   Future<Profile?> syncRole(ResidentRole role) async {
@@ -118,7 +115,4 @@ class ProfileController extends GetxController {
     }).catchError((_) => current);
   }
 
-  void restoreSession() {
-    isLoggedOut.value = false;
-  }
 }

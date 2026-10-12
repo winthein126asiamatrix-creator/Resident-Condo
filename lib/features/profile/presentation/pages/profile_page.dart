@@ -420,7 +420,6 @@ class ProfilePage extends GetView<ProfileController> {
     if (Get.isRegistered<DashboardController>()) {
       Get.find<DashboardController>().selectedTab.value = 0;
     }
-    controller.logout();
     Get.offAllNamed(AppRoutes.login);
   }
 }

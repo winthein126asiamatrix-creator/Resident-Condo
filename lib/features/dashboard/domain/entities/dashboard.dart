@@ -1,17 +1,3 @@
-class Resident {
-  const Resident({
-    required this.name,
-    required this.role,
-    required this.unitLabel,
-    required this.initials,
-  });
-
-  final String name;
-  final String role;
-  final String unitLabel;
-  final String initials;
-}
-
 class UnitSummary {
   const UnitSummary({
     required this.tower,
@@ -102,7 +88,6 @@ class AnnouncementSummary {
 
 class DashboardData {
   const DashboardData({
-    required this.resident,
     required this.unit,
     required this.balance,
     required this.maintenance,
@@ -112,7 +97,6 @@ class DashboardData {
     required this.announcements,
   });
 
-  final Resident resident;
   final UnitSummary unit;
   final BalanceSummary balance;
   final List<MaintenanceRequestSummary> maintenance;

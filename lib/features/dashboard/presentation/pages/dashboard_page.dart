@@ -5,6 +5,8 @@ import '../../../../app/routes/app_routes.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../../../core/widgets/branded_loading_view.dart';
 import '../../../notifications/presentation/controllers/notification_controller.dart';
+import '../../../session/domain/entities/resident_session.dart';
+import '../../../session/presentation/controllers/session_controller.dart';
 import '../../domain/entities/dashboard.dart';
 import '../controllers/dashboard_controller.dart';
 import '../widgets/section_header.dart';
@@ -23,6 +25,26 @@ class DashboardPage extends GetView<DashboardController> {
       return 0;
     }
     return Get.find<NotificationController>().unreadCount;
+  }
+
+  /// The signed-in resident, so the greeting names the account behind the
+  /// tokens rather than a sample name.
+  ///
+  /// Read from [SessionController] for the same reason the unread count is read
+  /// from [NotificationController]: it is the one place the app already keeps
+  /// the authenticated resident, and [AuthController.adoptIntoSession] writes
+  /// it from `/auth/me` during login and Restore Session — before this page is
+  /// ever mounted. No extra request is made.
+  ///
+  /// Null when no session controller is registered. That cannot happen on the
+  /// real route (`/home` registers `SessionBinding` through `AppBinding`), but
+  /// returning null rather than a placeholder keeps the greeting from showing
+  /// a name that belongs to nobody.
+  ResidentSession? get _residentSession {
+    if (!Get.isRegistered<SessionController>()) {
+      return null;
+    }
+    return Get.find<SessionController>().session.value;
   }
 
   @override
@@ -51,7 +73,7 @@ class DashboardPage extends GetView<DashboardController> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
               child: _GreetingHeader(
-                resident: data.resident,
+                resident: _residentSession,
                 unreadCount: _unreadNotifications,
                 onNotifications: () => Get.toNamed(AppRoutes.notifications),
                 onMore: () => Get.toNamed(AppRoutes.more),
@@ -140,10 +162,25 @@ class _GreetingHeader extends StatelessWidget {
     required this.onMore,
   });
 
-  final Resident resident;
+  final ResidentSession? resident;
   final int unreadCount;
   final VoidCallback onNotifications;
   final VoidCallback onMore;
+
+  /// The given name, or a neutral word rather than a blank greeting.
+  ///
+  /// [ResidentSession.name] is never blank in practice — the controller seeds
+  /// it with a placeholder and [AuthController.adoptIntoSession] refuses to
+  /// overwrite it with an empty string — but a blank greeting reads as a bug,
+  /// so one is never painted. Splitting on whitespace rather than a single
+  /// space also keeps a doubled space from yielding an empty first name.
+  static String _firstName(String? name) {
+    final trimmed = (name ?? '').trim();
+    if (trimmed.isEmpty) {
+      return 'Resident';
+    }
+    return trimmed.split(RegExp(r'\s+')).first;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +192,7 @@ class _GreetingHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Good morning, ${resident.name.split(' ').first}',
+                'Good morning, ${_firstName(resident?.name)}',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w800,
                   color: tokens.ink,
@@ -188,7 +225,7 @@ class _GreetingHeader extends StatelessWidget {
                 radius: 22,
                 backgroundColor: tokens.brandOnDark,
                 child: Text(
-                  resident.initials,
+                  resident?.initials ?? '?',
                   style: TextStyle(
                     color: tokens.brand,
                     fontWeight: FontWeight.w800,

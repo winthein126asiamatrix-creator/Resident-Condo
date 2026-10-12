@@ -4,12 +4,6 @@ import '../models/dashboard_model.dart';
 class DashboardLocalDataSource {
   Future<DashboardModel> getDashboard() async {
     return const DashboardModel(
-      resident: Resident(
-        name: 'Alex Johnson',
-        role: 'Owner',
-        unitLabel: 'Tower A · 1205',
-        initials: 'AJ',
-      ),
       unit: UnitSummary(
         tower: 'Tower A',
         unit: '1205',
