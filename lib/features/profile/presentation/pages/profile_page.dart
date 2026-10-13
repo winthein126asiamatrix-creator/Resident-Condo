@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:test/features/dashboard/presentation/controllers/dashboard_controller.dart';
 
@@ -17,7 +18,7 @@ import '../../../../core/widgets/app_form_field.dart';
 import '../../../../core/widgets/app_primary_action.dart';
 
 class ProfilePage extends GetView<ProfileController> {
-  const ProfilePage({super.key});
+  ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +27,7 @@ class ProfilePage extends GetView<ProfileController> {
       body: SafeArea(
         child: Obx(() {
           if (controller.isLoading.value && controller.profile.value == null) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator());
           }
           if (controller.errorMessage.value != null &&
               controller.profile.value == null) {
@@ -40,7 +41,7 @@ class ProfilePage extends GetView<ProfileController> {
           }
           final profile = controller.profile.value;
           if (profile == null) {
-            return const AppStateMessage(
+            return AppStateMessage(
               title: 'No profile information',
               message: 'Your resident profile is not available right now.',
               icon: Icons.person_outline_rounded,
@@ -50,21 +51,21 @@ class ProfilePage extends GetView<ProfileController> {
           return RefreshIndicator(
             onRefresh: controller.loadProfile,
             child: ListView(
-              key: const Key('profile-scroll'),
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
+              key: Key('profile-scroll'),
+              physics: AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(20, 18, 20, 32),
               children: [
                 Text(
                   'Profile',
                   style: TextStyle(
-                    fontSize: 25,
+                    fontSize: 25.sp,
                     fontWeight: FontWeight.w800,
                     color: tokens.ink,
                   ),
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18.h),
                 _ProfileHero(profile: profile),
-                const SizedBox(height: 22),
+                SizedBox(height: 22.h),
                 // _SectionCard(
                 //   title: 'Role-based view',
                 //   subtitle: 'Demo switch: the app adapts to each role.',
@@ -75,7 +76,7 @@ class ProfilePage extends GetView<ProfileController> {
                 //     ),
                 //   ],
                 // ),
-                // const SizedBox(height: 14),
+                // SizedBox(height: 14.h),
                 _SectionCard(
                   title: 'Personal information',
                   children: [
@@ -106,7 +107,7 @@ class ProfilePage extends GetView<ProfileController> {
                     // ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14.h),
                 _SectionCard(
                   title: 'Preferences',
                   children: [
@@ -134,7 +135,7 @@ class ProfilePage extends GetView<ProfileController> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14.h),
                 _SectionCard(
                   title: 'Resident services',
                   children: [
@@ -180,7 +181,7 @@ class ProfilePage extends GetView<ProfileController> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 14.h),
                 _SectionCard(
                   title: 'Account',
                   children: [
@@ -221,15 +222,15 @@ class ProfilePage extends GetView<ProfileController> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18.h),
                 OutlinedButton.icon(
                   onPressed: () => _confirmLogout(context),
-                  icon: const Icon(Icons.logout_rounded, size: 18),
-                  label: const Text('Logout'),
+                  icon: Icon(Icons.logout_rounded, size: 18),
+                  label: Text('Logout'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFFC2410C),
-                    minimumSize: const Size.fromHeight(50),
-                    side: const BorderSide(color: Color(0xFFF0C6C0)),
+                    foregroundColor: Color(0xFFC2410C),
+                    minimumSize: Size.fromHeight(50),
+                    side: BorderSide(color: Color(0xFFF0C6C0)),
                   ),
                 ),
               ],
@@ -272,16 +273,16 @@ class ProfilePage extends GetView<ProfileController> {
       showDragHandle: false,
       builder: (_) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+          padding: EdgeInsets.fromLTRB(20, 10, 20, 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Language',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20.sp),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               for (final option in ['English', 'Myanmar', 'Chinese'])
                 ListTile(
                   title: Text(option),
@@ -318,7 +319,7 @@ class ProfilePage extends GetView<ProfileController> {
       message: 'Use at least 8 characters with a number and a letter.',
       icon: Icons.lock_outline_rounded,
       confirmLabel: 'Save',
-      child: const Column(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           AppTextField(
@@ -326,7 +327,7 @@ class ProfilePage extends GetView<ProfileController> {
             obscureText: true,
             icon: Icons.lock_outline_rounded,
           ),
-          SizedBox(height: 14),
+          SizedBox(height: 14.h),
           AppTextField(
             label: 'New password',
             obscureText: true,
@@ -353,18 +354,18 @@ class ProfilePage extends GetView<ProfileController> {
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Logout?'),
-        content: const Text(
+        title: Text('Logout?'),
+        content: Text(
           'You will be signed out and asked to sign in again.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Logout'),
+            child: Text('Logout'),
           ),
         ],
       ),
@@ -391,18 +392,18 @@ class ProfilePage extends GetView<ProfileController> {
 }
 
 class _ProfileHero extends StatelessWidget {
-  const _ProfileHero({required this.profile});
+  _ProfileHero({required this.profile});
   final Profile profile;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: tokens.brand,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(22.r),
+        boxShadow: [
           BoxShadow(
             color: Color(0x1A0F766E),
             blurRadius: 18,
@@ -419,12 +420,12 @@ class _ProfileHero extends StatelessWidget {
               profile.initials,
               style: TextStyle(
                 color: tokens.brand,
-                fontSize: 21,
+                fontSize: 21.sp,
                 fontWeight: FontWeight.w800,
               ),
             ),
           ),
-          const SizedBox(width: 15),
+          SizedBox(width: 15.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -433,16 +434,16 @@ class _ProfileHero extends StatelessWidget {
                   profile.name,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 21,
+                    fontSize: 21.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 5),
+                SizedBox(height: 5.h),
                 Text(
                   profile.unit,
                   style: TextStyle(
                     color: tokens.brandOnDarkMuted,
-                    fontSize: 13,
+                    fontSize: 13.sp,
                   ),
                 ),
               ],
@@ -451,7 +452,7 @@ class _ProfileHero extends StatelessWidget {
           IconButton(
             onPressed: () {},
             tooltip: 'Change profile photo',
-            icon: const Icon(
+            icon: Icon(
               Icons.camera_alt_outlined,
               color: Colors.white,
               size: 20,
@@ -464,7 +465,7 @@ class _ProfileHero extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({
+  _SectionCard({
     required this.title,
     required this.children,
     this.subtitle,
@@ -477,10 +478,10 @@ class _SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
         color: tokens.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: tokens.border),
       ),
       child: Column(
@@ -488,16 +489,16 @@ class _SectionCard extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
           ),
           if (subtitle != null) ...[
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Text(
               subtitle!,
-              style: TextStyle(color: tokens.muted, fontSize: 11),
+              style: TextStyle(color: tokens.muted, fontSize: 11.sp),
             ),
           ],
-          const SizedBox(height: 5),
+          SizedBox(height: 5.h),
           ...children,
         ],
       ),
@@ -506,7 +507,7 @@ class _SectionCard extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({
+  _InfoRow({
     required this.icon,
     required this.label,
     required this.value,
@@ -519,22 +520,22 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 9),
+      padding: EdgeInsets.symmetric(vertical: 9),
       child: Row(
         children: [
           Icon(icon, size: 20, color: tokens.brand),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Text(
               label,
-              style: TextStyle(color: tokens.muted, fontSize: 12),
+              style: TextStyle(color: tokens.muted, fontSize: 12.sp),
             ),
           ),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.sp),
             ),
           ),
         ],
@@ -544,7 +545,7 @@ class _InfoRow extends StatelessWidget {
 }
 
 class _PreferenceRow extends StatelessWidget {
-  const _PreferenceRow({
+  _PreferenceRow({
     required this.icon,
     required this.label,
     required this.value,
@@ -559,23 +560,23 @@ class _PreferenceRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
           Icon(icon, size: 20, color: tokens.brand),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.sp),
                 ),
-                const SizedBox(height: 3),
+                SizedBox(height: 3.h),
                 Text(
                   value,
-                  style: TextStyle(color: tokens.muted, fontSize: 11),
+                  style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                 ),
               ],
             ),
@@ -588,7 +589,7 @@ class _PreferenceRow extends StatelessWidget {
 }
 
 class _ActionRow extends StatelessWidget {
-  const _ActionRow({
+  _ActionRow({
     required this.icon,
     required this.label,
     this.value,
@@ -605,20 +606,20 @@ class _ActionRow extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 11),
+        padding: EdgeInsets.symmetric(vertical: 11),
         child: Row(
           children: [
             Icon(icon, size: 20, color: tokens.brand),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.sp),
               ),
             ),
             if (value != null)
-              Text(value!, style: TextStyle(color: tokens.muted, fontSize: 11)),
-            const SizedBox(width: 5),
+              Text(value!, style: TextStyle(color: tokens.muted, fontSize: 11.sp)),
+            SizedBox(width: 5.w),
             Icon(Icons.chevron_right_rounded, color: tokens.faint, size: 20),
           ],
         ),
@@ -628,7 +629,7 @@ class _ActionRow extends StatelessWidget {
 }
 
 class _EditProfileSheet extends StatefulWidget {
-  const _EditProfileSheet({required this.profile});
+  _EditProfileSheet({required this.profile});
   final Profile profile;
 
   @override
@@ -677,41 +678,41 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                 height: 4,
                 decoration: BoxDecoration(
                   color: tokens.border,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(4.r),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            const Text(
+            SizedBox(height: 20.h),
+            Text(
               'Edit profile',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20.sp),
             ),
-            const SizedBox(height: 15),
+            SizedBox(height: 15.h),
             AppTextField(
-              fieldKey: const Key('profile-name-field'),
+              fieldKey: Key('profile-name-field'),
               label: 'Full name',
               controller: _nameController,
               icon: Icons.person_outline_rounded,
             ),
-            const SizedBox(height: AppSpacing.fieldGap),
+            SizedBox(height: AppSpacing.fieldGap),
             AppTextField(
-              fieldKey: const Key('profile-email-field'),
+              fieldKey: Key('profile-email-field'),
               label: 'Email',
               controller: _emailController,
               icon: Icons.alternate_email_rounded,
               keyboardType: TextInputType.emailAddress,
             ),
-            const SizedBox(height: AppSpacing.fieldGap),
+            SizedBox(height: AppSpacing.fieldGap),
             AppTextField(
-              fieldKey: const Key('profile-phone-field'),
+              fieldKey: Key('profile-phone-field'),
               label: 'Phone',
               controller: _phoneController,
               icon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             AppPrimaryAction(
-              key: const Key('profile-save'),
+              key: Key('profile-save'),
               onPressed: _save,
               label: 'Save changes',
               icon: Icons.check_rounded,

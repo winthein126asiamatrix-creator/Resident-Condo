@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:test/core/utils/super_print.dart';
 
@@ -10,7 +11,7 @@ import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../routes/app_routes.dart';
 
 class SplashPage extends StatefulWidget {
-  const SplashPage({super.key});
+  SplashPage({super.key});
 
   @override
   State<SplashPage> createState() => _SplashPageState();
@@ -22,7 +23,7 @@ class _SplashPageState extends State<SplashPage>
   late final Animation<double> _fadeAnimation;
 
   /// How long the brand is shown regardless of how fast the session check is.
-  static const Duration _minimumDisplay = Duration(milliseconds: 1600);
+  static Duration _minimumDisplay = Duration(milliseconds: 1600);
 
   /// The session check, started as soon as the splash appears.
   ///
@@ -35,7 +36,7 @@ class _SplashPageState extends State<SplashPage>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: Duration(milliseconds: 600),
     );
     _fadeAnimation = CurvedAnimation(
       parent: _animationController,
@@ -103,7 +104,7 @@ class _SplashPageState extends State<SplashPage>
         // everywhere else.
         child: Column(
           children: [
-            const OfflineBannerSlot(),
+            OfflineBannerSlot(),
             Expanded(
               child: Center(
                 child: FadeTransition(
@@ -115,12 +116,12 @@ class _SplashPageState extends State<SplashPage>
                         width: 112,
                         height: 112,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
+                          borderRadius: BorderRadius.circular(30.r),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.18),
                               blurRadius: 24,
-                              offset: const Offset(0, 12),
+                              offset: Offset(0, 12),
                             ),
                           ],
                         ),
@@ -132,7 +133,7 @@ class _SplashPageState extends State<SplashPage>
                           filterQuality: FilterQuality.high,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: 24.h),
                       Text(
                         AppConstants.appName,
                         textAlign: TextAlign.center,

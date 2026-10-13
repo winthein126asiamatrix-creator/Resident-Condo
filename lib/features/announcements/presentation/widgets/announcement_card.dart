@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../domain/entities/announcement.dart';
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class AnnouncementCard extends StatelessWidget {
-  const AnnouncementCard({
+  AnnouncementCard({
     required this.announcement,
     required this.onTap,
     super.key,
@@ -19,12 +20,12 @@ class AnnouncementCard extends StatelessWidget {
     final color = _colorFor(announcement.category, tokens);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(18.r),
       child: Container(
-        padding: const EdgeInsets.all(15),
+        padding: EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: tokens.surface,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           border: Border.all(
             color: announcement.isRead
                 ? tokens.border
@@ -39,7 +40,7 @@ class AnnouncementCard extends StatelessWidget {
               height: 42,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(13),
+                borderRadius: BorderRadius.circular(13.r),
               ),
               child: Icon(
                 _iconFor(announcement.category),
@@ -47,7 +48,7 @@ class AnnouncementCard extends StatelessWidget {
                 size: 21,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,7 +58,7 @@ class AnnouncementCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           announcement.title,
-                          style: const TextStyle(fontWeight: FontWeight.w800),
+                          style: TextStyle(fontWeight: FontWeight.w800),
                         ),
                       ),
                       if (!announcement.isRead)
@@ -71,18 +72,18 @@ class AnnouncementCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   Text(
                     announcement.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: tokens.muted,
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       height: 1.35,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
@@ -95,12 +96,12 @@ class AnnouncementCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     announcement.date,
                     style: TextStyle(
                       color: tokens.faint,
-                      fontSize: 11,
+                      fontSize: 11.sp,
                     ),
                   ),
                 ],
@@ -115,13 +116,13 @@ class AnnouncementCard extends StatelessWidget {
   Color _colorFor(AnnouncementCategory category, AppThemeTokens tokens) {
     switch (category) {
       case AnnouncementCategory.maintenance:
-        return const Color(0xFFB45309);
+        return Color(0xFFB45309);
       case AnnouncementCategory.security:
-        return const Color(0xFF5B4CC4);
+        return Color(0xFF5B4CC4);
       case AnnouncementCategory.community:
         return tokens.brand;
       case AnnouncementCategory.emergency:
-        return const Color(0xFFC2410C);
+        return Color(0xFFC2410C);
       case AnnouncementCategory.general:
         return tokens.mutedStrong;
     }
@@ -129,8 +130,8 @@ class AnnouncementCard extends StatelessWidget {
 
   Color _urgencyColor(AnnouncementUrgency urgency) {
     return urgency == AnnouncementUrgency.emergency
-        ? const Color(0xFFC2410C)
-        : const Color(0xFFB45309);
+        ? Color(0xFFC2410C)
+        : Color(0xFFB45309);
   }
 
   IconData _iconFor(AnnouncementCategory category) {
@@ -150,7 +151,7 @@ class AnnouncementCard extends StatelessWidget {
 }
 
 class _Badge extends StatelessWidget {
-  const _Badge({required this.label, required this.color});
+  _Badge({required this.label, required this.color});
 
   final String label;
   final Color color;
@@ -158,16 +159,16 @@ class _Badge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: color,
-          fontSize: 10,
+          fontSize: 10.sp,
           fontWeight: FontWeight.w800,
         ),
       ),

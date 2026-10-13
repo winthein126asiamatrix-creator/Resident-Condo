@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -17,7 +18,7 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/theme/app_spacing.dart';
 
 class LeasePage extends GetView<LeaseController> {
-  const LeasePage({super.key});
+  LeasePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,13 +30,13 @@ class LeasePage extends GetView<LeaseController> {
           IconButton(
             onPressed: controller.loadLeases,
             tooltip: 'Refresh lease',
-            icon: const Icon(Icons.refresh_rounded),
+            icon: Icon(Icons.refresh_rounded),
           ),
         ],
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.leases.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
         if (controller.errorMessage.value != null &&
             controller.leases.isEmpty) {
@@ -61,9 +62,9 @@ class LeasePage extends GetView<LeaseController> {
         return RefreshIndicator(
           onRefresh: controller.loadLeases,
           child: ListView(
-            key: const Key('lease-scroll'),
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(
+            key: Key('lease-scroll'),
+            physics: AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(
               AppSpacing.gutter,
               AppSpacing.pageTop,
               AppSpacing.gutter,
@@ -75,18 +76,18 @@ class LeasePage extends GetView<LeaseController> {
                   lease: lease,
                   perspective: controller.rentPerspectiveLabel,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 AppSectionCard(
                   title: 'People on the lease',
                   child: Column(
                     children: [
                       _PartyTile(party: lease.owner),
-                      const Divider(height: 20),
+                      Divider(height: 20),
                       _PartyTile(party: lease.tenant),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 AppSectionCard(
                   title: 'Lease terms',
                   child: Column(
@@ -118,40 +119,40 @@ class LeasePage extends GetView<LeaseController> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 22),
-                const AppSectionHeader(title: 'Renewal requests'),
-                const SizedBox(height: 4),
+                SizedBox(height: 22.h),
+                AppSectionHeader(title: 'Renewal requests'),
+                SizedBox(height: 4.h),
                 Text(
                   'The tenant and the owner can both propose a renewal.',
-                  style: TextStyle(color: tokens.muted, fontSize: 12),
+                  style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10.h),
                 _RenewalList(controller: controller, lease: lease),
-                const SizedBox(height: 20),
+                SizedBox(height: 20.h),
                 FilledButton.icon(
-                  key: const Key('request-lease-renewal'),
+                  key: Key('request-lease-renewal'),
                   onPressed: controller.pendingRenewal != null
                       ? null
                       : () {
                           controller.selectLease(lease);
                           Get.toNamed(AppRoutes.leaseRenewal);
                         },
-                  icon: const Icon(Icons.autorenew_rounded, size: 18),
+                  icon: Icon(Icons.autorenew_rounded, size: 18),
                   label: Text(
                     controller.pendingRenewal == null
                         ? 'Request renewal'
                         : 'Renewal under review',
                   ),
                   style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
+                    minimumSize: Size.fromHeight(52),
                   ),
                 ),
                 if (controller.pendingRenewal == null) ...[
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     'Rent is billed separately from your monthly condo fee.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: tokens.muted, fontSize: 11),
+                    style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                   ),
                 ],
               ],
@@ -164,7 +165,7 @@ class LeasePage extends GetView<LeaseController> {
 }
 
 class _LeaseProgressCard extends StatelessWidget {
-  const _LeaseProgressCard({required this.lease, required this.perspective});
+  _LeaseProgressCard({required this.lease, required this.perspective});
   final Lease lease;
   final String perspective;
 
@@ -196,11 +197,11 @@ class _LeaseProgressCard extends StatelessWidget {
                 'Term progress',
                 style: TextStyle(
                   color: tokens.brandOnDark,
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const Spacer(),
+              Spacer(),
               Text(
                 AppFormatters.percent(lease.progress),
                 style: TextStyle(
@@ -210,9 +211,9 @@ class _LeaseProgressCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           ClipRRect(
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(6.r),
             child: LinearProgressIndicator(
               value: lease.progress.clamp(0, 1),
               minHeight: 8,
@@ -220,22 +221,22 @@ class _LeaseProgressCard extends StatelessWidget {
               valueColor: AlwaysStoppedAnimation<Color>(tokens.brandOnDark),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           Row(
             children: [
               Text(
                 AppDates.formatShort(lease.startDate),
                 style: TextStyle(
                   color: tokens.brandOnDarkMuted,
-                  fontSize: 11,
+                  fontSize: 11.sp,
                 ),
               ),
-              const Spacer(),
+              Spacer(),
               Text(
                 AppDates.formatShort(lease.endDate),
                 style: TextStyle(
                   color: tokens.brandOnDarkMuted,
-                  fontSize: 11,
+                  fontSize: 11.sp,
                 ),
               ),
             ],
@@ -247,7 +248,7 @@ class _LeaseProgressCard extends StatelessWidget {
 }
 
 class _PartyTile extends StatelessWidget {
-  const _PartyTile({required this.party});
+  _PartyTile({required this.party});
   final LeaseParty party;
 
   @override
@@ -266,24 +267,24 @@ class _PartyTile extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.w),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 party.name,
-                style: const TextStyle(fontWeight: FontWeight.w800),
+                style: TextStyle(fontWeight: FontWeight.w800),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: 2.h),
               Text(
                 party.role.label,
-                style: TextStyle(color: tokens.muted, fontSize: 11),
+                style: TextStyle(color: tokens.muted, fontSize: 11.sp),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: 2.h),
               Text(
                 party.phone,
-                style: TextStyle(color: tokens.faint, fontSize: 11),
+                style: TextStyle(color: tokens.faint, fontSize: 11.sp),
               ),
             ],
           ),
@@ -299,7 +300,7 @@ class _PartyTile extends StatelessWidget {
 }
 
 class _RenewalList extends StatelessWidget {
-  const _RenewalList({required this.controller, required this.lease});
+  _RenewalList({required this.controller, required this.lease});
   final LeaseController controller;
   final Lease lease;
 
@@ -312,7 +313,7 @@ class _RenewalList extends StatelessWidget {
         child: Text(
           'No renewal request yet. Start one at least 60 days before the end '
           'of the term.',
-          style: TextStyle(color: tokens.muted, fontSize: 12, height: 1.4),
+          style: TextStyle(color: tokens.muted, fontSize: 12.sp, height: 1.4),
         ),
       );
     }
@@ -320,7 +321,7 @@ class _RenewalList extends StatelessWidget {
       children: [
         for (final renewal in items)
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: EdgeInsets.only(bottom: 10),
             child: _RenewalCard(controller: controller, renewal: renewal),
           ),
       ],
@@ -329,7 +330,7 @@ class _RenewalList extends StatelessWidget {
 }
 
 class _RenewalCard extends StatelessWidget {
-  const _RenewalCard({required this.controller, required this.renewal});
+  _RenewalCard({required this.controller, required this.renewal});
   final LeaseController controller;
   final LeaseRenewal renewal;
 
@@ -350,51 +351,51 @@ class _RenewalCard extends StatelessWidget {
           Row(
             children: [
               AppStatusPill(label: renewal.status.label, color: color),
-              const Spacer(),
+              Spacer(),
               Text(
                 renewal.requestedOn,
-                style: TextStyle(color: tokens.faint, fontSize: 11),
+                style: TextStyle(color: tokens.faint, fontSize: 11.sp),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(
             '${AppFormatters.currency(renewal.proposedRent)} / month',
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17),
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17.sp),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             '${renewal.proposedStart} → ${renewal.proposedEnd}',
-            style: TextStyle(color: tokens.mutedStrong, fontSize: 12),
+            style: TextStyle(color: tokens.mutedStrong, fontSize: 12.sp),
           ),
           if (renewal.note.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               renewal.note,
               style: TextStyle(
                 color: tokens.muted,
-                fontSize: 12,
+                fontSize: 12.sp,
                 height: 1.4,
               ),
             ),
           ],
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             'Requested by ${renewal.requestedBy}'
             '${renewal.decidedOn == null ? '' : ' · updated ${renewal.decidedOn}'}',
-            style: TextStyle(color: tokens.faint, fontSize: 11),
+            style: TextStyle(color: tokens.faint, fontSize: 11.sp),
           ),
           if (renewal.status == RenewalStatus.pending) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             OutlinedButton.icon(
               key: Key('withdraw-renewal-${renewal.id}'),
               onPressed: () => _withdraw(context),
-              icon: const Icon(Icons.undo_rounded, size: 18),
-              label: const Text('Withdraw request'),
+              icon: Icon(Icons.undo_rounded, size: 18),
+              label: Text('Withdraw request'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppPalette.danger,
-                side: const BorderSide(color: Color(0xFFF0C6C0)),
-                minimumSize: const Size.fromHeight(44),
+                side: BorderSide(color: Color(0xFFF0C6C0)),
+                minimumSize: Size.fromHeight(44),
               ),
             ),
           ],

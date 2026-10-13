@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../theme/app_radius.dart';
 import '../theme/app_theme_tokens.dart';
@@ -6,7 +7,7 @@ import '../theme/app_theme_tokens.dart';
 /// One segment of a [AppSegmentedTabs] strip.
 @immutable
 class AppSegmentedTab {
-  const AppSegmentedTab({
+  AppSegmentedTab({
     required this.name,
     required this.label,
     required this.icon,
@@ -30,7 +31,7 @@ class AppSegmentedTab {
 /// This navigates between sections. To pick one option inside a form, use
 /// [AppSegmentedControl] instead, which shows every option at once.
 class AppSegmentedTabs extends StatefulWidget {
-  const AppSegmentedTabs({
+  AppSegmentedTabs({
     required this.tabs,
     required this.selectedIndex,
     required this.onSelect,
@@ -111,7 +112,7 @@ class _AppSegmentedTabsState extends State<AppSegmentedTabs>
     final tabs = widget.tabs;
     return LayoutBuilder(
       builder: (context, constraints) {
-        const inset = 4.0;
+        final inset = 4.0;
         final segmentWidth = (constraints.maxWidth - inset * 2) / tabs.length;
 
         return ListenableBuilder(
@@ -120,7 +121,7 @@ class _AppSegmentedTabsState extends State<AppSegmentedTabs>
             final tokens = AppThemeTokens.of(context);
             final position = _value;
             return Container(
-              padding: const EdgeInsets.all(inset),
+              padding: EdgeInsets.all(inset),
               decoration: BoxDecoration(
                 color: tokens.brandTint,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -174,7 +175,7 @@ class _AppSegmentedTabsState extends State<AppSegmentedTabs>
 /// One tappable segment. It dips slightly under the finger so a tap is answered
 /// before the content has finished sliding.
 class _SegmentButton extends StatefulWidget {
-  const _SegmentButton({
+  _SegmentButton({
     required this.tab,
     required this.selected,
     required this.onTap,
@@ -213,7 +214,7 @@ class _SegmentButtonState extends State<_SegmentButton> {
       onTapCancel: () => _setPressed(false),
       child: AnimatedScale(
         scale: _pressed ? 0.94 : 1,
-        duration: const Duration(milliseconds: 140),
+        duration: Duration(milliseconds: 140),
         curve: Curves.easeOut,
         child: Center(
           // Shrinks the row rather than overflowing when the phone is narrow,
@@ -230,12 +231,12 @@ class _SegmentButtonState extends State<_SegmentButton> {
                   builder: (context, animated, _) =>
                       Icon(widget.tab.icon, size: 18, color: animated),
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: 6.w),
                 AnimatedDefaultTextStyle(
                   duration: AppSegmentedTabs.slideDuration,
                   curve: AppSegmentedTabs.slideCurve,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w800,
                     color: color,
                   ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../theme/app_theme_tokens.dart';
 
@@ -12,7 +13,7 @@ import '../theme/app_theme_tokens.dart';
 /// app follows the resident's choice. Pass [backgroundColor] only to override it
 /// for a genuinely different action.
 class AppPrimaryAction extends StatelessWidget {
-  const AppPrimaryAction({
+  AppPrimaryAction({
     required this.label,
     required this.onPressed,
     this.icon,
@@ -54,7 +55,7 @@ class AppPrimaryAction extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     final enabled = onPressed != null && !isLoading;
-    final radius = BorderRadius.circular(18);
+    final radius = BorderRadius.circular(18.r);
     final fill = backgroundColor ?? tokens.brand;
     final background = enabled ? fill : tokens.surfaceMuted;
     final foreground =
@@ -67,7 +68,7 @@ class AppPrimaryAction extends StatelessWidget {
       textAlign: TextAlign.center,
       style: TextStyle(
         color: foreground,
-        fontSize: 15.5,
+        fontSize: 15.5.sp,
         letterSpacing: 0.1,
         fontWeight: FontWeight.w800,
       ),
@@ -88,14 +89,14 @@ class AppPrimaryAction extends StatelessWidget {
         );
       }
       if (icon == null) {
-        return const SizedBox.shrink();
+        return SizedBox.shrink();
       }
       return Icon(icon, size: 20, color: foreground);
     }
 
     Widget trailing() {
       if (trailingIcon == null || isLoading) {
-        return const SizedBox.shrink();
+        return SizedBox.shrink();
       }
       return Icon(trailingIcon, size: 20, color: foreground);
     }
@@ -138,10 +139,10 @@ class AppPrimaryAction extends StatelessWidget {
           : Row(
               mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
               children: [
-                if (hasLeading) ...[leading(), const SizedBox(width: 10)],
+                if (hasLeading) ...[leading(), SizedBox(width: 10.w)],
                 Flexible(child: labelText),
-                if (expand) const Spacer(),
-                if (hasTrailing) ...[const SizedBox(width: 10), trailing()],
+                if (expand) Spacer(),
+                if (hasTrailing) ...[SizedBox(width: 10.w), trailing()],
               ],
             ),
     );
@@ -154,7 +155,7 @@ class AppPrimaryAction extends StatelessWidget {
                 BoxShadow(
                   color: fill.withValues(alpha: 0.26),
                   blurRadius: 18,
-                  offset: const Offset(0, 8),
+                  offset: Offset(0, 8),
                 ),
               ]
             : null,
@@ -172,7 +173,7 @@ class AppPrimaryAction extends StatelessWidget {
           onTap: enabled ? onPressed : null,
           child: Padding(
             padding:
-                padding ?? const EdgeInsets.symmetric(horizontal: 20),
+                padding ?? EdgeInsets.symmetric(horizontal: 20),
             child: content,
           ),
         ),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../theme/app_theme_tokens.dart';
 
 /// One step of an [AppStepProgress] row.
 class AppProgressStep {
-  const AppProgressStep({required this.title, this.subtitle});
+  AppProgressStep({required this.title, this.subtitle});
 
   final String title;
 
@@ -20,7 +21,7 @@ class AppProgressStep {
 /// size with its number centred, and the connector is aligned to the centre line
 /// of the circles, so nothing drifts on a narrow phone.
 class AppStepProgress extends StatelessWidget {
-  const AppStepProgress({
+  AppStepProgress({
     required this.steps,
     required this.currentIndex,
     this.circleSize = 30,
@@ -78,7 +79,7 @@ class AppStepProgress extends StatelessWidget {
 enum ProgressState { completed, current, upcoming }
 
 class _StepColumn extends StatelessWidget {
-  const _StepColumn({
+  _StepColumn({
     required this.step,
     required this.position,
     required this.state,
@@ -97,7 +98,7 @@ class _StepColumn extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _StepCircle(position: position, state: state, size: circleSize),
-        const SizedBox(height: 7),
+        SizedBox(height: 7.h),
         // Bounded to two lines and ellipsized so neighbouring labels can never
         // overlap each other.
         Text(
@@ -109,13 +110,13 @@ class _StepColumn extends StatelessWidget {
             color: state == ProgressState.upcoming
                 ? tokens.muted
                 : tokens.ink,
-            fontSize: 10.5,
+            fontSize: 10.5.sp,
             height: 1.25,
             fontWeight: FontWeight.w700,
           ),
         ),
         if (step.subtitle != null) ...[
-          const SizedBox(height: 2),
+          SizedBox(height: 2.h),
           Text(
             step.subtitle!,
             maxLines: 1,
@@ -123,7 +124,7 @@ class _StepColumn extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: tokens.faint,
-              fontSize: 9.5,
+              fontSize: 9.5.sp,
               height: 1.2,
               fontWeight: FontWeight.w600,
             ),
@@ -135,7 +136,7 @@ class _StepColumn extends StatelessWidget {
 }
 
 class _Connector extends StatelessWidget {
-  const _Connector({required this.complete, required this.offset});
+  _Connector({required this.complete, required this.offset});
 
   final bool complete;
 
@@ -152,7 +153,7 @@ class _Connector extends StatelessWidget {
         height: 2,
         decoration: BoxDecoration(
           color: complete ? tokens.brand : tokens.border,
-          borderRadius: BorderRadius.circular(1),
+          borderRadius: BorderRadius.circular(1.r),
         ),
       ),
     );
@@ -160,7 +161,7 @@ class _Connector extends StatelessWidget {
 }
 
 class _StepCircle extends StatelessWidget {
-  const _StepCircle({
+  _StepCircle({
     required this.position,
     required this.state,
     required this.size,

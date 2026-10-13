@@ -79,7 +79,7 @@ class _MainShellPageState extends State<MainShellPage> {
         return Scaffold(
           body: Column(
             children: [
-              const OfflineBannerSlot(applyStatusBarInset: true),
+              OfflineBannerSlot(applyStatusBarInset: true),
               Expanded(
                 child: MediaQuery.removePadding(
                   context: context,
@@ -100,10 +100,10 @@ class _MainShellPageState extends State<MainShellPage> {
                       },
                       children: [
                         DashboardPage(onSelectTab: controller.selectTab),
-                        const PaymentsPage(),
-                        const MaintenancePage(),
-                        const FacilitiesPage(),
-                        const ProfilePage(),
+                        PaymentsPage(),
+                        MaintenancePage(),
+                        FacilitiesPage(),
+                        ProfilePage(),
                       ],
                     ),
                   ),

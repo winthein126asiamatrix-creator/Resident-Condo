@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -15,7 +16,7 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_form_field.dart';
 
 class ServiceRequestPage extends StatefulWidget {
-  const ServiceRequestPage({super.key});
+  ServiceRequestPage({super.key});
 
   @override
   State<ServiceRequestPage> createState() => _ServiceRequestPageState();
@@ -81,30 +82,30 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                     icon: serviceIcon(service.category),
                     color: tokens.brand,
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           service.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w800,
-                            fontSize: 16,
+                            fontSize: 16.sp,
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        SizedBox(height: 3.h),
                         Text(
                           service.provider,
-                          style: TextStyle(color: tokens.muted, fontSize: 11),
+                          style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6.h),
                         Text(
                           '${AppFormatters.currency(service.price)} ${service.unit}',
                           style: TextStyle(
                             color: tokens.brand,
                             fontWeight: FontWeight.w800,
-                            fontSize: 13,
+                            fontSize: 13.sp,
                           ),
                         ),
                       ],
@@ -113,12 +114,12 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            const Text(
+            SizedBox(height: 20.h),
+            Text(
               'Preferred date',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -136,12 +137,12 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                   )
                   .toList(),
             ),
-            const SizedBox(height: 20),
-            const Text(
+            SizedBox(height: 20.h),
+            Text(
               'Time slot',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -156,39 +157,39 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                   )
                   .toList(),
             ),
-            const SizedBox(height: 20),
-            const Text(
+            SizedBox(height: 20.h),
+            Text(
               'Notes for the team',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             AppTextField(
-              fieldKey: const Key('service-notes-field'),
+              fieldKey: Key('service-notes-field'),
               label: 'Notes for the team',
               controller: _notesController,
               hint: 'Anything the team should know…',
               maxLines: 3,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             AppCard(
               color: AppPalette.amberSoft,
-              borderColor: const Color(0xFFF2E0B8),
+              borderColor: Color(0xFFF2E0B8),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.receipt_long_outlined,
                     color: AppPalette.warning,
                     size: 20,
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
                       'The service fee is billed as its own line on your next '
                       'statement. It is never added to the monthly condo fee.',
                       style: TextStyle(
                         color: tokens.mutedStrong,
-                        fontSize: 11,
+                        fontSize: 11.sp,
                         height: 1.4,
                       ),
                     ),
@@ -196,9 +197,9 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             FilledButton.icon(
-              key: const Key('confirm-service-booking'),
+              key: Key('confirm-service-booking'),
               onPressed: controller.isSubmitting.value ? null : _submit,
               icon: controller.isSubmitting.value
                   ? SizedBox(
@@ -209,25 +210,25 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                         color: tokens.onBrand,
                       ),
                     )
-                  : const Icon(Icons.check_rounded, size: 18),
+                  : Icon(Icons.check_rounded, size: 18),
               label: Text(
                 controller.isSubmitting.value
                     ? 'Booking...'
                     : 'Confirm booking',
               ),
               style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
+                minimumSize: Size.fromHeight(52),
               ),
             ),
             if (_error.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              Text(_error, style: const TextStyle(color: AppPalette.danger)),
+              SizedBox(height: 10.h),
+              Text(_error, style: TextStyle(color: AppPalette.danger)),
             ],
             if (controller.errorMessage.value != null) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               Text(
                 controller.errorMessage.value!,
-                style: const TextStyle(color: AppPalette.danger),
+                style: TextStyle(color: AppPalette.danger),
               ),
             ],
           ],

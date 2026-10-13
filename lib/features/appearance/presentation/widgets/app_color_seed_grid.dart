@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_radius.dart';
@@ -18,7 +19,7 @@ import '../../domain/entities/app_color_seed.dart';
 /// 48px platform minimum, and the grid reflows to four columns whatever the
 /// screen width.
 class AppColorSeedGrid extends StatelessWidget {
-  const AppColorSeedGrid({
+  AppColorSeedGrid({
     required this.selected,
     required this.onSelected,
     required this.customColor,
@@ -65,7 +66,7 @@ class AppColorSeedGrid extends StatelessWidget {
           onTap: () => onSelected(seed),
         ),
       _CustomSeedCell(
-        key: const Key('appearance-seed-custom'),
+        key: Key('appearance-seed-custom'),
         color: customColor,
         selected: isCustomSelected,
         selectionColor: selectionColor,
@@ -92,7 +93,7 @@ class AppColorSeedGrid extends StatelessWidget {
 
 /// One palette entry: the circle, its name, and the tick.
 class _SeedCell extends StatelessWidget {
-  const _SeedCell({
+  _SeedCell({
     required this.label,
     required this.color,
     required this.selected,
@@ -128,7 +129,7 @@ class _SeedCell extends StatelessWidget {
 
 /// The trailing tile that opens the picker.
 class _CustomSeedCell extends StatelessWidget {
-  const _CustomSeedCell({
+  _CustomSeedCell({
     required this.color,
     required this.selected,
     required this.selectionColor,
@@ -161,7 +162,7 @@ class _CustomSeedCell extends StatelessWidget {
 /// Shared pressable wrapper: the ring, the circle and the caption all scale and
 /// fade together, so selecting a colour reads as one motion.
 class _SeedButton extends StatelessWidget {
-  const _SeedButton({
+  _SeedButton({
     required this.selected,
     required this.selectionColor,
     required this.onTap,
@@ -194,17 +195,17 @@ class _SeedButton extends StatelessWidget {
             onTap: onTap,
             borderRadius: radius,
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: EdgeInsets.symmetric(vertical: 8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   swatch,
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 180),
+                    duration: Duration(milliseconds: 180),
                     curve: Curves.easeOut,
                     style: TextStyle(
-                      fontSize: 11.5,
+                      fontSize: 11.5.sp,
                       height: 1.2,
                       fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                       color: selected ? selectionColor : AppPalette.muted,
@@ -231,13 +232,13 @@ class _SeedButton extends StatelessWidget {
 /// The ring sits outside a transparent gap rather than directly on the fill, so
 /// the swatch keeps its full size and the selection reads as a separate mark.
 class _SwatchCircle extends StatelessWidget {
-  const _SwatchCircle({
+  _SwatchCircle({
     required this.color,
     required this.selected,
     required this.selectionColor,
   }) : custom = false;
 
-  const _SwatchCircle.custom({
+  _SwatchCircle.custom({
     required this.color,
     required this.selected,
     required this.selectionColor,
@@ -263,7 +264,7 @@ class _SwatchCircle extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     final circle = AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
+      duration: Duration(milliseconds: 220),
       curve: Curves.easeOutCubic,
       width: _size,
       height: _size,
@@ -273,12 +274,12 @@ class _SwatchCircle extends StatelessWidget {
         // Only the custom tile is outlined, so a very pale hand picked colour
         // still has a visible edge against the page.
         border: Border.all(
-          color: custom ? scheme.outlineVariant : const Color(0x00000000),
+          color: custom ? scheme.outlineVariant : Color(0x00000000),
           width: 1,
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(_gap + _ringWidth),
+        padding: EdgeInsets.all(_gap + _ringWidth),
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: color,
@@ -290,17 +291,17 @@ class _SwatchCircle extends StatelessWidget {
     );
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
+      duration: Duration(milliseconds: 220),
       curve: Curves.easeOutCubic,
       width: _size + _ringWidth * 2 + _gap * 2,
       height: _size + _ringWidth * 2 + _gap * 2,
-      padding: const EdgeInsets.all(_ringWidth),
+      padding: EdgeInsets.all(_ringWidth),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         // Transparent when unselected, so the ring does not shrink the colour
         // or add a border that was not asked for.
         border: Border.all(
-          color: selected ? selectionColor : const Color(0x00000000),
+          color: selected ? selectionColor : Color(0x00000000),
           width: _ringWidth,
         ),
       ),

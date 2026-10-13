@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -18,7 +19,7 @@ import '../widgets/store_cards.dart';
 import '../widgets/store_product_card.dart';
 import '../widgets/store_widgets.dart';
 
-const _storeTabs = <AppSegmentedTab>[
+final _storeTabs = <AppSegmentedTab>[
   AppSegmentedTab(name: 'shop', label: 'Shop', icon: Icons.storefront_rounded),
   AppSegmentedTab(
     name: 'basket',
@@ -38,7 +39,7 @@ const _storeTabs = <AppSegmentedTab>[
 /// tab keeps its own scroll position, instead of one list being torn down and
 /// rebuilt under the resident's thumb.
 class StorePage extends StatefulWidget {
-  const StorePage({super.key});
+  StorePage({super.key});
 
   @override
   State<StorePage> createState() => _StorePageState();
@@ -102,13 +103,13 @@ class _StorePageState extends State<StorePage> {
               onTap: () => _selectTab(StoreTab.basket),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
         ],
       ),
       body: Obx(() {
         final tab = controller.tab.value;
         if (controller.isLoading.value && controller.products.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
         if (controller.errorMessage.value != null &&
             controller.products.isEmpty) {
@@ -135,20 +136,20 @@ class _StorePageState extends State<StorePage> {
               // tabs, so a swipe can never fight the list inside a tab.
               child: PageView(
                 controller: _pages,
-                physics: const NeverScrollableScrollPhysics(),
+                physics: NeverScrollableScrollPhysics(),
                 children: [
                   _StoreTabPage(
-                    scrollKey: const Key('store-scroll'),
+                    scrollKey: Key('store-scroll'),
                     onRefresh: controller.loadAll,
                     child: Column(children: _shop(context)),
                   ),
                   _StoreTabPage(
-                    scrollKey: const Key('store-basket-scroll'),
+                    scrollKey: Key('store-basket-scroll'),
                     onRefresh: controller.loadAll,
                     child: Column(children: _basket(context)),
                   ),
                   _StoreTabPage(
-                    scrollKey: const Key('store-orders-scroll'),
+                    scrollKey: Key('store-orders-scroll'),
                     onRefresh: controller.loadAll,
                     child: Column(children: _orders(context)),
                   ),
@@ -165,11 +166,11 @@ class _StorePageState extends State<StorePage> {
     final products = controller.visibleProducts;
     return [
       _StoreHero(controller: controller),
-      const SizedBox(height: 16),
+      SizedBox(height: 16.h),
       _StoreSearch(controller: controller),
-      const SizedBox(height: 14),
+      SizedBox(height: 14.h),
       _CategoryRow(controller: controller),
-      const SizedBox(height: 16),
+      SizedBox(height: 16.h),
       if (products.isEmpty)
         AppStateMessage(
           title: controller.isFiltering
@@ -187,11 +188,11 @@ class _StorePageState extends State<StorePage> {
       else ...[
         if (controller.isFiltering) ...[
           AppSectionHeader(title: 'Results', count: products.length),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
         ],
         for (final product in products)
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: EdgeInsets.only(bottom: 10),
             child: StoreProductCard(
               product: product,
               inCartQuantity: controller.quantityInCart(product.id),
@@ -227,7 +228,7 @@ class _StorePageState extends State<StorePage> {
 
   List<Widget> _basket(BuildContext context) {
     if (controller.cart.isEmpty) {
-      return const [
+      return [
         AppStateMessage(
           key: Key('store-basket-empty'),
           title: 'Your basket is empty',
@@ -238,7 +239,7 @@ class _StorePageState extends State<StorePage> {
     }
     return [
       _BasketLines(controller: controller),
-      const SizedBox(height: 14),
+      SizedBox(height: 14.h),
       StoreCheckoutSummaryCard(
         keyName: 'store-basket-summary',
         subtotal: controller.cartSubtotal,
@@ -246,16 +247,16 @@ class _StorePageState extends State<StorePage> {
         total: controller.cartTotal,
         itemCount: controller.cartCount,
       ),
-      const SizedBox(height: 14),
-      const StoreFeeNotice(),
-      const SizedBox(height: 18),
+      SizedBox(height: 14.h),
+      StoreFeeNotice(),
+      SizedBox(height: 18.h),
       StoreCheckoutButton(controller: controller),
     ];
   }
 
   List<Widget> _orders(BuildContext context) {
     if (controller.orders.isEmpty) {
-      return const [
+      return [
         AppStateMessage(
           title: 'No store orders yet',
           message:
@@ -267,20 +268,20 @@ class _StorePageState extends State<StorePage> {
     return [
       if (controller.outstandingStoreFee > 0) ...[
         AppCard(
-          key: const Key('store-outstanding-fee'),
+          key: Key('store-outstanding-fee'),
           color: AppPalette.amberSoft,
-          borderColor: const Color(0xFFF2E0B8),
+          borderColor: Color(0xFFF2E0B8),
           child: Row(
             children: [
-              const Icon(Icons.receipt_long_rounded, color: Color(0xFFB45309)),
-              const SizedBox(width: 10),
+              Icon(Icons.receipt_long_rounded, color: Color(0xFFB45309)),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Text(
                   '${AppFormatters.currency(controller.outstandingStoreFee)} of '
                   'Store Fee is still on your statement.',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Color(0xFF7A4A0B),
-                    fontSize: 12.5,
+                    fontSize: 12.5.sp,
                     height: 1.35,
                     fontWeight: FontWeight.w600,
                   ),
@@ -289,13 +290,13 @@ class _StorePageState extends State<StorePage> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
       ],
       AppSectionHeader(title: 'Active', count: controller.activeOrders.length),
-      const SizedBox(height: 10),
+      SizedBox(height: 10.h),
       for (final order in controller.activeOrders)
         Padding(
-          padding: const EdgeInsets.only(bottom: 10),
+          padding: EdgeInsets.only(bottom: 10),
           child: StoreOrderTrackerListCard(
             order: order,
             onTap: () {
@@ -305,12 +306,12 @@ class _StorePageState extends State<StorePage> {
           ),
         ),
       if (controller.pastOrders.isNotEmpty) ...[
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         AppSectionHeader(title: 'History', count: controller.pastOrders.length),
-        const SizedBox(height: 10),
+        SizedBox(height: 10.h),
         for (final order in controller.pastOrders)
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: EdgeInsets.only(bottom: 10),
             child: StoreOrderTrackerListCard(
               order: order,
               onTap: () {
@@ -329,7 +330,7 @@ class _StorePageState extends State<StorePage> {
 /// Matching is live, so typing narrows the shelf as the resident goes, and
 /// clearing the field puts everything back.
 class _StoreSearch extends StatelessWidget {
-  const _StoreSearch({required this.controller});
+  _StoreSearch({required this.controller});
 
   final StoreController controller;
 
@@ -337,19 +338,19 @@ class _StoreSearch extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return TextField(
-      key: const Key('store-search'),
+      key: Key('store-search'),
       onChanged: controller.search,
       textInputAction: TextInputAction.search,
       style: TextStyle(
         color: tokens.ink,
-        fontSize: 14.5,
+        fontSize: 14.5.sp,
         fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
         hintText: 'Search the Convenience Store',
         hintStyle: TextStyle(
           color: tokens.faint,
-          fontSize: 14,
+          fontSize: 14.sp,
           fontWeight: FontWeight.w500,
         ),
         prefixIcon: Icon(
@@ -359,10 +360,10 @@ class _StoreSearch extends StatelessWidget {
         ),
         suffixIcon: Obx(() {
           if (controller.searchQuery.value.isEmpty) {
-            return const SizedBox.shrink();
+            return SizedBox.shrink();
           }
           return IconButton(
-            key: const Key('store-search-clear'),
+            key: Key('store-search-clear'),
             onPressed: () => controller.search(''),
             tooltip: 'Clear search',
             icon: Icon(
@@ -373,16 +374,16 @@ class _StoreSearch extends StatelessWidget {
           );
         }),
         isDense: true,
-        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+        contentPadding: EdgeInsets.symmetric(vertical: 14),
         filled: true,
         fillColor: tokens.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          borderSide: const BorderSide(color: Color(0x14000000)),
+          borderSide: BorderSide(color: Color(0x14000000)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          borderSide: const BorderSide(color: Color(0x14000000)),
+          borderSide: BorderSide(color: Color(0x14000000)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -399,7 +400,7 @@ class _StoreSearch extends StatelessWidget {
 /// addressable, and gives the page a stable identity across rebuilds so a basket
 /// change does not reset the reader's place.
 class _StoreTabPage extends StatelessWidget {
-  const _StoreTabPage({
+  _StoreTabPage({
     required this.scrollKey,
     required this.onRefresh,
     required this.child,
@@ -415,8 +416,8 @@ class _StoreTabPage extends StatelessWidget {
       onRefresh: onRefresh,
       child: ListView(
         key: scrollKey,
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(
+        physics: AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(
           AppSpacing.gutter,
           14,
           AppSpacing.gutter,
@@ -429,7 +430,7 @@ class _StoreTabPage extends StatelessWidget {
 }
 
 class _StoreHero extends StatelessWidget {
-  const _StoreHero({required this.controller});
+  _StoreHero({required this.controller});
 
   final StoreController controller;
 
@@ -446,7 +447,7 @@ class _StoreHero extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               color: tokens.brand,
-              borderRadius: BorderRadius.circular(17),
+              borderRadius: BorderRadius.circular(17.r),
             ),
             child: Icon(
               Icons.storefront_rounded,
@@ -454,7 +455,7 @@ class _StoreHero extends StatelessWidget {
               size: 26,
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -463,17 +464,17 @@ class _StoreHero extends StatelessWidget {
                   'Lobby store',
                   style: TextStyle(
                     color: tokens.ink,
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   '${controller.products.length} products · '
                   'deliver to ${StoreController.doorstepLocation}',
                   style: TextStyle(
                     color: tokens.mutedStrong,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     height: 1.35,
                   ),
                 ),
@@ -487,7 +488,7 @@ class _StoreHero extends StatelessWidget {
 }
 
 class _CategoryRow extends StatelessWidget {
-  const _CategoryRow({required this.controller});
+  _CategoryRow({required this.controller});
 
   final StoreController controller;
 
@@ -496,13 +497,13 @@ class _CategoryRow extends StatelessWidget {
     return SizedBox(
       height: 44,
       child: ListView(
-        key: const Key('store-category-scroll'),
+        key: Key('store-category-scroll'),
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.zero,
-        physics: const BouncingScrollPhysics(),
+        physics: BouncingScrollPhysics(),
         children: [
           _CategoryPill(
-            key: const Key('store-category-all'),
+            key: Key('store-category-all'),
             label: 'All',
             selected: controller.selectedCategory.value == null,
             onTap: () => controller.selectCategory(null),
@@ -527,7 +528,7 @@ class _CategoryRow extends StatelessWidget {
 /// pale surface with no border at all, which keeps the row calm and stops it
 /// looking like a row of boxes.
 class _CategoryPill extends StatelessWidget {
-  const _CategoryPill({
+  _CategoryPill({
     required this.label,
     required this.selected,
     required this.onTap,
@@ -542,9 +543,9 @@ class _CategoryPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.only(right: 8),
+      padding: EdgeInsets.only(right: 8),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: Duration(milliseconds: 200),
         curve: Curves.easeOut,
         decoration: BoxDecoration(
           color: selected ? tokens.brand : tokens.surfaceMuted,
@@ -554,7 +555,7 @@ class _CategoryPill extends StatelessWidget {
                   BoxShadow(
                     color: tokens.brand.withValues(alpha: 0.28),
                     blurRadius: 14,
-                    offset: const Offset(0, 4),
+                    offset: Offset(0, 4),
                   ),
                 ]
               : null,
@@ -565,13 +566,13 @@ class _CategoryPill extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
+              padding: EdgeInsets.symmetric(horizontal: 18),
               child: Center(
                 child: AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 200),
+                  duration: Duration(milliseconds: 200),
                   style: TextStyle(
                     color: selected ? tokens.onBrand : tokens.mutedStrong,
-                    fontSize: 13.5,
+                    fontSize: 13.5.sp,
                     fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                     letterSpacing: selected ? 0.1 : 0,
                   ),
@@ -587,7 +588,7 @@ class _CategoryPill extends StatelessWidget {
 }
 
 class _BasketLines extends StatelessWidget {
-  const _BasketLines({required this.controller});
+  _BasketLines({required this.controller});
 
   final StoreController controller;
 
@@ -604,15 +605,15 @@ class _BasketLines extends StatelessWidget {
                 'Your basket',
                 style: TextStyle(
                   color: tokens.ink,
-                  fontSize: 15,
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const Spacer(),
+              Spacer(),
               TextButton(
-                key: const Key('store-clear-basket'),
+                key: Key('store-clear-basket'),
                 onPressed: controller.clearCart,
-                child: const Text('Clear'),
+                child: Text('Clear'),
               ),
             ],
           ),
@@ -625,7 +626,7 @@ class _BasketLines extends StatelessWidget {
 }
 
 class _BasketLine extends StatelessWidget {
-  const _BasketLine({required this.controller, required this.line});
+  _BasketLine({required this.controller, required this.line});
 
   final StoreController controller;
   final StoreCartLine line;
@@ -634,11 +635,11 @@ class _BasketLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
           StoreProductImage(product: line.product, size: 46),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -649,11 +650,11 @@ class _BasketLine extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: tokens.ink,
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 Row(
                   children: [
                     _QuantityButton(
@@ -665,13 +666,13 @@ class _BasketLine extends StatelessWidget {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
                         '${line.quantity}',
                         key: Key('store-qty-${line.product.id}'),
                         style: TextStyle(
                           color: tokens.ink,
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -684,12 +685,12 @@ class _BasketLine extends StatelessWidget {
                         line.quantity + 1,
                       ),
                     ),
-                    const Spacer(),
+                    Spacer(),
                     Text(
                       AppFormatters.currency(line.lineTotal),
                       style: TextStyle(
                         color: tokens.ink,
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -700,7 +701,7 @@ class _BasketLine extends StatelessWidget {
                       tooltip: 'Remove ${line.product.name}',
                       iconSize: 18,
                       color: tokens.muted,
-                      icon: const Icon(Icons.close_rounded),
+                      icon: Icon(Icons.close_rounded),
                     ),
                   ],
                 ),
@@ -714,7 +715,7 @@ class _BasketLine extends StatelessWidget {
 }
 
 class _QuantityButton extends StatelessWidget {
-  const _QuantityButton({required this.icon, required this.onTap, super.key});
+  _QuantityButton({required this.icon, required this.onTap, super.key});
 
   final IconData icon;
   final VoidCallback onTap;
@@ -724,7 +725,7 @@ class _QuantityButton extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     return Material(
       color: tokens.brandTint,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9.r)),
       child: InkWell(
         onTap: onTap,
         child: SizedBox(
@@ -747,17 +748,17 @@ void showStoreProductDetail(
     context: context,
     isScrollControlled: true,
     backgroundColor: tokens.canvas,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
     ),
     builder: (sheetContext) => Obx(() {
       final product = controller.selectedProduct.value;
       if (product == null) {
-        return const SizedBox.shrink();
+        return SizedBox.shrink();
       }
       return SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+          padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -768,57 +769,57 @@ void showStoreProductDetail(
                   height: 4,
                   decoration: BoxDecoration(
                     color: tokens.border,
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
               Center(child: StoreProductImage(product: product, size: 132)),
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
               Text(
                 product.name,
-                key: const Key('store-product-detail-name'),
+                key: Key('store-product-detail-name'),
                 style: TextStyle(
                   color: tokens.ink,
-                  fontSize: 19,
+                  fontSize: 19.sp,
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6.h),
               Text(
                 product.category.label,
-                style: TextStyle(color: tokens.muted, fontSize: 13),
+                style: TextStyle(color: tokens.muted, fontSize: 13.sp),
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: 14.h),
               Row(
                 children: [
                   StoreStockPill(status: product.stockStatus),
-                  const Spacer(),
+                  Spacer(),
                   Text(
                     AppFormatters.currency(product.price),
                     style: TextStyle(
                       color: tokens.brand,
-                      fontSize: 20,
+                      fontSize: 20.sp,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               Text(
                 product.description,
                 style: TextStyle(
                   color: tokens.mutedStrong,
-                  fontSize: 13.5,
+                  fontSize: 13.5.sp,
                   height: 1.45,
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               Text(
                 '${product.unit} · ${product.stock} on the shelf',
-                style: TextStyle(color: tokens.faint, fontSize: 12),
+                style: TextStyle(color: tokens.faint, fontSize: 12.sp),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               StoreCheckoutButton(
                 controller: controller,
                 addFirst: true,

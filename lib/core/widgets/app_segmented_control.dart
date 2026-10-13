@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../theme/app_radius.dart';
 import '../theme/app_spacing.dart';
@@ -12,7 +13,7 @@ import '../theme/app_theme_tokens.dart';
 /// it keeps every option visible at once. Each option carries a check when it is
 /// active, so the selection does not rely on colour alone.
 class AppSegmentedControl<T> extends StatelessWidget {
-  const AppSegmentedControl({
+  AppSegmentedControl({
     required this.segments,
     required this.value,
     required this.onChanged,
@@ -62,7 +63,7 @@ class AppSegmentedControl<T> extends StatelessWidget {
               onTap: () => onChanged(entry.key),
             ),
           ),
-          if (entry.key != options.last.key) const SizedBox(width: 10),
+          if (entry.key != options.last.key) SizedBox(width: 10.w),
         ],
       ],
     );
@@ -74,7 +75,7 @@ class AppSegmentedControl<T> extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label!, style: AppTextStyles.of(context).fieldLabel),
-        const SizedBox(height: AppSpacing.fieldLabelGap),
+        SizedBox(height: AppSpacing.fieldLabelGap),
         SizedBox(height: height, child: control),
       ],
     );
@@ -82,7 +83,7 @@ class AppSegmentedControl<T> extends StatelessWidget {
 }
 
 class _SegmentOption extends StatelessWidget {
-  const _SegmentOption({
+  _SegmentOption({
     required this.label,
     required this.selected,
     required this.onTap,
@@ -119,7 +120,7 @@ class _SegmentOption extends StatelessWidget {
           selected: selected,
           button: true,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -129,7 +130,7 @@ class _SegmentOption extends StatelessWidget {
                     size: 18,
                     color: selected ? active : tokens.muted,
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6.w),
                 ],
                 Flexible(
                   child: Text(
@@ -139,14 +140,14 @@ class _SegmentOption extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: selected ? active : tokens.muted,
-                      fontSize: 13,
+                      fontSize: 13.sp,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
                 // A tick as well as the tint, so the choice is not colour only.
                 if (selected) ...[
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6.w),
                   Icon(Icons.check_rounded, size: 15, color: active),
                 ],
               ],

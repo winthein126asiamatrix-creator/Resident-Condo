@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_theme_tokens.dart';
@@ -11,7 +12,7 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/theme/app_spacing.dart';
 
 class UnitPage extends GetView<UnitController> {
-  const UnitPage({super.key});
+  UnitPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +24,7 @@ class UnitPage extends GetView<UnitController> {
             IconButton(
               onPressed: controller.loadMyUnit,
               tooltip: 'Refresh unit information',
-              icon: const Icon(Icons.refresh_rounded),
+              icon: Icon(Icons.refresh_rounded),
             ),
           ],
         ),
@@ -34,7 +35,7 @@ class UnitPage extends GetView<UnitController> {
 
   Widget _buildBody(BuildContext context) {
     if (controller.isLoading.value && controller.unit.value == null) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator());
     }
     if (controller.errorMessage.value != null &&
         controller.unit.value == null) {
@@ -49,7 +50,7 @@ class UnitPage extends GetView<UnitController> {
 
     final unit = controller.unit.value;
     if (unit == null) {
-      return const AppStateMessage(
+      return AppStateMessage(
         title: 'No unit information',
         message: 'Your unit details are not available right now.',
         icon: Icons.home_work_outlined,
@@ -59,21 +60,21 @@ class UnitPage extends GetView<UnitController> {
     return RefreshIndicator(
       onRefresh: controller.loadMyUnit,
       child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
+        physics: AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
         children: [
           _UnitHero(unit: unit),
-          const SizedBox(height: 24),
-          const _SectionTitle(title: 'Unit information'),
-          const SizedBox(height: 11),
+          SizedBox(height: 24.h),
+          _SectionTitle(title: 'Unit information'),
+          SizedBox(height: 11.h),
           _UnitInformationCard(unit: unit),
-          const SizedBox(height: 24),
-          const _SectionTitle(title: 'People'),
-          const SizedBox(height: 11),
+          SizedBox(height: 24.h),
+          _SectionTitle(title: 'People'),
+          SizedBox(height: 11.h),
           _PeopleCard(unit: unit),
-          const SizedBox(height: 24),
-          const _SectionTitle(title: 'Parking'),
-          const SizedBox(height: 11),
+          SizedBox(height: 24.h),
+          _SectionTitle(title: 'Parking'),
+          SizedBox(height: 11.h),
           _ParkingCard(parking: unit.parking),
         ],
       ),
@@ -82,7 +83,7 @@ class UnitPage extends GetView<UnitController> {
 }
 
 class _UnitHero extends StatelessWidget {
-  const _UnitHero({required this.unit});
+  _UnitHero({required this.unit});
 
   final Unit unit;
 
@@ -93,7 +94,7 @@ class _UnitHero extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: tokens.brand,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.r),
         boxShadow: tokens.heroShadow,
       ),
       child: Stack(
@@ -108,7 +109,7 @@ class _UnitHero extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -119,7 +120,7 @@ class _UnitHero extends StatelessWidget {
                         'MY HOME',
                         style: TextStyle(
                           color: tokens.brandOnDark,
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.4,
                         ),
@@ -131,24 +132,24 @@ class _UnitHero extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20.h),
                 Text(
                   '${unit.tower} · Unit ${unit.unitNumber}',
                   style: TextStyle(
                     color: tokens.brandOnDark,
-                    fontSize: 22,
+                    fontSize: 22.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 Text(
                   '${unit.unitType} · ${unit.area} · ${unit.floor}',
                   style: TextStyle(
                     color: tokens.brandOnDarkMuted,
-                    fontSize: 13,
+                    fontSize: 13.sp,
                   ),
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18.h),
                 Row(
                   children: [
                     Icon(
@@ -156,12 +157,12 @@ class _UnitHero extends StatelessWidget {
                       color: tokens.brandOnDark,
                       size: 17,
                     ),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6.w),
                     Text(
                       '${unit.ownershipStatus} · Parking ${unit.parking.slot}',
                       style: TextStyle(
                         color: tokens.brandOnDarkMuted,
-                        fontSize: 12,
+                        fontSize: 12.sp,
                       ),
                     ),
                   ],
@@ -176,7 +177,7 @@ class _UnitHero extends StatelessWidget {
 }
 
 class _UnitInformationCard extends StatelessWidget {
-  const _UnitInformationCard({required this.unit});
+  _UnitInformationCard({required this.unit});
 
   final Unit unit;
 
@@ -186,7 +187,7 @@ class _UnitInformationCard extends StatelessWidget {
       child: GridView.count(
         crossAxisCount: 2,
         shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
+        physics: NeverScrollableScrollPhysics(),
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
         childAspectRatio: 2.35,
@@ -238,7 +239,7 @@ class _UnitInformationCard extends StatelessWidget {
 }
 
 class _PeopleCard extends StatelessWidget {
-  const _PeopleCard({required this.unit});
+  _PeopleCard({required this.unit});
 
   final Unit unit;
 
@@ -252,30 +253,30 @@ class _PeopleCard extends StatelessWidget {
           Text(
             'Owner',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               color: tokens.muted,
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: 2.h),
           UnitPersonTile(person: unit.owner),
-          const Divider(height: 24),
+          Divider(height: 24),
           Text(
             'Residents',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 12.sp,
               color: tokens.muted,
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: 2.h),
           ...unit.residents.map((resident) => UnitPersonTile(person: resident)),
           if (unit.tenant != null) ...[
-            const Divider(height: 24),
+            Divider(height: 24),
             Text(
               'Tenant',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.sp,
                 color: tokens.muted,
                 fontWeight: FontWeight.w700,
               ),
@@ -289,7 +290,7 @@ class _PeopleCard extends StatelessWidget {
 }
 
 class _ParkingCard extends StatelessWidget {
-  const _ParkingCard({required this.parking});
+  _ParkingCard({required this.parking});
 
   final ParkingInfo parking;
 
@@ -305,16 +306,16 @@ class _ParkingCard extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF1D6),
-                  borderRadius: BorderRadius.circular(14),
+                  color: Color(0xFFFFF1D6),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.directions_car_filled_outlined,
                   color: Color(0xFFB45309),
                 ),
               ),
-              const SizedBox(width: 12),
-              const Expanded(
+              SizedBox(width: 12.w),
+              Expanded(
                 child: Text(
                   'Registered vehicle',
                   style: TextStyle(fontWeight: FontWeight.w800),
@@ -329,13 +330,13 @@ class _ParkingCard extends StatelessWidget {
               ),
             ],
           ),
-          const Divider(height: 24),
+          Divider(height: 24),
           Row(
             children: [
               Expanded(
                 child: _ParkingValue(label: 'Vehicle', value: parking.vehicle),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: _ParkingValue(
                   label: 'License plate',
@@ -351,7 +352,7 @@ class _ParkingCard extends StatelessWidget {
 }
 
 class _ParkingValue extends StatelessWidget {
-  const _ParkingValue({required this.label, required this.value});
+  _ParkingValue({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -364,17 +365,17 @@ class _ParkingValue extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 11, color: tokens.muted),
+          style: TextStyle(fontSize: 11.sp, color: tokens.muted),
         ),
-        const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
+        SizedBox(height: 4.h),
+        Text(value, style: TextStyle(fontWeight: FontWeight.w800)),
       ],
     );
   }
 }
 
 class _UnitCard extends StatelessWidget {
-  const _UnitCard({required this.child});
+  _UnitCard({required this.child});
 
   final Widget child;
 
@@ -382,10 +383,10 @@ class _UnitCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: tokens.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: tokens.border),
         boxShadow: tokens.cardShadow,
       ),
@@ -395,7 +396,7 @@ class _UnitCard extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({required this.title});
+  _SectionTitle({required this.title});
 
   final String title;
 
@@ -413,7 +414,7 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({required this.label, required this.color});
+  _StatusBadge({required this.label, required this.color});
 
   final String label;
   final Color color;
@@ -421,16 +422,16 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: color,
-          fontSize: 11,
+          fontSize: 11.sp,
           fontWeight: FontWeight.w800,
         ),
       ),

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class UnitInfoTile extends StatelessWidget {
-  const UnitInfoTile({
+  UnitInfoTile({
     required this.label,
     required this.value,
     required this.icon,
@@ -18,15 +19,15 @@ class UnitInfoTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(13),
+      padding: EdgeInsets.all(13),
       decoration: BoxDecoration(
         color: tokens.canvas,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Row(
         children: [
           Icon(icon, size: 19, color: tokens.brand),
-          const SizedBox(width: 9),
+          SizedBox(width: 9.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,15 +35,15 @@ class UnitInfoTile extends StatelessWidget {
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     color: tokens.muted,
                   ),
                 ),
-                const SizedBox(height: 3),
+                SizedBox(height: 3.h),
                 Text(
                   value,
-                  style: const TextStyle(
-                    fontSize: 13,
+                  style: TextStyle(
+                    fontSize: 13.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_radius.dart';
@@ -25,7 +26,7 @@ import '../widgets/app_color_seed_grid.dart';
 /// The preview follows the draft, never the applied theme, so trying a colour
 /// changes nothing outside this screen until "Apply Theme" is tapped.
 class AppearancePage extends StatefulWidget {
-  const AppearancePage({super.key});
+  AppearancePage({super.key});
 
   @override
   State<AppearancePage> createState() => _AppearancePageState();
@@ -54,13 +55,13 @@ class _AppearancePageState extends State<AppearancePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppDetailAppBar(
+      appBar: AppDetailAppBar(
         title: 'Appearance',
         subtitle: 'Personalize your app experience',
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
         // An error only takes over the screen when there is nothing to show.
         // A failure to re-read storage while the resident is editing should not
@@ -79,13 +80,13 @@ class _AppearancePageState extends State<AppearancePage> {
         }
         return _Body(controller: controller);
       }),
-      bottomNavigationBar: const _AppearanceActionBar(),
+      bottomNavigationBar: _AppearanceActionBar(),
     );
   }
 }
 
 class _Body extends StatelessWidget {
-  const _Body({required this.controller});
+  _Body({required this.controller});
 
   final AppearanceController controller;
 
@@ -94,9 +95,9 @@ class _Body extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
 
     return ListView(
-      key: const Key('appearance-scroll'),
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(
+      key: Key('appearance-scroll'),
+      physics: AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.fromLTRB(
         AppSpacing.gutter,
         AppSpacing.pageTop,
         AppSpacing.gutter,
@@ -107,24 +108,24 @@ class _Body extends StatelessWidget {
           AppAppearanceCopy.title,
           style: TextStyle(
             color: tokens.ink,
-            fontSize: 18,
+            fontSize: 18.sp,
             height: 1.25,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.2,
           ),
         ),
-        const SizedBox(height: AppSpacing.fieldLabelGap),
+        SizedBox(height: AppSpacing.fieldLabelGap),
         Text(
           AppAppearanceCopy.description,
           style: TextStyle(
             color: tokens.muted,
-            fontSize: 13.5,
+            fontSize: 13.5.sp,
             height: 1.45,
           ),
         ),
-        const SizedBox(height: AppSpacing.sectionGap),
-        const AppSectionHeader(title: 'App color'),
-        const SizedBox(height: AppSpacing.cardGap + 4),
+        SizedBox(height: AppSpacing.sectionGap),
+        AppSectionHeader(title: 'App color'),
+        SizedBox(height: AppSpacing.cardGap + 4),
         Obx(
           () => AppColorSeedGrid(
             selected: controller.draft.value.preset,
@@ -137,40 +138,40 @@ class _Body extends StatelessWidget {
             selectionColor: controller.draft.value.seedColor,
           ),
         ),
-        const SizedBox(height: AppSpacing.sectionGap),
+        SizedBox(height: AppSpacing.sectionGap),
         AppSectionHeader(
           title: 'Appearance',
           actionLabel: 'Reset to Default',
           onAction: () => _reset(context, controller,controller.appliedThemeColor),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h),
         Text(
           'Light, dark, or follow your phone setting.',
-          style: TextStyle(color: tokens.muted, fontSize: 12.5, height: 1.4),
+          style: TextStyle(color: tokens.muted, fontSize: 12.5.sp, height: 1.4),
         ),
-        const SizedBox(height: AppSpacing.fieldGap + 2),
+        SizedBox(height: AppSpacing.fieldGap + 2),
         Obx(
           () => AppBrightnessModeSelector(
             value: controller.draft.value.brightnessMode,
             onChanged: controller.selectBrightnessMode,
           ),
         ),
-        const SizedBox(height: AppSpacing.sectionGap + 4),
+        SizedBox(height: AppSpacing.sectionGap + 4),
         Text(
           AppAppearanceCopy.previewTitle,
           style: TextStyle(
             color: tokens.ink,
-            fontSize: 18,
+            fontSize: 18.sp,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.2,
           ),
         ),
-        const SizedBox(height: AppSpacing.fieldLabelGap),
+        SizedBox(height: AppSpacing.fieldLabelGap),
         Text(
           AppAppearanceCopy.previewDescription,
-          style: TextStyle(color: tokens.muted, fontSize: 13, height: 1.4),
+          style: TextStyle(color: tokens.muted, fontSize: 13.sp, height: 1.4),
         ),
-        const SizedBox(height: AppSpacing.cardGap + 4),
+        SizedBox(height: AppSpacing.cardGap + 4),
         // The preview is wrapped in its own Theme so it paints with the draft
         // tokens. The surrounding screen keeps the applied theme, which is what
         // makes the contrast between the two readable: the resident sees the new
@@ -245,7 +246,7 @@ class _Body extends StatelessWidget {
 /// Wraps the preview in a [Theme] built from the draft tokens, and paints a
 /// hairline frame around it so it reads as a device screen on the page.
 class _PreviewSurface extends StatelessWidget {
-  const _PreviewSurface({required this.controller, required this.child});
+  _PreviewSurface({required this.controller, required this.child});
 
   final AppearanceController controller;
   final Widget child;
@@ -270,7 +271,7 @@ class _PreviewSurface extends StatelessWidget {
 /// The sticky footer: the commit action, plus the currently applied colour named
 /// back to the resident so they always know what the app is using right now.
 class _AppearanceActionBar extends StatelessWidget {
-  const _AppearanceActionBar();
+  _AppearanceActionBar();
 
   @override
   Widget build(BuildContext context) {
@@ -301,7 +302,7 @@ class _AppearanceActionBar extends StatelessWidget {
               Row(
                 children: [
                   _CurrentSwatch(color: draft.seedColor),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,18 +313,18 @@ class _AppearanceActionBar extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             fontWeight: FontWeight.w800,
                             color: changed ? tokens.brand : tokens.muted,
                           ),
                         ),
-                        const SizedBox(height: 1),
+                        SizedBox(height: 1.h),
                         Text(
                           '${draft.label} · ${draft.brightnessMode.label}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 11.5,
+                            fontSize: 11.5.sp,
                             color: tokens.muted,
                             fontWeight: FontWeight.w600,
                           ),
@@ -333,9 +334,9 @@ class _AppearanceActionBar extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               AppPrimaryAction(
-                key: const Key('appearance-apply'),
+                key: Key('appearance-apply'),
                 onPressed: changed
                     ? () => _apply(context, controller,draft.seedColor)
                     : null,
@@ -373,7 +374,7 @@ class _AppearanceActionBar extends StatelessWidget {
 }
 
 class _CurrentSwatch extends StatelessWidget {
-  const _CurrentSwatch({required this.color});
+  _CurrentSwatch({required this.color});
 
   final Color color;
 

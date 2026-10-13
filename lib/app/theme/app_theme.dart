@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme_tokens.dart';
@@ -94,8 +95,8 @@ abstract final class AppTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: dark ? const Color(0xFF23302E) : const Color(0xFF1D2B2A),
-        contentTextStyle: const TextStyle(
+        backgroundColor: dark ? Color(0xFF23302E) : Color(0xFF1D2B2A),
+        contentTextStyle: TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.w600,
         ),
@@ -106,7 +107,7 @@ abstract final class AppTheme {
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: tokens.surface,
         surfaceTintColor: Colors.transparent,
-        shape: const RoundedRectangleBorder(
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
       ),
@@ -128,7 +129,7 @@ abstract final class AppTheme {
         style: FilledButton.styleFrom(
           backgroundColor: tokens.brand,
           foregroundColor: tokens.onBrand,
-          minimumSize: const Size(0, 48),
+          minimumSize: Size(0, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),

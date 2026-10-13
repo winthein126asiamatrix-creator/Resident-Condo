@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppStateMessage extends StatelessWidget {
-  const AppStateMessage({
+  AppStateMessage({
     required this.title,
     required this.message,
     required this.icon,
@@ -20,21 +21,21 @@ class AppStateMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 56, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Text(
               title,
               style: Theme.of(context).textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(message, textAlign: TextAlign.center),
             if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               FilledButton(onPressed: onAction, child: Text(actionLabel!)),
             ],
           ],

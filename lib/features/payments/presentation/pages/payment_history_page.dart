@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_palette.dart';
@@ -12,7 +13,7 @@ import '../widgets/payment_record_badge.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class PaymentHistoryPage extends GetView<PaymentController> {
-  const PaymentHistoryPage({super.key});
+  PaymentHistoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,7 @@ class PaymentHistoryPage extends GetView<PaymentController> {
       appBar: AppDetailAppBar(title: 'Payment history'),
       body: Obx(() {
         if (controller.isLoading.value && controller.paymentHistory.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
         if (controller.errorMessage.value != null &&
             controller.paymentHistory.isEmpty) {
@@ -33,16 +34,16 @@ class PaymentHistoryPage extends GetView<PaymentController> {
           );
         }
         if (controller.paymentHistory.isEmpty) {
-          return const AppStateMessage(
+          return AppStateMessage(
             title: 'No payment history',
             message: 'Completed payments will appear here.',
             icon: Icons.history_rounded,
           );
         }
         return ListView.separated(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 32),
+          padding: EdgeInsets.fromLTRB(20, 10, 20, 32),
           itemCount: controller.paymentHistory.length,
-          separatorBuilder: (_, _) => const SizedBox(height: 10),
+          separatorBuilder: (_, _) => SizedBox(height: 10.h),
           itemBuilder: (_, index) =>
               _HistoryCard(payment: controller.paymentHistory[index]),
         );
@@ -52,7 +53,7 @@ class PaymentHistoryPage extends GetView<PaymentController> {
 }
 
 class _HistoryCard extends StatelessWidget {
-  const _HistoryCard({required this.payment});
+  _HistoryCard({required this.payment});
   final Payment payment;
 
   @override
@@ -60,10 +61,10 @@ class _HistoryCard extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     final color = payment.isSuccessful ? AppPalette.success : AppPalette.danger;
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: tokens.surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(color: tokens.border),
       ),
       child: Column(
@@ -74,19 +75,19 @@ class _HistoryCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   payment.date,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
               ),
               PaymentRecordBadge(status: payment.status),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Row(
             children: [
               Expanded(
                 child: Text(
                   payment.invoiceNumber,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
               Text(
@@ -95,23 +96,23 @@ class _HistoryCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             payment.items.map((item) => item.type.shortLabel).join(' · '),
-            style: TextStyle(color: tokens.muted, fontSize: 12),
+            style: TextStyle(color: tokens.muted, fontSize: 12.sp),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             '${payment.method.label} · ${payment.transactionId}',
-            style: TextStyle(color: tokens.faint, fontSize: 11),
+            style: TextStyle(color: tokens.faint, fontSize: 11.sp),
           ),
           if (payment.isFailed) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               payment.failureReason ?? 'Payment was declined.',
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppPalette.danger,
-                fontSize: 11,
+                fontSize: 11.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),

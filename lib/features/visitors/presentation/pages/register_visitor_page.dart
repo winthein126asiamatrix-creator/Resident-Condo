@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
@@ -19,7 +20,7 @@ import '../../../../core/utils/app_dates.dart';
 import '../../../../core/utils/app_times.dart';
 
 class RegisterVisitorPage extends StatefulWidget {
-  const RegisterVisitorPage({super.key});
+  RegisterVisitorPage({super.key});
 
   @override
   State<RegisterVisitorPage> createState() => _RegisterVisitorPageState();
@@ -105,7 +106,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
     final now = DateTime.now();
     final first = AppTimes.nextFullHour(now);
     if (first.day != now.day) {
-      return const [];
+      return [];
     }
     final count = _arrivalSlotCount.clamp(0, 24 - first.hour);
     return [
@@ -131,8 +132,8 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
   AppTimeRange get _visitWindow =>
       AppTimeRange.fromLabel(_arrival, _visitHours) ??
       AppTimeRange(
-        start: const TimeOfDay(hour: 10, minute: 0),
-        end: const TimeOfDay(hour: 12, minute: 0),
+        start: TimeOfDay(hour: 10, minute: 0),
+        end: TimeOfDay(hour: 12, minute: 0),
       );
 
   @override
@@ -151,7 +152,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
       appBar: AppDetailAppBar(title: 'Register visitor'),
       body: Obx(
         () => ListView(
-          key: const Key('register-visitor-scroll'),
+          key: Key('register-visitor-scroll'),
           padding: EdgeInsets.fromLTRB(
             20,
             8,
@@ -166,7 +167,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.vpn_key_outlined, color: tokens.brand),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
                       'An alphanumeric access code is generated automatically '
@@ -174,7 +175,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                       'QR pass is used.',
                       style: TextStyle(
                         color: tokens.mutedStrong,
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         height: 1.4,
                       ),
                     ),
@@ -182,18 +183,18 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.fieldGap),
+            SizedBox(height: AppSpacing.fieldGap),
             AppTextField(
-              fieldKey: const Key('visitor-name-field'),
+              fieldKey: Key('visitor-name-field'),
               label: 'Full name',
               controller: _nameController,
               textCapitalization: TextCapitalization.words,
               hint: 'Jamie Johnson',
               icon: Icons.person_outline_rounded,
             ),
-            const SizedBox(height: AppSpacing.fieldGap),
+            SizedBox(height: AppSpacing.fieldGap),
             AppTextField(
-              fieldKey: const Key('visitor-phone-field'),
+              fieldKey: Key('visitor-phone-field'),
               label: 'Contact number',
               controller: _phoneController,
               keyboardType: TextInputType.phone,
@@ -203,9 +204,9 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
               hint: '+959772611100',
               icon: Icons.phone_outlined,
             ),
-            const SizedBox(height: AppSpacing.fieldGap),
-            const _Label('Relation'),
-            const SizedBox(height: 8),
+            SizedBox(height: AppSpacing.fieldGap),
+            _Label('Relation'),
+            SizedBox(height: 8.h),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -226,26 +227,26 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                   )
                   .toList(),
             ),
-            const SizedBox(height: AppSpacing.fieldGap),
+            SizedBox(height: AppSpacing.fieldGap),
             AppTextField(
               label: 'Purpose of visit',
               controller: _notesController,
               hint: 'Dinner, delivery, maintenance visit…',
               icon: Icons.notes_rounded,
             ),
-            const SizedBox(height: AppSpacing.fieldGap),
-            const _Label('Visit date'),
-            const SizedBox(height: 8),
+            SizedBox(height: AppSpacing.fieldGap),
+            _Label('Visit date'),
+            SizedBox(height: 8.h),
             _VisitDatePicker(
               dates: _visitDates,
               selected: _date,
               onSelected: _selectDate,
             ),
-            const SizedBox(height: AppSpacing.fieldGap),
-            const _Label('Arrival time'),
-            const SizedBox(height: 8),
+            SizedBox(height: AppSpacing.fieldGap),
+            _Label('Arrival time'),
+            SizedBox(height: 8.h),
             if (_arrivalSlots.isEmpty)
-              const _NoSlotsToday()
+              _NoSlotsToday()
             else ...[
               Wrap(
                 spacing: 8,
@@ -271,7 +272,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                   // Uses the platform time picker already in the project, so no
                   // new package is needed for a custom arrival time.
                   ChoiceChip(
-                    key: const Key('arrival-slot-custom'),
+                    key: Key('arrival-slot-custom'),
                     avatar: Icon(
                       Icons.schedule_rounded,
                       size: 17,
@@ -292,21 +293,21 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               _VisitWindow(range: _visitWindow),
             ],
-            const SizedBox(height: AppSpacing.fieldGap),
+            SizedBox(height: AppSpacing.fieldGap),
             AppTextField(
               label: 'Vehicle plate (optional)',
               controller: _plateController,
               textCapitalization: TextCapitalization.characters,
-              inputFormatters: const [UpperCaseTextFormatter()],
+              inputFormatters: [UpperCaseTextFormatter()],
               hint: 'ABC-1234',
               icon: Icons.directions_car_outlined,
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             AppPrimaryAction(
-              key: const Key('submit-visitor'),
+              key: Key('submit-visitor'),
               onPressed: controller.isSubmitting.value ? null : _submit,
               isLoading: controller.isSubmitting.value,
               label: controller.isSubmitting.value
@@ -315,14 +316,14 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
               icon: Icons.person_add_alt_1_rounded,
             ),
             if (_error.isNotEmpty) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               Text(_error, style: TextStyle(color: AppPalette.danger)),
             ],
             if (controller.errorMessage.value != null) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               Text(
                 controller.errorMessage.value!,
-                style: const TextStyle(color: AppPalette.danger),
+                style: TextStyle(color: AppPalette.danger),
               ),
             ],
           ],
@@ -365,10 +366,10 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
         ? current
         : (_isToday
               ? TimeOfDay(hour: now.hour + 1, minute: 0)
-              : const TimeOfDay(hour: 10, minute: 0));
+              : TimeOfDay(hour: 10, minute: 0));
     final picked = await showTimePicker(
       context: context,
-      initialTime: opening ?? const TimeOfDay(hour: 10, minute: 0),
+      initialTime: opening ?? TimeOfDay(hour: 10, minute: 0),
       helpText: 'Choose an arrival time',
     );
     if (picked == null || !mounted) {
@@ -460,7 +461,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
 /// Day cards for the visit date: the relative label, the day number and the
 /// month, with the selected day clearly filled in.
 class _VisitDatePicker extends StatelessWidget {
-  const _VisitDatePicker({
+  _VisitDatePicker({
     required this.dates,
     required this.selected,
     required this.onSelected,
@@ -483,7 +484,7 @@ class _VisitDatePicker extends StatelessWidget {
               onTap: () => onSelected(dates[index].value),
             ),
           ),
-          if (index < dates.length - 1) const SizedBox(width: 8),
+          if (index < dates.length - 1) SizedBox(width: 8.w),
         ],
       ],
     );
@@ -491,7 +492,7 @@ class _VisitDatePicker extends StatelessWidget {
 }
 
 class _VisitDateCard extends StatelessWidget {
-  const _VisitDateCard({
+  _VisitDateCard({
     required this.date,
     required this.selected,
     required this.onTap,
@@ -522,7 +523,7 @@ class _VisitDateCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 4),
+            padding: EdgeInsets.symmetric(vertical: 11, horizontal: 4),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -533,25 +534,25 @@ class _VisitDateCard extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: selected ? tokens.brandOnDark : tokens.muted,
-                    fontSize: 10.5,
+                    fontSize: 10.5.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   date.day,
                   style: TextStyle(
                     color: selected ? tokens.onBrand : tokens.ink,
-                    fontSize: 19,
+                    fontSize: 19.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 1),
+                SizedBox(height: 1.h),
                 Text(
                   date.month,
                   style: TextStyle(
                     color: selected ? tokens.brandOnDark : tokens.muted,
-                    fontSize: 10.5,
+                    fontSize: 10.5.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -570,31 +571,31 @@ class _VisitDateCard extends StatelessWidget {
 /// the evening there is no full hour left today, and rather than offer a time
 /// that has already gone the resident is told to pick another date.
 class _NoSlotsToday extends StatelessWidget {
-  const _NoSlotsToday();
+  _NoSlotsToday();
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: AppPalette.amberSoft,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.schedule_rounded,
             size: 18,
             color: AppPalette.warning,
           ),
-          const SizedBox(width: 9),
+          SizedBox(width: 9.w),
           Expanded(
             child: Text(
               'No arrival times are left today. Choose a later visit date.',
               style: TextStyle(
                 color: tokens.mutedStrong,
-                fontSize: 12,
+                fontSize: 12.sp,
                 height: 1.35,
               ),
             ),
@@ -606,7 +607,7 @@ class _NoSlotsToday extends StatelessWidget {
 }
 
 class _VisitWindow extends StatelessWidget {
-  const _VisitWindow({required this.range});
+  _VisitWindow({required this.range});
 
   final AppTimeRange range;
 
@@ -614,10 +615,10 @@ class _VisitWindow extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: tokens.brandTint,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: tokens.brandSoft),
       ),
       child: Row(
@@ -627,7 +628,7 @@ class _VisitWindow extends StatelessWidget {
             size: 18,
             color: tokens.brand,
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -636,16 +637,16 @@ class _VisitWindow extends StatelessWidget {
                   'Visit time',
                   style: TextStyle(
                     color: tokens.muted,
-                    fontSize: 11.5,
+                    fontSize: 11.5.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   range.label,
                   style: TextStyle(
                     color: tokens.brand,
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -656,7 +657,7 @@ class _VisitWindow extends StatelessWidget {
             '2 hours',
             style: TextStyle(
               color: tokens.mutedStrong,
-              fontSize: 12,
+              fontSize: 12.sp,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -667,14 +668,14 @@ class _VisitWindow extends StatelessWidget {
 }
 
 class _Label extends StatelessWidget {
-  const _Label(this.text);
+  _Label(this.text);
   final String text;
 
   @override
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
     );
   }
 }

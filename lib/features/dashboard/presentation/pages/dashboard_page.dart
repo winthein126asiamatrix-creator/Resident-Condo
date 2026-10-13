@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -14,7 +15,7 @@ import '../widgets/status_badge.dart';
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class DashboardPage extends GetView<DashboardController> {
-  const DashboardPage({required this.onSelectTab, super.key});
+  DashboardPage({required this.onSelectTab, super.key});
 
   final ValueChanged<int> onSelectTab;
 
@@ -51,7 +52,7 @@ class DashboardPage extends GetView<DashboardController> {
   Widget build(BuildContext context) {
     return Obx(() {
       if (controller.isLoading.value && controller.dashboard.value == null) {
-        return const BrandedLoadingView();
+        return BrandedLoadingView();
       }
       if (controller.errorMessage.value != null &&
           controller.dashboard.value == null) {
@@ -71,7 +72,7 @@ class DashboardPage extends GetView<DashboardController> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+              padding: EdgeInsets.fromLTRB(20, 18, 20, 0),
               child: _GreetingHeader(
                 resident: _residentSession,
                 unreadCount: _unreadNotifications,
@@ -83,63 +84,63 @@ class DashboardPage extends GetView<DashboardController> {
               child: RefreshIndicator(
                 onRefresh: controller.loadDashboard,
                 child: ListView(
-                  key: const Key('dashboard-scroll'),
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+                  key: Key('dashboard-scroll'),
+                  physics: AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(20, 12, 20, 28),
                   children: [
                     _HomeCard(
                       unit: data.unit,
                       onViewDetails: () => Get.toNamed(AppRoutes.unit),
                     ),
-                    const SizedBox(height: 22),
+                    SizedBox(height: 22.h),
                     _BalanceCard(
                       balance: data.balance,
                       onPayNow: () => onSelectTab(1),
                     ),
-                    const SizedBox(height: 26),
-                    const SectionHeader(title: 'Quick actions'),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 26.h),
+                    SectionHeader(title: 'Quick actions'),
+                    SizedBox(height: 12.h),
                     _QuickActions(onSelectTab: onSelectTab),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     OutlinedButton.icon(
-                      key: const Key('dashboard-all-services'),
+                      key: Key('dashboard-all-services'),
                       onPressed: () => Get.toNamed(AppRoutes.more),
-                      icon: const Icon(Icons.grid_view_rounded, size: 18),
-                      label: const Text('All resident services'),
+                      icon: Icon(Icons.grid_view_rounded, size: 18),
+                      label: Text('All resident services'),
                       style: OutlinedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(46),
+                        minimumSize: Size.fromHeight(46),
                       ),
                     ),
-                    const SizedBox(height: 26),
+                    SizedBox(height: 26.h),
                     SectionHeader(
                       title: 'Maintenance',
                       actionLabel: 'View all',
                       onAction: () => onSelectTab(2),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     _MaintenanceCard(
                       requests: data.maintenance,
                       inProgress: data.inProgressMaintenance,
                       completed: data.completedMaintenance,
                     ),
-                    const SizedBox(height: 26),
+                    SizedBox(height: 26.h),
                     SectionHeader(
                       title: 'Reservations',
                       actionLabel: 'Book',
                       onAction: () => onSelectTab(3),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     _ReservationsCard(reservations: data.reservations),
-                    const SizedBox(height: 26),
+                    SizedBox(height: 26.h),
                     SectionHeader(
                       title: 'Latest announcements',
                       actionLabel: 'View all',
                       onAction: () => Get.toNamed(AppRoutes.announcements),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
                     ...data.announcements.map(
                       (announcement) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
+                        padding: EdgeInsets.only(bottom: 10),
                         child: _AnnouncementCard(announcement: announcement),
                       ),
                     ),
@@ -155,7 +156,7 @@ class DashboardPage extends GetView<DashboardController> {
 }
 
 class _GreetingHeader extends StatelessWidget {
-  const _GreetingHeader({
+  _GreetingHeader({
     required this.resident,
     required this.unreadCount,
     required this.onNotifications,
@@ -198,7 +199,7 @@ class _GreetingHeader extends StatelessWidget {
                   color: tokens.ink,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 "Here's what's happening with your condo today.",
                 style: Theme.of(context).textTheme.bodyMedium
@@ -207,9 +208,9 @@ class _GreetingHeader extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12.w),
         IconButton(
-          key: const Key('dashboard-all-services-icon'),
+          key: Key('dashboard-all-services-icon'),
           onPressed: onMore,
           tooltip: 'All resident services',
           icon: Icon(Icons.grid_view_rounded, color: tokens.brand),
@@ -218,9 +219,9 @@ class _GreetingHeader extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             InkWell(
-              key: const Key('dashboard-notifications'),
+              key: Key('dashboard-notifications'),
               onTap: onNotifications,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(24.r),
               child: CircleAvatar(
                 radius: 22,
                 backgroundColor: tokens.brandOnDark,
@@ -250,7 +251,7 @@ class _GreetingHeader extends StatelessWidget {
                       unreadCount > 9 ? '9+' : '$unreadCount',
                       style: TextStyle(
                         color: tokens.onBrand,
-                        fontSize: 9,
+                        fontSize: 9.sp,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -265,7 +266,7 @@ class _GreetingHeader extends StatelessWidget {
 }
 
 class _HomeCard extends StatelessWidget {
-  const _HomeCard({required this.unit, required this.onViewDetails});
+  _HomeCard({required this.unit, required this.onViewDetails});
 
   final UnitSummary unit;
   final VoidCallback onViewDetails;
@@ -275,12 +276,12 @@ class _HomeCard extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     return InkWell(
       onTap: onViewDetails,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(24.r),
       child: Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: tokens.brand,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r),
           boxShadow: tokens.heroShadow,
         ),
         child: Stack(
@@ -295,7 +296,7 @@ class _HomeCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+              padding: EdgeInsets.fromLTRB(20, 20, 20, 18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -306,7 +307,7 @@ class _HomeCard extends StatelessWidget {
                             'YOUR HOME',
                             style: TextStyle(
                               color: tokens.brandOnDark,
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 1.4,
                             ),
@@ -315,24 +316,24 @@ class _HomeCard extends StatelessWidget {
                         StatusBadge(label: unit.occupancy),
                       ],
                     ),
-                    const SizedBox(height: 18),
+                    SizedBox(height: 18.h),
                     Text(
                       '${unit.tower} · Unit ${unit.unit}',
                       style: TextStyle(
                         color: tokens.brandOnDark,
-                        fontSize: 21,
+                        fontSize: 21.sp,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6.h),
                     Text(
                       '${unit.type} · ${unit.area} · ${unit.floor}',
                       style: TextStyle(
                         color: tokens.brandOnDarkMuted,
-                        fontSize: 13,
+                        fontSize: 13.sp,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     Row(
                       children: [
                         Icon(
@@ -340,7 +341,7 @@ class _HomeCard extends StatelessWidget {
                           color: tokens.brandOnDark,
                           size: 17,
                         ),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6.w),
                         Flexible(
                           child: Text(
                             '${unit.ownership} · Parking ${unit.parkingSlot}',
@@ -348,7 +349,7 @@ class _HomeCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: tokens.brandOnDarkMuted,
-                              fontSize: 12,
+                              fontSize: 12.sp,
                             ),
                           ),
                         ),
@@ -365,7 +366,7 @@ class _HomeCard extends StatelessWidget {
 }
 
 class _BalanceCard extends StatelessWidget {
-  const _BalanceCard({required this.balance, required this.onPayNow});
+  _BalanceCard({required this.balance, required this.onPayNow});
 
   final BalanceSummary balance;
   final VoidCallback onPayNow;
@@ -374,10 +375,10 @@ class _BalanceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: tokens.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: tokens.border),
         boxShadow: tokens.cardShadow,
       ),
@@ -386,7 +387,7 @@ class _BalanceCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Outstanding balance',
                   style: TextStyle(fontWeight: FontWeight.w700),
@@ -395,7 +396,7 @@ class _BalanceCard extends StatelessWidget {
               StatusBadge(label: 'Due ${balance.dueDate}'),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             '\$${balance.outstanding.toStringAsFixed(2)}',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -408,7 +409,7 @@ class _BalanceCard extends StatelessWidget {
             style: Theme.of(context).textTheme.bodySmall
                 ?.copyWith(color: tokens.muted),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Row(
             children: [
               Expanded(
@@ -417,14 +418,14 @@ class _BalanceCard extends StatelessWidget {
                   children: [
                     Text(
                       'Last payment',
-                      style: TextStyle(fontSize: 12, color: tokens.muted),
+                      style: TextStyle(fontSize: 12.sp, color: tokens.muted),
                     ),
-                    const SizedBox(height: 3),
+                    SizedBox(height: 3.h),
                     Text(
                       '\$${balance.lastPayment.toStringAsFixed(2)} · ${balance.lastPaymentDate}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w700,
-                        fontSize: 12,
+                        fontSize: 12.sp,
                       ),
                     ),
                   ],
@@ -432,12 +433,12 @@ class _BalanceCard extends StatelessWidget {
               ),
               FilledButton.icon(
                 onPressed: onPayNow,
-                icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                label: const Text('Pay now'),
+                icon: Icon(Icons.arrow_forward_rounded, size: 16),
+                label: Text('Pay now'),
                 style: FilledButton.styleFrom(
                   backgroundColor: tokens.brand,
                   foregroundColor: tokens.onBrand,
-                  padding: const EdgeInsets.symmetric(
+                  padding: EdgeInsets.symmetric(
                     horizontal: 13,
                     vertical: 11,
                   ),
@@ -452,7 +453,7 @@ class _BalanceCard extends StatelessWidget {
 }
 
 class _QuickActions extends StatelessWidget {
-  const _QuickActions({required this.onSelectTab});
+  _QuickActions({required this.onSelectTab});
 
   final ValueChanged<int> onSelectTab;
 
@@ -473,7 +474,7 @@ class _QuickActions extends StatelessWidget {
                 onTap: () => onSelectTab(1),
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             Expanded(
               child: _QuickAction(
                 icon: Icons.handyman_outlined,
@@ -484,29 +485,29 @@ class _QuickActions extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10.h),
         Row(
           children: [
             Expanded(
               child: _QuickAction(
                 icon: Icons.person_add_alt_1_outlined,
                 label: 'Register visitor',
-                color: const Color(0xFFFFF1D6),
+                color: Color(0xFFFFF1D6),
                 onTap: () => Get.toNamed(AppRoutes.visitors),
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             Expanded(
               child: _QuickAction(
                 icon: Icons.event_available_outlined,
                 label: 'Reserve',
-                color: const Color(0xFFEAE8FA),
+                color: Color(0xFFEAE8FA),
                 onTap: () => onSelectTab(3),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10.h),
         Row(
           children: [
             Expanded(
@@ -517,12 +518,12 @@ class _QuickActions extends StatelessWidget {
                 onTap: () => Get.toNamed(AppRoutes.store),
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             Expanded(
               child: _QuickAction(
                 icon: Icons.room_service_outlined,
                 label: 'Services',
-                color: const Color(0xFFEAE8FA),
+                color: Color(0xFFEAE8FA),
                 onTap: () => Get.toNamed(AppRoutes.services),
               ),
             ),
@@ -535,7 +536,7 @@ class _QuickActions extends StatelessWidget {
 
 
 class _QuickAction extends StatelessWidget {
-  const _QuickAction({
+  _QuickAction({
     required this.icon,
     required this.label,
     required this.color,
@@ -552,12 +553,12 @@ class _QuickAction extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(16.r),
       child: Container(
-        padding: const EdgeInsets.all(13),
+        padding: EdgeInsets.all(13),
         decoration: BoxDecoration(
           color: tokens.surface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: tokens.border),
         ),
         child: Row(
@@ -567,16 +568,16 @@ class _QuickAction extends StatelessWidget {
               height: 36,
               decoration: BoxDecoration(
                 color: color,
-                borderRadius: BorderRadius.circular(11),
+                borderRadius: BorderRadius.circular(11.r),
               ),
               child: Icon(icon, color: tokens.ink, size: 20),
             ),
-            const SizedBox(width: 9),
+            SizedBox(width: 9.w),
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(
-                  fontSize: 12,
+                style: TextStyle(
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -589,7 +590,7 @@ class _QuickAction extends StatelessWidget {
 }
 
 class _MaintenanceCard extends StatelessWidget {
-  const _MaintenanceCard({
+  _MaintenanceCard({
     required this.requests,
     required this.inProgress,
     required this.completed,
@@ -605,34 +606,34 @@ class _MaintenanceCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: tokens.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: tokens.border),
       ),
       child: Column(
         children: [
           ...requests.map(
             (request) => Padding(
-              padding: const EdgeInsets.fromLTRB(16, 15, 16, 15),
+              padding: EdgeInsets.fromLTRB(16, 15, 16, 15),
               child: Row(
                 children: [
                   Icon(
                     Icons.build_circle_outlined,
                     color: tokens.brand,
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           request.title,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
+                          style: TextStyle(fontWeight: FontWeight.w700),
                         ),
-                        const SizedBox(height: 3),
+                        SizedBox(height: 3.h),
                         Text(
                           '${request.category} · ${request.priority}',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             color: tokens.muted,
                           ),
                         ),
@@ -646,15 +647,15 @@ class _MaintenanceCard extends StatelessWidget {
           ),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: tokens.surfaceMuted,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(19)),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(19.r)),
             ),
             child: Text(
               '$inProgress in progress  ·  $completed completed',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.sp,
                 color: tokens.mutedStrong,
                 fontWeight: FontWeight.w700,
               ),
@@ -667,7 +668,7 @@ class _MaintenanceCard extends StatelessWidget {
 }
 
 class _ReservationsCard extends StatelessWidget {
-  const _ReservationsCard({required this.reservations});
+  _ReservationsCard({required this.reservations});
 
   final List<ReservationSummary> reservations;
 
@@ -675,10 +676,10 @@ class _ReservationsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
         color: tokens.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: tokens.border),
       ),
       child: Column(
@@ -688,16 +689,16 @@ class _ReservationsCard extends StatelessWidget {
                 dense: true,
                 leading: CircleAvatar(
                   radius: 19,
-                  backgroundColor: const Color(0xFFEAE8FA),
+                  backgroundColor: Color(0xFFEAE8FA),
                   child: Icon(
                     Icons.event_rounded,
                     size: 19,
-                    color: const Color(0xFF5B4CC4),
+                    color: Color(0xFF5B4CC4),
                   ),
                 ),
                 title: Text(
                   reservation.facility,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
+                  style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 subtitle: Text('${reservation.date} · ${reservation.time}'),
                 trailing: StatusBadge(label: reservation.status),
@@ -710,7 +711,7 @@ class _ReservationsCard extends StatelessWidget {
 }
 
 class _AnnouncementCard extends StatelessWidget {
-  const _AnnouncementCard({required this.announcement});
+  _AnnouncementCard({required this.announcement});
 
   final AnnouncementSummary announcement;
 
@@ -718,10 +719,10 @@ class _AnnouncementCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: tokens.surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(color: tokens.border),
       ),
       child: Row(
@@ -732,19 +733,19 @@ class _AnnouncementCard extends StatelessWidget {
             height: 36,
             decoration: BoxDecoration(
               color: tokens.brandTint,
-              borderRadius: BorderRadius.circular(11),
+              borderRadius: BorderRadius.circular(11.r),
             ),
             child: Icon(
               announcement.isUrgent
                   ? Icons.warning_amber_rounded
                   : Icons.campaign_outlined,
               color: announcement.isUrgent
-                  ? const Color(0xFFC2410C)
+                  ? Color(0xFFC2410C)
                   : tokens.brand,
               size: 20,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -754,28 +755,28 @@ class _AnnouncementCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         announcement.title,
-                        style: const TextStyle(fontWeight: FontWeight.w800),
+                        style: TextStyle(fontWeight: FontWeight.w800),
                       ),
                     ),
                     Text(
                       announcement.date,
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 10.sp,
                         color: tokens.muted,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 5),
+                SizedBox(height: 5.h),
                 Text(
                   announcement.description,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     height: 1.35,
                     color: tokens.muted,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 StatusBadge(label: announcement.category),
               ],
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -19,7 +20,7 @@ import '../controllers/auth_controller.dart';
 /// deliberate on a tall phone. Nothing here is a gradient or a heavy animation:
 /// a login screen should feel like the app is simply asking you for your key.
 class LoginPage extends StatefulWidget {
-  const LoginPage({this.onSignedIn, super.key});
+  LoginPage({this.onSignedIn, super.key});
 
   final void Function()? onSignedIn;
 
@@ -69,8 +70,8 @@ class _LoginPageState extends State<LoginPage> {
           builder: (context, constraints) {
             return SingleChildScrollView(
               physics: constraints.maxHeight > 0
-                  ? const ClampingScrollPhysics()
-                  : const NeverScrollableScrollPhysics(),
+                  ? ClampingScrollPhysics()
+                  : NeverScrollableScrollPhysics(),
               padding: EdgeInsets.fromLTRB(
                 AppSpacing.gutter,
                 AppSpacing.pageTop,
@@ -84,9 +85,9 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 12),
-                    const _LoginHeader(),
-                    const SizedBox(height: 28),
+                    SizedBox(height: 12.h),
+                    _LoginHeader(),
+                    SizedBox(height: 28.h),
                     _LoginForm(
                       formKey: _formKey,
                       auth: _auth,
@@ -96,8 +97,8 @@ class _LoginPageState extends State<LoginPage> {
                       passwordFocus: _passwordFocus,
                       onSubmit: _submit,
                     ),
-                    const SizedBox(height: AppSpacing.sectionGap),
-                    const _LoginFooter(),
+                    SizedBox(height: AppSpacing.sectionGap),
+                    _LoginFooter(),
                   ],
                 ),
               ),
@@ -141,7 +142,7 @@ class _LoginPageState extends State<LoginPage> {
 
 /// The app icon, the greeting and the supporting line.
 class _LoginHeader extends StatelessWidget {
-  const _LoginHeader();
+  _LoginHeader();
 
   @override
   Widget build(BuildContext context) {
@@ -154,12 +155,12 @@ class _LoginHeader extends StatelessWidget {
           width: 64,
           height: 64,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
                 color: tokens.brand.withValues(alpha: 0.2),
                 blurRadius: 18,
-                offset: const Offset(0, 8),
+                offset: Offset(0, 8),
               ),
             ],
           ),
@@ -171,21 +172,21 @@ class _LoginHeader extends StatelessWidget {
             filterQuality: FilterQuality.high,
           ),
         ),
-        const SizedBox(height: 22),
+        SizedBox(height: 22.h),
         Text(
           'Welcome back',
           style: TextStyle(
             color: tokens.ink,
-            fontSize: 27,
+            fontSize: 27.sp,
             height: 1.2,
             letterSpacing: -0.4,
             fontWeight: FontWeight.w800,
           ),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6.h),
         Text(
           'Sign in to manage your residence',
-          style: TextStyle(color: tokens.muted, fontSize: 14.5, height: 1.4),
+          style: TextStyle(color: tokens.muted, fontSize: 14.5.sp, height: 1.4),
         ),
       ],
     );
@@ -195,7 +196,7 @@ class _LoginHeader extends StatelessWidget {
 /// The form itself, kept separate so a rebuild of the surrounding page does not
 /// restart the fields.
 class _LoginForm extends StatelessWidget {
-  const _LoginForm({
+  _LoginForm({
     required this.formKey,
     required this.auth,
     required this.username,
@@ -224,11 +225,11 @@ class _LoginForm extends StatelessWidget {
           // being duplicated against whichever field the resident guesses.
           Obx(
             () => auth.errorMessage.value == null
-                ? const SizedBox.shrink()
+                ? SizedBox.shrink()
                 : _ErrorBanner(message: auth.errorMessage.value!),
           ),
           AppTextField(
-            fieldKey: const Key('login-username'),
+            fieldKey: Key('login-username'),
             label: 'Username',
             hint: 'e.g. alex',
             icon: Icons.person_outline_rounded,
@@ -257,10 +258,10 @@ class _LoginForm extends StatelessWidget {
                       ?.message
                 : null,
           ),
-          const SizedBox(height: AppSpacing.fieldGap),
+          SizedBox(height: AppSpacing.fieldGap),
           Obx(
             () => AppTextField(
-              fieldKey: const Key('login-password'),
+              fieldKey: Key('login-password'),
               label: 'Password',
               hint: 'Enter your password',
               icon: Icons.lock_outline_rounded,
@@ -293,12 +294,12 @@ class _LoginForm extends StatelessWidget {
                   : null,
             ),
           ),
-          const SizedBox(height: AppSpacing.fieldGap),
+          SizedBox(height: AppSpacing.fieldGap),
           _RememberMeAndForgot(auth: auth),
-          const SizedBox(height: AppSpacing.sectionGap),
+          SizedBox(height: AppSpacing.sectionGap),
           Obx(
             () => AppPrimaryAction(
-              key: const Key('login-submit'),
+              key: Key('login-submit'),
               onPressed: auth.isSubmitting.value ? null : onSubmit,
               isLoading: auth.isSubmitting.value,
               label: auth.isSubmitting.value ? 'Signing in...' : 'Sign In',
@@ -313,7 +314,7 @@ class _LoginForm extends StatelessWidget {
 
 /// The eye button inside the password field.
 class _PasswordToggle extends StatelessWidget {
-  const _PasswordToggle({required this.visible, required this.onToggle});
+  _PasswordToggle({required this.visible, required this.onToggle});
 
   final bool visible;
   final VoidCallback onToggle;
@@ -322,7 +323,7 @@ class _PasswordToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return IconButton(
-      key: const Key('login-password-toggle'),
+      key: Key('login-password-toggle'),
       onPressed: onToggle,
       // The label describes the action, so a screen reader announces what the
       // tap will do rather than the current state.
@@ -338,7 +339,7 @@ class _PasswordToggle extends StatelessWidget {
 
 /// Remember me on the left, Forgot password on the right.
 class _RememberMeAndForgot extends StatelessWidget {
-  const _RememberMeAndForgot({required this.auth});
+  _RememberMeAndForgot({required this.auth});
 
   final AuthController auth;
 
@@ -348,13 +349,13 @@ class _RememberMeAndForgot extends StatelessWidget {
 
     final rememberMeControl = Obx(
       () => Checkbox(
-        key: const Key('login-remember-me'),
+        key: Key('login-remember-me'),
         value: auth.rememberMe.value,
         onChanged: auth.isSubmitting.value ? null : auth.toggleRememberMe,
         activeColor: tokens.brand,
         checkColor: tokens.onBrand,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(6.r),
           side: BorderSide(color: tokens.border),
         ),
         visualDensity: VisualDensity.compact,
@@ -372,24 +373,24 @@ class _RememberMeAndForgot extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
           color: tokens.mutedStrong,
-          fontSize: 13.5,
+          fontSize: 13.5.sp,
           fontWeight: FontWeight.w600,
         ),
       ),
     );
 
     final forgot = TextButton(
-      key: const Key('login-forgot-password'),
+      key: Key('login-forgot-password'),
       onPressed: auth.isSubmitting.value
           ? null
           : () => _showForgotPassword(context),
       style: TextButton.styleFrom(
         foregroundColor: tokens.brand,
-        minimumSize: const Size(0, AppSpacing.minTouchTarget),
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        textStyle: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
+        minimumSize: Size(0, AppSpacing.minTouchTarget),
+        padding: EdgeInsets.symmetric(horizontal: 8),
+        textStyle: TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w700),
       ),
-      child: const Text('Forgot password'),
+      child: Text('Forgot password'),
     );
 
     // On a narrow phone the two controls cannot share a line without the label
@@ -402,7 +403,7 @@ class _RememberMeAndForgot extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             rememberMeControl,
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Flexible(child: rememberMeLabel),
           ],
         );
@@ -441,17 +442,17 @@ class _RememberMeAndForgot extends StatelessWidget {
 
 /// A single, quiet error line above the form.
 class _ErrorBanner extends StatelessWidget {
-  const _ErrorBanner({required this.message});
+  _ErrorBanner({required this.message});
 
   final String message;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.fieldGap),
+      padding: EdgeInsets.only(bottom: AppSpacing.fieldGap),
       child: Container(
-        key: const Key('login-error'),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        key: Key('login-error'),
+        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: AppPalette.danger.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(AppRadius.md),
@@ -460,18 +461,18 @@ class _ErrorBanner extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline_rounded,
               size: 18,
               color: AppPalette.danger,
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppPalette.danger,
-                  fontSize: 12.5,
+                  fontSize: 12.5.sp,
                   height: 1.35,
                   fontWeight: FontWeight.w600,
                 ),
@@ -486,32 +487,32 @@ class _ErrorBanner extends StatelessWidget {
 
 /// The closing reassurance line.
 class _LoginFooter extends StatelessWidget {
-  const _LoginFooter();
+  _LoginFooter();
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Column(
       children: [
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Icon(Icons.shield_outlined, size: 16, color: tokens.faint),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         Text(
           'Secure access to your residence',
           textAlign: TextAlign.center,
           style: TextStyle(
             color: tokens.faint,
-            fontSize: 12,
+            fontSize: 12.sp,
             height: 1.3,
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12.h),
         Text(
           AppConstants.appName,
           style: TextStyle(
             color: tokens.faint,
-            fontSize: 11.5,
+            fontSize: 11.5.sp,
             fontWeight: FontWeight.w600,
           ),
         ),

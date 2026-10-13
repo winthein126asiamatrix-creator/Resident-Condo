@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -14,7 +15,7 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/theme/app_spacing.dart';
 
 class InvoiceDetailPage extends GetView<PaymentController> {
-  const InvoiceDetailPage({required this.invoice, super.key});
+  InvoiceDetailPage({required this.invoice, super.key});
 
   final Invoice invoice;
 
@@ -32,8 +33,8 @@ class InvoiceDetailPage extends GetView<PaymentController> {
   Widget _buildBody(BuildContext context, Invoice currentInvoice) {
     final tokens = AppThemeTokens.of(context);
     return ListView(
-      key: const Key('invoice-detail-scroll'),
-      padding: const EdgeInsets.fromLTRB(
+      key: Key('invoice-detail-scroll'),
+      padding: EdgeInsets.fromLTRB(
         AppSpacing.gutter,
         AppSpacing.pageTop,
         AppSpacing.gutter,
@@ -41,7 +42,7 @@ class InvoiceDetailPage extends GetView<PaymentController> {
       ),
       children: [
         _InvoiceHero(invoice: currentInvoice),
-        const SizedBox(height: 20),
+        SizedBox(height: 20.h),
         AppSectionCard(
           title: 'Invoice information',
           child: Column(
@@ -71,14 +72,14 @@ class InvoiceDetailPage extends GetView<PaymentController> {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         AppSectionCard(
           title: 'Breakdown',
           subtitle: 'Every charge is billed and paid separately.',
           child: Column(
             children: [
               for (final item in currentInvoice.items) _ItemLine(item: item),
-              const Divider(height: 20),
+              Divider(height: 20),
               AppLabelValueRow(
                 label: 'Invoice total',
                 value: AppFormatters.currency(currentInvoice.total),
@@ -91,20 +92,20 @@ class InvoiceDetailPage extends GetView<PaymentController> {
             ],
           ),
         ),
-        const SizedBox(height: 18),
+        SizedBox(height: 18.h),
         if (currentInvoice.isPayable)
           FilledButton.icon(
-            key: const Key('invoice-pay-selected'),
+            key: Key('invoice-pay-selected'),
             onPressed: () {
               controller.selectInvoice(currentInvoice);
               Get.toNamed(AppRoutes.paymentSummary);
             },
-            icon: const Icon(Icons.lock_outline_rounded, size: 18),
-            label: const Text('Choose items to pay'),
+            icon: Icon(Icons.lock_outline_rounded, size: 18),
+            label: Text('Choose items to pay'),
             style: FilledButton.styleFrom(
               backgroundColor: tokens.brand,
               foregroundColor: tokens.onBrand,
-              minimumSize: const Size.fromHeight(52),
+              minimumSize: Size.fromHeight(52),
             ),
           )
         else
@@ -113,14 +114,14 @@ class InvoiceDetailPage extends GetView<PaymentController> {
             payment: _paymentFor(currentInvoice),
           ),
         if (currentInvoice.isPayable) ...[
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             'Pay Now never charges the full balance automatically — you pick '
             'exactly which fees to settle.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: tokens.muted,
-              fontSize: 11,
+              fontSize: 11.sp,
               height: 1.35,
             ),
           ),
@@ -148,17 +149,17 @@ class InvoiceDetailPage extends GetView<PaymentController> {
 }
 
 class _InvoiceHero extends StatelessWidget {
-  const _InvoiceHero({required this.invoice});
+  _InvoiceHero({required this.invoice});
   final Invoice invoice;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: tokens.brand,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(22.r),
         boxShadow: tokens.heroShadow,
       ),
       child: Column(
@@ -171,7 +172,7 @@ class _InvoiceHero extends StatelessWidget {
                   'AMOUNT DUE',
                   style: TextStyle(
                     color: tokens.brandOnDark,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.3,
                   ),
@@ -180,21 +181,21 @@ class _InvoiceHero extends StatelessWidget {
               PaymentStatusBadge(status: invoice.status),
             ],
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
           Text(
             AppFormatters.currency(invoice.amountDue),
             style: TextStyle(
               color: tokens.onBrand,
-              fontSize: 32,
+              fontSize: 32.sp,
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 5),
+          SizedBox(height: 5.h),
           Text(
             '${invoice.number} · ${invoice.billingPeriod}',
             style: TextStyle(
               color: tokens.brandOnDarkMuted,
-              fontSize: 12,
+              fontSize: 12.sp,
             ),
           ),
         ],
@@ -204,14 +205,14 @@ class _InvoiceHero extends StatelessWidget {
 }
 
 class _ItemLine extends StatelessWidget {
-  const _ItemLine({required this.item});
+  _ItemLine({required this.item});
   final InvoiceItem item;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
+      padding: EdgeInsets.symmetric(vertical: 7),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -228,7 +229,7 @@ class _ItemLine extends StatelessWidget {
                 ? tokens.faint
                 : AppPalette.warning,
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,18 +243,18 @@ class _ItemLine extends StatelessWidget {
                   ),
                 ),
                 if (item.note.isNotEmpty) ...[
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2.h),
                   Text(
                     item.isPaid && item.paidDate != null
                         ? '${item.note} · paid ${item.paidDate}'
                         : item.note,
-                    style: TextStyle(color: tokens.muted, fontSize: 11),
+                    style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                   ),
                 ],
               ],
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Text(
             item.isZero ? 'No charge' : AppFormatters.currency(item.amount),
             style: TextStyle(
@@ -268,7 +269,7 @@ class _ItemLine extends StatelessWidget {
 }
 
 class _PaidCard extends StatelessWidget {
-  const _PaidCard({required this.invoice, required this.payment});
+  _PaidCard({required this.invoice, required this.payment});
   final Invoice invoice;
   final Payment? payment;
 
@@ -276,38 +277,38 @@ class _PaidCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(17),
+      padding: EdgeInsets.all(17),
       decoration: BoxDecoration(
         color: tokens.brandTint,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
         children: [
           CircleAvatar(
             radius: 20,
             backgroundColor: tokens.brandSoft,
-            child: const Icon(Icons.check_rounded, color: AppPalette.success),
+            child: Icon(Icons.check_rounded, color: AppPalette.success),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Paid in full',
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     color: AppPalette.success,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   invoice.paidDate == null
                       ? 'Payment complete'
                       : 'Paid on ${invoice.paidDate}',
                   style: TextStyle(
                     color: tokens.mutedStrong,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                   ),
                 ),
               ],
@@ -316,9 +317,9 @@ class _PaidCard extends StatelessWidget {
           if (payment != null)
             Text(
               payment!.transactionId,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppPalette.success,
-                fontSize: 10,
+                fontSize: 10.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),

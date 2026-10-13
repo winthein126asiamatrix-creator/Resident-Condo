@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_palette.dart';
@@ -15,7 +16,7 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_form_field.dart';
 
 class ServiceRequestDetailPage extends GetView<CondoServiceController> {
-  const ServiceRequestDetailPage({required this.request, super.key});
+  ServiceRequestDetailPage({required this.request, super.key});
 
   final ServiceRequest request;
 
@@ -27,7 +28,7 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
       return Scaffold(
         appBar: AppDetailAppBar(title: 'Service request'),
         body: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          padding: EdgeInsets.fromLTRB(20, 8, 20, 32),
           children: [
             AppHeroPanel(
               icon: serviceIcon(current.category),
@@ -36,7 +37,7 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
               footnote: 'Provider: ${current.provider}',
               trailing: ServiceStatusPill(status: current.status, dense: false),
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
             AppSectionCard(
               title: 'Request details',
               child: Column(
@@ -62,7 +63,7 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
               ),
             ),
             if (current.notes.isNotEmpty) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               AppSectionCard(
                 title: 'Your notes',
                 child: Text(
@@ -71,12 +72,12 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                 ),
               ),
             ],
-            const SizedBox(height: 18),
-            const AppSectionHeader(title: 'Progress'),
-            const SizedBox(height: 10),
+            SizedBox(height: 18.h),
+            AppSectionHeader(title: 'Progress'),
+            SizedBox(height: 10.h),
             _Timeline(status: current.status),
             if (current.rating != null) ...[
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
               AppSectionCard(
                 title: 'Your rating',
                 child: Row(
@@ -89,13 +90,13 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                         color: AppPalette.warning,
                         size: 22,
                       ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10.w),
                     Expanded(
                       child: Text(
                         current.feedback ?? '',
                         style: TextStyle(
                           color: tokens.mutedStrong,
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                       ),
                     ),
@@ -103,38 +104,38 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                 ),
               ),
             ],
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             if (current.canCancel)
               OutlinedButton.icon(
                 onPressed: controller.isSubmitting.value
                     ? null
                     : () => _cancel(context, current),
-                icon: const Icon(Icons.cancel_outlined, size: 18),
-                label: const Text('Cancel request'),
+                icon: Icon(Icons.cancel_outlined, size: 18),
+                label: Text('Cancel request'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppPalette.danger,
-                  side: const BorderSide(color: Color(0xFFF0C6C0)),
-                  minimumSize: const Size.fromHeight(50),
+                  side: BorderSide(color: Color(0xFFF0C6C0)),
+                  minimumSize: Size.fromHeight(50),
                 ),
               ),
             if (current.canRate) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               FilledButton.icon(
                 onPressed: controller.isSubmitting.value
                     ? null
                     : () => _rate(context, current),
-                icon: const Icon(Icons.star_rounded, size: 18),
-                label: const Text('Rate this service'),
+                icon: Icon(Icons.star_rounded, size: 18),
+                label: Text('Rate this service'),
                 style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
+                  minimumSize: Size.fromHeight(50),
                 ),
               ),
             ],
             if (controller.errorMessage.value != null) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               Text(
                 controller.errorMessage.value!,
-                style: const TextStyle(color: AppPalette.danger),
+                style: TextStyle(color: AppPalette.danger),
               ),
             ],
           ],
@@ -208,7 +209,7 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
 }
 
 class _Timeline extends StatelessWidget {
-  const _Timeline({required this.status});
+  _Timeline({required this.status});
   final ServiceRequestStatus status;
 
   static const _steps = [
@@ -259,9 +260,9 @@ class _Timeline extends StatelessWidget {
                       ),
                   ],
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Padding(
-                  padding: const EdgeInsets.only(top: 2),
+                  padding: EdgeInsets.only(top: 2),
                   child: Text(
                     _steps[i].label,
                     style: TextStyle(
@@ -277,7 +278,7 @@ class _Timeline extends StatelessWidget {
               ],
             ),
           if (cancelled)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 8),
               child: Row(
                 children: [
@@ -286,7 +287,7 @@ class _Timeline extends StatelessWidget {
                     size: 18,
                     color: AppPalette.danger,
                   ),
-                  SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Text(
                     'Cancelled',
                     style: TextStyle(
@@ -304,7 +305,7 @@ class _Timeline extends StatelessWidget {
 }
 
 class _RatingDialog extends StatefulWidget {
-  const _RatingDialog({required this.serviceName});
+  _RatingDialog({required this.serviceName});
   final String serviceName;
 
   @override
@@ -324,7 +325,7 @@ class _RatingDialogState extends State<_RatingDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
       title: Text('Rate ${widget.serviceName}'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -344,7 +345,7 @@ class _RatingDialogState extends State<_RatingDialog> {
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           AppTextField(
             label: 'Optional comment',
             controller: _feedback,
@@ -355,14 +356,14 @@ class _RatingDialogState extends State<_RatingDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('Cancel'),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, (
             rating: _rating,
             feedback: _feedback.text,
           )),
-          child: const Text('Submit'),
+          child: Text('Submit'),
         ),
       ],
     );

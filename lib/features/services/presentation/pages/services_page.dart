@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -16,7 +17,7 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_segmented_tabs.dart';
 
 class ServicesPage extends GetView<CondoServiceController> {
-  const ServicesPage({super.key});
+  ServicesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,13 +28,13 @@ class ServicesPage extends GetView<CondoServiceController> {
           IconButton(
             onPressed: controller.loadAll,
             tooltip: 'Refresh services',
-            icon: const Icon(Icons.refresh_rounded),
+            icon: Icon(Icons.refresh_rounded),
           ),
         ],
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.services.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
         if (controller.errorMessage.value != null &&
             controller.services.isEmpty) {
@@ -48,14 +49,14 @@ class ServicesPage extends GetView<CondoServiceController> {
         return RefreshIndicator(
           onRefresh: controller.loadAll,
           child: ListView(
-            key: const Key('services-scroll'),
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            key: Key('services-scroll'),
+            physics: AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(20, 8, 20, 32),
             children: [
               _ServicesHero(controller: controller),
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
               _TabRow(controller: controller),
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
               // The pill slides into the next tab, so the panel that follows it
               // across rather than swapping the instant the tap lands.
               AnimatedSwitcher(
@@ -64,7 +65,7 @@ class ServicesPage extends GetView<CondoServiceController> {
                 switchOutCurve: Curves.easeIn,
                 transitionBuilder: (child, animation) {
                   final slide = Tween<Offset>(
-                    begin: const Offset(0, 0.06),
+                    begin: Offset(0, 0.06),
                     end: Offset.zero,
                   ).animate(animation);
                   return FadeTransition(
@@ -88,7 +89,7 @@ class ServicesPage extends GetView<CondoServiceController> {
 }
 
 class _ServicesHero extends StatelessWidget {
-  const _ServicesHero({required this.controller});
+  _ServicesHero({required this.controller});
   final CondoServiceController controller;
 
   @override
@@ -110,7 +111,7 @@ class _ServicesHero extends StatelessWidget {
 }
 
 class _TabRow extends StatelessWidget {
-  const _TabRow({required this.controller});
+  _TabRow({required this.controller});
   final CondoServiceController controller;
 
   @override
@@ -119,7 +120,7 @@ class _TabRow extends StatelessWidget {
       keyPrefix: 'services',
       selectedIndex: controller.tab.value.index,
       onSelect: (index) => controller.selectTab(ServicesTab.values[index]),
-      tabs: const [
+      tabs: [
         AppSegmentedTab(
           name: 'catalogue',
           label: 'Catalogue',
@@ -136,13 +137,13 @@ class _TabRow extends StatelessWidget {
 }
 
 class _Catalogue extends StatelessWidget {
-  const _Catalogue({required this.controller});
+  _Catalogue({required this.controller});
   final CondoServiceController controller;
 
   @override
   Widget build(BuildContext context) {
     if (controller.services.isEmpty) {
-      return const AppStateMessage(
+      return AppStateMessage(
         title: 'No services available',
         message: 'Bookable services will appear here.',
         icon: Icons.room_service_outlined,
@@ -152,7 +153,7 @@ class _Catalogue extends StatelessWidget {
       children: [
         for (final service in controller.services)
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: EdgeInsets.only(bottom: 10),
             child: _ServiceCard(controller: controller, service: service),
           ),
       ],
@@ -161,7 +162,7 @@ class _Catalogue extends StatelessWidget {
 }
 
 class _ServiceCard extends StatelessWidget {
-  const _ServiceCard({required this.controller, required this.service});
+  _ServiceCard({required this.controller, required this.service});
   final CondoServiceController controller;
   final CondoService service;
 
@@ -178,22 +179,22 @@ class _ServiceCard extends StatelessWidget {
                 icon: serviceIcon(service.category),
                 color: tokens.brand,
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       service.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w800,
-                        fontSize: 16,
+                        fontSize: 16.sp,
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    SizedBox(height: 3.h),
                     Text(
                       '${service.category.label} · ${service.provider}',
-                      style: TextStyle(color: tokens.muted, fontSize: 11),
+                      style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                     ),
                   ],
                 ),
@@ -203,46 +204,46 @@ class _ServiceCard extends StatelessWidget {
                 children: [
                   Text(
                     AppFormatters.currency(service.price),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w800,
-                      fontSize: 16,
+                      fontSize: 16.sp,
                     ),
                   ),
                   Text(
                     service.unit,
-                    style: TextStyle(color: tokens.faint, fontSize: 10),
+                    style: TextStyle(color: tokens.faint, fontSize: 10.sp),
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(
             service.description,
             style: TextStyle(
               color: tokens.mutedStrong,
-              fontSize: 12,
+              fontSize: 12.sp,
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Row(
             children: [
               Icon(Icons.schedule_rounded, size: 15, color: tokens.faint),
-              const SizedBox(width: 5),
+              SizedBox(width: 5.w),
               Text(
                 'Needs ${service.leadTimeDays} day notice',
-                style: TextStyle(color: tokens.faint, fontSize: 11),
+                style: TextStyle(color: tokens.faint, fontSize: 11.sp),
               ),
-              const Spacer(),
+              Spacer(),
               TextButton.icon(
                 key: Key('book-service-${service.id}'),
                 onPressed: () {
                   controller.selectService(service);
                   Get.toNamed(AppRoutes.serviceRequest);
                 },
-                icon: const Icon(Icons.add_rounded, size: 18),
-                label: const Text('Book'),
+                icon: Icon(Icons.add_rounded, size: 18),
+                label: Text('Book'),
               ),
             ],
           ),
@@ -253,14 +254,14 @@ class _ServiceCard extends StatelessWidget {
 }
 
 class _Requests extends StatelessWidget {
-  const _Requests({required this.controller});
+  _Requests({required this.controller});
   final CondoServiceController controller;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     if (controller.requests.isEmpty) {
-      return const AppStateMessage(
+      return AppStateMessage(
         title: 'No service requests',
         message: 'Book a service and it will show up here.',
         icon: Icons.event_note_outlined,
@@ -273,27 +274,27 @@ class _Requests extends StatelessWidget {
           title: 'Active',
           count: controller.activeRequests.length,
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10.h),
         if (controller.activeRequests.isEmpty)
           Text(
             'Nothing active right now.',
-            style: TextStyle(color: tokens.muted, fontSize: 12),
+            style: TextStyle(color: tokens.muted, fontSize: 12.sp),
           )
         else
           for (final request in controller.activeRequests)
             Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: EdgeInsets.only(bottom: 10),
               child: _RequestCard(controller: controller, request: request),
             ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         AppSectionHeader(
           title: 'History',
           count: controller.pastRequests.length,
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10.h),
         for (final request in controller.pastRequests)
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: EdgeInsets.only(bottom: 10),
             child: _RequestCard(controller: controller, request: request),
           ),
       ],
@@ -302,7 +303,7 @@ class _Requests extends StatelessWidget {
 }
 
 class _RequestCard extends StatelessWidget {
-  const _RequestCard({required this.controller, required this.request});
+  _RequestCard({required this.controller, required this.request});
   final CondoServiceController controller;
   final ServiceRequest request;
 
@@ -321,21 +322,21 @@ class _RequestCard extends StatelessWidget {
             color: serviceStatusColor(request.status, tokens),
             size: 42,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   request.serviceName,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   '${request.scheduledDate} · ${request.scheduledSlot}',
-                  style: TextStyle(color: tokens.muted, fontSize: 11),
+                  style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 ServiceStatusPill(status: request.status),
               ],
             ),
@@ -345,13 +346,13 @@ class _RequestCard extends StatelessWidget {
             children: [
               Text(
                 AppFormatters.currency(request.price),
-                style: const TextStyle(fontWeight: FontWeight.w800),
+                style: TextStyle(fontWeight: FontWeight.w800),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               if (request.rating != null)
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.star_rounded,
                       size: 14,
                       color: AppPalette.warning,
@@ -360,7 +361,7 @@ class _RequestCard extends StatelessWidget {
                       '${request.rating}',
                       style: TextStyle(
                         color: tokens.mutedStrong,
-                        fontSize: 11,
+                        fontSize: 11.sp,
                         fontWeight: FontWeight.w700,
                       ),
                     ),

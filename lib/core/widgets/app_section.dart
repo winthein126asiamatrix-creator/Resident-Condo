@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../theme/app_theme_tokens.dart';
 import 'app_card.dart';
 
 /// Section title with optional count chip and trailing action.
 class AppSectionHeader extends StatelessWidget {
-  const AppSectionHeader({
+  AppSectionHeader({
     required this.title,
     this.count,
     this.actionLabel,
@@ -29,29 +30,29 @@ class AppSectionHeader extends StatelessWidget {
             style: TextStyle(
               color: tokens.ink,
               fontWeight: FontWeight.w800,
-              fontSize: 16,
+              fontSize: 16.sp,
             ),
           ),
         ),
         if (count != null) ...[
-          const SizedBox(width: 7),
+          SizedBox(width: 7.w),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+            padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
             decoration: BoxDecoration(
               color: tokens.brandTint,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.r),
             ),
             child: Text(
               '$count',
               style: TextStyle(
                 color: tokens.brand,
-                fontSize: 11,
+                fontSize: 11.sp,
                 fontWeight: FontWeight.w800,
               ),
             ),
           ),
         ],
-        const Spacer(),
+        Spacer(),
         if (actionLabel != null && onAction != null)
           TextButton(onPressed: onAction, child: Text(actionLabel!)),
       ],
@@ -61,7 +62,7 @@ class AppSectionHeader extends StatelessWidget {
 
 /// Two column label / value row reused by the detail pages.
 class AppLabelValueRow extends StatelessWidget {
-  const AppLabelValueRow({
+  AppLabelValueRow({
     required this.label,
     this.value,
     this.valueWidget,
@@ -78,7 +79,7 @@ class AppLabelValueRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
+      padding: EdgeInsets.symmetric(vertical: 7),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -91,7 +92,7 @@ class AppLabelValueRow extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           valueWidget ??
               Flexible(
                 child: Text(
@@ -111,7 +112,7 @@ class AppLabelValueRow extends StatelessWidget {
 
 /// Titled card wrapper: `AppSectionCard(title: ..., child: ...)`.
 class AppSectionCard extends StatelessWidget {
-  const AppSectionCard({
+  AppSectionCard({
     required this.title,
     required this.child,
     this.subtitle,
@@ -133,18 +134,18 @@ class AppSectionCard extends StatelessWidget {
             title,
             style: TextStyle(
               fontWeight: FontWeight.w800,
-              fontSize: 15,
+              fontSize: 15.sp,
               color: tokens.ink,
             ),
           ),
           if (subtitle != null) ...[
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Text(
               subtitle!,
-              style: TextStyle(color: tokens.muted, fontSize: 12),
+              style: TextStyle(color: tokens.muted, fontSize: 12.sp),
             ),
           ],
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           child,
         ],
       ),

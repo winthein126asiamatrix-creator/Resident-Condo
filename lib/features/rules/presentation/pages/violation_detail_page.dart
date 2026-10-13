@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -15,7 +16,7 @@ import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class ViolationDetailPage extends GetView<RulesController> {
-  const ViolationDetailPage({required this.violation, super.key});
+  ViolationDetailPage({required this.violation, super.key});
 
   final Violation violation;
 
@@ -28,7 +29,7 @@ class ViolationDetailPage extends GetView<RulesController> {
       return Scaffold(
         appBar: AppDetailAppBar(title: 'Violation'),
         body: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          padding: EdgeInsets.fromLTRB(20, 8, 20, 32),
           children: [
             AppHeroPanel(
               icon: Icons.report_rounded,
@@ -46,7 +47,7 @@ class ViolationDetailPage extends GetView<RulesController> {
                       'FINE',
                       style: TextStyle(
                         color: tokens.brandOnDark,
-                        fontSize: 11,
+                        fontSize: 11.sp,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.2,
                       ),
@@ -56,14 +57,14 @@ class ViolationDetailPage extends GetView<RulesController> {
                     AppFormatters.currency(current.amount),
                     style: TextStyle(
                       color: tokens.brandOnDark,
-                      fontSize: 24,
+                      fontSize: 24.sp,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
             AppSectionCard(
               title: 'What happened',
               child: Text(
@@ -71,7 +72,7 @@ class ViolationDetailPage extends GetView<RulesController> {
                 style: TextStyle(color: tokens.mutedStrong, height: 1.45),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             AppSectionCard(
               title: 'Record',
               child: Column(
@@ -96,23 +97,23 @@ class ViolationDetailPage extends GetView<RulesController> {
               ),
             ),
             if (appeal != null) ...[
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
               AppSectionHeader(title: 'Appeal'),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               _AppealCard(controller: controller, appeal: appeal),
             ],
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             if (current.canAppeal && appeal == null)
               FilledButton.icon(
-                key: const Key('appeal-violation'),
+                key: Key('appeal-violation'),
                 onPressed: () {
                   controller.selectViolation(current);
                   Get.toNamed(AppRoutes.violationAppeal);
                 },
-                icon: const Icon(Icons.balance_rounded, size: 18),
-                label: const Text('Appeal this violation'),
+                icon: Icon(Icons.balance_rounded, size: 18),
+                label: Text('Appeal this violation'),
                 style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
+                  minimumSize: Size.fromHeight(52),
                 ),
               ),
             if (appeal != null && appeal.isOpen)
@@ -120,12 +121,12 @@ class ViolationDetailPage extends GetView<RulesController> {
                 onPressed: controller.isSubmitting.value
                     ? null
                     : () => _withdrawAppeal(context, appeal),
-                icon: const Icon(Icons.undo_rounded, size: 18),
-                label: const Text('Withdraw appeal'),
+                icon: Icon(Icons.undo_rounded, size: 18),
+                label: Text('Withdraw appeal'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppPalette.danger,
-                  side: const BorderSide(color: Color(0xFFF0C6C0)),
-                  minimumSize: const Size.fromHeight(50),
+                  side: BorderSide(color: Color(0xFFF0C6C0)),
+                  minimumSize: Size.fromHeight(50),
                 ),
               ),
             if (current.status == ViolationStatus.paid)
@@ -134,18 +135,18 @@ class ViolationDetailPage extends GetView<RulesController> {
                 borderColor: tokens.brandSoft,
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.check_circle_rounded,
                       color: AppPalette.success,
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12.w),
                     Expanded(
                       child: Text(
                         'This fine is already settled. It is shown as a Violation '
                         'Fine line on your statement.',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppPalette.success,
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -154,10 +155,10 @@ class ViolationDetailPage extends GetView<RulesController> {
                 ),
               ),
             if (controller.errorMessage.value != null) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               Text(
                 controller.errorMessage.value!,
-                style: const TextStyle(color: AppPalette.danger),
+                style: TextStyle(color: AppPalette.danger),
               ),
             ],
           ],
@@ -205,7 +206,7 @@ class ViolationDetailPage extends GetView<RulesController> {
 }
 
 class _AppealCard extends StatelessWidget {
-  const _AppealCard({required this.controller, required this.appeal});
+  _AppealCard({required this.controller, required this.appeal});
   final RulesController controller;
   final ViolationAppeal appeal;
 
@@ -223,37 +224,37 @@ class _AppealCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   'Requested: ${appeal.requestedOutcome}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    fontSize: 13,
+                    fontSize: 13.sp,
                   ),
                 ),
               ),
               AppealStatusPill(status: appeal.status),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           Text(
             appeal.reason,
             style: TextStyle(
               color: tokens.mutedStrong,
-              fontSize: 12,
+              fontSize: 12.sp,
               height: 1.45,
             ),
           ),
           if (appeal.decisionNote != null) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: tokens.surface,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(12.r),
               ),
               child: Text(
                 appeal.decisionNote!,
                 style: TextStyle(
                   color: tokens.mutedStrong,
-                  fontSize: 12,
+                  fontSize: 12.sp,
                   height: 1.4,
                 ),
               ),

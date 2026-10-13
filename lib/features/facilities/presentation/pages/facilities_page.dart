@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -9,7 +10,7 @@ import '../controllers/facility_controller.dart';
 import '../widgets/facility_labels.dart';
 
 class FacilitiesPage extends GetView<FacilityController> {
-  const FacilitiesPage({super.key});
+  FacilitiesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +19,7 @@ class FacilitiesPage extends GetView<FacilityController> {
       body: SafeArea(
         child: Obx(
           () => controller.isLoading.value && controller.facilities.isEmpty
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(child: CircularProgressIndicator())
               : controller.errorMessage.value != null &&
                     controller.facilities.isEmpty
               ? AppStateMessage(
@@ -31,47 +32,47 @@ class FacilitiesPage extends GetView<FacilityController> {
               : RefreshIndicator(
                   onRefresh: controller.loadFacilities,
                   child: ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
+                    physics: AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(20, 18, 20, 32),
                     children: [
                       _FacilitiesHeader(onRefresh: controller.loadFacilities),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
                       _FacilitySummary(
                         facilityCount: controller.facilities.length,
                         reservationCount: controller.reservations.length,
                       ),
-                      const SizedBox(height: 14),
+                      SizedBox(height: 14.h),
                       // Secondary entry point, kept out of the way of browsing.
                       Align(
                         alignment: Alignment.centerLeft,
                         child: OutlinedButton.icon(
-                          key: const Key('facilities-my-reservations'),
+                          key: Key('facilities-my-reservations'),
                           onPressed: () =>
                               Get.toNamed(AppRoutes.myReservations),
-                          icon: const Icon(Icons.event_note_rounded, size: 18),
-                          label: const Text('My Reservations'),
+                          icon: Icon(Icons.event_note_rounded, size: 18),
+                          label: Text('My Reservations'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: tokens.brand,
                             backgroundColor: tokens.surface,
                             side: BorderSide(color: tokens.border),
-                            padding: const EdgeInsets.symmetric(
+                            padding: EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 13,
                             ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(14.r),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 22),
+                      SizedBox(height: 22.h),
                       _SectionHeader(
                         title: 'Amenities',
                         count: controller.facilities.length,
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10.h),
                       if (controller.facilities.isEmpty)
-                        const AppStateMessage(
+                        AppStateMessage(
                           title: 'No facilities',
                           message: 'Amenities will appear here when available.',
                           icon: Icons.event_available_outlined,
@@ -96,7 +97,7 @@ class FacilitiesPage extends GetView<FacilityController> {
 }
 
 class _FacilitiesHeader extends StatelessWidget {
-  const _FacilitiesHeader({required this.onRefresh});
+  _FacilitiesHeader({required this.onRefresh});
 
   final Future<void> Function() onRefresh;
 
@@ -112,12 +113,12 @@ class _FacilitiesHeader extends StatelessWidget {
               Text(
                 'Facilities',
                 style: TextStyle(
-                  fontSize: 25,
+                  fontSize: 25.sp,
                   fontWeight: FontWeight.w800,
                   color: tokens.ink,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 'Find your next place to unwind',
                 style: TextStyle(color: tokens.muted),
@@ -128,7 +129,7 @@ class _FacilitiesHeader extends StatelessWidget {
         IconButton(
           onPressed: onRefresh,
           tooltip: 'Refresh facilities',
-          icon: const Icon(Icons.refresh_rounded),
+          icon: Icon(Icons.refresh_rounded),
         ),
       ],
     );
@@ -136,7 +137,7 @@ class _FacilitiesHeader extends StatelessWidget {
 }
 
 class _FacilitySummary extends StatelessWidget {
-  const _FacilitySummary({
+  _FacilitySummary({
     required this.facilityCount,
     required this.reservationCount,
   });
@@ -148,10 +149,10 @@ class _FacilitySummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: tokens.brand,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(22.r),
         boxShadow: tokens.heroShadow,
       ),
       child: Row(
@@ -161,7 +162,7 @@ class _FacilitySummary extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(17),
+              borderRadius: BorderRadius.circular(17.r),
             ),
             child: Icon(
               Icons.event_available_rounded,
@@ -169,7 +170,7 @@ class _FacilitySummary extends StatelessWidget {
               size: 27,
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,16 +179,16 @@ class _FacilitySummary extends StatelessWidget {
                   'Your amenities',
                   style: TextStyle(
                     color: tokens.brandOnDark,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 Text(
                   '$facilityCount facilities · $reservationCount reservations',
                   style: TextStyle(
                     color: tokens.brandOnDark,
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -205,7 +206,7 @@ class _FacilitySummary extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.count});
+  _SectionHeader({required this.title, required this.count});
 
   final String title;
   final int count;
@@ -222,18 +223,18 @@ class _SectionHeader extends StatelessWidget {
             color: tokens.ink,
           ),
         ),
-        const SizedBox(width: 7),
+        SizedBox(width: 7.w),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+          padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
           decoration: BoxDecoration(
             color: tokens.brandTint,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(10.r),
           ),
           child: Text(
             '$count',
             style: TextStyle(
               color: tokens.brand,
-              fontSize: 11,
+              fontSize: 11.sp,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -244,7 +245,7 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _ResponsiveFacilityGrid extends StatelessWidget {
-  const _ResponsiveFacilityGrid({
+  _ResponsiveFacilityGrid({
     required this.facilities,
     required this.onReserve,
   });
@@ -261,7 +262,7 @@ class _ResponsiveFacilityGrid extends StatelessWidget {
             : constraints.maxWidth >= 600
             ? 2
             : 1;
-        const spacing = 12.0;
+        final spacing = 12.0;
         final cardWidth =
             (constraints.maxWidth - (spacing * (columns - 1))) / columns;
         return Wrap(
@@ -285,7 +286,7 @@ class _ResponsiveFacilityGrid extends StatelessWidget {
 }
 
 class _FacilityCard extends StatelessWidget {
-  const _FacilityCard({required this.facility, required this.onReserve});
+  _FacilityCard({required this.facility, required this.onReserve});
 
   final Facility facility;
   final ValueChanged<Facility> onReserve;
@@ -296,11 +297,11 @@ class _FacilityCard extends StatelessWidget {
     final available = facility.availableSlots.isNotEmpty;
     return InkWell(
       onTap: () => Get.toNamed(AppRoutes.facilityDetail, arguments: facility),
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(20.r),
       child: Container(
         decoration: BoxDecoration(
           color: tokens.surface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(color: tokens.border),
           boxShadow: tokens.cardShadow,
         ),
@@ -319,14 +320,14 @@ class _FacilityCard extends StatelessWidget {
                     filterQuality: FilterQuality.high,
                     errorBuilder: (_, _, _) => Container(
                       color: tokens.brand,
-                      child: const Icon(
+                      child: Icon(
                         Icons.apartment_rounded,
                         color: Colors.white70,
                         size: 54,
                       ),
                     ),
                   ),
-                  const DecoratedBox(
+                  DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
@@ -346,9 +347,9 @@ class _FacilityCard extends StatelessWidget {
                             facility.location,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -361,7 +362,7 @@ class _FacilityCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 15, 16, 14),
+              padding: EdgeInsets.fromLTRB(16, 15, 16, 14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -372,7 +373,7 @@ class _FacilityCard extends StatelessWidget {
                           displayFacilityName(facility.name),
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
-                            fontSize: 17,
+                            fontSize: 17.sp,
                             color: tokens.ink,
                           ),
                         ),
@@ -384,18 +385,18 @@ class _FacilityCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 7),
+                  SizedBox(height: 7.h),
                   Text(
                     facility.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: tokens.muted,
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       height: 1.35,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   Row(
                     children: [
                       Icon(
@@ -403,20 +404,20 @@ class _FacilityCard extends StatelessWidget {
                         size: 16,
                         color: tokens.muted,
                       ),
-                      const SizedBox(width: 5),
+                      SizedBox(width: 5.w),
                       Expanded(
                         child: Text(
                           facility.openingHours,
                           style: TextStyle(
                             color: tokens.mutedStrong,
-                            fontSize: 11,
+                            fontSize: 11.sp,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Row(
                     children: [
                       Icon(
@@ -424,41 +425,41 @@ class _FacilityCard extends StatelessWidget {
                         size: 16,
                         color: tokens.muted,
                       ),
-                      const SizedBox(width: 5),
+                      SizedBox(width: 5.w),
                       Text(
                         '${facility.capacity} capacity',
                         style: TextStyle(
                           color: tokens.mutedStrong,
-                          fontSize: 11,
+                          fontSize: 11.sp,
                         ),
                       ),
-                      const Spacer(),
+                      Spacer(),
                       Text(
                         available ? 'Available' : 'Fully booked',
                         style: TextStyle(
                           color: available
-                              ? const Color(0xFF087F5B)
-                              : const Color(0xFFC2410C),
-                          fontSize: 11,
+                              ? Color(0xFF087F5B)
+                              : Color(0xFFC2410C),
+                          fontSize: 11.sp,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14.h),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
                       key: Key('reserve-facility-${facility.id}'),
                       onPressed: () => onReserve(facility),
-                      icon: const Icon(Icons.event_available_rounded, size: 18),
-                      label: const Text('Reserve'),
+                      icon: Icon(Icons.event_available_rounded, size: 18),
+                      label: Text('Reserve'),
                       style: FilledButton.styleFrom(
                         backgroundColor: tokens.brand,
                         foregroundColor: tokens.onBrand,
-                        minimumSize: const Size.fromHeight(46),
+                        minimumSize: Size.fromHeight(46),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
+                          borderRadius: BorderRadius.circular(13.r),
                         ),
                       ),
                     ),
@@ -474,7 +475,7 @@ class _FacilityCard extends StatelessWidget {
 }
 
 class _AvailabilityBadge extends StatelessWidget {
-  const _AvailabilityBadge({required this.available});
+  _AvailabilityBadge({required this.available});
 
   final bool available;
 
@@ -482,16 +483,16 @@ class _AvailabilityBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: tokens.brandTint.withValues(alpha: 0.94),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Text(
         available ? 'Available' : 'Fully booked',
         style: TextStyle(
-          color: available ? const Color(0xFF087F5B) : const Color(0xFFC2410C),
-          fontSize: 10,
+          color: available ? Color(0xFF087F5B) : Color(0xFFC2410C),
+          fontSize: 10.sp,
           fontWeight: FontWeight.w800,
         ),
       ),

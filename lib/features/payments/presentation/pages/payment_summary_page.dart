@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -12,7 +13,7 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/theme/app_spacing.dart';
 
 class PaymentSummaryPage extends GetView<PaymentController> {
-  const PaymentSummaryPage({super.key});
+  PaymentSummaryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class PaymentSummaryPage extends GetView<PaymentController> {
               onPressed: controller.selectedItems.isEmpty
                   ? null
                   : controller.clearSelection,
-              child: const Text('Clear'),
+              child: Text('Clear'),
             ),
           ),
         ],
@@ -43,8 +44,8 @@ class PaymentSummaryPage extends GetView<PaymentController> {
           );
         }
         return ListView(
-          key: const Key('payment-summary-scroll'),
-          padding: const EdgeInsets.fromLTRB(
+          key: Key('payment-summary-scroll'),
+          padding: EdgeInsets.fromLTRB(
             AppSpacing.gutter,
             AppSpacing.pageTop,
             AppSpacing.gutter,
@@ -52,32 +53,32 @@ class PaymentSummaryPage extends GetView<PaymentController> {
           ),
           children: [
             _SummaryIntro(invoice: invoice),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             Row(
               children: [
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Select items',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
                   ),
                 ),
                 TextButton.icon(
-                  key: const Key('select-all-unpaid'),
+                  key: Key('select-all-unpaid'),
                   onPressed: invoice.unpaidItems.isEmpty
                       ? null
                       : controller.selectAllUnpaidItems,
-                  icon: const Icon(Icons.done_all_rounded, size: 18),
-                  label: const Text('Select all unpaid'),
+                  icon: Icon(Icons.done_all_rounded, size: 18),
+                  label: Text('Select all unpaid'),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Text(
               'Pick one or several fees. Mandatory fees are always included '
               'and settled items are locked.',
-              style: TextStyle(color: tokens.muted, fontSize: 12),
+              style: TextStyle(color: tokens.muted, fontSize: 12.sp),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             for (final item in invoice.items)
               _SelectableItem(
                 key: Key('invoice-item-${item.key}'),
@@ -87,18 +88,18 @@ class PaymentSummaryPage extends GetView<PaymentController> {
                     ? (_) => controller.toggleInvoiceItem(item)
                     : null,
               ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
             _TotalCard(
               total: controller.selectedTotal,
               count: controller.selectedCount,
             ),
             if (controller.missingMandatoryItems.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               _MandatoryWarning(message: controller.mandatoryValidationMessage),
             ],
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             FilledButton(
-              key: const Key('continue-to-payment'),
+              key: Key('continue-to-payment'),
               onPressed: controller.canProceedToPayment
                   ? () {
                       if (!controller.canProceedToPayment) {
@@ -108,9 +109,9 @@ class PaymentSummaryPage extends GetView<PaymentController> {
                     }
                   : null,
               style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
+                minimumSize: Size.fromHeight(52),
               ),
-              child: const Text('Continue to Payment'),
+              child: Text('Continue to Payment'),
             ),
           ],
         );
@@ -120,17 +121,17 @@ class PaymentSummaryPage extends GetView<PaymentController> {
 }
 
 class _SummaryIntro extends StatelessWidget {
-  const _SummaryIntro({required this.invoice});
+  _SummaryIntro({required this.invoice});
   final Invoice invoice;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: tokens.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,15 +153,15 @@ class _SummaryIntro extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 5),
+          SizedBox(height: 5.h),
           Text(
             invoice.unitLabel,
             style: TextStyle(color: tokens.muted),
           ),
-          SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             'Due ${invoice.dueDate} Â· ${invoice.unpaidItems.length} unpaid items',
-            style: TextStyle(color: tokens.muted, fontSize: 12),
+            style: TextStyle(color: tokens.muted, fontSize: 12.sp),
           ),
         ],
       ),
@@ -169,7 +170,7 @@ class _SummaryIntro extends StatelessWidget {
 }
 
 class _SelectableItem extends StatelessWidget {
-  const _SelectableItem({
+  _SelectableItem({
     required this.item,
     required this.selected,
     required this.onChanged,
@@ -183,9 +184,9 @@ class _SelectableItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final locked = onChanged == null;
     final tokens = AppThemeTokens.of(context);
-    final radius = BorderRadius.circular(16);
+    final radius = BorderRadius.circular(16.r);
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: EdgeInsets.only(bottom: 8),
       child: Material(
         color: item.isPaid
             ? tokens.brandTint
@@ -208,7 +209,7 @@ class _SelectableItem extends StatelessWidget {
               : selected,
           onChanged: onChanged,
           controlAffinity: ListTileControlAffinity.leading,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 6),
+          contentPadding: EdgeInsets.symmetric(horizontal: 6),
           title: Row(
             children: [
               Expanded(
@@ -223,7 +224,7 @@ class _SelectableItem extends StatelessWidget {
               ),
               if (item.isMandatory) ...[
                 _MandatoryBadge(),
-                SizedBox(width: 8),
+                SizedBox(width: 8.w),
               ],
               Text(
                 item.isZero ? 'No charge' : AppFormatters.currency(item.amount),
@@ -245,7 +246,7 @@ class _SelectableItem extends StatelessWidget {
                 ? item.type.label
                 : item.note,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 11.sp,
               color: item.isPaid
                   ? AppPalette.success
                   : item.isMandatory
@@ -276,23 +277,23 @@ class _SelectableItem extends StatelessWidget {
 }
 
 class _MandatoryBadge extends StatelessWidget {
-  const _MandatoryBadge();
+  _MandatoryBadge();
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
       key: Key('mandatory-badge'),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: tokens.brandTint,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Text(
         'Mandatory',
         style: TextStyle(
           color: tokens.brand,
-          fontSize: 10,
+          fontSize: 10.sp,
           fontWeight: FontWeight.w800,
         ),
       ),
@@ -301,17 +302,17 @@ class _MandatoryBadge extends StatelessWidget {
 }
 
 class _MandatoryWarning extends StatelessWidget {
-  const _MandatoryWarning({required this.message});
+  _MandatoryWarning({required this.message});
   final String message;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      key: const Key('mandatory-warning'),
+      key: Key('mandatory-warning'),
       padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppPalette.danger.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: AppPalette.danger.withValues(alpha: 0.35)),
       ),
       child: Row(
@@ -322,13 +323,13 @@ class _MandatoryWarning extends StatelessWidget {
             size: 18,
             color: AppPalette.danger,
           ),
-          SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Expanded(
             child: Text(
               message,
               style: TextStyle(
                 color: AppPalette.danger,
-                fontSize: 12,
+                fontSize: 12.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -340,7 +341,7 @@ class _MandatoryWarning extends StatelessWidget {
 }
 
 class _TotalCard extends StatelessWidget {
-  const _TotalCard({required this.total, required this.count});
+  _TotalCard({required this.total, required this.count});
   final double total;
   final int count;
 
@@ -351,7 +352,7 @@ class _TotalCard extends StatelessWidget {
       padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: tokens.brand,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -371,17 +372,17 @@ class _TotalCard extends StatelessWidget {
                 '$count item${count == 1 ? '' : 's'}',
                 style: TextStyle(
                   color: tokens.brandOnDark,
-                  fontSize: 12,
+                  fontSize: 12.sp,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             AppFormatters.currency(total),
             style: TextStyle(
               color: tokens.surface,
-              fontSize: 26,
+              fontSize: 26.sp,
               fontWeight: FontWeight.w800,
             ),
           ),

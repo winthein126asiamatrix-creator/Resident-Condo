@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_palette.dart';
@@ -14,7 +15,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/app_form_field.dart';
 
 class ComplaintDetailPage extends GetView<ComplaintController> {
-  const ComplaintDetailPage({required this.complaint, super.key});
+  ComplaintDetailPage({required this.complaint, super.key});
 
   final Complaint complaint;
 
@@ -26,7 +27,7 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
       return Scaffold(
         appBar: AppDetailAppBar(title: 'Complaint'),
         body: ListView(
-          padding: const EdgeInsets.fromLTRB(
+          padding: EdgeInsets.fromLTRB(
             AppSpacing.gutter,
             AppSpacing.pageTop,
             AppSpacing.gutter,
@@ -41,7 +42,7 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
                   'Filed ${current.createdOn} · ${current.category.label}',
               trailing: ComplaintStatusPill(status: current.status),
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
             AppSectionCard(
               title: 'Details',
               child: Column(
@@ -62,7 +63,7 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             AppSectionCard(
               title: 'What you reported',
               child: Text(
@@ -71,12 +72,12 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
               ),
             ),
             if (current.resolution != null) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               AppSectionCard(
                 title: 'Resolution',
                 child: Text(
                   current.resolution!,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppPalette.success,
                     height: 1.45,
                     fontWeight: FontWeight.w700,
@@ -84,47 +85,47 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
                 ),
               ),
             ],
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
             AppSectionHeader(
               title: 'Conversation',
               count: current.comments.length,
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             if (current.comments.isEmpty)
               Text(
                 'No messages yet. The community team will reply here.',
-                style: TextStyle(color: tokens.muted, fontSize: 12),
+                style: TextStyle(color: tokens.muted, fontSize: 12.sp),
               )
             else
               for (final comment in current.comments)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
+                  padding: EdgeInsets.only(bottom: 10),
                   child: _CommentTile(comment: comment),
                 ),
             if (current.isOpen) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               _MessageBox(controller: controller, complaint: current),
             ],
             if (current.canWithdraw) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               OutlinedButton.icon(
                 onPressed: controller.isSubmitting.value
                     ? null
                     : () => _withdraw(context, current),
-                icon: const Icon(Icons.undo_rounded, size: 18),
-                label: const Text('Withdraw complaint'),
+                icon: Icon(Icons.undo_rounded, size: 18),
+                label: Text('Withdraw complaint'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppPalette.danger,
-                  side: const BorderSide(color: Color(0xFFF0C6C0)),
-                  minimumSize: const Size.fromHeight(50),
+                  side: BorderSide(color: Color(0xFFF0C6C0)),
+                  minimumSize: Size.fromHeight(50),
                 ),
               ),
             ],
             if (controller.errorMessage.value != null) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               Text(
                 controller.errorMessage.value!,
-                style: const TextStyle(color: AppPalette.danger),
+                style: TextStyle(color: AppPalette.danger),
               ),
             ],
           ],
@@ -168,7 +169,7 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
 }
 
 class _CommentTile extends StatelessWidget {
-  const _CommentTile({required this.comment});
+  _CommentTile({required this.comment});
   final ComplaintComment comment;
 
   @override
@@ -176,10 +177,10 @@ class _CommentTile extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     final isStaff = comment.authorRole == 'Resident';
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: isStaff ? tokens.brandTint : tokens.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: isStaff ? tokens.brandSoft : tokens.border),
       ),
       child: Column(
@@ -190,29 +191,29 @@ class _CommentTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   comment.author,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                   ),
                 ),
               ),
               Text(
                 comment.postedOn,
-                style: TextStyle(color: tokens.faint, fontSize: 10),
+                style: TextStyle(color: tokens.faint, fontSize: 10.sp),
               ),
             ],
           ),
-          const SizedBox(height: 3),
+          SizedBox(height: 3.h),
           Text(
             comment.authorRole,
-            style: TextStyle(color: tokens.muted, fontSize: 10),
+            style: TextStyle(color: tokens.muted, fontSize: 10.sp),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             comment.message,
             style: TextStyle(
               color: tokens.mutedStrong,
-              fontSize: 12,
+              fontSize: 12.sp,
               height: 1.4,
             ),
           ),
@@ -223,7 +224,7 @@ class _CommentTile extends StatelessWidget {
 }
 
 class _MessageBox extends StatefulWidget {
-  const _MessageBox({required this.controller, required this.complaint});
+  _MessageBox({required this.controller, required this.complaint});
   final ComplaintController controller;
   final Complaint complaint;
 
@@ -245,23 +246,23 @@ class _MessageBoxState extends State<_MessageBox> {
     return Column(
       children: [
         AppTextField(
-          fieldKey: const Key('complaint-message-field'),
+          fieldKey: Key('complaint-message-field'),
           label: 'Reply to the team',
           controller: _message,
           maxLines: 3,
           textCapitalization: TextCapitalization.sentences,
           hint: 'Reply to the community team…',
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10.h),
         SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
-            key: const Key('send-complaint-message'),
+            key: Key('send-complaint-message'),
             onPressed: widget.controller.isSubmitting.value ? null : _send,
-            icon: const Icon(Icons.send_rounded, size: 18),
-            label: const Text('Send message'),
+            icon: Icon(Icons.send_rounded, size: 18),
+            label: Text('Send message'),
             style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(48),
+              minimumSize: Size.fromHeight(48),
             ),
           ),
         ),

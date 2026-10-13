@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../theme/app_theme_tokens.dart';
 
 /// Coloured pill used for statuses across the new modules.
 class AppStatusPill extends StatelessWidget {
-  const AppStatusPill({
+  AppStatusPill({
     required this.label,
     required this.color,
     this.icon,
@@ -23,14 +24,14 @@ class AppStatusPill extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: dense ? 8 : 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
             Icon(icon, size: dense ? 12 : 14, color: color),
-            const SizedBox(width: 4),
+            SizedBox(width: 4.w),
           ],
           Text(
             label,
@@ -48,7 +49,7 @@ class AppStatusPill extends StatelessWidget {
 
 /// Small tinted icon container used at the start of list rows.
 class AppIconTile extends StatelessWidget {
-  const AppIconTile({
+  AppIconTile({
     required this.icon,
     required this.color,
     this.size = 42,
@@ -75,7 +76,7 @@ class AppIconTile extends StatelessWidget {
 
 /// Primary green hero panel used at the top of the new feature pages.
 class AppHeroPanel extends StatelessWidget {
-  const AppHeroPanel({
+  AppHeroPanel({
     required this.title,
     required this.subtitle,
     this.icon,
@@ -96,10 +97,10 @@ class AppHeroPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: tokens.brand,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(22.r),
         boxShadow: tokens.heroShadow,
       ),
       child: Column(
@@ -113,11 +114,11 @@ class AppHeroPanel extends StatelessWidget {
                   height: 52,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(17),
+                    borderRadius: BorderRadius.circular(17.r),
                   ),
                   child: Icon(icon, color: tokens.brandOnDark, size: 27),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14.w),
               ],
               Expanded(
                 child: Column(
@@ -127,16 +128,16 @@ class AppHeroPanel extends StatelessWidget {
                       title,
                       style: TextStyle(
                         color: tokens.brandOnDark,
-                        fontSize: 12,
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6.h),
                     Text(
                       subtitle,
                       style: TextStyle(
                         color: tokens.brandOnDark,
-                        fontSize: 15,
+                        fontSize: 15.sp,
                         height: 1.35,
                         fontWeight: FontWeight.w800,
                       ),
@@ -147,9 +148,9 @@ class AppHeroPanel extends StatelessWidget {
               ?trailing,
             ],
           ),
-          if (leading != null) ...[const SizedBox(height: 18), leading!],
+          if (leading != null) ...[SizedBox(height: 18.h), leading!],
           if (footnote != null) ...[
-            const SizedBox(height: 14),
+            SizedBox(height: 14.h),
             Row(
               children: [
                 Icon(
@@ -157,13 +158,13 @@ class AppHeroPanel extends StatelessWidget {
                   color: tokens.brandOnDark,
                   size: 15,
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: 6.w),
                 Expanded(
                   child: Text(
                     footnote!,
                     style: TextStyle(
                       color: tokens.brandOnDarkMuted,
-                      fontSize: 11,
+                      fontSize: 11.sp,
                     ),
                   ),
                 ),

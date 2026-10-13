@@ -66,7 +66,7 @@ abstract final class AppPages {
   static final pages = <GetPage<dynamic>>[
     GetPage<dynamic>(
       name: AppRoutes.splash,
-      page: () => const SplashPage(),
+      page: () => SplashPage(),
       // AuthBinding is on both entries: the splash needs it to restore the
       // remembered session, and the home shell needs it for logout. The binding
       // is idempotent, so hitting it twice is safe.
@@ -74,28 +74,28 @@ abstract final class AppPages {
     ),
     GetPage<dynamic>(
       name: AppRoutes.home,
-      page: () => const MainShellPage(),
+      page: () => MainShellPage(),
       bindings: [AppBinding(), AuthBinding()],
     ),
     GetPage<dynamic>(
       name: AppRoutes.login,
-      page: () => const LoginPage(),
+      page: () => LoginPage(),
       binding: AuthBinding(),
     ),
-    GetPage<dynamic>(name: AppRoutes.more, page: () => const MoreServicesPage()),
-    GetPage<dynamic>(name: AppRoutes.notifications, page: () => const NotificationsPage()),
-    GetPage<dynamic>(name: AppRoutes.announcements, page: () => const AnnouncementsPage()),
+    GetPage<dynamic>(name: AppRoutes.more, page: () => MoreServicesPage()),
+    GetPage<dynamic>(name: AppRoutes.notifications, page: () => NotificationsPage()),
+    GetPage<dynamic>(name: AppRoutes.announcements, page: () => AnnouncementsPage()),
     GetPage<dynamic>(
       name: AppRoutes.unit,
-      page: () => const UnitPage(),
+      page: () => UnitPage(),
       binding: UnitBinding(),
     ),
     GetPage<dynamic>(
       name: AppRoutes.paymentDetail,
       page: () => InvoiceDetailPage(invoice: Get.arguments as Invoice),
     ),
-    GetPage<dynamic>(name: AppRoutes.paymentSummary, page: () => const PaymentSummaryPage()),
-    GetPage<dynamic>(name: AppRoutes.paymentMethod, page: () => const PaymentMethodPage()),
+    GetPage<dynamic>(name: AppRoutes.paymentSummary, page: () => PaymentSummaryPage()),
+    GetPage<dynamic>(name: AppRoutes.paymentMethod, page: () => PaymentMethodPage()),
     GetPage<dynamic>(
       name: AppRoutes.paymentSuccess,
       page: () => PaymentSuccessPage(payment: Get.arguments as Payment),
@@ -108,7 +108,7 @@ abstract final class AppPages {
       name: AppRoutes.paymentReceipt,
       page: () => PaymentReceiptPage(payment: Get.arguments as Payment),
     ),
-    GetPage<dynamic>(name: AppRoutes.paymentHistory, page: () => const PaymentHistoryPage()),
+    GetPage<dynamic>(name: AppRoutes.paymentHistory, page: () => PaymentHistoryPage()),
     GetPage<dynamic>(
       name: AppRoutes.maintenanceDetail,
       page: () =>
@@ -116,7 +116,7 @@ abstract final class AppPages {
     ),
     GetPage<dynamic>(
       name: AppRoutes.maintenanceCreate,
-      page: () => const CreateMaintenanceRequestPage(),
+      page: () => CreateMaintenanceRequestPage(),
     ),
     GetPage<dynamic>(
       name: AppRoutes.facilityDetail,
@@ -124,7 +124,7 @@ abstract final class AppPages {
     ),
     GetPage<dynamic>(
       name: AppRoutes.facilityReserve,
-      page: () => const FacilityReservationPage(),
+      page: () => FacilityReservationPage(),
     ),
     GetPage<dynamic>(
       name: AppRoutes.bookingConfirmed,
@@ -132,39 +132,39 @@ abstract final class AppPages {
     ),
     GetPage<dynamic>(
       name: AppRoutes.myReservations,
-      page: () => const MyReservationsPage(),
+      page: () => MyReservationsPage(),
     ),
     GetPage<dynamic>(
       name: AppRoutes.reservationDetail,
       page: () => ReservationDetailPage(reservation: Get.arguments as FacilityReservation),
     ),
-    GetPage<dynamic>(name: AppRoutes.lease, page: () => const LeasePage()),
-    GetPage<dynamic>(name: AppRoutes.leaseRenewal, page: () => const LeaseRenewalPage()),
+    GetPage<dynamic>(name: AppRoutes.lease, page: () => LeasePage()),
+    GetPage<dynamic>(name: AppRoutes.leaseRenewal, page: () => LeaseRenewalPage()),
     GetPage<dynamic>(
       name: AppRoutes.leaseRenewalSent,
       page: () => LeaseRenewalSentPage(renewal: Get.arguments as LeaseRenewal),
     ),
-    GetPage<dynamic>(name: AppRoutes.visitors, page: () => const VisitorsPage()),
-    GetPage<dynamic>(name: AppRoutes.visitorRegister, page: () => const RegisterVisitorPage()),
+    GetPage<dynamic>(name: AppRoutes.visitors, page: () => VisitorsPage()),
+    GetPage<dynamic>(name: AppRoutes.visitorRegister, page: () => RegisterVisitorPage()),
     GetPage<dynamic>(
       name: AppRoutes.visitorPass,
       page: () => VisitorPassPage(visitor: Get.arguments as Visitor),
     ),
-    GetPage<dynamic>(name: AppRoutes.visitorVerify, page: () => const VisitorVerifyPage()),
-    GetPage<dynamic>(name: AppRoutes.services, page: () => const ServicesPage()),
-    GetPage<dynamic>(name: AppRoutes.serviceRequest, page: () => const ServiceRequestPage()),
+    GetPage<dynamic>(name: AppRoutes.visitorVerify, page: () => VisitorVerifyPage()),
+    GetPage<dynamic>(name: AppRoutes.services, page: () => ServicesPage()),
+    GetPage<dynamic>(name: AppRoutes.serviceRequest, page: () => ServiceRequestPage()),
     GetPage<dynamic>(
       name: AppRoutes.serviceRequestDetail,
       page: () => ServiceRequestDetailPage(request: Get.arguments as ServiceRequest),
     ),
-    GetPage<dynamic>(name: AppRoutes.parking, page: () => const ParkingPage()),
-    GetPage<dynamic>(name: AppRoutes.complaints, page: () => const ComplaintsPage()),
-    GetPage<dynamic>(name: AppRoutes.complaintCreate, page: () => const CreateComplaintPage()),
+    GetPage<dynamic>(name: AppRoutes.parking, page: () => ParkingPage()),
+    GetPage<dynamic>(name: AppRoutes.complaints, page: () => ComplaintsPage()),
+    GetPage<dynamic>(name: AppRoutes.complaintCreate, page: () => CreateComplaintPage()),
     GetPage<dynamic>(
       name: AppRoutes.complaintDetail,
       page: () => ComplaintDetailPage(complaint: Get.arguments as Complaint),
     ),
-    GetPage<dynamic>(name: AppRoutes.rules, page: () => const RulesPage()),
+    GetPage<dynamic>(name: AppRoutes.rules, page: () => RulesPage()),
     GetPage<dynamic>(
       name: AppRoutes.ruleDetail,
       page: () => RuleDetailPage(rule: Get.arguments as CommunityRule),
@@ -173,15 +173,15 @@ abstract final class AppPages {
       name: AppRoutes.violationDetail,
       page: () => ViolationDetailPage(violation: Get.arguments as Violation),
     ),
-    GetPage<dynamic>(name: AppRoutes.violationAppeal, page: () => const AppealViolationPage()),
+    GetPage<dynamic>(name: AppRoutes.violationAppeal, page: () => AppealViolationPage()),
     GetPage<dynamic>(
       name: AppRoutes.store,
-      page: () => const StorePage(),
+      page: () => StorePage(),
       binding: StoreBinding(),
     ),
     GetPage<dynamic>(
       name: AppRoutes.storeCheckout,
-      page: () => const StoreCheckoutPage(),
+      page: () => StoreCheckoutPage(),
       binding: StoreBinding(),
     ),
     GetPage<dynamic>(
@@ -191,12 +191,12 @@ abstract final class AppPages {
     ),
     GetPage<dynamic>(
       name: AppRoutes.appearance,
-      page: () => const AppearancePage(),
+      page: () => AppearancePage(),
       binding: AppearanceBinding(),
     ),
     GetPage<dynamic>(
       name: AppRoutes.sample,
-      page: () => const SamplePage(),
+      page: () => SamplePage(),
       binding: SampleBinding(),
     ),
   ];

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
@@ -18,7 +19,7 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_form_field.dart';
 
 class LeaseRenewalPage extends StatefulWidget {
-  const LeaseRenewalPage({super.key});
+  LeaseRenewalPage({super.key});
 
   @override
   State<LeaseRenewalPage> createState() => _LeaseRenewalPageState();
@@ -37,16 +38,16 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
   /// The day after the current term ends, which is the earliest sensible start
   /// for a renewal and the day the form opens on.
   static DateTime _firstRenewalDay(Lease lease) =>
-      AppDates.dateOnly(lease.endDate).add(const Duration(days: 1));
+      AppDates.dateOnly(lease.endDate).add(Duration(days: 1));
 
   /// Quick lengths, counted from the chosen start. A term usually ends the day
   /// before the anniversary, so each option lands there. A year is the usual ask
   /// and is what the form starts on.
   static List<_DatePreset> _endPresets(DateTime start) {
     return [
-      for (final months in const [4, 6, 12])
+      for (final months in [4, 6, 12])
         _DatePreset(
-          AppDates.addMonths(start, months).subtract(const Duration(days: 1)),
+          AppDates.addMonths(start, months).subtract(Duration(days: 1)),
           '+$months months',
         ),
     ];
@@ -117,7 +118,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
                     icon: Icons.autorenew_rounded,
                     color: tokens.brand,
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,22 +130,22 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
                             color: tokens.ink,
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        SizedBox(height: 3.h),
                         Text(
                           '${AppDates.format(lease.startDate)} → '
                           '${AppDates.format(lease.endDate)}',
                           style: TextStyle(
                             color: tokens.mutedStrong,
-                            fontSize: 12,
+                            fontSize: 12.sp,
                           ),
                         ),
-                        const SizedBox(height: 3),
+                        SizedBox(height: 3.h),
                         Text(
                           '${AppFormatters.currency(lease.monthlyRent)} / month · '
                           '${lease.daysRemaining} days left',
                           style: TextStyle(
                             color: tokens.muted,
-                            fontSize: 12,
+                            fontSize: 12.sp,
                           ),
                         ),
                       ],
@@ -153,12 +154,12 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             Text(
               'Proposed term',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             _TermPicker(
               lease: lease,
               start: _start,
@@ -172,18 +173,18 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
               onPickEnd: _pickCustomEnd,
               durationLabel: _durationLabel(),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             Text(
               'Proposed monthly rent',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             AppTextField(
-              fieldKey: const Key('renewal-rent-field'),
+              fieldKey: Key('renewal-rent-field'),
               label: 'Proposed monthly rent',
               controller: _rentController,
               icon: Icons.payments_outlined,
-              keyboardType: const TextInputType.numberWithOptions(
+              keyboardType: TextInputType.numberWithOptions(
                 decimal: true,
               ),
               inputFormatters: [
@@ -191,16 +192,16 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
               ],
               hint: '2400',
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             AppTextField(
               label: 'Note (optional)',
               controller: _noteController,
               maxLines: 3,
               hint: 'Add context for the other party…',
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             FilledButton.icon(
-              key: const Key('submit-renewal'),
+              key: Key('submit-renewal'),
               onPressed: controller.isSubmitting.value ? null : _submit,
               icon: controller.isSubmitting.value
                   ? SizedBox(
@@ -218,15 +219,15 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
                     : 'Send renewal request',
               ),
               style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
+                minimumSize: Size.fromHeight(52),
               ),
             ),
             if (_error.isNotEmpty) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               Text(_error, style: TextStyle(color: AppPalette.danger)),
             ],
             if (controller.errorMessage.value != null) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               Text(
                 controller.errorMessage.value!,
                 style: TextStyle(color: AppPalette.danger),
@@ -319,7 +320,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
   /// Opens the calendar for the end date, bounded to a real term after the
   /// chosen start.
   Future<void> _pickCustomEnd() async {
-    final first = _start.add(const Duration(days: 1));
+    final first = _start.add(Duration(days: 1));
     final last = AppDates.addMonths(_start, 120);
     final picked = await showDatePicker(
       context: context,
@@ -358,7 +359,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
 /// to ask for it.
 @immutable
 class _DatePreset {
-  const _DatePreset(this.value, this.label);
+  _DatePreset(this.value, this.label);
 
   final DateTime value;
   final String label;
@@ -371,7 +372,7 @@ class _DatePreset {
 /// below them cover the terms people actually ask for. The duration strip sits
 /// between the two dates so it always reflects the pair above it.
 class _TermPicker extends StatelessWidget {
-  const _TermPicker({
+  _TermPicker({
     required this.lease,
     required this.start,
     required this.end,
@@ -405,7 +406,7 @@ class _TermPicker extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _DateTile(
-                      fieldKey: const Key('renewal-start-date'),
+                      fieldKey: Key('renewal-start-date'),
                       caption: 'Starts',
                       value: start,
                       onTap: onPickStart,
@@ -421,7 +422,7 @@ class _TermPicker extends StatelessWidget {
                   ),
                   Expanded(
                     child: _DateTile(
-                      fieldKey: const Key('renewal-end-date'),
+                      fieldKey: Key('renewal-end-date'),
                       caption: 'Ends',
                       value: end,
                       onTap: onPickEnd,
@@ -429,21 +430,21 @@ class _TermPicker extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               _DurationStrip(lease: lease, start: start, label: durationLabel),
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
         Text(
           'Quick lengths',
           style: TextStyle(
             color: tokens.mutedStrong,
-            fontSize: 12,
+            fontSize: 12.sp,
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
         _QuickDateRow(
           presets: endPresets,
           selected: end,
@@ -456,7 +457,7 @@ class _TermPicker extends StatelessWidget {
 
 /// One end of the term. Tapping it opens the calendar for any date at all.
 class _DateTile extends StatelessWidget {
-  const _DateTile({
+  _DateTile({
     required this.fieldKey,
     required this.caption,
     required this.value,
@@ -480,7 +481,7 @@ class _DateTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -489,12 +490,12 @@ class _DateTile extends StatelessWidget {
                 caption.toUpperCase(),
                 style: TextStyle(
                   color: tokens.muted,
-                  fontSize: 9.5,
+                  fontSize: 9.5.sp,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 1.1,
                 ),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6.h),
               // Shrinks rather than wraps, so a long date never breaks the row.
               FittedBox(
                 fit: BoxFit.scaleDown,
@@ -504,19 +505,19 @@ class _DateTile extends StatelessWidget {
                   maxLines: 1,
                   style: TextStyle(
                     color: tokens.ink,
-                    fontSize: 14.5,
+                    fontSize: 14.5.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: 2.h),
               Text(
                 AppDates.weekday(value),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: tokens.muted, fontSize: 11),
+                style: TextStyle(color: tokens.muted, fontSize: 11.sp),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Row(
                 children: [
                   Icon(
@@ -524,7 +525,7 @@ class _DateTile extends StatelessWidget {
                     size: 13,
                     color: tokens.brand,
                   ),
-                  const SizedBox(width: 4),
+                  SizedBox(width: 4.w),
                   Flexible(
                     child: Text(
                       'Pick a date',
@@ -532,7 +533,7 @@ class _DateTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: tokens.brand,
-                        fontSize: 11,
+                        fontSize: 11.sp,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -550,7 +551,7 @@ class _DateTile extends StatelessWidget {
 /// The running total for the pair above it: how long the term is, and how its
 /// start lines up with the term it replaces.
 class _DurationStrip extends StatelessWidget {
-  const _DurationStrip({
+  _DurationStrip({
     required this.lease,
     required this.start,
     required this.label,
@@ -580,7 +581,7 @@ class _DurationStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 11),
       decoration: BoxDecoration(
         color: tokens.brandTint,
         borderRadius: BorderRadius.circular(AppRadius.md),
@@ -592,7 +593,7 @@ class _DurationStrip extends StatelessWidget {
             size: 18,
             color: tokens.brand,
           ),
-          const SizedBox(width: 9),
+          SizedBox(width: 9.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -606,18 +607,18 @@ class _DurationStrip extends StatelessWidget {
                     maxLines: 1,
                     style: TextStyle(
                       color: tokens.ink,
-                      fontSize: 13.5,
+                      fontSize: 13.5.sp,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   _timing,
                   maxLines: 2,
                   style: TextStyle(
                     color: tokens.mutedStrong,
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     height: 1.25,
                   ),
                 ),
@@ -632,7 +633,7 @@ class _DurationStrip extends StatelessWidget {
 
 /// The quick lengths for the term, each showing the day it lands on.
 class _QuickDateRow extends StatelessWidget {
-  const _QuickDateRow({
+  _QuickDateRow({
     required this.presets,
     required this.selected,
     required this.onSelected,
@@ -661,7 +662,7 @@ class _QuickDateRow extends StatelessWidget {
 }
 
 class _QuickDateChip extends StatelessWidget {
-  const _QuickDateChip({
+  _QuickDateChip({
     required this.preset,
     required this.selected,
     required this.onTap,
@@ -687,7 +688,7 @@ class _QuickDateChip extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             decoration: BoxDecoration(
               borderRadius: radius,
               border: Border.all(
@@ -702,16 +703,16 @@ class _QuickDateChip extends StatelessWidget {
                   preset.label,
                   style: TextStyle(
                     color: selected ? tokens.brand : tokens.mutedStrong,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   AppDates.formatShort(preset.value),
                   style: TextStyle(
                     color: selected ? tokens.brandDark : tokens.muted,
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

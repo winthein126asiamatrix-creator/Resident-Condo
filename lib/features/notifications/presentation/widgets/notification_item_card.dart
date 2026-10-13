@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../domain/entities/notification_item.dart';
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class NotificationItemCard extends StatelessWidget {
-  const NotificationItemCard({
+  NotificationItemCard({
     required this.item,
     required this.onTap,
     super.key,
@@ -19,12 +20,12 @@ class NotificationItemCard extends StatelessWidget {
     final color = _colorFor(item.type, tokens);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(18.r),
       child: Container(
-        padding: const EdgeInsets.all(15),
+        padding: EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: tokens.surface,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           border: Border.all(
             color: item.isRead
                 ? tokens.border
@@ -39,11 +40,11 @@ class NotificationItemCard extends StatelessWidget {
               height: 42,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(13),
+                borderRadius: BorderRadius.circular(13.r),
               ),
               child: Icon(_iconFor(item.type), color: color, size: 21),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,7 +54,7 @@ class NotificationItemCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           item.title,
-                          style: const TextStyle(fontWeight: FontWeight.w800),
+                          style: TextStyle(fontWeight: FontWeight.w800),
                         ),
                       ),
                       if (!item.isRead)
@@ -67,21 +68,21 @@ class NotificationItemCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   Text(
                     item.message,
                     style: TextStyle(
                       color: tokens.muted,
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       height: 1.35,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     item.type.label,
                     style: TextStyle(
                       color: color,
-                      fontSize: 11,
+                      fontSize: 11.sp,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -97,23 +98,23 @@ class NotificationItemCard extends StatelessWidget {
   Color _colorFor(NotificationType type, AppThemeTokens tokens) {
     switch (type) {
       case NotificationType.paymentDue:
-        return const Color(0xFFC2410C);
+        return Color(0xFFC2410C);
       case NotificationType.paymentSuccessful:
-        return const Color(0xFF087F5B);
+        return Color(0xFF087F5B);
       case NotificationType.maintenanceUpdated:
-        return const Color(0xFFB45309);
+        return Color(0xFFB45309);
       case NotificationType.facilityBookingConfirmed:
-        return const Color(0xFF5B4CC4);
+        return Color(0xFF5B4CC4);
       case NotificationType.visitorArrival:
         return tokens.brand;
       case NotificationType.newAnnouncement:
         return tokens.mutedStrong;
       case NotificationType.complaintUpdated:
-        return const Color(0xFFB45309);
+        return Color(0xFFB45309);
       case NotificationType.leaseRenewal:
-        return const Color(0xFF5B4CC4);
+        return Color(0xFF5B4CC4);
       case NotificationType.violationIssued:
-        return const Color(0xFFC2410C);
+        return Color(0xFFC2410C);
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -11,7 +12,7 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/theme/app_spacing.dart';
 
 class LeaseRenewalSentPage extends StatelessWidget {
-  const LeaseRenewalSentPage({required this.renewal, super.key});
+  LeaseRenewalSentPage({required this.renewal, super.key});
 
   final LeaseRenewal renewal;
 
@@ -21,14 +22,14 @@ class LeaseRenewalSentPage extends StatelessWidget {
     return Scaffold(
       appBar: AppDetailAppBar(title: 'Renewal requested'),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(
+        padding: EdgeInsets.fromLTRB(
           AppSpacing.gutter,
           AppSpacing.pageTop,
           AppSpacing.gutter,
           32,
         ),
         children: [
-          const SizedBox(height: 22),
+          SizedBox(height: 22.h),
           Center(
             child: Container(
               width: 88,
@@ -37,31 +38,31 @@ class LeaseRenewalSentPage extends StatelessWidget {
                 color: tokens.brandTint,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.check_rounded,
                 color: AppPalette.success,
                 size: 48,
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           Text(
             'Renewal request sent',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 24.sp,
               fontWeight: FontWeight.w800,
               color: tokens.ink,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             'Both parties will be notified and the request stays pending until '
             'it is approved or declined.',
             textAlign: TextAlign.center,
             style: TextStyle(color: tokens.muted, height: 1.4),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           AppCard(
             child: Column(
               children: [
@@ -77,13 +78,13 @@ class LeaseRenewalSentPage extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           FilledButton.icon(
             onPressed: () => Get.offAllNamed(AppRoutes.lease),
-            icon: const Icon(Icons.home_rounded),
-            label: const Text('Back to lease'),
+            icon: Icon(Icons.home_rounded),
+            label: Text('Back to lease'),
             style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(52),
+              minimumSize: Size.fromHeight(52),
             ),
           ),
         ],
@@ -93,7 +94,7 @@ class LeaseRenewalSentPage extends StatelessWidget {
 }
 
 class _Line extends StatelessWidget {
-  const _Line({required this.label, required this.value});
+  _Line({required this.label, required this.value});
   final String label;
   final String value;
 
@@ -101,7 +102,7 @@ class _Line extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
           Expanded(
@@ -111,7 +112,7 @@ class _Line extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w800),
+              style: TextStyle(fontWeight: FontWeight.w800),
             ),
           ),
         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_theme_tokens.dart';
@@ -15,7 +16,7 @@ import '../../../../core/theme/app_theme_tokens.dart';
 /// It is inert by design: the tiles do not respond to taps, because a preview
 /// that navigated would take the resident off the screen they are configuring.
 class AppAppearancePreviewCard extends StatelessWidget {
-  const AppAppearancePreviewCard({
+  AppAppearancePreviewCard({
     required this.tokens,
     required this.greeting,
     required this.unitLabel,
@@ -57,7 +58,7 @@ class AppAppearancePreviewCard extends StatelessWidget {
             // is about the app, not the phone chrome.
             _PreviewStatusBar(tokens: tokens),
             Padding(
-              padding: const EdgeInsets.fromLTRB(
+              padding: EdgeInsets.fromLTRB(
                 _contentPadding,
                 _contentPadding,
                 _contentPadding,
@@ -72,15 +73,15 @@ class AppAppearancePreviewCard extends StatelessWidget {
                     greeting: greeting,
                     unitLabel: unitLabel,
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   _PreviewBalanceCard(
                     tokens: tokens,
                     amount: balanceAmount,
                     due: balanceDue,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   _PreviewShortcuts(tokens: tokens),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   _PreviewAnnouncement(tokens: tokens),
                 ],
               ),
@@ -94,14 +95,14 @@ class AppAppearancePreviewCard extends StatelessWidget {
 }
 
 class _PreviewStatusBar extends StatelessWidget {
-  const _PreviewStatusBar({required this.tokens});
+  _PreviewStatusBar({required this.tokens});
 
   final AppThemeTokens tokens;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 2),
+      padding: EdgeInsets.fromLTRB(16, 8, 16, 2),
       color: tokens.canvas,
       child: Row(
         children: [
@@ -109,15 +110,15 @@ class _PreviewStatusBar extends StatelessWidget {
             '9:41',
             style: TextStyle(
               color: tokens.ink,
-              fontSize: 10,
+              fontSize: 10.sp,
               fontWeight: FontWeight.w800,
             ),
           ),
-          const Spacer(),
+          Spacer(),
           Icon(Icons.signal_cellular_alt_rounded, size: 10, color: tokens.ink),
-          const SizedBox(width: 4),
+          SizedBox(width: 4.w),
           Icon(Icons.wifi_rounded, size: 10, color: tokens.ink),
-          const SizedBox(width: 4),
+          SizedBox(width: 4.w),
           Icon(Icons.battery_full_rounded, size: 10, color: tokens.ink),
         ],
       ),
@@ -126,7 +127,7 @@ class _PreviewStatusBar extends StatelessWidget {
 }
 
 class _PreviewGreeting extends StatelessWidget {
-  const _PreviewGreeting({
+  _PreviewGreeting({
     required this.tokens,
     required this.greeting,
     required this.unitLabel,
@@ -151,26 +152,26 @@ class _PreviewGreeting extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: tokens.ink,
-                  fontSize: 13.5,
+                  fontSize: 13.5.sp,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.2,
                 ),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: 2.h),
               Text(
                 unitLabel,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: tokens.muted,
-                  fontSize: 10.5,
+                  fontSize: 10.5.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         _PreviewAvatar(tokens: tokens),
       ],
     );
@@ -178,7 +179,7 @@ class _PreviewGreeting extends StatelessWidget {
 }
 
 class _PreviewAvatar extends StatelessWidget {
-  const _PreviewAvatar({required this.tokens});
+  _PreviewAvatar({required this.tokens});
 
   final AppThemeTokens tokens;
 
@@ -193,7 +194,7 @@ class _PreviewAvatar extends StatelessWidget {
           'M',
           style: TextStyle(
             color: tokens.brand,
-            fontSize: 12,
+            fontSize: 12.sp,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -205,7 +206,7 @@ class _PreviewAvatar extends StatelessWidget {
 /// The balance card: the single place where the brand colour is used as a fill,
 /// because it is the one element the resident acts on most often.
 class _PreviewBalanceCard extends StatelessWidget {
-  const _PreviewBalanceCard({
+  _PreviewBalanceCard({
     required this.tokens,
     required this.amount,
     required this.due,
@@ -218,7 +219,7 @@ class _PreviewBalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: tokens.brand,
         borderRadius: BorderRadius.circular(AppRadius.xl),
@@ -237,7 +238,7 @@ class _PreviewBalanceCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: tokens.onBrand.withValues(alpha: 0.82),
-                    fontSize: 10,
+                    fontSize: 10.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -249,7 +250,7 @@ class _PreviewBalanceCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -258,12 +259,12 @@ class _PreviewBalanceCard extends StatelessWidget {
                 amount,
                 style: TextStyle(
                   color: tokens.onBrand,
-                  fontSize: 20,
+                  fontSize: 20.sp,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: 6.w),
               Expanded(
                 child: Text(
                   due,
@@ -271,14 +272,14 @@ class _PreviewBalanceCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: tokens.onBrand.withValues(alpha: 0.9),
-                    fontSize: 10,
+                    fontSize: 10.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           // A progress track, so the brand colour is shown as an indicator fill
           // too and not only as a large solid surface.
           ClipRRect(
@@ -296,7 +297,7 @@ class _PreviewBalanceCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           // The primary action. Its fill and label both come from the tokens, so
           // this is the clearest read on whether the chosen colour works.
           Container(
@@ -304,13 +305,13 @@ class _PreviewBalanceCard extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: tokens.onBrand,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(10.r),
             ),
             child: Text(
               'Pay Now',
               style: TextStyle(
                 color: tokens.brand,
-                fontSize: 11.5,
+                fontSize: 11.5.sp,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -323,7 +324,7 @@ class _PreviewBalanceCard extends StatelessWidget {
 
 /// Maintenance and Facilities, the two shortcuts residents reach for most.
 class _PreviewShortcuts extends StatelessWidget {
-  const _PreviewShortcuts({required this.tokens});
+  _PreviewShortcuts({required this.tokens});
 
   final AppThemeTokens tokens;
 
@@ -343,7 +344,7 @@ class _PreviewShortcuts extends StatelessWidget {
         for (final item in _items) ...[
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: tokens.surface,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -356,13 +357,13 @@ class _PreviewShortcuts extends StatelessWidget {
                     height: 26,
                     decoration: BoxDecoration(
                       color: tokens.brandTint,
-                      borderRadius: BorderRadius.circular(9),
+                      borderRadius: BorderRadius.circular(9.r),
                     ),
                     // Active icon: tinted by the brand, the same treatment the
                     // real shortcut rows use.
                     child: Icon(item.icon, size: 14, color: tokens.brand),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,18 +375,18 @@ class _PreviewShortcuts extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: tokens.ink,
-                            fontSize: 10.5,
+                            fontSize: 10.5.sp,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(height: 1),
+                        SizedBox(height: 1.h),
                         Text(
                           item.value,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: tokens.muted,
-                            fontSize: 9.5,
+                            fontSize: 9.5.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -396,7 +397,7 @@ class _PreviewShortcuts extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
         ],
       ],
     );
@@ -404,14 +405,14 @@ class _PreviewShortcuts extends StatelessWidget {
 }
 
 class _PreviewAnnouncement extends StatelessWidget {
-  const _PreviewAnnouncement({required this.tokens});
+  _PreviewAnnouncement({required this.tokens});
 
   final AppThemeTokens tokens;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: tokens.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -425,7 +426,7 @@ class _PreviewAnnouncement extends StatelessWidget {
             height: 26,
             decoration: BoxDecoration(
               color: tokens.brandTint,
-              borderRadius: BorderRadius.circular(9),
+              borderRadius: BorderRadius.circular(9.r),
             ),
             child: Icon(
               Icons.campaign_rounded,
@@ -433,7 +434,7 @@ class _PreviewAnnouncement extends StatelessWidget {
               color: tokens.brand,
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -445,27 +446,27 @@ class _PreviewAnnouncement extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: tokens.ink,
-                    fontSize: 10.5,
+                    fontSize: 10.5.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.h),
                 Text(
                   '9:00 AM – 12:00 PM',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: tokens.muted, fontSize: 9.5),
+                  style: TextStyle(color: tokens.muted, fontSize: 9.5.sp),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 6),
+          SizedBox(width: 6.w),
           // An important link, in the brand colour.
           Text(
             'Read',
             style: TextStyle(
               color: tokens.brand,
-              fontSize: 10,
+              fontSize: 10.sp,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -478,7 +479,7 @@ class _PreviewAnnouncement extends StatelessWidget {
 /// The bottom navigation, showing the selected item in the brand colour with the
 /// Material indicator pill behind it.
 class _PreviewNavigationBar extends StatelessWidget {
-  const _PreviewNavigationBar({required this.tokens});
+  _PreviewNavigationBar({required this.tokens});
 
   final AppThemeTokens tokens;
 
@@ -509,7 +510,7 @@ class _PreviewNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(8, 7, 8, 8),
+      padding: EdgeInsets.fromLTRB(8, 7, 8, 8),
       decoration: BoxDecoration(
         color: tokens.surface,
         border: Border(top: BorderSide(color: tokens.border)),
@@ -531,7 +532,7 @@ class _PreviewNavigationBar extends StatelessWidget {
 }
 
 class _PreviewNavItem extends StatelessWidget {
-  const _PreviewNavItem({
+  _PreviewNavItem({
     required this.destination,
     required this.selected,
     required this.tokens,
@@ -549,11 +550,11 @@ class _PreviewNavItem extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 3),
           decoration: BoxDecoration(
             // The Material 3 navigation indicator: a soft brand pill behind the
             // active icon only.
-            color: selected ? tokens.brandSoft : const Color(0x00000000),
+            color: selected ? tokens.brandSoft : Color(0x00000000),
             borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
           child: Icon(
@@ -562,14 +563,14 @@ class _PreviewNavItem extends StatelessWidget {
             color: foreground,
           ),
         ),
-        const SizedBox(height: 3),
+        SizedBox(height: 3.h),
         Text(
           destination.label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: foreground,
-            fontSize: 8.5,
+            fontSize: 8.5.sp,
             fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
           ),
         ),

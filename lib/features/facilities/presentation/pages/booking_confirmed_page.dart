@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -16,7 +17,7 @@ import '../widgets/reservation_status_badge.dart';
 
 /// Success state shown once a reservation has actually been created.
 class BookingConfirmedPage extends StatelessWidget {
-  const BookingConfirmedPage({required this.reservation, super.key});
+  BookingConfirmedPage({required this.reservation, super.key});
 
   final FacilityReservation reservation;
 
@@ -31,7 +32,7 @@ class BookingConfirmedPage extends StatelessWidget {
         onBack: () => Get.offAllNamed(AppRoutes.home),
       ),
       body: ListView(
-        key: const Key('booking-confirmed-scroll'),
+        key: Key('booking-confirmed-scroll'),
         padding: EdgeInsets.fromLTRB(
           AppSpacing.gutter,
           26,
@@ -47,33 +48,33 @@ class BookingConfirmedPage extends StatelessWidget {
                 color: tokens.brandTint,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.check_rounded,
                 color: AppPalette.success,
                 size: 48,
               ),
             ),
           ),
-          const SizedBox(height: 22),
+          SizedBox(height: 22.h),
           Text(
             'Reservation Confirmed',
             key: Key('booking-confirmed-title'),
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 24.sp,
               fontWeight: FontWeight.w800,
               color: tokens.ink,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             'Your facility reservation has been successfully confirmed.',
             textAlign: TextAlign.center,
             style: TextStyle(color: tokens.muted, height: 1.4),
           ),
-          const SizedBox(height: 26),
+          SizedBox(height: 26.h),
           AppCard(
-            key: const Key('booking-confirmed-summary'),
+            key: Key('booking-confirmed-summary'),
             child: Column(
               children: [
                 AppLabelValueRow(
@@ -101,20 +102,20 @@ class BookingConfirmedPage extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 22),
+          SizedBox(height: 22.h),
           AppPrimaryAction(
-            key: const Key('booking-confirmed-done'),
+            key: Key('booking-confirmed-done'),
             onPressed: () => Get.offAllNamed(AppRoutes.myReservations),
             label: 'Done',
             icon: Icons.check_rounded,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Center(
             child: TextButton.icon(
-              key: const Key('booking-confirmed-facilities'),
+              key: Key('booking-confirmed-facilities'),
               onPressed: () => Get.offAllNamed(AppRoutes.home),
-              icon: const Icon(Icons.event_available_rounded, size: 18),
-              label: const Text('Back to Facilities'),
+              icon: Icon(Icons.event_available_rounded, size: 18),
+              label: Text('Back to Facilities'),
               style: TextButton.styleFrom(foregroundColor: tokens.brand),
             ),
           ),

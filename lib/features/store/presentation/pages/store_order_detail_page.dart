@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_palette.dart';
@@ -18,7 +19,7 @@ import '../widgets/store_widgets.dart';
 /// Everything about one store order: what was bought, where it is going and
 /// where it has got to.
 class StoreOrderDetailPage extends GetView<StoreController> {
-  const StoreOrderDetailPage({required this.order, super.key});
+  StoreOrderDetailPage({required this.order, super.key});
 
   final StoreOrder order;
 
@@ -31,7 +32,7 @@ class StoreOrderDetailPage extends GetView<StoreController> {
         // Follow the live copy so a status change is reflected here.
         final current = _currentOrder();
         return ListView(
-          key: const Key('store-order-detail-scroll'),
+          key: Key('store-order-detail-scroll'),
           padding: EdgeInsets.fromLTRB(
             AppSpacing.gutter,
             AppSpacing.pageTop,
@@ -40,11 +41,11 @@ class StoreOrderDetailPage extends GetView<StoreController> {
           ),
           children: [
             _OrderHeader(order: current),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             StoreOrderTrackerCard(order: current),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             AppCard(
-              key: const Key('store-order-items'),
+              key: Key('store-order-items'),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -52,17 +53,17 @@ class StoreOrderDetailPage extends GetView<StoreController> {
                     'Purchased items',
                     style: TextStyle(
                       color: tokens.ink,
-                      fontSize: 15,
+                      fontSize: 15.sp,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   for (final line in current.items)
                     StoreOrderLineRow(line: line),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             AppCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,11 +72,11 @@ class StoreOrderDetailPage extends GetView<StoreController> {
                     'Delivery',
                     style: TextStyle(
                       color: tokens.ink,
-                      fontSize: 15,
+                      fontSize: 15.sp,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   _InfoLine(
                     label: 'Method',
                     value: current.deliveryMethod.label,
@@ -91,7 +92,7 @@ class StoreOrderDetailPage extends GetView<StoreController> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             StoreCheckoutSummaryCard(
               keyName: 'store-order-total',
               subtotal: current.subtotal,
@@ -99,16 +100,16 @@ class StoreOrderDetailPage extends GetView<StoreController> {
               total: current.total,
               itemCount: current.itemCount,
             ),
-            const SizedBox(height: 16),
-            const StoreFeeNotice(),
+            SizedBox(height: 16.h),
+            StoreFeeNotice(),
             // A resident settles an outstanding Store Fee and can call off their
             // own order. Moving an order along the pipeline is the store's job,
             // so the order here is read-only apart from those two.
             if (current.paymentStatus == StorePaymentStatus.pending &&
                 !current.status.isFinished) ...[
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               AppPrimaryAction(
-                key: const Key('store-order-pay-now'),
+                key: Key('store-order-pay-now'),
                 onPressed: controller.isSubmitting.value
                     ? null
                     : () => controller.markOrderPaid(current),
@@ -119,9 +120,9 @@ class StoreOrderDetailPage extends GetView<StoreController> {
               ),
             ],
             if (current.status.canCancel) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               AppOutlinedButton(
-                key: const Key('store-order-cancel'),
+                key: Key('store-order-cancel'),
                 onPressed: controller.isSubmitting.value
                     ? null
                     : () => _cancel(context, current),
@@ -163,7 +164,7 @@ class StoreOrderDetailPage extends GetView<StoreController> {
 }
 
 class _OrderHeader extends StatelessWidget {
-  const _OrderHeader({required this.order});
+  _OrderHeader({required this.order});
 
   final StoreOrder order;
 
@@ -181,23 +182,23 @@ class _OrderHeader extends StatelessWidget {
                   'Order ID',
                   style: TextStyle(
                     color: tokens.muted,
-                    fontSize: 12.5,
+                    fontSize: 12.5.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
               Text(
                 order.id,
-                key: const Key('store-order-id'),
+                key: Key('store-order-id'),
                 style: TextStyle(
                   color: tokens.ink,
-                  fontSize: 15,
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.w800,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Row(
             children: [
               Expanded(
@@ -205,7 +206,7 @@ class _OrderHeader extends StatelessWidget {
                   'Placed on',
                   style: TextStyle(
                     color: tokens.muted,
-                    fontSize: 12.5,
+                    fontSize: 12.5.sp,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -214,24 +215,24 @@ class _OrderHeader extends StatelessWidget {
                 order.placedOn,
                 style: TextStyle(
                   color: tokens.ink,
-                  fontSize: 13.5,
+                  fontSize: 13.5.sp,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
           Row(
             children: [
               StoreOrderStatusPill(status: order.status, dense: false),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               StorePaymentPill(payment: order.paymentStatus),
-              const Spacer(),
+              Spacer(),
               Text(
                 AppFormatters.currency(order.total),
                 style: TextStyle(
                   color: tokens.ink,
-                  fontSize: 17,
+                  fontSize: 17.sp,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -244,7 +245,7 @@ class _OrderHeader extends StatelessWidget {
 }
 
 class _InfoLine extends StatelessWidget {
-  const _InfoLine({required this.label, required this.value});
+  _InfoLine({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -253,7 +254,7 @@ class _InfoLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: EdgeInsets.symmetric(vertical: 5),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -261,17 +262,17 @@ class _InfoLine extends StatelessWidget {
             width: 96,
             child: Text(
               label,
-              style: TextStyle(color: tokens.muted, fontSize: 12.5),
+              style: TextStyle(color: tokens.muted, fontSize: 12.5.sp),
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Text(
               value,
               textAlign: TextAlign.right,
               style: TextStyle(
                 color: tokens.ink,
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w700,
               ),
             ),

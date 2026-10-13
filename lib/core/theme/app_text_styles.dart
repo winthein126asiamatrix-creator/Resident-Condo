@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'app_palette.dart';
 import 'app_theme_tokens.dart';
@@ -14,55 +15,55 @@ import 'app_theme_tokens.dart';
 /// resident's Light / Dark choice.
 abstract final class AppTextStyles {
   /// Screen level heading, e.g. "Facilities".
-  static const screenTitle = TextStyle(
+  static TextStyle get screenTitle => TextStyle(
     color: AppPalette.ink,
-    fontSize: 25,
+    fontSize: 25.sp,
     fontWeight: FontWeight.w800,
   );
 
   /// Group heading inside a screen, e.g. "Your requests".
-  static const sectionTitle = TextStyle(
+  static TextStyle get sectionTitle => TextStyle(
     color: AppPalette.ink,
-    fontSize: 16,
+    fontSize: 16.sp,
     fontWeight: FontWeight.w800,
   );
 
   /// Card title, e.g. a facility or request name.
-  static const cardTitle = TextStyle(
+  static TextStyle get cardTitle => TextStyle(
     color: AppPalette.ink,
-    fontSize: 15,
+    fontSize: 15.sp,
     fontWeight: FontWeight.w800,
   );
 
   /// Default reading size.
-  static const body = TextStyle(color: AppPalette.ink, fontSize: 14);
+  static TextStyle get body => TextStyle(color: AppPalette.ink, fontSize: 14.sp);
 
   /// Reading size with emphasis, the most common weight in a card.
-  static const bodyStrong = TextStyle(
+  static TextStyle get bodyStrong => TextStyle(
     color: AppPalette.ink,
-    fontSize: 14,
+    fontSize: 14.sp,
     fontWeight: FontWeight.w700,
   );
 
   /// Field label above an input.
-  static const fieldLabel = TextStyle(
+  static TextStyle get fieldLabel => TextStyle(
     color: AppPalette.ink,
-    fontSize: 13.5,
+    fontSize: 13.5.sp,
     fontWeight: FontWeight.w700,
   );
 
   /// Text inside an input.
-  static const fieldValue = TextStyle(
+  static TextStyle get fieldValue => TextStyle(
     color: AppPalette.ink,
-    fontSize: 15.5,
+    fontSize: 15.5.sp,
     fontWeight: FontWeight.w600,
   );
 
   /// Supporting line under a heading or field.
-  static const caption = TextStyle(color: AppPalette.muted, fontSize: 12.5);
+  static TextStyle get caption => TextStyle(color: AppPalette.muted, fontSize: 12.5.sp);
 
   /// Smallest text still used, for meta lines such as a reference id.
-  static const meta = TextStyle(color: AppPalette.faint, fontSize: 11.5);
+  static TextStyle get meta => TextStyle(color: AppPalette.faint, fontSize: 11.5.sp);
 
   /// The same type scale, bound to the colours of the active theme.
   static Bound of(BuildContext context) =>
@@ -72,56 +73,56 @@ abstract final class AppTextStyles {
 /// [AppTextStyles] resolved against a theme. Same sizes and weights, colours
 /// from [AppThemeTokens].
 class Bound {
-  const Bound(this.tokens);
+  Bound(this.tokens);
 
   final AppThemeTokens tokens;
 
   TextStyle get screenTitle => TextStyle(
         color: tokens.ink,
-        fontSize: 25,
+        fontSize: 25.sp,
         fontWeight: FontWeight.w800,
       );
 
   TextStyle get sectionTitle => TextStyle(
         color: tokens.ink,
-        fontSize: 16,
+        fontSize: 16.sp,
         fontWeight: FontWeight.w800,
       );
 
   TextStyle get cardTitle => TextStyle(
         color: tokens.ink,
-        fontSize: 15,
+        fontSize: 15.sp,
         fontWeight: FontWeight.w800,
       );
 
-  TextStyle get body => TextStyle(color: tokens.ink, fontSize: 14);
+  TextStyle get body => TextStyle(color: tokens.ink, fontSize: 14.sp);
 
   TextStyle get bodyStrong => TextStyle(
         color: tokens.ink,
-        fontSize: 14,
+        fontSize: 14.sp,
         fontWeight: FontWeight.w700,
       );
 
   TextStyle get fieldLabel => TextStyle(
         color: tokens.ink,
-        fontSize: 13.5,
+        fontSize: 13.5.sp,
         fontWeight: FontWeight.w700,
       );
 
   TextStyle get fieldValue => TextStyle(
         color: tokens.ink,
-        fontSize: 15.5,
+        fontSize: 15.5.sp,
         fontWeight: FontWeight.w600,
       );
 
-  TextStyle get caption => TextStyle(color: tokens.muted, fontSize: 12.5);
+  TextStyle get caption => TextStyle(color: tokens.muted, fontSize: 12.5.sp);
 
-  TextStyle get meta => TextStyle(color: tokens.faint, fontSize: 11.5);
+  TextStyle get meta => TextStyle(color: tokens.faint, fontSize: 11.5.sp);
 
   /// A link or other interactive label, in the brand colour.
   TextStyle get link => TextStyle(
         color: tokens.brand,
-        fontSize: 14,
+        fontSize: 14.sp,
         fontWeight: FontWeight.w700,
       );
 }

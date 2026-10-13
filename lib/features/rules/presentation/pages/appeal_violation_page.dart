@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -12,7 +13,7 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_form_field.dart';
 
 class AppealViolationPage extends StatefulWidget {
-  const AppealViolationPage({super.key});
+  AppealViolationPage({super.key});
 
   @override
   State<AppealViolationPage> createState() => _AppealViolationPageState();
@@ -86,12 +87,12 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
                   '${AppFormatters.currency(violation.amount)}',
               icon: Icons.report_rounded,
             ),
-            const SizedBox(height: 12),
-            const Text(
+            SizedBox(height: 12.h),
+            Text(
               'Requested outcome',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -106,14 +107,14 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
                   )
                   .toList(),
             ),
-            const SizedBox(height: 20),
-            const Text(
+            SizedBox(height: 20.h),
+            Text(
               'Why should this be reviewed?',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             AppTextField(
-              fieldKey: const Key('appeal-reason-field'),
+              fieldKey: Key('appeal-reason-field'),
               label: 'Why should this be reviewed?',
               controller: _reasonController,
               maxLines: 6,
@@ -122,15 +123,15 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
                   'Explain the circumstances. Add dates, witness names or '
                   'evidence that support your appeal.',
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             Text(
               'Minimum 20 characters. The management committee reviews every '
               'appeal within 14 days.',
-              style: TextStyle(color: tokens.faint, fontSize: 11),
+              style: TextStyle(color: tokens.faint, fontSize: 11.sp),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             FilledButton.icon(
-              key: const Key('submit-appeal'),
+              key: Key('submit-appeal'),
               onPressed: controller.isSubmitting.value ? null : _submit,
               icon: controller.isSubmitting.value
                   ? SizedBox(
@@ -141,25 +142,25 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
                         color: tokens.onBrand,
                       ),
                     )
-                  : const Icon(Icons.send_rounded, size: 18),
+                  : Icon(Icons.send_rounded, size: 18),
               label: Text(
                 controller.isSubmitting.value
                     ? 'Submitting...'
                     : 'Submit appeal',
               ),
               style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
+                minimumSize: Size.fromHeight(52),
               ),
             ),
             if (_error.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              Text(_error, style: const TextStyle(color: AppPalette.danger)),
+              SizedBox(height: 10.h),
+              Text(_error, style: TextStyle(color: AppPalette.danger)),
             ],
             if (controller.errorMessage.value != null) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               Text(
                 controller.errorMessage.value!,
-                style: const TextStyle(color: AppPalette.danger),
+                style: TextStyle(color: AppPalette.danger),
               ),
             ],
           ],

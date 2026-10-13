@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../theme/app_radius.dart';
 import '../theme/app_spacing.dart';
@@ -10,7 +11,7 @@ import '../theme/app_theme_tokens.dart';
 /// Used wherever a screen needs a second, less important action next to its
 /// primary one, or for an action that should read as reversible.
 class AppOutlinedButton extends StatelessWidget {
-  const AppOutlinedButton({
+  AppOutlinedButton({
     required this.label,
     required this.onPressed,
     this.icon,
@@ -69,7 +70,7 @@ class AppOutlinedButton extends StatelessWidget {
                   )
                 else if (icon != null) ...[
                   Icon(icon, size: 20, color: color),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                 ],
                 Flexible(
                   child: Text(
@@ -78,7 +79,7 @@ class AppOutlinedButton extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: color,
-                      fontSize: 15.5,
+                      fontSize: 15.5.sp,
                       letterSpacing: 0.1,
                       fontWeight: FontWeight.w800,
                     ),
@@ -96,7 +97,7 @@ class AppOutlinedButton extends StatelessWidget {
 /// Low emphasis text action, used for "Back to Facilities" style links and
 /// third actions in a dialog.
 class AppTextButton extends StatelessWidget {
-  const AppTextButton({
+  AppTextButton({
     required this.label,
     required this.onPressed,
     this.icon,
@@ -116,12 +117,12 @@ class AppTextButton extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     return TextButton.icon(
       onPressed: onPressed,
-      icon: icon == null ? const SizedBox.shrink() : Icon(icon, size: 18),
+      icon: icon == null ? SizedBox.shrink() : Icon(icon, size: 18),
       label: Text(label),
       style: TextButton.styleFrom(
         foregroundColor: onPressed == null ? tokens.faint : (color ?? tokens.brand),
-        minimumSize: const Size(0, AppSpacing.minTouchTarget),
-        textStyle: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
+        minimumSize: Size(0, AppSpacing.minTouchTarget),
+        textStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700),
       ),
     );
   }

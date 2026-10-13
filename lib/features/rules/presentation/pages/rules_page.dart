@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -14,7 +15,7 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_segmented_tabs.dart';
 
 class RulesPage extends GetView<RulesController> {
-  const RulesPage({super.key});
+  RulesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,13 +26,13 @@ class RulesPage extends GetView<RulesController> {
           IconButton(
             onPressed: controller.loadAll,
             tooltip: 'Refresh rules',
-            icon: const Icon(Icons.refresh_rounded),
+            icon: Icon(Icons.refresh_rounded),
           ),
         ],
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.rules.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
         if (controller.errorMessage.value != null && controller.rules.isEmpty) {
           return AppStateMessage(
@@ -45,9 +46,9 @@ class RulesPage extends GetView<RulesController> {
         return RefreshIndicator(
           onRefresh: controller.loadAll,
           child: ListView(
-            key: const Key('rules-scroll'),
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            key: Key('rules-scroll'),
+            physics: AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(20, 8, 20, 32),
             children: [
               AppHeroPanel(
                 icon: Icons.gavel_rounded,
@@ -67,9 +68,9 @@ class RulesPage extends GetView<RulesController> {
                       )
                     : null,
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
               _TabRow(controller: controller),
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
               // The pill slides into the next tab, so the panel that follows it
               // across rather than swapping the instant the tap lands.
               AnimatedSwitcher(
@@ -78,7 +79,7 @@ class RulesPage extends GetView<RulesController> {
                 switchOutCurve: Curves.easeIn,
                 transitionBuilder: (child, animation) {
                   final slide = Tween<Offset>(
-                    begin: const Offset(0, 0.06),
+                    begin: Offset(0, 0.06),
                     end: Offset.zero,
                   ).animate(animation);
                   return FadeTransition(
@@ -102,7 +103,7 @@ class RulesPage extends GetView<RulesController> {
 }
 
 class _TabRow extends StatelessWidget {
-  const _TabRow({required this.controller});
+  _TabRow({required this.controller});
   final RulesController controller;
 
   @override
@@ -112,7 +113,7 @@ class _TabRow extends StatelessWidget {
       selectedIndex: controller.tab.value.index,
       onSelect: (index) => controller.selectTab(RulesTab.values[index]),
       tabs: [
-        const AppSegmentedTab(
+        AppSegmentedTab(
           name: 'rules',
           label: 'Community rules',
           icon: Icons.menu_book_rounded,
@@ -129,13 +130,13 @@ class _TabRow extends StatelessWidget {
 }
 
 class _Rules extends StatelessWidget {
-  const _Rules({required this.controller});
+  _Rules({required this.controller});
   final RulesController controller;
 
   @override
   Widget build(BuildContext context) {
     if (controller.rules.isEmpty) {
-      return const AppStateMessage(
+      return AppStateMessage(
         title: 'No rules published',
         message: 'Community rules will appear here.',
         icon: Icons.menu_book_outlined,
@@ -145,7 +146,7 @@ class _Rules extends StatelessWidget {
       children: [
         for (final rule in controller.rules)
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: EdgeInsets.only(bottom: 10),
             child: AppCard(
               onTap: () {
                 controller.selectRule(rule);
@@ -158,7 +159,7 @@ class _Rules extends StatelessWidget {
                     icon: ruleCategoryIcon(rule.category),
                     color: AppPalette.brand,
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,36 +169,36 @@ class _Rules extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 rule.title,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),
                             ),
                             Text(
                               rule.code,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppPalette.faint,
-                                fontSize: 11,
+                                fontSize: 11.sp,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 5),
+                        SizedBox(height: 5.h),
                         Text(
                           rule.summary,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppPalette.muted,
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             height: 1.35,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Text(
                           'Fine up to ${AppFormatters.currency(rule.fineAmount)}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppPalette.warning,
-                            fontSize: 11,
+                            fontSize: 11.sp,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -214,13 +215,13 @@ class _Rules extends StatelessWidget {
 }
 
 class _Violations extends StatelessWidget {
-  const _Violations({required this.controller});
+  _Violations({required this.controller});
   final RulesController controller;
 
   @override
   Widget build(BuildContext context) {
     if (controller.violations.isEmpty) {
-      return const AppStateMessage(
+      return AppStateMessage(
         title: 'No violations',
         message: 'You have no rule violations on record. Well done!',
         icon: Icons.verified_outlined,
@@ -233,10 +234,10 @@ class _Violations extends StatelessWidget {
           title: 'Issued to your unit',
           count: controller.violations.length,
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: 10.h),
         for (final violation in controller.violations)
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: EdgeInsets.only(bottom: 10),
             child: AppCard(
               onTap: () {
                 controller.selectViolation(violation);
@@ -249,30 +250,30 @@ class _Violations extends StatelessWidget {
                     icon: Icons.report_rounded,
                     color: violationStatusColor(violation.status),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           violation.ruleTitle,
-                          style: const TextStyle(fontWeight: FontWeight.w800),
+                          style: TextStyle(fontWeight: FontWeight.w800),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4.h),
                         Text(
                           '${violation.reference} · issued ${violation.issuedOn}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppPalette.muted,
-                            fontSize: 11,
+                            fontSize: 11.sp,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Row(
                           children: [
                             ViolationStatusPill(status: violation.status),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8.w),
                             if (controller.appealFor(violation) != null)
-                              const AppStatusPill(
+                              AppStatusPill(
                                 label: 'Appeal open',
                                 color: AppPalette.info,
                                 dense: true,
@@ -294,8 +295,8 @@ class _Violations extends StatelessWidget {
                               : AppPalette.success,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      const Icon(
+                      SizedBox(height: 4.h),
+                      Icon(
                         Icons.chevron_right_rounded,
                         color: AppPalette.faint,
                       ),

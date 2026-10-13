@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -19,7 +20,7 @@ import '../widgets/store_widgets.dart';
 /// Delivery method, delivery slot, how to settle the Store Fee, then review and
 /// place the order. Nothing is created until the resident confirms here.
 class StoreCheckoutPage extends GetView<StoreController> {
-  const StoreCheckoutPage({super.key});
+  StoreCheckoutPage({super.key});
 
   /// The windows a resident can choose from for either delivery method.
   static const _slots = <String, List<String>>{
@@ -51,7 +52,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
           );
         }
         return ListView(
-          key: const Key('store-checkout-scroll'),
+          key: Key('store-checkout-scroll'),
           padding: EdgeInsets.fromLTRB(
             AppSpacing.gutter,
             AppSpacing.pageTop,
@@ -73,7 +74,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             _Section(
               title: 'Delivery time',
               child: Column(
@@ -83,17 +84,17 @@ class StoreCheckoutPage extends GetView<StoreController> {
                     controller.deliveryLocation,
                     style: TextStyle(
                       color: tokens.muted,
-                      fontSize: 12.5,
+                      fontSize: 12.5.sp,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
                       for (final slot in _slots[
                           controller.deliveryMethod.value.label] ??
-                          const <String>[])
+                          <String>[])
                         ChoiceChip(
                           key: Key('store-slot-$slot'),
                           label: Text(slot),
@@ -112,7 +113,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             _Section(
               title: 'How would you like to pay?',
               child: Column(
@@ -139,15 +140,15 @@ class StoreCheckoutPage extends GetView<StoreController> {
             // Paying now needs a method before the button can say what it
             // charges, so the list only appears for that choice.
             if (controller.paymentChoice.value == StorePaymentChoice.payNow) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               _Section(
                 title: 'Payment method',
                 child: _PaymentMethodPicker(controller: controller),
               ),
             ],
-            const SizedBox(height: 16),
-            const StoreFeeNotice(),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
+            StoreFeeNotice(),
+            SizedBox(height: 16.h),
             _Section(
               title: 'Your items',
               child: Column(
@@ -156,7 +157,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             StoreCheckoutSummaryCard(
               keyName: 'store-checkout-summary',
               subtotal: controller.cartSubtotal,
@@ -164,7 +165,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
               total: controller.cartTotal,
               itemCount: controller.cartCount,
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             // The button states the exact amount and the method, so there is no
             // second guessing about what is about to be charged. Paying now
             // needs a method, and the button stays out of reach until one is
@@ -180,7 +181,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     AppPrimaryAction(
-                      key: const Key('store-place-order'),
+                      key: Key('store-place-order'),
                       onPressed: busy || (payingNow && method == null)
                           ? null
                           : () => _place(context),
@@ -191,14 +192,14 @@ class StoreCheckoutPage extends GetView<StoreController> {
                           : Icons.receipt_long_rounded,
                     ),
                     if (payingNow && method == null) ...[
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10.h),
                       Text(
                         'Choose a payment method to continue.',
                         key: Key('store-method-required'),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: tokens.muted,
-                          fontSize: 12.5,
+                          fontSize: 12.5.sp,
                         ),
                       ),
                     ],
@@ -276,7 +277,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
             controller.errorMessage.value ?? 'This payment could not be taken.',
           );
         }
-        return const AppConfirmResult.success();
+        return AppConfirmResult.success();
       },
     );
     if (!confirmed) {
@@ -339,7 +340,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
             controller.errorMessage.value ?? 'Unable to place this order.',
           );
         }
-        return const AppConfirmResult.success();
+        return AppConfirmResult.success();
       },
     );
     if (!confirmed) {
@@ -355,7 +356,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
 /// resident who has paid before is one tap from done and a resident who has not
 /// is never blocked.
 class _PaymentMethodPicker extends StatelessWidget {
-  const _PaymentMethodPicker({required this.controller});
+  _PaymentMethodPicker({required this.controller});
 
   final StoreController controller;
 
@@ -367,12 +368,12 @@ class _PaymentMethodPicker extends StatelessWidget {
       children: [
         if (StoreController.savedMethods.isNotEmpty) ...[
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: EdgeInsets.only(bottom: 8),
             child: Text(
               'Saved',
               style: TextStyle(
                 color: tokens.faint,
-                fontSize: 11.5,
+                fontSize: 11.5.sp,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.4,
               ),
@@ -390,15 +391,15 @@ class _PaymentMethodPicker extends StatelessWidget {
                 saved: saved,
               ),
             ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
         ],
         Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: EdgeInsets.only(bottom: 8),
           child: Text(
             'All methods',
             style: TextStyle(
               color: tokens.faint,
-              fontSize: 11.5,
+              fontSize: 11.5.sp,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.4,
             ),
@@ -422,7 +423,7 @@ class _PaymentMethodPicker extends StatelessWidget {
 }
 
 class _MethodRow extends StatelessWidget {
-  const _MethodRow({
+  _MethodRow({
     required this.icon,
     required this.title,
     required this.description,
@@ -441,11 +442,11 @@ class _MethodRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: 8),
       child: Material(
         color: selected ? tokens.brandTint : tokens.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(14.r),
           side: BorderSide(
             color: selected ? tokens.brand : tokens.border,
             width: selected ? 1.5 : 1,
@@ -455,7 +456,7 @@ class _MethodRow extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(12),
             child: Row(
               children: [
                 Container(
@@ -464,7 +465,7 @@ class _MethodRow extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: selected ? tokens.surface : tokens.surface,
-                    borderRadius: BorderRadius.circular(11),
+                    borderRadius: BorderRadius.circular(11.r),
                   ),
                   child: Icon(
                     icon,
@@ -472,7 +473,7 @@ class _MethodRow extends StatelessWidget {
                     color: selected ? tokens.brand : tokens.mutedStrong,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -481,16 +482,16 @@ class _MethodRow extends StatelessWidget {
                         title,
                         style: TextStyle(
                           color: selected ? tokens.brand : tokens.ink,
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2.h),
                       Text(
                         description,
                         style: TextStyle(
                           color: tokens.muted,
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           height: 1.3,
                         ),
                       ),
@@ -513,7 +514,7 @@ class _MethodRow extends StatelessWidget {
 }
 
 class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child});
+  _Section({required this.title, required this.child});
 
   final String title;
   final Widget child;
@@ -529,11 +530,11 @@ class _Section extends StatelessWidget {
             title,
             style: TextStyle(
               color: tokens.ink,
-              fontSize: 15,
+              fontSize: 15.sp,
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           child,
         ],
       ),
@@ -542,7 +543,7 @@ class _Section extends StatelessWidget {
 }
 
 class _DeliveryOption extends StatelessWidget {
-  const _DeliveryOption({
+  _DeliveryOption({
     required this.method,
     required this.selected,
     required this.onTap,
@@ -569,11 +570,11 @@ class _DeliveryOption extends StatelessWidget {
     };
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: 10),
       child: Material(
         color: selected ? tokens.brandTint : tokens.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           side: BorderSide(
             color: selected ? tokens.brand : tokens.border,
             width: selected ? 1.6 : 1,
@@ -583,7 +584,7 @@ class _DeliveryOption extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.all(14),
+            padding: EdgeInsets.all(14),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -592,7 +593,7 @@ class _DeliveryOption extends StatelessWidget {
                   size: 20,
                   color: selected ? tokens.brand : tokens.muted,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -601,16 +602,16 @@ class _DeliveryOption extends StatelessWidget {
                         label,
                         style: TextStyle(
                           color: selected ? tokens.brand : tokens.ink,
-                          fontSize: 14.5,
+                          fontSize: 14.5.sp,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      const SizedBox(height: 3),
+                      SizedBox(height: 3.h),
                       Text(
                         detail,
                         style: TextStyle(
                           color: tokens.muted,
-                          fontSize: 12.5,
+                          fontSize: 12.5.sp,
                           height: 1.35,
                         ),
                       ),

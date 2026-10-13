@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_palette.dart';
@@ -12,7 +13,7 @@ import '../widgets/rules_widgets.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class RuleDetailPage extends GetView<RulesController> {
-  const RuleDetailPage({required this.rule, super.key});
+  RuleDetailPage({required this.rule, super.key});
 
   final CommunityRule rule;
 
@@ -30,7 +31,7 @@ class RuleDetailPage extends GetView<RulesController> {
     return Scaffold(
       appBar: AppDetailAppBar(title: 'Community rule'),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        padding: EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           AppHeroPanel(
             icon: ruleCategoryIcon(current.category),
@@ -44,7 +45,7 @@ class RuleDetailPage extends GetView<RulesController> {
                   )
                 : null,
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           AppSectionCard(
             title: 'In short',
             child: Text(
@@ -52,11 +53,11 @@ class RuleDetailPage extends GetView<RulesController> {
               style: TextStyle(
                 color: tokens.mutedStrong,
                 height: 1.45,
-                fontSize: 13,
+                fontSize: 13.sp,
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           AppSectionCard(
             title: 'Full rule',
             child: Text(
@@ -65,15 +66,15 @@ class RuleDetailPage extends GetView<RulesController> {
             ),
           ),
           if (related.isNotEmpty) ...[
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             AppSectionHeader(
               title: 'Violations of this rule',
               count: related.length,
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             for (final violation in related)
               Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: EdgeInsets.only(bottom: 10),
                 child: AppSectionCard(
                   title: violation.reference,
                   subtitle: 'Issued ${violation.issuedOn}',
@@ -84,12 +85,12 @@ class RuleDetailPage extends GetView<RulesController> {
                           violation.description,
                           style: TextStyle(
                             color: tokens.muted,
-                            fontSize: 12,
+                            fontSize: 12.sp,
                             height: 1.4,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10.w),
                       ViolationStatusPill(status: violation.status),
                     ],
                   ),

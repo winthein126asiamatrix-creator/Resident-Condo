@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_theme_tokens.dart';
@@ -13,7 +14,7 @@ import '../../domain/entities/app_color_seed.dart';
 /// Each option carries a small illustration of the palette it selects rather
 /// than only an icon, which is what makes the choice obvious at a glance.
 class AppBrightnessModeSelector extends StatelessWidget {
-  const AppBrightnessModeSelector({
+  AppBrightnessModeSelector({
     required this.value,
     required this.onChanged,
     super.key,
@@ -41,7 +42,7 @@ class AppBrightnessModeSelector extends StatelessWidget {
               ),
             ),
             if (mode != AppBrightnessMode.values.last)
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
           ],
         ],
       ),
@@ -50,7 +51,7 @@ class AppBrightnessModeSelector extends StatelessWidget {
 }
 
 class _ModeOption extends StatelessWidget {
-  const _ModeOption({
+  _ModeOption({
     required this.mode,
     required this.selected,
     required this.onTap,
@@ -84,7 +85,7 @@ class _ModeOption extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             child: Padding(
-              padding: const EdgeInsets.symmetric(
+              padding: EdgeInsets.symmetric(
                 horizontal: 10,
                 vertical: 12,
               ),
@@ -93,7 +94,7 @@ class _ModeOption extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _ModeIllustration(mode: mode, selected: selected),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   Row(
                     children: [
                       Expanded(
@@ -102,7 +103,7 @@ class _ModeOption extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 13,
+                            fontSize: 13.sp,
                             fontWeight: FontWeight.w800,
                             color: selected ? tokens.brand : tokens.ink,
                           ),
@@ -111,7 +112,7 @@ class _ModeOption extends StatelessWidget {
                       // A tick alongside the tint and the border, so the choice
                       // is not signalled by colour alone.
                       AnimatedOpacity(
-                        duration: const Duration(milliseconds: 180),
+                        duration: Duration(milliseconds: 180),
                         opacity: selected ? 1 : 0,
                         child: Icon(
                           Icons.check_circle_rounded,
@@ -121,13 +122,13 @@ class _ModeOption extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 3),
+                  SizedBox(height: 3.h),
                   Text(
                     mode.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 10.5,
+                      fontSize: 10.5.sp,
                       height: 1.25,
                       color: selected ? tokens.brand : tokens.muted,
                     ),
@@ -147,7 +148,7 @@ class _ModeOption extends StatelessWidget {
 /// Two swatches on a light ground for Light, the inverse for Dark, and both for
 /// System, which is exactly the distinction the label is describing.
 class _ModeIllustration extends StatelessWidget {
-  const _ModeIllustration({required this.mode, required this.selected});
+  _ModeIllustration({required this.mode, required this.selected});
 
   final AppBrightnessMode mode;
   final bool selected;
@@ -163,24 +164,24 @@ class _ModeIllustration extends StatelessWidget {
         children: [
           _Half(
             background: isSystem || mode == AppBrightnessMode.light
-                ? const Color(0xFFF4F7F6)
-                : const Color(0xFF16201F),
+                ? Color(0xFFF4F7F6)
+                : Color(0xFF16201F),
             foreground: isSystem || mode == AppBrightnessMode.light
                 ? tokens.brand
                 : tokens.brand,
-            radius: const BorderRadius.only(
-              topLeft: Radius.circular(8),
-              bottomLeft: Radius.circular(8),
+            radius: BorderRadius.only(
+              topLeft: Radius.circular(8.r),
+              bottomLeft: Radius.circular(8.r),
             ),
           ),
           _Half(
             background: isSystem || mode == AppBrightnessMode.dark
-                ? const Color(0xFF16201F)
-                : const Color(0xFFF4F7F6),
+                ? Color(0xFF16201F)
+                : Color(0xFFF4F7F6),
             foreground: tokens.brand,
-            radius: const BorderRadius.only(
-              topRight: Radius.circular(8),
-              bottomRight: Radius.circular(8),
+            radius: BorderRadius.only(
+              topRight: Radius.circular(8.r),
+              bottomRight: Radius.circular(8.r),
             ),
           ),
         ],
@@ -190,7 +191,7 @@ class _ModeIllustration extends StatelessWidget {
 }
 
 class _Half extends StatelessWidget {
-  const _Half({
+  _Half({
     required this.background,
     required this.foreground,
     required this.radius,

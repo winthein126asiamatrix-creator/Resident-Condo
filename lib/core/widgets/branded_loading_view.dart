@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../constants/app_constants.dart';
 import '../theme/app_theme_tokens.dart';
 
 class BrandedLoadingView extends StatelessWidget {
-  const BrandedLoadingView({this.message = 'Loading...', super.key});
+  BrandedLoadingView({this.message = 'Loading...', super.key});
 
   final String message;
 
@@ -14,7 +15,7 @@ class BrandedLoadingView extends StatelessWidget {
     return SafeArea(
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: EdgeInsets.all(32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -22,12 +23,12 @@ class BrandedLoadingView extends StatelessWidget {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(22.r),
                   boxShadow: [
                     BoxShadow(
                       color: tokens.brand.withValues(alpha: 0.18),
                       blurRadius: 18,
-                      offset: const Offset(0, 8),
+                      offset: Offset(0, 8),
                     ),
                   ],
                 ),
@@ -39,23 +40,23 @@ class BrandedLoadingView extends StatelessWidget {
                   filterQuality: FilterQuality.high,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               Text(
                 AppConstants.appName,
                 style: TextStyle(
                   color: tokens.ink,
-                  fontSize: 20,
+                  fontSize: 20.sp,
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: 6.h),
               Text(message, style: TextStyle(color: tokens.muted)),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               SizedBox(
                 width: 132,
                 child: LinearProgressIndicator(
                   minHeight: 4,
-                  borderRadius: const BorderRadius.all(Radius.circular(4)),
+                  borderRadius: BorderRadius.all(Radius.circular(4.r)),
                   color: tokens.brand,
                   backgroundColor: tokens.brandSoft,
                 ),

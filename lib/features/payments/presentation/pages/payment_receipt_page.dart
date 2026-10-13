@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -12,7 +13,7 @@ import '../widgets/payment_record_badge.dart';
 import '../../../../core/theme/app_spacing.dart';
 
 class PaymentReceiptPage extends StatelessWidget {
-  const PaymentReceiptPage({required this.payment, super.key});
+  PaymentReceiptPage({required this.payment, super.key});
 
   final Payment payment;
 
@@ -25,8 +26,8 @@ class PaymentReceiptPage extends StatelessWidget {
         title: isSuccess ? 'Payment receipt' : 'Failed attempt',
       ),
       body: ListView(
-        key: const Key('payment-receipt-scroll'),
-        padding: const EdgeInsets.fromLTRB(
+        key: Key('payment-receipt-scroll'),
+        padding: EdgeInsets.fromLTRB(
           AppSpacing.gutter,
           AppSpacing.pageTop,
           AppSpacing.gutter,
@@ -34,10 +35,10 @@ class PaymentReceiptPage extends StatelessWidget {
         ),
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: tokens.surface,
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(22.r),
               border: Border.all(color: tokens.border),
             ),
             child: Column(
@@ -58,21 +59,21 @@ class PaymentReceiptPage extends StatelessWidget {
                     PaymentRecordBadge(status: payment.status),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
                   'Condo Residents',
-                  style: TextStyle(color: tokens.muted, fontSize: 12),
+                  style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                 ),
-                const Divider(height: 30),
+                Divider(height: 30),
                 _ReceiptLine(label: 'Resident', value: payment.residentName),
                 _ReceiptLine(label: 'Unit', value: payment.unitLabel),
                 _ReceiptLine(label: 'Invoice', value: payment.invoiceNumber),
-                const SizedBox(height: 18),
+                SizedBox(height: 18.h),
                 Text(
                   isSuccess ? 'Items paid' : 'Items attempted',
-                  style: const TextStyle(fontWeight: FontWeight.w800),
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 for (final item in payment.items)
                   _ReceiptLine(
                     label: item.note.isEmpty
@@ -81,13 +82,13 @@ class PaymentReceiptPage extends StatelessWidget {
                     value: AppFormatters.currency(item.amount),
                     detail: item.note,
                   ),
-                const Divider(height: 24),
+                Divider(height: 24),
                 _ReceiptLine(
                   label: isSuccess ? 'Total paid' : 'Total attempted',
                   value: AppFormatters.currency(payment.amount),
                   emphasize: true,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 _ReceiptLine(
                   label: 'Payment method',
                   value: payment.method.label,
@@ -98,12 +99,12 @@ class PaymentReceiptPage extends StatelessWidget {
                   value: payment.transactionId,
                 ),
                 if (payment.isFailed) ...[
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   Text(
                     payment.failureReason ?? 'Payment was declined.',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppPalette.danger,
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -111,11 +112,11 @@ class PaymentReceiptPage extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           OutlinedButton.icon(
             onPressed: () => Get.offAllNamed(AppRoutes.home),
-            icon: const Icon(Icons.check_rounded),
-            label: const Text('Done'),
+            icon: Icon(Icons.check_rounded),
+            label: Text('Done'),
             style: OutlinedButton.styleFrom(
               minimumSize: Size.fromHeight(50),
             ),
@@ -127,7 +128,7 @@ class PaymentReceiptPage extends StatelessWidget {
 }
 
 class _ReceiptLine extends StatelessWidget {
-  const _ReceiptLine({
+  _ReceiptLine({
     required this.label,
     required this.value,
     this.detail,
@@ -158,19 +159,19 @@ class _ReceiptLine extends StatelessWidget {
                   ),
                 ),
                 if (detail != null && detail!.isNotEmpty) ...[
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2.h),
                   Text(
                     detail!,
                     style: TextStyle(
                       color: tokens.faint,
-                      fontSize: 11,
+                      fontSize: 11.sp,
                     ),
                   ),
                 ],
               ],
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Text(
             value,
             style: TextStyle(

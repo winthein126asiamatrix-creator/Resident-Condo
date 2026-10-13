@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -12,7 +13,7 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/theme/app_spacing.dart';
 
 class PaymentSuccessPage extends StatelessWidget {
-  const PaymentSuccessPage({required this.payment, super.key});
+  PaymentSuccessPage({required this.payment, super.key});
 
   final Payment payment;
 
@@ -22,15 +23,15 @@ class PaymentSuccessPage extends StatelessWidget {
     return Scaffold(
       appBar: AppDetailAppBar(title: 'Payment successful'),
       body: ListView(
-        key: const Key('payment-success-scroll'),
-        padding: const EdgeInsets.fromLTRB(
+        key: Key('payment-success-scroll'),
+        padding: EdgeInsets.fromLTRB(
           AppSpacing.gutter,
           AppSpacing.pageTop,
           AppSpacing.gutter,
           32,
         ),
         children: [
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           Center(
             child: Container(
               width: 88,
@@ -39,42 +40,42 @@ class PaymentSuccessPage extends StatelessWidget {
                 color: tokens.brandTint,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.check_rounded,
                 color: AppPalette.success,
                 size: 48,
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           Text(
             'Payment Successful',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 24.sp,
               fontWeight: FontWeight.w800,
               color: tokens.ink,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             'Only the items you selected have been settled.',
             textAlign: TextAlign.center,
             style: TextStyle(color: tokens.muted),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           _SuccessCard(payment: payment),
-          const SizedBox(height: 20),
+          SizedBox(height: 20.h),
           FilledButton.icon(
             onPressed: () =>
                 Get.toNamed(AppRoutes.paymentReceipt, arguments: payment),
-            icon: const Icon(Icons.receipt_long_outlined),
-            label: const Text('View Receipt'),
+            icon: Icon(Icons.receipt_long_outlined),
+            label: Text('View Receipt'),
             style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(52),
+              minimumSize: Size.fromHeight(52),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           OutlinedButton(
             onPressed: () => Get.offAllNamed(AppRoutes.home),
             style: OutlinedButton.styleFrom(
@@ -89,7 +90,7 @@ class PaymentSuccessPage extends StatelessWidget {
 }
 
 class _SuccessCard extends StatelessWidget {
-  const _SuccessCard({required this.payment});
+  _SuccessCard({required this.payment});
   final Payment payment;
 
   @override
@@ -103,36 +104,36 @@ class _SuccessCard extends StatelessWidget {
             'PAID ITEMS (${payment.items.length})',
             style: TextStyle(
               color: tokens.brandOnDark,
-              fontSize: 11,
+              fontSize: 11.sp,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.1,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           for (final item in payment.items)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
+              padding: EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.check_circle_rounded,
                     size: 16,
                     color: AppPalette.success,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
                       item.type.label,
-                      style: const TextStyle(
-                        fontSize: 12,
+                      style: TextStyle(
+                        fontSize: 12.sp,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                   Text(
                     AppFormatters.currency(item.amount),
-                    style: const TextStyle(
-                      fontSize: 12,
+                    style: TextStyle(
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -156,7 +157,7 @@ class _SuccessCard extends StatelessWidget {
 }
 
 class _SuccessLine extends StatelessWidget {
-  const _SuccessLine({required this.label, required this.value});
+  _SuccessLine({required this.label, required this.value});
   final String label;
   final String value;
 
@@ -170,14 +171,14 @@ class _SuccessLine extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(color: tokens.muted, fontSize: 12),
+              style: TextStyle(color: tokens.muted, fontSize: 12.sp),
             ),
           ),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12.sp),
             ),
           ),
         ],

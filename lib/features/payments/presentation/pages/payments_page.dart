@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -15,7 +16,7 @@ import '../controllers/payment_controller.dart';
 import '../widgets/payment_status_badge.dart';
 
 class PaymentsPage extends GetView<PaymentController> {
-  const PaymentsPage({super.key});
+  PaymentsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class PaymentsPage extends GetView<PaymentController> {
       body: SafeArea(
         child: Obx(
           () => controller.isLoading.value && controller.invoices.isEmpty
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(child: CircularProgressIndicator())
               : controller.errorMessage.value != null &&
                     controller.invoices.isEmpty
               ? AppStateMessage(
@@ -37,23 +38,23 @@ class PaymentsPage extends GetView<PaymentController> {
               : RefreshIndicator(
                   onRefresh: controller.loadPayments,
                   child: ListView(
-                    key: const Key('payments-scroll'),
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
+                    key: Key('payments-scroll'),
+                    physics: AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(20, 18, 20, 32),
                     children: [
                       _PaymentsHeader(onRefresh: controller.loadPayments),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
                       _BalanceSummary(controller: controller),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
                       _FeeBreakdown(controller: controller),
-                      const SizedBox(height: 25),
+                      SizedBox(height: 25.h),
                       _SectionHeader(
                         title: 'Invoices',
                         count: controller.invoices.length,
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10.h),
                       if (controller.invoices.isEmpty)
-                        const AppStateMessage(
+                        AppStateMessage(
                           title: 'No invoices',
                           message: 'Your invoices will appear here.',
                           icon: Icons.receipt_long_outlined,
@@ -61,18 +62,18 @@ class PaymentsPage extends GetView<PaymentController> {
                       else
                         ...controller.invoices.map(
                           (invoice) => Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
+                            padding: EdgeInsets.only(bottom: 10),
                             child: _InvoiceCard(invoice: invoice),
                           ),
                         ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16.h),
                       _SectionHeader(
                         title: 'Payment history',
                         count: controller.paymentHistory.length,
                         actionLabel: 'View all',
                         onAction: () => Get.toNamed(AppRoutes.paymentHistory),
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10.h),
                       if (controller.paymentHistory.isEmpty)
                         Text(
                           'No payment history yet.',
@@ -83,7 +84,7 @@ class PaymentsPage extends GetView<PaymentController> {
                             .take(2)
                             .map(
                               (payment) => Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
+                                padding: EdgeInsets.only(bottom: 10),
                                 child: _PaymentPreview(payment: payment),
                               ),
                             ),
@@ -97,7 +98,7 @@ class PaymentsPage extends GetView<PaymentController> {
 }
 
 class _PaymentsHeader extends StatelessWidget {
-  const _PaymentsHeader({required this.onRefresh});
+  _PaymentsHeader({required this.onRefresh});
   final Future<void> Function() onRefresh;
 
   @override
@@ -113,7 +114,7 @@ class _PaymentsHeader extends StatelessWidget {
                 'Payments',
                 style: AppTextStyles.of(context).screenTitle,
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 'Pay a single fee or several at once',
                 style: TextStyle(color: tokens.muted),
@@ -124,12 +125,12 @@ class _PaymentsHeader extends StatelessWidget {
         IconButton(
           onPressed: onRefresh,
           tooltip: 'Refresh payments',
-          icon: const Icon(Icons.refresh_rounded),
+          icon: Icon(Icons.refresh_rounded),
         ),
         IconButton(
           onPressed: () => Get.toNamed(AppRoutes.paymentHistory),
           tooltip: 'Payment history',
-          icon: const Icon(Icons.history_rounded),
+          icon: Icon(Icons.history_rounded),
         ),
       ],
     );
@@ -137,7 +138,7 @@ class _PaymentsHeader extends StatelessWidget {
 }
 
 class _BalanceSummary extends StatelessWidget {
-  const _BalanceSummary({required this.controller});
+  _BalanceSummary({required this.controller});
   final PaymentController controller;
 
   @override
@@ -145,10 +146,10 @@ class _BalanceSummary extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     final outstanding = controller.outstandingBalance;
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: tokens.brand,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(22.r),
         boxShadow: tokens.heroShadow,
       ),
       child: Column(
@@ -166,37 +167,37 @@ class _BalanceSummary extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                 decoration: BoxDecoration(
                   color: tokens.brandOnDark,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
                   '${controller.openInvoiceCount} open',
                   style: TextStyle(
                     color: tokens.brand,
-                    fontSize: 10,
+                    fontSize: 10.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             AppFormatters.currency(outstanding),
             style: TextStyle(
               color: tokens.onBrand,
-              fontSize: 31,
+              fontSize: 31.sp,
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             'Across all open invoices',
-            style: TextStyle(color: tokens.brandOnDarkMuted, fontSize: 12),
+            style: TextStyle(color: tokens.brandOnDarkMuted, fontSize: 12.sp),
           ),
-          const SizedBox(height: 19),
+          SizedBox(height: 19.h),
           Row(
             children: [
               Expanded(
@@ -222,30 +223,30 @@ class _BalanceSummary extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
-              key: const Key('payments-pay-now'),
+              key: Key('payments-pay-now'),
               onPressed: outstanding <= 0
                   ? null
                   : () => _openOldestInvoice(context),
-              icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-              label: const Text('Pay Now'),
+              icon: Icon(Icons.arrow_forward_rounded, size: 18),
+              label: Text('Pay Now'),
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: tokens.brand,
-                minimumSize: const Size.fromHeight(48),
+                minimumSize: Size.fromHeight(48),
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             'Pay Now takes you to the item list. Nothing is charged until you '
             'confirm the items you selected.',
             style: TextStyle(
               color: tokens.brandOnDarkMuted,
-              fontSize: 10,
+              fontSize: 10.sp,
               height: 1.35,
             ),
           ),
@@ -270,7 +271,7 @@ class _BalanceSummary extends StatelessWidget {
 }
 
 class _FeeBreakdown extends StatelessWidget {
-  const _FeeBreakdown({required this.controller});
+  _FeeBreakdown({required this.controller});
   final PaymentController controller;
 
   @override
@@ -295,28 +296,28 @@ class _FeeBreakdown extends StatelessWidget {
     ];
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: tokens.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: tokens.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Balance by fee type',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             'Rent and the monthly condo fee are billed separately.',
-            style: TextStyle(color: tokens.muted, fontSize: 11),
+            style: TextStyle(color: tokens.muted, fontSize: 11.sp),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           for (final row in rows)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 5),
+              padding: EdgeInsets.symmetric(vertical: 5),
               child: Row(
                 children: [
                   Container(
@@ -324,24 +325,24 @@ class _FeeBreakdown extends StatelessWidget {
                     height: 10,
                     decoration: BoxDecoration(
                       color: row.color,
-                      borderRadius: BorderRadius.circular(3),
+                      borderRadius: BorderRadius.circular(3.r),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
                       row.label,
                       style: TextStyle(
                         color: tokens.mutedStrong,
-                        fontSize: 12,
+                        fontSize: 12.sp,
                       ),
                     ),
                   ),
                   Text(
                     AppFormatters.currency(row.amount),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w800,
-                      fontSize: 13,
+                      fontSize: 13.sp,
                     ),
                   ),
                 ],
@@ -354,7 +355,7 @@ class _FeeBreakdown extends StatelessWidget {
 }
 
 class _SummaryMetric extends StatelessWidget {
-  const _SummaryMetric({
+  _SummaryMetric({
     required this.label,
     required this.value,
     required this.detail,
@@ -371,23 +372,23 @@ class _SummaryMetric extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(color: tokens.brandOnDark, fontSize: 10),
+          style: TextStyle(color: tokens.brandOnDark, fontSize: 10.sp),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h),
         Text(
           value,
           style: TextStyle(
             color: tokens.onBrand,
             fontWeight: FontWeight.w800,
-            fontSize: 14,
+            fontSize: 14.sp,
           ),
         ),
-        const SizedBox(height: 2),
+        SizedBox(height: 2.h),
         Text(
           detail,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: tokens.brandOnDark, fontSize: 9),
+          style: TextStyle(color: tokens.brandOnDark, fontSize: 9.sp),
         ),
       ],
     );
@@ -395,7 +396,7 @@ class _SummaryMetric extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({
+  _SectionHeader({
     required this.title,
     required this.count,
     this.actionLabel,
@@ -416,23 +417,23 @@ class _SectionHeader extends StatelessWidget {
           style: Theme.of(context).textTheme.titleMedium
               ?.copyWith(fontWeight: FontWeight.w800, color: tokens.ink),
         ),
-        const SizedBox(width: 7),
+        SizedBox(width: 7.w),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+          padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
           decoration: BoxDecoration(
             color: tokens.brandTint,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(10.r),
           ),
           child: Text(
             '$count',
             style: TextStyle(
               color: tokens.brand,
-              fontSize: 11,
+              fontSize: 11.sp,
               fontWeight: FontWeight.w800,
             ),
           ),
         ),
-        const Spacer(),
+        Spacer(),
         if (actionLabel != null && onAction != null)
           TextButton(onPressed: onAction, child: Text(actionLabel!)),
       ],
@@ -441,7 +442,7 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _InvoiceCard extends StatelessWidget {
-  const _InvoiceCard({required this.invoice});
+  _InvoiceCard({required this.invoice});
   final Invoice invoice;
 
   @override
@@ -450,12 +451,12 @@ class _InvoiceCard extends StatelessWidget {
     final openItems = invoice.unpaidItems;
     return InkWell(
       onTap: () => Get.toNamed(AppRoutes.paymentDetail, arguments: invoice),
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(18.r),
       child: Container(
-        padding: const EdgeInsets.all(15),
+        padding: EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: tokens.surface,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           border: Border.all(color: tokens.border),
         ),
         child: Row(
@@ -466,21 +467,21 @@ class _InvoiceCard extends StatelessWidget {
                   : Icons.receipt_long_outlined,
               color: invoice.isFullyPaid ? AppPalette.success : tokens.brand,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     invoice.title,
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+                    style: TextStyle(fontWeight: FontWeight.w800),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     '${invoice.billingPeriod} · ${invoice.number}',
-                    style: TextStyle(color: tokens.muted, fontSize: 12),
+                    style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   if (openItems.isNotEmpty)
                     Text(
                       openItems.map((item) => item.type.shortLabel).join(' · '),
@@ -488,7 +489,7 @@ class _InvoiceCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: tokens.mutedStrong,
-                        fontSize: 11,
+                        fontSize: 11.sp,
                       ),
                     ),
                 ],
@@ -499,14 +500,14 @@ class _InvoiceCard extends StatelessWidget {
               children: [
                 Text(
                   AppFormatters.currency(invoice.amountDue),
-                  style: const TextStyle(fontWeight: FontWeight.w800),
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   invoice.isFullyPaid ? 'Settled' : 'Due ${invoice.dueDate}',
-                  style: TextStyle(color: tokens.muted, fontSize: 10),
+                  style: TextStyle(color: tokens.muted, fontSize: 10.sp),
                 ),
-                const SizedBox(height: 5),
+                SizedBox(height: 5.h),
                 PaymentStatusBadge(status: invoice.status),
               ],
             ),
@@ -519,17 +520,17 @@ class _InvoiceCard extends StatelessWidget {
 }
 
 class _PaymentPreview extends StatelessWidget {
-  const _PaymentPreview({required this.payment});
+  _PaymentPreview({required this.payment});
   final Payment payment;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: tokens.surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(color: tokens.border),
       ),
       child: Row(
@@ -542,19 +543,19 @@ class _PaymentPreview extends StatelessWidget {
                 ? AppPalette.success
                 : AppPalette.danger,
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   payment.invoiceNumber,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                const SizedBox(height: 3),
+                SizedBox(height: 3.h),
                 Text(
                   '${payment.date} · ${payment.status.label}',
-                  style: TextStyle(color: tokens.muted, fontSize: 12),
+                  style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                 ),
               ],
             ),

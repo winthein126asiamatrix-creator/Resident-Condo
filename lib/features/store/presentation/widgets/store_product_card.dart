@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/theme/app_radius.dart';
@@ -15,7 +16,7 @@ import 'store_widgets.dart';
 /// look somewhere else to change a quantity. The basket count and the total on
 /// the page both react to the same state, so the two can never disagree.
 class StoreProductCard extends StatelessWidget {
-  const StoreProductCard({
+  StoreProductCard({
     required this.product,
     required this.onAdd,
     required this.onRemove,
@@ -41,15 +42,15 @@ class StoreProductCard extends StatelessWidget {
     return AppCard(
       key: Key('store-product-${product.id}'),
       onTap: onOpen,
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12),
       borderRadius: AppRadius.xl,
       showShadow: true,
-      borderColor: const Color(0x0F000000),
+      borderColor: Color(0x0F000000),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           StoreProductImage(product: product, size: 76),
-          const SizedBox(width: 14),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,26 +61,26 @@ class StoreProductCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: tokens.ink,
-                    fontSize: 14.5,
+                    fontSize: 14.5.sp,
                     fontWeight: FontWeight.w800,
                     height: 1.25,
                     letterSpacing: -0.1,
                   ),
                 ),
                 if (product.brand.isNotEmpty) ...[
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2.h),
                   Text(
                     product.brand,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: tokens.faint,
-                      fontSize: 11.5,
+                      fontSize: 11.5.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -87,12 +88,12 @@ class StoreProductCard extends StatelessWidget {
                       AppFormatters.currency(product.price),
                       style: TextStyle(
                         color: tokens.ink,
-                        fontSize: 16,
+                        fontSize: 16.sp,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(width: 7),
+                    SizedBox(width: 7.w),
                     // The unit gives way rather than the price: a narrow phone
                     // may not fit both, and the price is what matters.
                     Flexible(
@@ -102,15 +103,15 @@ class StoreProductCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: tokens.faint,
-                          fontSize: 11.5,
+                          fontSize: 11.5.sp,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 StoreStockPill(status: product.stockStatus, dense: true),
-                const SizedBox(height: 10),
+                SizedBox(height: 10.h),
                 _BasketControl(
                   product: product,
                   quantity: inCartQuantity,
@@ -130,7 +131,7 @@ class StoreProductCard extends StatelessWidget {
 /// The add / stepper control. Same footprint in both states so the card does
 /// not jump when an item goes into the basket.
 class _BasketControl extends StatelessWidget {
-  const _BasketControl({
+  _BasketControl({
     required this.product,
     required this.quantity,
     required this.enabled,
@@ -167,7 +168,7 @@ class _BasketControl extends StatelessWidget {
 }
 
 class _AddButton extends StatelessWidget {
-  const _AddButton({
+  _AddButton({
     required this.product,
     required this.height,
     required this.onPressed,
@@ -198,12 +199,12 @@ class _AddButton extends StatelessWidget {
                 size: 18,
                 color: tokens.onBrand,
               ),
-              const SizedBox(width: 6),
+              SizedBox(width: 6.w),
               Text(
                 'Add to basket',
                 style: TextStyle(
                   color: tokens.onBrand,
-                  fontSize: 13.5,
+                  fontSize: 13.5.sp,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -217,7 +218,7 @@ class _AddButton extends StatelessWidget {
 
 /// `- qty +`, plus a one-tap shortcut to the checkout.
 class _QuantityStepper extends StatelessWidget {
-  const _QuantityStepper({
+  _QuantityStepper({
     required this.product,
     required this.quantity,
     required this.height,
@@ -248,7 +249,7 @@ class _QuantityStepper extends StatelessWidget {
         ),
         // The count animates on change so the new quantity is noticed.
         AnimatedSwitcher(
-          duration: const Duration(milliseconds: 180),
+          duration: Duration(milliseconds: 180),
           transitionBuilder: (child, animation) => ScaleTransition(
             scale: animation,
             child: FadeTransition(opacity: animation, child: child),
@@ -266,7 +267,7 @@ class _QuantityStepper extends StatelessWidget {
               '$quantity',
               style: TextStyle(
                 color: tokens.brand,
-                fontSize: 15,
+                fontSize: 15.sp,
                 fontWeight: FontWeight.w800,
               ),
             ),
@@ -281,7 +282,7 @@ class _QuantityStepper extends StatelessWidget {
               ? 'Only ${product.stock} left'
               : 'Add one more ${product.name}',
         ),
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
         Expanded(
           child: _LineTotal(
             height: height,
@@ -294,7 +295,7 @@ class _QuantityStepper extends StatelessWidget {
 }
 
 class _StepButton extends StatelessWidget {
-  const _StepButton({
+  _StepButton({
     required this.icon,
     required this.onTap,
     required this.height,
@@ -337,7 +338,7 @@ class _StepButton extends StatelessWidget {
 /// Running total for this line, so the effect of the stepper is visible
 /// without going back to the basket.
 class _LineTotal extends StatelessWidget {
-  const _LineTotal({required this.height, required this.text});
+  _LineTotal({required this.height, required this.text});
 
   final double height;
   final String text;
@@ -356,7 +357,7 @@ class _LineTotal extends StatelessWidget {
         text,
         style: TextStyle(
           color: tokens.mutedStrong,
-          fontSize: 13.5,
+          fontSize: 13.5.sp,
           fontWeight: FontWeight.w800,
         ),
       ),
@@ -365,7 +366,7 @@ class _LineTotal extends StatelessWidget {
 }
 
 class _OutOfStockLabel extends StatelessWidget {
-  const _OutOfStockLabel({required this.height});
+  _OutOfStockLabel({required this.height});
 
   final double height;
 
@@ -383,7 +384,7 @@ class _OutOfStockLabel extends StatelessWidget {
         'Out of stock',
         style: TextStyle(
           color: tokens.faint,
-          fontSize: 13,
+          fontSize: 13.sp,
           fontWeight: FontWeight.w700,
         ),
       ),

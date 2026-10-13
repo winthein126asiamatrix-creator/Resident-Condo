@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -16,7 +17,7 @@ import '../../../../core/widgets/app_buttons.dart';
 import '../../../../core/widgets/app_primary_action.dart';
 
 class VisitorsPage extends GetView<VisitorController> {
-  const VisitorsPage({super.key});
+  VisitorsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class VisitorsPage extends GetView<VisitorController> {
       appBar: AppDetailAppBar(title: 'Visitors'),
       body: Obx(() {
         if (controller.isLoading.value && controller.visitors.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
         if (controller.errorMessage.value != null &&
             controller.visitors.isEmpty) {
@@ -41,9 +42,9 @@ class VisitorsPage extends GetView<VisitorController> {
         return RefreshIndicator(
           onRefresh: controller.loadVisitors,
           child: ListView(
-            key: const Key('visitors-scroll'),
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(
+            key: Key('visitors-scroll'),
+            physics: AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(
               AppSpacing.gutter,
               AppSpacing.pageTop,
               AppSpacing.gutter,
@@ -51,33 +52,33 @@ class VisitorsPage extends GetView<VisitorController> {
             ),
             children: [
               _VisitorHero(controller: controller),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               AppCard(
                 color: tokens.brandTint,
                 borderColor: tokens.brandSoft,
                 child: Row(
                   children: [
                     Icon(Icons.badge_outlined, color: tokens.brand),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10.w),
                     Expanded(
                       child: Text(
                         'Visitors are verified with an alphanumeric access code '
                         'read out at the lobby desk.',
                         style: TextStyle(
                           color: tokens.mutedStrong,
-                          fontSize: 12,
+                          fontSize: 12.sp,
                           height: 1.4,
                         ),
                       ),
                     ),
                     // TextButton(
                     //   onPressed: () => Get.toNamed(AppRoutes.visitorVerify),
-                    //   child: const Text('Verify'),
+                    //   child: Text('Verify'),
                     // ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               // The primary action sits in the content flow rather than
               // floating over it, so it reads as part of the page and never
               // covers a visitor card.
@@ -85,17 +86,17 @@ class VisitorsPage extends GetView<VisitorController> {
                 button: true,
                 label: 'Register a new visitor',
                 child: AppPrimaryAction(
-                  key: const Key('register-visitor'),
+                  key: Key('register-visitor'),
                   onPressed: () => Get.toNamed(AppRoutes.visitorRegister),
                   label: 'Register visitor',
                   icon: Icons.person_add_alt_1_rounded,
                 ),
               ),
-              const SizedBox(height: 18),
+              SizedBox(height: 18.h),
               _FilterRow(controller: controller),
-              const SizedBox(height: 14),
+              SizedBox(height: 14.h),
               if (visible.isEmpty)
-                const AppStateMessage(
+                AppStateMessage(
                   title: 'Nothing here yet',
                   message: 'Register a visitor to generate an access code.',
                   icon: Icons.person_add_alt_1_outlined,
@@ -103,7 +104,7 @@ class VisitorsPage extends GetView<VisitorController> {
               else
                 for (final visitor in visible)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
+                    padding: EdgeInsets.only(bottom: 10),
                     child: _VisitorCard(
                       controller: controller,
                       visitor: visitor,
@@ -118,7 +119,7 @@ class VisitorsPage extends GetView<VisitorController> {
 }
 
 class _VisitorHero extends StatelessWidget {
-  const _VisitorHero({required this.controller});
+  _VisitorHero({required this.controller});
   final VisitorController controller;
 
   @override
@@ -140,7 +141,7 @@ class _VisitorHero extends StatelessWidget {
 }
 
 class _FilterRow extends StatelessWidget {
-  const _FilterRow({required this.controller});
+  _FilterRow({required this.controller});
   final VisitorController controller;
 
   @override
@@ -152,7 +153,7 @@ class _FilterRow extends StatelessWidget {
         children: [
           for (final filter in VisitorFilter.values)
             Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: EdgeInsets.only(right: 8),
               child: ChoiceChip(
                 label: Text('${filter.label} (${controller.countFor(filter)})'),
                 selected: controller.filter.value == filter,
@@ -173,7 +174,7 @@ class _FilterRow extends StatelessWidget {
 }
 
 class _VisitorCard extends StatelessWidget {
-  const _VisitorCard({required this.controller, required this.visitor});
+  _VisitorCard({required this.controller, required this.visitor});
   final VisitorController controller;
   final Visitor visitor;
 
@@ -199,23 +200,23 @@ class _VisitorCard extends StatelessWidget {
                   style: TextStyle(color: color, fontWeight: FontWeight.w800),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       visitor.name,
-                      style: const TextStyle(fontWeight: FontWeight.w800),
+                      style: TextStyle(fontWeight: FontWeight.w800),
                     ),
-                    const SizedBox(height: 3),
+                    SizedBox(height: 3.h),
                     Text(
                       '${visitor.relation.label} · ${visitor.purpose}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: tokens.muted,
-                        fontSize: 12,
+                        fontSize: 12.sp,
                       ),
                     ),
                   ],
@@ -224,12 +225,12 @@ class _VisitorCard extends StatelessWidget {
               AppStatusPill(label: visitor.status.label, color: color),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               color: tokens.canvas,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             child: Row(
               children: [
@@ -238,21 +239,21 @@ class _VisitorCard extends StatelessWidget {
                   size: 16,
                   color: tokens.brand,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 Flexible(
                   child: Text(
                     visitor.accessCode,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.2,
-                      fontSize: 13,
+                      fontSize: 13.sp,
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                const Spacer(),
+                SizedBox(width: 8.w),
+                Spacer(),
                 Flexible(
                   child: Text(
                     '${visitor.date} ? ${visitor.arrivalWindow}',
@@ -261,14 +262,14 @@ class _VisitorCard extends StatelessWidget {
                     textAlign: TextAlign.right,
                     style: TextStyle(
                       color: tokens.muted,
-                      fontSize: 11,
+                      fontSize: 11.sp,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Row(
             children: [
               if (visitor.canCheckIn)
@@ -284,7 +285,7 @@ class _VisitorCard extends StatelessWidget {
                   ),
                 ),
               if (visitor.canCheckIn && visitor.canCheckOut)
-                const SizedBox(width: 10),
+                SizedBox(width: 10.w),
               if (visitor.canCheckOut)
                 Expanded(
                   child: AppPrimaryAction(

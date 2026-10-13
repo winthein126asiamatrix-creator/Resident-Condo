@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_theme_tokens.dart';
@@ -99,7 +100,7 @@ IconData storeOrderStatusIcon(StoreOrderStatus status) {
 
 /// Order status badge: an icon and a word as well as a colour.
 class StoreOrderStatusPill extends StatelessWidget {
-  const StoreOrderStatusPill({required this.status, this.dense = true, super.key});
+  StoreOrderStatusPill({required this.status, this.dense = true, super.key});
 
   final StoreOrderStatus status;
   final bool dense;
@@ -117,7 +118,7 @@ class StoreOrderStatusPill extends StatelessWidget {
 
 /// Stock badge for a product.
 class StoreStockPill extends StatelessWidget {
-  const StoreStockPill({required this.status, this.dense = true, super.key});
+  StoreStockPill({required this.status, this.dense = true, super.key});
 
   final StoreStockStatus status;
   final bool dense;
@@ -139,7 +140,7 @@ class StoreStockPill extends StatelessWidget {
 
 /// Payment state for a store fee.
 class StorePaymentPill extends StatelessWidget {
-  const StorePaymentPill({required this.payment, super.key});
+  StorePaymentPill({required this.payment, super.key});
 
   final StorePaymentStatus payment;
 
@@ -172,7 +173,7 @@ class StorePaymentPill extends StatelessWidget {
 /// shelf that scrolls smoothly and one that stutters, because a catalogue photo
 /// is small on screen but expensive to decode at its original size.
 class StoreProductImage extends StatelessWidget {
-  const StoreProductImage({required this.product, this.size = 64, super.key});
+  StoreProductImage({required this.product, this.size = 64, super.key});
 
   final StoreProduct product;
   final double size;
@@ -223,7 +224,7 @@ class StoreProductImage extends StatelessWidget {
         : _atPixels(product.imageUrl, pixels);
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       child: SizedBox(
         width: size,
         height: size,
@@ -256,10 +257,10 @@ class StoreProductImage extends StatelessWidget {
                     return child;
                   }
                   return AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 220),
+                    duration: Duration(milliseconds: 220),
                     child: frame == null
                         ? _Placeholder(
-                            key: const ValueKey('pending'),
+                            key: ValueKey('pending'),
                             size: size,
                           )
                         : child,
@@ -277,7 +278,7 @@ class StoreProductImage extends StatelessWidget {
 
 /// Tinted stand-in shown while a photo loads or if it cannot be fetched.
 class _Placeholder extends StatelessWidget {
-  const _Placeholder({required this.size, this.icon, super.key});
+  _Placeholder({required this.size, this.icon, super.key});
 
   final double size;
   final IconData? icon;
@@ -288,7 +289,7 @@ class _Placeholder extends StatelessWidget {
     return ColoredBox(
       color: tokens.brandTint,
       child: icon == null
-          ? const SizedBox.expand()
+          ? SizedBox.expand()
           : Center(
               child: Icon(icon, color: tokens.brand, size: size * 0.4),
             ),
@@ -298,7 +299,7 @@ class _Placeholder extends StatelessWidget {
 
 /// One line in a receipt style list: quantity, name and unit price.
 class StoreOrderLineRow extends StatelessWidget {
-  const StoreOrderLineRow({required this.line, super.key});
+  StoreOrderLineRow({required this.line, super.key});
 
   final StoreCartLine line;
 
@@ -306,7 +307,7 @@ class StoreOrderLineRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -316,34 +317,34 @@ class StoreOrderLineRow extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: tokens.brandTint,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(8.r),
             ),
             child: Text(
               '${line.quantity}×',
               style: TextStyle(
                 color: tokens.brand,
-                fontSize: 11.5,
+                fontSize: 11.5.sp,
                 fontWeight: FontWeight.w800,
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Text(
               line.product.name,
               style: TextStyle(
                 color: tokens.ink,
-                fontSize: 13.5,
+                fontSize: 13.5.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Text(
             AppFormatters.currency(line.lineTotal),
             style: TextStyle(
               color: tokens.ink,
-              fontSize: 13.5,
+              fontSize: 13.5.sp,
               fontWeight: FontWeight.w700,
             ),
           ),

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../theme/app_radius.dart';
 import '../theme/app_theme_tokens.dart';
@@ -11,7 +12,7 @@ import '../theme/app_theme_tokens.dart';
 /// resident can still look at the photo properly. Uses the same surface,
 /// radius and border as the rest of the app's cards.
 class AppImagePreview extends StatelessWidget {
-  const AppImagePreview({
+  AppImagePreview({
     required this.path,
     required this.caption,
     this.height = 180,
@@ -56,7 +57,7 @@ class AppImagePreview extends StatelessWidget {
                 child: _LocalImage(path: path),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 9, 12, 10),
+                padding: EdgeInsets.fromLTRB(12, 9, 12, 10),
                 child: Row(
                   children: [
                     Icon(
@@ -64,7 +65,7 @@ class AppImagePreview extends StatelessWidget {
                       size: 15,
                       color: tokens.muted,
                     ),
-                    const SizedBox(width: 7),
+                    SizedBox(width: 7.w),
                     Expanded(
                       child: Text(
                         caption,
@@ -72,7 +73,7 @@ class AppImagePreview extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: tokens.muted,
-                          fontSize: 12.5,
+                          fontSize: 12.5.sp,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -114,7 +115,7 @@ Future<void> showAppImageViewer({
 }
 
 class _AppImageViewer extends StatelessWidget {
-  const _AppImageViewer({required this.path, required this.caption});
+  _AppImageViewer({required this.path, required this.caption});
 
   final String path;
   final String caption;
@@ -139,31 +140,31 @@ class _AppImageViewer extends StatelessWidget {
             right: 0,
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8),
                 child: Row(
                   children: [
                     // Large enough to hit comfortably with one thumb.
                     IconButton(
-                      key: const Key('image-viewer-close'),
+                      key: Key('image-viewer-close'),
                       onPressed: () => Navigator.of(context).pop(),
                       tooltip: 'Close preview',
                       iconSize: 26,
                       style: IconButton.styleFrom(
                         backgroundColor: Colors.black54,
                         foregroundColor: Colors.white,
-                        minimumSize: const Size(48, 48),
+                        minimumSize: Size(48, 48),
                       ),
-                      icon: const Icon(Icons.close_rounded),
+                      icon: Icon(Icons.close_rounded),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     Expanded(
                       child: Text(
                         caption,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
-                          fontSize: 14,
+                          fontSize: 14.sp,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -182,7 +183,7 @@ class _AppImageViewer extends StatelessWidget {
 /// A local file rendered with a graceful fallback, so a missing or unreadable
 /// file never breaks the page.
 class _LocalImage extends StatelessWidget {
-  const _LocalImage({required this.path, this.fit = BoxFit.cover});
+  _LocalImage({required this.path, this.fit = BoxFit.cover});
 
   final String path;
   final BoxFit fit;
@@ -193,21 +194,21 @@ class _LocalImage extends StatelessWidget {
       File(path),
       fit: fit,
       // A missing or unreadable file must not break the page.
-      errorBuilder: (context, error, stackTrace) => const _ImageFallback(),
+      errorBuilder: (context, error, stackTrace) => _ImageFallback(),
       frameBuilder: (context, child, frame, wasSyncLoaded) {
         if (wasSyncLoaded || frame != null) {
           return child;
         }
         // A still placeholder rather than a spinner: a local file appears in a
         // frame or two, so an animation here would only add noise.
-        return const _ImageFallback(loading: true);
+        return _ImageFallback(loading: true);
       },
     );
   }
 }
 
 class _ImageFallback extends StatelessWidget {
-  const _ImageFallback({this.loading = false});
+  _ImageFallback({this.loading = false});
 
   final bool loading;
 
@@ -228,10 +229,10 @@ class _ImageFallback extends StatelessWidget {
               color: tokens.faint,
             ),
             if (!loading) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 'Image unavailable',
-                style: TextStyle(color: tokens.muted, fontSize: 12.5),
+                style: TextStyle(color: tokens.muted, fontSize: 12.5.sp),
               ),
             ],
           ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../theme/app_radius.dart';
 import '../theme/app_spacing.dart';
@@ -11,7 +12,7 @@ import '../theme/app_theme_tokens.dart';
 /// facility, a category. It matches [AppTextField] in height, radius and border
 /// so a form mixing typed and picked fields still reads as one component.
 class AppPickerField extends StatelessWidget {
-  const AppPickerField({
+  AppPickerField({
     required this.label,
     required this.value,
     required this.icon,
@@ -52,7 +53,7 @@ class AppPickerField extends StatelessWidget {
           onTap: enabled ? onPressed : null,
           child: Container(
             height: AppSpacing.pickerHeight,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            padding: EdgeInsets.symmetric(horizontal: 14),
             child: Row(
               children: [
                 Icon(
@@ -60,7 +61,7 @@ class AppPickerField extends StatelessWidget {
                   size: 18,
                   color: enabled ? tokens.muted : tokens.faint,
                 ),
-                const SizedBox(width: 9),
+                SizedBox(width: 9.w),
                 Flexible(
                   child: Text(
                     value,
@@ -68,12 +69,12 @@ class AppPickerField extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: enabled ? tokens.ink : tokens.faint,
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: 6.w),
                 Icon(
                   trailingIcon,
                   size: 18,
@@ -93,13 +94,13 @@ class AppPickerField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label!, style: AppTextStyles.of(context).fieldLabel),
-        const SizedBox(height: AppSpacing.fieldLabelGap),
+        SizedBox(height: AppSpacing.fieldLabelGap),
         field,
         if (helperText != null) ...[
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             helperText!,
-            style: TextStyle(color: tokens.muted, fontSize: 12),
+            style: TextStyle(color: tokens.muted, fontSize: 12.sp),
           ),
         ],
       ],

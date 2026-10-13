@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
@@ -12,7 +13,7 @@ import '../widgets/visitor_status_badge.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class VisitorPassPage extends GetView<VisitorController> {
-  const VisitorPassPage({required this.visitor, super.key});
+  VisitorPassPage({required this.visitor, super.key});
 
   final Visitor visitor;
 
@@ -25,11 +26,11 @@ class VisitorPassPage extends GetView<VisitorController> {
       return Scaffold(
         appBar: AppDetailAppBar(title: 'Visitor pass'),
         body: ListView(
-          key: const Key('visitor-pass-scroll'),
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+          key: Key('visitor-pass-scroll'),
+          padding: EdgeInsets.fromLTRB(20, 8, 20, 32),
           children: [
             _CodeCard(visitor: current, color: color),
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
             AppSectionCard(
               title: 'Visit details',
               child: Column(
@@ -58,7 +59,7 @@ class VisitorPassPage extends GetView<VisitorController> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             AppSectionCard(
               title: 'Lobby log',
               child: Column(
@@ -83,7 +84,7 @@ class VisitorPassPage extends GetView<VisitorController> {
               ),
             ),
             if (current.notes.isNotEmpty) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               AppSectionCard(
                 title: 'Notes',
                 child: Text(
@@ -95,25 +96,25 @@ class VisitorPassPage extends GetView<VisitorController> {
                 ),
               ),
             ],
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             OutlinedButton.icon(
               onPressed: () => _copy(context, current),
-              icon: const Icon(Icons.copy_rounded, size: 18),
-              label: const Text('Copy access code'),
+              icon: Icon(Icons.copy_rounded, size: 18),
+              label: Text('Copy access code'),
               style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
+                minimumSize: Size.fromHeight(48),
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             if (current.canCheckIn)
               FilledButton.icon(
                 onPressed: controller.isSubmitting.value
                     ? null
                     : () => _checkIn(context, current),
-                icon: const Icon(Icons.login_rounded, size: 18),
-                label: const Text('Mark as checked in'),
+                icon: Icon(Icons.login_rounded, size: 18),
+                label: Text('Mark as checked in'),
                 style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
+                  minimumSize: Size.fromHeight(50),
                 ),
               )
             else if (current.canCheckOut)
@@ -121,24 +122,24 @@ class VisitorPassPage extends GetView<VisitorController> {
                 onPressed: controller.isSubmitting.value
                     ? null
                     : () => _checkOut(context, current),
-                icon: const Icon(Icons.logout_rounded, size: 18),
-                label: const Text('Mark as checked out'),
+                icon: Icon(Icons.logout_rounded, size: 18),
+                label: Text('Mark as checked out'),
                 style: FilledButton.styleFrom(
                   backgroundColor: tokens.brand,
-                  minimumSize: const Size.fromHeight(50),
+                  minimumSize: Size.fromHeight(50),
                 ),
               ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             OutlinedButton.icon(
               onPressed: controller.isSubmitting.value
                   ? null
                   : () => _cancel(context, current),
-              icon: const Icon(Icons.cancel_outlined, size: 18),
-              label: const Text('Cancel this pass'),
+              icon: Icon(Icons.cancel_outlined, size: 18),
+              label: Text('Cancel this pass'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppPalette.danger,
-                side: const BorderSide(color: Color(0xFFF0C6C0)),
-                minimumSize: const Size.fromHeight(50),
+                side: BorderSide(color: Color(0xFFF0C6C0)),
+                minimumSize: Size.fromHeight(50),
               ),
             ),
           ],
@@ -244,7 +245,7 @@ class VisitorPassPage extends GetView<VisitorController> {
 }
 
 class _CodeCard extends StatelessWidget {
-  const _CodeCard({required this.visitor, required this.color});
+  _CodeCard({required this.visitor, required this.color});
   final Visitor visitor;
   final Color color;
 
@@ -252,10 +253,10 @@ class _CodeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(22),
+      padding: EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: tokens.brand,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.r),
         boxShadow: tokens.heroShadow,
       ),
       child: Column(
@@ -264,42 +265,42 @@ class _CodeCard extends StatelessWidget {
             'VISITOR ACCESS CODE',
             style: TextStyle(
               color: tokens.brandOnDark,
-              fontSize: 12,
+              fontSize: 12.sp,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.5,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             visitor.accessCode,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: tokens.brandOnDark,
-              fontSize: 34,
+              fontSize: 34.sp,
               fontWeight: FontWeight.w800,
               letterSpacing: 3,
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
           Container(height: 1, color: Colors.white.withValues(alpha: 0.2)),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
           Text(
             visitor.name,
             style: TextStyle(
               color: tokens.brandOnDark,
-              fontSize: 18,
+              fontSize: 18.sp,
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             '${visitor.date} · ${visitor.arrivalWindow}',
             style: TextStyle(
               color: tokens.brandOnDarkMuted,
-              fontSize: 12,
+              fontSize: 12.sp,
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
           VisitorStatusPill(status: visitor.status),
         ],
       ),

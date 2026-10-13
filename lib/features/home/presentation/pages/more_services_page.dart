@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -20,7 +21,7 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 
 /// Hub for every resident module that is not part of the bottom navigation.
 class MoreServicesPage extends StatelessWidget {
-  const MoreServicesPage({super.key});
+  MoreServicesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -31,9 +32,9 @@ class MoreServicesPage extends StatelessWidget {
       body: SafeArea(
         child: Obx(
           () => ListView(
-            key: const Key('more-scroll'),
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            key: Key('more-scroll'),
+            physics: AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(20, 8, 20, 32),
             children: [
             AppHeroPanel(
               icon: Icons.grid_view_rounded,
@@ -43,9 +44,9 @@ class MoreServicesPage extends StatelessWidget {
                   'You are signed in as ${session.session.value.role.label}. '
                   'Some screens change with your role.',
             ),
-            const SizedBox(height: 20),
-            const AppSectionHeader(title: 'Home & living'),
-            const SizedBox(height: 10),
+            SizedBox(height: 20.h),
+            AppSectionHeader(title: 'Home & living'),
+            SizedBox(height: 10.h),
             _ModuleTile(
               route: AppRoutes.lease,
               icon: Icons.description_rounded,
@@ -70,9 +71,9 @@ class MoreServicesPage extends StatelessWidget {
               subtitle: 'Your bay, access log and guest parking',
               badge: _parkingBadge(),
             ),
-            const SizedBox(height: 18),
-            const AppSectionHeader(title: 'Building services'),
-            const SizedBox(height: 10),
+            SizedBox(height: 18.h),
+            AppSectionHeader(title: 'Building services'),
+            SizedBox(height: 10.h),
             _ModuleTile(
               route: AppRoutes.store,
               icon: Icons.storefront_rounded,
@@ -104,9 +105,9 @@ class MoreServicesPage extends StatelessWidget {
               subtitle: 'Community rules, fines and appeals',
               badge: _violationBadge(),
             ),
-            const SizedBox(height: 18),
-            const AppSectionHeader(title: 'Account'),
-            const SizedBox(height: 10),
+            SizedBox(height: 18.h),
+            AppSectionHeader(title: 'Account'),
+            SizedBox(height: 10.h),
             _ModuleTile(
               route: AppRoutes.unit,
               icon: Icons.home_work_rounded,
@@ -128,14 +129,14 @@ class MoreServicesPage extends StatelessWidget {
               title: 'Notifications',
               subtitle: 'All your resident updates',
             ),
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
             AppCard(
               color: tokens.surface,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.cloud_off_rounded, color: tokens.muted),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
                       'All data in this build is mocked locally. Every module '
@@ -143,7 +144,7 @@ class MoreServicesPage extends StatelessWidget {
                       'will plug into.',
                       style: TextStyle(
                         color: tokens.muted,
-                        fontSize: 11,
+                        fontSize: 11.sp,
                         height: 1.4,
                       ),
                     ),
@@ -198,7 +199,7 @@ class MoreServicesPage extends StatelessWidget {
 }
 
 class _ModuleTile extends StatelessWidget {
-  const _ModuleTile({
+  _ModuleTile({
     required this.route,
     required this.icon,
     required this.color,
@@ -218,28 +219,28 @@ class _ModuleTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: 10),
       child: AppCard(
         onTap: () => Get.toNamed(route),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         child: Row(
           children: [
             AppIconTile(icon: icon, color: color, size: 42),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+                    style: TextStyle(fontWeight: FontWeight.w800),
                   ),
-                  const SizedBox(height: 3),
+                  SizedBox(height: 3.h),
                   Text(
                     subtitle,
                     style:  TextStyle(
                       color: tokens.muted,
-                      fontSize: 11,
+                      fontSize: 11.sp,
                     ),
                   ),
                 ],

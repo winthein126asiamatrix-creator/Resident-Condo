@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -15,7 +16,7 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/theme/app_spacing.dart';
 
 class ComplaintsPage extends StatefulWidget {
-  const ComplaintsPage({super.key});
+  ComplaintsPage({super.key});
 
   @override
   State<ComplaintsPage> createState() => _ComplaintsPageState();
@@ -51,13 +52,13 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
           IconButton(
             onPressed: controller.loadComplaints,
             tooltip: 'Refresh complaints',
-            icon: const Icon(Icons.refresh_rounded),
+            icon: Icon(Icons.refresh_rounded),
           ),
         ],
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.complaints.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
         if (controller.errorMessage.value != null &&
             controller.complaints.isEmpty) {
@@ -74,9 +75,9 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
           child: NotificationListener<ScrollNotification>(
             onNotification: _onScroll,
             child: ListView(
-              key: const Key('complaints-scroll'),
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(
+              key: Key('complaints-scroll'),
+              physics: AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(
                 AppSpacing.gutter,
                 AppSpacing.pageTop,
                 AppSpacing.gutter,
@@ -101,14 +102,14 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20.h),
                 AppSectionHeader(
                   title: 'Open complaints',
                   count: controller.openComplaints.length,
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10.h),
                 if (controller.openComplaints.isEmpty)
-                  const AppStateMessage(
+                  AppStateMessage(
                     title: 'Nothing open',
                     message: 'You have no open complaints.',
                     icon: Icons.check_circle_outline_rounded,
@@ -116,22 +117,22 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                 else
                   for (final complaint in controller.openComplaints)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
+                      padding: EdgeInsets.only(bottom: 10),
                       child: _ComplaintCard(
                         controller: controller,
                         complaint: complaint,
                       ),
                     ),
                 if (controller.closedComplaints.isNotEmpty) ...[
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   AppSectionHeader(
                     title: 'Closed',
                     count: controller.closedComplaints.length,
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   for (final complaint in controller.closedComplaints)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
+                      padding: EdgeInsets.only(bottom: 10),
                       child: _ComplaintCard(
                         controller: controller,
                         complaint: complaint,
@@ -159,7 +160,7 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
 /// underneath is still a [FloatingActionButton], so the tap target, ripple and
 /// accessibility stay exactly as the platform defines them.
 class _FileComplaintFab extends StatefulWidget {
-  const _FileComplaintFab({required this.onPressed, required this.expanded});
+  _FileComplaintFab({required this.onPressed, required this.expanded});
 
   final VoidCallback onPressed;
 
@@ -175,7 +176,7 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
     with SingleTickerProviderStateMixin {
   late final AnimationController _entrance = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 420),
+    duration: Duration(milliseconds: 420),
   )..forward();
 
   bool _pressed = false;
@@ -215,17 +216,17 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
           BoxShadow(
             color: tokens.brand.withValues(alpha: 0.32),
             blurRadius: 26,
-            offset: const Offset(0, 12),
+            offset: Offset(0, 12),
           ),
           BoxShadow(
             color: tokens.brandDark.withValues(alpha: 0.30),
             blurRadius: 6,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
       child: FloatingActionButton.extended(
-        key: const Key('file-complaint'),
+        key: Key('file-complaint'),
         onPressed: widget.onPressed,
         // The wrapper draws the fill and the shadow, so the button itself only
         // needs to lay its content out and keep the ripple. Stating the
@@ -238,14 +239,14 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
         focusElevation: 0,
         hoverElevation: 0,
         highlightElevation: 0,
-        shape: const StadiumBorder(),
-        extendedPadding: const EdgeInsets.fromLTRB(14, 14, 20, 14),
-        icon: const _BadgeGlyph(),
+        shape: StadiumBorder(),
+        extendedPadding: EdgeInsets.fromLTRB(14, 14, 20, 14),
+        icon: _BadgeGlyph(),
         // Only the label collapses. The button re-measures itself on every frame
         // of the fold, so the pill shrinks around the label instead of clipping
         // it away.
         label: AnimatedSize(
-          duration: const Duration(milliseconds: 240),
+          duration: Duration(milliseconds: 240),
           curve: Curves.easeOutCubic,
           alignment: Alignment.centerLeft,
           child: widget.expanded
@@ -254,12 +255,12 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
                   maxLines: 1,
                   style: TextStyle(
                     color: tokens.onBrand,
-                    fontSize: 14.5,
+                    fontSize: 14.5.sp,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.1,
                   ),
                 )
-              : const SizedBox.shrink(),
+              : SizedBox.shrink(),
         ),
       ),
     );
@@ -267,10 +268,10 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
     return FadeTransition(
       opacity: CurvedAnimation(
         parent: _entrance,
-        curve: const Interval(0, 0.65, curve: Curves.easeOut),
+        curve: Interval(0, 0.65, curve: Curves.easeOut),
       ),
       child: SlideTransition(
-        position: Tween<Offset>(begin: const Offset(0, 0.35), end: Offset.zero)
+        position: Tween<Offset>(begin: Offset(0, 0.35), end: Offset.zero)
             .animate(
               CurvedAnimation(parent: _entrance, curve: Curves.easeOutCubic),
             ),
@@ -288,7 +289,7 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
               scale: _pressed ? 0.94 : 1,
               // A touch of overshoot on the way back up, so letting go reads as a
               // spring rather than a step.
-              duration: const Duration(milliseconds: 220),
+              duration: Duration(milliseconds: 220),
               curve: _pressed ? Curves.easeOut : Curves.easeOutBack,
               child: pill,
             ),
@@ -304,7 +305,7 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
 /// into it. Deep teal on near white is well clear of the body text contrast
 /// threshold, where white on a pale disc would not have been.
 class _BadgeGlyph extends StatelessWidget {
-  const _BadgeGlyph();
+  _BadgeGlyph();
 
   @override
   Widget build(BuildContext context) {
@@ -320,7 +321,7 @@ class _BadgeGlyph extends StatelessWidget {
           BoxShadow(
             color: tokens.brandDark.withValues(alpha: 0.28),
             blurRadius: 4,
-            offset: const Offset(0, 1),
+            offset: Offset(0, 1),
           ),
         ],
       ),
@@ -330,7 +331,7 @@ class _BadgeGlyph extends StatelessWidget {
 }
 
 class _ComplaintCard extends StatelessWidget {
-  const _ComplaintCard({required this.controller, required this.complaint});
+  _ComplaintCard({required this.controller, required this.complaint});
   final ComplaintController controller;
   final Complaint complaint;
 
@@ -349,7 +350,7 @@ class _ComplaintCard extends StatelessWidget {
             icon: Icons.report_gmailerrorred_outlined,
             color: complaintStatusColor(complaint.status, tokens),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -358,27 +359,27 @@ class _ComplaintCard extends StatelessWidget {
                   complaint.subject,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   '${complaint.reference} · ${complaint.category.label}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: tokens.muted, fontSize: 11),
+                  style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Row(
                   children: [
                     ComplaintStatusPill(status: complaint.status),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     // Flexible so a long date cannot push the row past the card.
                     Expanded(
                       child: Text(
                         'Updated ${complaint.updatedOn}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: tokens.faint, fontSize: 10),
+                        style: TextStyle(color: tokens.faint, fontSize: 10.sp),
                       ),
                     ),
                   ],

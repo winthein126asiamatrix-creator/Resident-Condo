@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_theme_tokens.dart';
@@ -17,7 +18,7 @@ import '../widgets/reservation_status_badge.dart';
 /// Cancellation is deliberately absent: the repository has no cancel operation,
 /// so offering the action would be a button that cannot work.
 class ReservationDetailPage extends StatelessWidget {
-  const ReservationDetailPage({required this.reservation, super.key});
+  ReservationDetailPage({required this.reservation, super.key});
 
   final FacilityReservation reservation;
 
@@ -34,7 +35,7 @@ class ReservationDetailPage extends StatelessWidget {
         onBack: () => Get.back<void>(),
       ),
       body: ListView(
-        key: const Key('reservation-detail-scroll'),
+        key: Key('reservation-detail-scroll'),
         padding: EdgeInsets.fromLTRB(
           AppSpacing.gutter,
           AppSpacing.pageTop,
@@ -43,9 +44,9 @@ class ReservationDetailPage extends StatelessWidget {
         ),
         children: [
           _FacilityHero(facility: facility, reservation: reservation),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           AppCard(
-            key: const Key('reservation-detail-summary'),
+            key: Key('reservation-detail-summary'),
             child: Column(
               children: [
                 AppLabelValueRow(
@@ -79,7 +80,7 @@ class ReservationDetailPage extends StatelessWidget {
             ),
           ),
           if (facility != null) ...[
-            const SizedBox(height: 18),
+            SizedBox(height: 18.h),
             AppSectionCard(
               title: 'Good to know',
               child: Column(
@@ -105,7 +106,7 @@ class ReservationDetailPage extends StatelessWidget {
 }
 
 class _FacilityHero extends StatelessWidget {
-  const _FacilityHero({required this.reservation, this.facility});
+  _FacilityHero({required this.reservation, this.facility});
 
   final FacilityReservation reservation;
   final Facility? facility;
@@ -117,7 +118,7 @@ class _FacilityHero extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: tokens.brandTint,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -153,7 +154,7 @@ class _FacilityHero extends StatelessWidget {
                   ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
+            padding: EdgeInsets.fromLTRB(16, 15, 16, 16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -162,12 +163,12 @@ class _FacilityHero extends StatelessWidget {
                     displayFacilityName(reservation.facilityName),
                     style: TextStyle(
                       color: tokens.ink,
-                      fontSize: 17,
+                      fontSize: 17.sp,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10.w),
                 ReservationStatusBadge(reservation: reservation),
               ],
             ),

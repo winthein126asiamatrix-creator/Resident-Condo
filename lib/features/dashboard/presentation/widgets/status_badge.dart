@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class StatusBadge extends StatelessWidget {
-  const StatusBadge({required this.label, super.key});
+  StatusBadge({required this.label, super.key});
 
   final String label;
 
@@ -12,10 +13,10 @@ class StatusBadge extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     final color = _colorFor(label, tokens);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
       ),
       child: Text(
         label,
@@ -28,13 +29,13 @@ class StatusBadge extends StatelessWidget {
   Color _colorFor(String value, AppThemeTokens tokens) {
     final normalized = value.toLowerCase();
     if (normalized.contains('completed') || normalized.contains('confirmed')) {
-      return const Color(0xFF087F5B);
+      return Color(0xFF087F5B);
     }
     if (normalized.contains('progress') || normalized.contains('upcoming')) {
-      return const Color(0xFFB45309);
+      return Color(0xFFB45309);
     }
     if (normalized.contains('urgent') || normalized.contains('overdue')) {
-      return const Color(0xFFC2410C);
+      return Color(0xFFC2410C);
     }
     return tokens.brand;
   }

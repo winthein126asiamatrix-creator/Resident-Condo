@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -20,7 +21,7 @@ import '../controllers/maintenance_controller.dart';
 import '../../../../core/widgets/app_segmented_control.dart';
 
 class CreateMaintenanceRequestPage extends StatefulWidget {
-  const CreateMaintenanceRequestPage({this.photoPicker, super.key});
+  CreateMaintenanceRequestPage({this.photoPicker, super.key});
 
   /// Overridden in tests; the app uses the device gallery and camera.
   final PhotoPicker? photoPicker;
@@ -43,7 +44,7 @@ class _CreateMaintenanceRequestPageState
   MaintenanceCategory _category = MaintenanceCategory.plumbing;
   MaintenancePriority _priority = MaintenancePriority.medium;
   DateTime _preferredDate = DateTime(2026, 9, 30);
-  TimeOfDay _preferredTime = const TimeOfDay(hour: 10, minute: 0);
+  TimeOfDay _preferredTime = TimeOfDay(hour: 10, minute: 0);
 
   MaintenanceController get controller => Get.find<MaintenanceController>();
 
@@ -71,7 +72,7 @@ class _CreateMaintenanceRequestPageState
         key: _formKey,
         child: Obx(
           () => SingleChildScrollView(
-            key: const Key('maintenance-create-scroll'),
+            key: Key('maintenance-create-scroll'),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: EdgeInsets.fromLTRB(
               AppSpacing.gutter,
@@ -84,13 +85,13 @@ class _CreateMaintenanceRequestPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _FormSection(
+                _FormSection(
                   title: 'Request details',
                   subtitle: 'The more we know, the faster we can help.',
                   icon: Icons.edit_note_rounded,
                 ),
                 AppTextField(
-                  fieldKey: const Key('maintenance-title'),
+                  fieldKey: Key('maintenance-title'),
                   label: 'Issue title',
                   hint: 'Describe the issue',
                   icon: Icons.title_rounded,
@@ -101,9 +102,9 @@ class _CreateMaintenanceRequestPageState
                   textInputAction: TextInputAction.next,
                   onSubmitted: (_) => _descriptionFocus.requestFocus(),
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18.h),
                 AppTextField(
-                  fieldKey: const Key('maintenance-description'),
+                  fieldKey: Key('maintenance-description'),
                   label: 'Description',
                   hint: 'Tell us what happened...',
                   icon: Icons.notes_rounded,
@@ -116,9 +117,9 @@ class _CreateMaintenanceRequestPageState
                   textInputAction: TextInputAction.next,
                   onSubmitted: (_) => _locationFocus.requestFocus(),
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18.h),
                 AppSelectField<MaintenanceCategory>(
-                  fieldKey: const Key('maintenance-category'),
+                  fieldKey: Key('maintenance-category'),
                   label: 'Category',
                   icon: Icons.category_outlined,
                   value: _category,
@@ -126,21 +127,21 @@ class _CreateMaintenanceRequestPageState
                   itemBuilder: (category) => category.label,
                   onChanged: (value) => setState(() => _category = value),
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18.h),
                 AppSegmentedControl<MaintenancePriority>(
                   label: 'Priority',
-                  segments: const {
+                  segments: {
                     MaintenancePriority.low: 'Low',
                     MaintenancePriority.medium: 'Medium',
                     MaintenancePriority.high: 'High',
                   },
-                  icons: const {
+                  icons: {
                     MaintenancePriority.low: Icons.low_priority_rounded,
                     MaintenancePriority.medium: Icons.drag_handle_rounded,
                     MaintenancePriority.high: Icons.priority_high_rounded,
                   },
                   // The colour carries the severity, so it stays per option.
-                  colors: const {
+                  colors: {
                     MaintenancePriority.low: AppPalette.success,
                     MaintenancePriority.medium: AppPalette.warning,
                     MaintenancePriority.high: AppPalette.danger,
@@ -149,14 +150,14 @@ class _CreateMaintenanceRequestPageState
                   value: _priority,
                   onChanged: (value) => setState(() => _priority = value),
                 ),
-                const SizedBox(height: 24),
-                const _FormSection(
+                SizedBox(height: 24.h),
+                _FormSection(
                   title: 'Location & schedule',
                   subtitle: 'Where should our technician go, and when?',
                   icon: Icons.place_outlined,
                 ),
                 AppTextField(
-                  fieldKey: const Key('maintenance-location'),
+                  fieldKey: Key('maintenance-location'),
                   label: 'Unit / location',
                   hint: 'Kitchen, master bedroom, lobby...',
                   icon: Icons.home_work_outlined,
@@ -166,21 +167,21 @@ class _CreateMaintenanceRequestPageState
                       AppValidators.requiredText(value, field: 'Location'),
                   textInputAction: TextInputAction.done,
                 ),
-                const SizedBox(height: 18),
+                SizedBox(height: 18.h),
                 _DateTimeRow(
                   date: _preferredDate,
                   time: _preferredTime,
                   onPickDate: _pickDate,
                   onPickTime: _pickTime,
                 ),
-                const SizedBox(height: 24),
-                const _FormSection(
+                SizedBox(height: 24.h),
+                _FormSection(
                   title: 'Photos',
                   subtitle: 'Photos are optional and help us diagnose faster.',
                   icon: Icons.photo_camera_outlined,
                 ),
                 if (_photos.isNotEmpty) ...[
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14.h),
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
@@ -194,28 +195,28 @@ class _CreateMaintenanceRequestPageState
                         ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   Text(
                     _photos.length == 1
                         ? '1 photo attached'
                         : '${_photos.length} photos attached',
-                    key: const Key('maintenance-photo-count'),
+                    key: Key('maintenance-photo-count'),
                     style: TextStyle(
                       color: AppThemeTokens.of(context).muted,
-                      fontSize: 12.5,
+                      fontSize: 12.5.sp,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
-                if (_photos.isNotEmpty) const SizedBox(height: 12),
+                if (_photos.isNotEmpty) SizedBox(height: 12.h),
                 _AttachPhotoButton(onPressed: _attachPhoto),
-                const SizedBox(height: 28),
+                SizedBox(height: 28.h),
                 if (controller.errorMessage.value != null) ...[
                   _ErrorBanner(message: controller.errorMessage.value!),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14.h),
                 ],
                 AppPrimaryAction(
-                  key: const Key('submit-maintenance-request'),
+                  key: Key('submit-maintenance-request'),
                   onPressed: controller.isSubmitting.value ? null : _submit,
                   isLoading: controller.isSubmitting.value,
                   label: 'Submit Request',
@@ -236,7 +237,7 @@ class _CreateMaintenanceRequestPageState
     if (source == null || !mounted) {
       return;
     }
-    final picker = widget.photoPicker ?? const DevicePhotoPicker();
+    final picker = widget.photoPicker ?? DevicePhotoPicker();
     final result = await picker.pick(source);
     if (!mounted) {
       return;
@@ -262,25 +263,25 @@ class _CreateMaintenanceRequestPageState
     return showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: tokens.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
       builder: (sheetContext) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             Container(
               width: 38,
               height: 4,
               decoration: BoxDecoration(
                 color: tokens.border,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.r),
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             ListTile(
-              key: const Key('photo-source-gallery'),
+              key: Key('photo-source-gallery'),
               leading: Icon(
                 Icons.photo_library_outlined,
                 color: tokens.brand,
@@ -289,18 +290,18 @@ class _CreateMaintenanceRequestPageState
                 'Choose from gallery',
                 style: TextStyle(
                   color: tokens.ink,
-                  fontSize: 15,
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               subtitle: Text(
                 'Pick an existing photo',
-                style: TextStyle(color: tokens.muted, fontSize: 12.5),
+                style: TextStyle(color: tokens.muted, fontSize: 12.5.sp),
               ),
               onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
             ),
             ListTile(
-              key: const Key('photo-source-camera'),
+              key: Key('photo-source-camera'),
               leading: Icon(
                 Icons.photo_camera_outlined,
                 color: tokens.brand,
@@ -309,17 +310,17 @@ class _CreateMaintenanceRequestPageState
                 'Take a photo',
                 style: TextStyle(
                   color: tokens.ink,
-                  fontSize: 15,
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               subtitle: Text(
                 'Use the device camera',
-                style: TextStyle(color: tokens.muted, fontSize: 12.5),
+                style: TextStyle(color: tokens.muted, fontSize: 12.5.sp),
               ),
               onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
           ],
         ),
       ),
@@ -377,7 +378,7 @@ class _CreateMaintenanceRequestPageState
 
 /// Titled group header that keeps the form scannable on a phone.
 class _FormSection extends StatelessWidget {
-  const _FormSection({
+  _FormSection({
     required this.title,
     required this.subtitle,
     required this.icon,
@@ -400,29 +401,29 @@ class _FormSection extends StatelessWidget {
               height: 30,
               decoration: BoxDecoration(
                 color: tokens.brandTint,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(10.r),
               ),
               child: Icon(icon, size: 17, color: tokens.brand),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10.w),
             Expanded(
               child: Text(
                 title,
                 style: TextStyle(
                   color: tokens.ink,
-                  fontSize: 15,
+                  fontSize: 15.sp,
                   fontWeight: FontWeight.w800,
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h),
         Padding(
-          padding: const EdgeInsets.only(left: 40),
+          padding: EdgeInsets.only(left: 40),
           child: Text(
             subtitle,
-            style: TextStyle(color: tokens.muted, fontSize: 12.5),
+            style: TextStyle(color: tokens.muted, fontSize: 12.5.sp),
           ),
         ),
       ],
@@ -433,7 +434,7 @@ class _FormSection extends StatelessWidget {
 /// A picked photo shown as a thumbnail, with a remove affordance in the corner
 /// so the resident can drop a photo they attached by mistake.
 class _PhotoThumbnail extends StatelessWidget {
-  const _PhotoThumbnail({
+  _PhotoThumbnail({
     required this.photo,
     required this.position,
     required this.onRemove,
@@ -462,7 +463,7 @@ class _PhotoThumbnail extends StatelessWidget {
             height: _size,
             decoration: BoxDecoration(
               color: tokens.surfaceMuted,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               border: Border.all(color: tokens.border),
             ),
             clipBehavior: Clip.antiAlias,
@@ -484,7 +485,7 @@ class _PhotoThumbnail extends StatelessWidget {
             right: -6,
             child: Material(
               color: tokens.ink,
-              shape: const CircleBorder(),
+              shape: CircleBorder(),
               clipBehavior: Clip.antiAlias,
               child: Tooltip(
                 message: 'Remove photo $position',
@@ -518,7 +519,7 @@ class _PhotoThumbnail extends StatelessWidget {
 
 /// Three way priority choice: a segmented control is far easier to hit on a
 class _DateTimeRow extends StatelessWidget {
-  const _DateTimeRow({
+  _DateTimeRow({
     required this.date,
     required this.time,
     required this.onPickDate,
@@ -537,18 +538,18 @@ class _DateTimeRow extends StatelessWidget {
         Expanded(
           flex: 3,
           child: AppPickerField(
-            key: const Key('maintenance-date'),
+            key: Key('maintenance-date'),
             label: null,
             icon: Icons.calendar_today_outlined,
             value: AppDates.format(date),
             onPressed: onPickDate,
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: 10.w),
         Expanded(
           flex: 2,
           child: AppPickerField(
-            key: const Key('maintenance-time'),
+            key: Key('maintenance-time'),
             label: null,
             icon: Icons.schedule_outlined,
             value: time.format(context),
@@ -561,7 +562,7 @@ class _DateTimeRow extends StatelessWidget {
 }
 
 class _AttachPhotoButton extends StatelessWidget {
-  const _AttachPhotoButton({required this.onPressed});
+  _AttachPhotoButton({required this.onPressed});
   final VoidCallback onPressed;
 
   @override
@@ -570,7 +571,7 @@ class _AttachPhotoButton extends StatelessWidget {
     return Material(
       color: tokens.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         side: BorderSide(color: tokens.border),
       ),
       clipBehavior: Clip.antiAlias,
@@ -587,12 +588,12 @@ class _AttachPhotoButton extends StatelessWidget {
                 size: 18,
                 color: tokens.brand,
               ),
-              const SizedBox(width: 9),
+              SizedBox(width: 9.w),
               Text(
                 'Attach photo',
                 style: TextStyle(
                   color: tokens.brand,
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -605,34 +606,34 @@ class _AttachPhotoButton extends StatelessWidget {
 }
 
 class _ErrorBanner extends StatelessWidget {
-  const _ErrorBanner({required this.message});
+  _ErrorBanner({required this.message});
   final String message;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      key: const Key('maintenance-submit-error'),
-      padding: const EdgeInsets.all(12),
+      key: Key('maintenance-submit-error'),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppPalette.danger.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         border: Border.all(color: AppPalette.danger.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
+          Icon(
             Icons.error_outline_rounded,
             size: 18,
             color: AppPalette.danger,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppPalette.danger,
-                fontSize: 12.5,
+                fontSize: 12.5.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),

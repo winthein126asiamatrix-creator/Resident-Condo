@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -10,7 +11,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class FacilityDetailPage extends GetView<FacilityController> {
-  const FacilityDetailPage({required this.facility, super.key});
+  FacilityDetailPage({required this.facility, super.key});
 
   final Facility facility;
 
@@ -22,10 +23,10 @@ class FacilityDetailPage extends GetView<FacilityController> {
       return Scaffold(
         appBar: AppDetailAppBar(title: 'Facility details'),
         body: ListView(
-          padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
+          padding: EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
           children: [
             _FacilityHero(facility: current),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             _Section(
               title: 'About this facility',
               child: Text(
@@ -33,7 +34,7 @@ class FacilityDetailPage extends GetView<FacilityController> {
                 style: TextStyle(color: tokens.mutedStrong, height: 1.45),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             _Section(
               title: 'Good to know',
               child: Column(
@@ -45,7 +46,7 @@ class FacilityDetailPage extends GetView<FacilityController> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             _Section(
               title: 'Available slots',
               child: current.availableSlots.isEmpty
@@ -59,7 +60,7 @@ class FacilityDetailPage extends GetView<FacilityController> {
                           .map(
                             (slot) => Chip(
                               label: Text(slot),
-                              avatar: const Icon(
+                              avatar: Icon(
                                 Icons.schedule_outlined,
                                 size: 16,
                               ),
@@ -68,7 +69,7 @@ class FacilityDetailPage extends GetView<FacilityController> {
                           .toList(),
                     ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             FilledButton.icon(
               onPressed: current.availableSlots.isEmpty
                   ? null
@@ -76,12 +77,12 @@ class FacilityDetailPage extends GetView<FacilityController> {
                       controller.selectFacility(current);
                       Get.toNamed(AppRoutes.facilityReserve);
                     },
-              icon: const Icon(Icons.event_available_rounded, size: 18),
-              label: const Text('Reserve facility'),
+              icon: Icon(Icons.event_available_rounded, size: 18),
+              label: Text('Reserve facility'),
               style: FilledButton.styleFrom(
                 backgroundColor: tokens.brand,
                 foregroundColor: tokens.onBrand,
-                minimumSize: const Size.fromHeight(52),
+                minimumSize: Size.fromHeight(52),
               ),
             ),
           ],
@@ -99,7 +100,7 @@ class FacilityDetailPage extends GetView<FacilityController> {
 }
 
 class _FacilityHero extends StatelessWidget {
-  const _FacilityHero({required this.facility});
+  _FacilityHero({required this.facility});
 
   final Facility facility;
 
@@ -107,7 +108,7 @@ class _FacilityHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(22.r),
       child: SizedBox(
         height: 230,
         child: Stack(
@@ -119,14 +120,14 @@ class _FacilityHero extends StatelessWidget {
               filterQuality: FilterQuality.high,
               errorBuilder: (_, _, _) => Container(
                 color: tokens.brand,
-                child: const Icon(
+                child: Icon(
                   Icons.apartment_rounded,
                   color: Colors.white70,
                   size: 72,
                 ),
               ),
             ),
-            const DecoratedBox(
+            DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
@@ -139,19 +140,19 @@ class _FacilityHero extends StatelessWidget {
               top: 16,
               right: 16,
               child: Container(
-                padding: const EdgeInsets.symmetric(
+                padding: EdgeInsets.symmetric(
                   horizontal: 10,
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
                   '${facility.capacity} capacity',
                   style: TextStyle(
                     color: tokens.ink,
-                    fontSize: 11,
+                    fontSize: 11.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -166,16 +167,16 @@ class _FacilityHero extends StatelessWidget {
                 children: [
                   Text(
                     displayFacilityName(facility.name),
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 25,
+                      fontSize: 25.sp,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  SizedBox(height: 5.h),
                   Text(
                     '${facility.location} · ${facility.openingHours}',
-                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                    style: TextStyle(color: Colors.white70, fontSize: 13.sp),
                   ),
                 ],
               ),
@@ -188,7 +189,7 @@ class _FacilityHero extends StatelessWidget {
 }
 
 class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child});
+  _Section({required this.title, required this.child});
   final String title;
   final Widget child;
 
@@ -196,10 +197,10 @@ class _Section extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: tokens.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: tokens.border),
       ),
       child: Column(
@@ -207,9 +208,9 @@ class _Section extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           child,
         ],
       ),
@@ -218,7 +219,7 @@ class _Section extends StatelessWidget {
 }
 
 class _Line extends StatelessWidget {
-  const _Line({required this.label, required this.value});
+  _Line({required this.label, required this.value});
   final String label;
   final String value;
 
@@ -226,7 +227,7 @@ class _Line extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
+      padding: EdgeInsets.symmetric(vertical: 7),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -236,12 +237,12 @@ class _Line extends StatelessWidget {
               style: TextStyle(color: tokens.muted),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w800),
+              style: TextStyle(fontWeight: FontWeight.w800),
             ),
           ),
         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/widgets/app_state_message.dart';
@@ -10,7 +11,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class NotificationsPage extends GetView<NotificationController> {
-  const NotificationsPage({super.key});
+  NotificationsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +25,14 @@ class NotificationsPage extends GetView<NotificationController> {
                   controller.unreadCount == 0 || controller.isUpdating.value
                   ? null
                   : controller.markAllAsRead,
-              child: const Text('Mark all read'),
+              child: Text('Mark all read'),
             ),
           ),
         ],
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.notifications.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
         if (controller.errorMessage.value != null &&
             controller.notifications.isEmpty) {
@@ -44,7 +45,7 @@ class NotificationsPage extends GetView<NotificationController> {
           );
         }
         if (controller.notifications.isEmpty) {
-          return const AppStateMessage(
+          return AppStateMessage(
             title: 'You are all caught up',
             message: 'New resident updates will appear here.',
             icon: Icons.notifications_none_rounded,
@@ -53,36 +54,36 @@ class NotificationsPage extends GetView<NotificationController> {
         return RefreshIndicator(
           onRefresh: controller.loadNotifications,
           child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
+            physics: AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
             children: [
               _NotificationSummary(
                 unreadCount: controller.unreadCount,
                 totalCount: controller.notifications.length,
               ),
-              const SizedBox(height: 22),
+              SizedBox(height: 22.h),
               for (final period in NotificationPeriod.values) ...[
                 if (controller.notificationsFor(period).isNotEmpty) ...[
                   Text(
                     period.label,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w800,
-                      fontSize: 16,
+                      fontSize: 16.sp,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10.h),
                   ...controller
                       .notificationsFor(period)
                       .map(
                         (item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
+                          padding: EdgeInsets.only(bottom: 10),
                           child: NotificationItemCard(
                             item: item,
                             onTap: () => controller.markAsRead(item),
                           ),
                         ),
                       ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                 ],
               ],
             ],
@@ -94,7 +95,7 @@ class NotificationsPage extends GetView<NotificationController> {
 }
 
 class _NotificationSummary extends StatelessWidget {
-  const _NotificationSummary({
+  _NotificationSummary({
     required this.unreadCount,
     required this.totalCount,
   });
@@ -106,10 +107,10 @@ class _NotificationSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: tokens.brand,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(22.r),
         boxShadow: tokens.heroShadow,
       ),
       child: Row(
@@ -119,7 +120,7 @@ class _NotificationSummary extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(17),
+              borderRadius: BorderRadius.circular(17.r),
             ),
             child: Icon(
               Icons.notifications_active_outlined,
@@ -127,7 +128,7 @@ class _NotificationSummary extends StatelessWidget {
               size: 27,
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,18 +137,18 @@ class _NotificationSummary extends StatelessWidget {
                   'Your updates',
                   style: TextStyle(
                     color: tokens.brandOnDark,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 Text(
                   unreadCount == 0
                       ? 'You are all caught up'
                       : '$unreadCount unread updates',
                   style: TextStyle(
                     color: tokens.brandOnDark,
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -156,7 +157,7 @@ class _NotificationSummary extends StatelessWidget {
           ),
           Text(
             '$totalCount total',
-            style: TextStyle(color: tokens.brandOnDark, fontSize: 11),
+            style: TextStyle(color: tokens.brandOnDark, fontSize: 11.sp),
           ),
         ],
       ),

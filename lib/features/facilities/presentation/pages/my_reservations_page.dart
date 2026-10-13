@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -17,7 +18,7 @@ import '../widgets/reservation_status_badge.dart';
 /// Every reservation the resident has made, split into what is still ahead and
 /// what has already happened.
 class MyReservationsPage extends StatefulWidget {
-  const MyReservationsPage({super.key});
+  MyReservationsPage({super.key});
 
   @override
   State<MyReservationsPage> createState() => _MyReservationsPageState();
@@ -54,7 +55,7 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
       body: Obx(() {
         if (controller.isReservationsLoading.value &&
             controller.reservations.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
         final error = controller.reservationsError.value;
         if (error != null && controller.reservations.isEmpty) {
@@ -68,7 +69,7 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
         }
         if (controller.reservations.isEmpty) {
           return AppStateMessage(
-            key: const Key('my-reservations-empty'),
+            key: Key('my-reservations-empty'),
             title: 'No Reservations Yet',
             message: "You haven't reserved any facilities yet.",
             icon: Icons.event_available_outlined,
@@ -83,8 +84,8 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
         return RefreshIndicator(
           onRefresh: controller.loadReservations,
           child: ListView(
-            key: const Key('my-reservations-scroll'),
-            physics: const AlwaysScrollableScrollPhysics(),
+            key: Key('my-reservations-scroll'),
+            physics: AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.fromLTRB(
               AppSpacing.gutter,
               AppSpacing.pageTop,
@@ -94,10 +95,10 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
             children: [
               if (upcoming.isNotEmpty) ...[
                 AppSectionHeader(title: 'Upcoming', count: upcoming.length),
-                const SizedBox(height: 10),
+                SizedBox(height: 10.h),
                 for (final reservation in upcoming)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
+                    padding: EdgeInsets.only(bottom: 10),
                     child: _ReservationCard(
                       reservation: reservation,
                       facility: controller.facilityById(reservation.facilityId),
@@ -107,10 +108,10 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
               if (past.isNotEmpty) ...[
                 SizedBox(height: upcoming.isEmpty ? 0 : 16),
                 AppSectionHeader(title: 'Past', count: past.length),
-                const SizedBox(height: 10),
+                SizedBox(height: 10.h),
                 for (final reservation in past)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
+                    padding: EdgeInsets.only(bottom: 10),
                     child: _ReservationCard(
                       reservation: reservation,
                       facility: controller.facilityById(reservation.facilityId),
@@ -126,7 +127,7 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
 }
 
 class _ReservationCard extends StatelessWidget {
-  const _ReservationCard({required this.reservation, this.facility});
+  _ReservationCard({required this.reservation, this.facility});
 
   final FacilityReservation reservation;
 
@@ -139,14 +140,14 @@ class _ReservationCard extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     return AppCard(
       key: Key('reservation-card-${reservation.id}'),
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       onTap: () =>
           Get.toNamed(AppRoutes.reservationDetail, arguments: reservation),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _FacilityThumb(facility: facility),
-          const SizedBox(width: 13),
+          SizedBox(width: 13.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,37 +162,37 @@ class _ReservationCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: tokens.ink,
-                          fontSize: 15,
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8.w),
                     ReservationStatusBadge(
                       reservation: reservation,
                       dense: true,
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 _MetaLine(
                   icon: Icons.calendar_today_rounded,
                   label: AppDates.formatLong(AppDates.parse(reservation.date)),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 _MetaLine(
                   icon: Icons.schedule_rounded,
                   label: reservation.time,
                 ),
                 if (reservation.id.isNotEmpty) ...[
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     '#${reservation.id}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: tokens.faint,
-                      fontSize: 11.5,
+                      fontSize: 11.5.sp,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -206,7 +207,7 @@ class _ReservationCard extends StatelessWidget {
 }
 
 class _MetaLine extends StatelessWidget {
-  const _MetaLine({required this.icon, required this.label});
+  _MetaLine({required this.icon, required this.label});
 
   final IconData icon;
   final String label;
@@ -217,13 +218,13 @@ class _MetaLine extends StatelessWidget {
     return Row(
       children: [
         Icon(icon, size: 13, color: tokens.muted),
-        const SizedBox(width: 6),
+        SizedBox(width: 6.w),
         Flexible(
           child: Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: tokens.muted, fontSize: 12.5),
+            style: TextStyle(color: tokens.muted, fontSize: 12.5.sp),
           ),
         ),
       ],
@@ -233,7 +234,7 @@ class _MetaLine extends StatelessWidget {
 
 /// Small square facility photo with the same fallback the amenities grid uses.
 class _FacilityThumb extends StatelessWidget {
-  const _FacilityThumb({this.facility});
+  _FacilityThumb({this.facility});
 
   final Facility? facility;
 
@@ -246,7 +247,7 @@ class _FacilityThumb extends StatelessWidget {
       height: 56,
       decoration: BoxDecoration(
         color: tokens.brand,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       clipBehavior: Clip.antiAlias,
       child: imagePath == null

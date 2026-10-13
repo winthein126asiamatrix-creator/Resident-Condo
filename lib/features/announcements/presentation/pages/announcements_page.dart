@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/widgets/app_state_message.dart';
@@ -10,7 +11,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class AnnouncementsPage extends GetView<AnnouncementController> {
-  const AnnouncementsPage({super.key});
+  AnnouncementsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +25,14 @@ class AnnouncementsPage extends GetView<AnnouncementController> {
                   controller.unreadCount == 0 || controller.isUpdating.value
                   ? null
                   : controller.markAllAsRead,
-              child: const Text('Mark all read'),
+              child: Text('Mark all read'),
             ),
           ),
         ],
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.announcements.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
         if (controller.errorMessage.value != null &&
             controller.announcements.isEmpty) {
@@ -47,23 +48,23 @@ class AnnouncementsPage extends GetView<AnnouncementController> {
         return RefreshIndicator(
           onRefresh: controller.loadAnnouncements,
           child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
+            physics: AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
             children: [
               _AnnouncementSummary(
                 unreadCount: controller.unreadCount,
                 totalCount: controller.announcements.length,
               ),
-              const SizedBox(height: 18),
-              const Text(
+              SizedBox(height: 18.h),
+              Text(
                 'Filter by category',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
               ),
-              const SizedBox(height: 9),
+              SizedBox(height: 9.h),
               _CategoryFilters(controller: controller),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               if (visible.isEmpty)
-                const AppStateMessage(
+                AppStateMessage(
                   title: 'No announcements',
                   message: 'There are no announcements in this category.',
                   icon: Icons.campaign_outlined,
@@ -71,7 +72,7 @@ class AnnouncementsPage extends GetView<AnnouncementController> {
               else
                 ...visible.map(
                   (announcement) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
+                    padding: EdgeInsets.only(bottom: 10),
                     child: AnnouncementCard(
                       announcement: announcement,
                       onTap: () => controller.markAsRead(announcement),
@@ -87,7 +88,7 @@ class AnnouncementsPage extends GetView<AnnouncementController> {
 }
 
 class _AnnouncementSummary extends StatelessWidget {
-  const _AnnouncementSummary({
+  _AnnouncementSummary({
     required this.unreadCount,
     required this.totalCount,
   });
@@ -99,10 +100,10 @@ class _AnnouncementSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: tokens.brand,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(22.r),
         boxShadow: tokens.heroShadow,
       ),
       child: Row(
@@ -112,7 +113,7 @@ class _AnnouncementSummary extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(17),
+              borderRadius: BorderRadius.circular(17.r),
             ),
             child: Icon(
               Icons.campaign_rounded,
@@ -120,7 +121,7 @@ class _AnnouncementSummary extends StatelessWidget {
               size: 27,
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: 14.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,18 +130,18 @@ class _AnnouncementSummary extends StatelessWidget {
                   'Stay in the loop',
                   style: TextStyle(
                     color: tokens.brandOnDark,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6.h),
                 Text(
                   unreadCount == 0
                       ? 'You are all caught up'
                       : '$unreadCount unread announcements',
                   style: TextStyle(
                     color: tokens.brandOnDark,
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -149,7 +150,7 @@ class _AnnouncementSummary extends StatelessWidget {
           ),
           Text(
             '$totalCount total',
-            style: TextStyle(color: tokens.brandOnDark, fontSize: 11),
+            style: TextStyle(color: tokens.brandOnDark, fontSize: 11.sp),
           ),
         ],
       ),
@@ -158,7 +159,7 @@ class _AnnouncementSummary extends StatelessWidget {
 }
 
 class _CategoryFilters extends StatelessWidget {
-  const _CategoryFilters({required this.controller});
+  _CategoryFilters({required this.controller});
 
   final AnnouncementController controller;
 
@@ -170,15 +171,15 @@ class _CategoryFilters extends StatelessWidget {
       child: Row(
         children: [
           ChoiceChip(
-            label: const Text('All'),
+            label: Text('All'),
             selected: controller.selectedCategory.value == null,
             onSelected: (_) => controller.selectCategory(null),
                 selectedColor: tokens.brandOnDark,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           ...AnnouncementCategory.values.map(
             (category) => Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: EdgeInsets.only(right: 8),
               child: ChoiceChip(
                 label: Text(category.label),
                 selected: controller.selectedCategory.value == category,

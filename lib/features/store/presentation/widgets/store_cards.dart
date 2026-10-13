@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
@@ -18,7 +19,7 @@ import 'store_widgets.dart';
 /// The store fee is called out on its own so it is never mistaken for part of
 /// the monthly condo fee.
 class StoreCheckoutSummaryCard extends StatelessWidget {
-  const StoreCheckoutSummaryCard({
+  StoreCheckoutSummaryCard({
     required this.subtotal,
     required this.deliveryFee,
     required this.total,
@@ -48,7 +49,7 @@ class StoreCheckoutSummaryCard extends StatelessWidget {
                 size: 18,
                 color: tokens.brand,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Flexible(
                 child: Text(
                   'Order summary',
@@ -56,19 +57,19 @@ class StoreCheckoutSummaryCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: tokens.ink,
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
-              const Spacer(),
+              Spacer(),
               Text(
                 '$itemCount ${itemCount == 1 ? 'item' : 'items'}',
-                style: TextStyle(color: tokens.muted, fontSize: 12),
+                style: TextStyle(color: tokens.muted, fontSize: 12.sp),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           _TotalRow(
             label: 'Subtotal',
             value: AppFormatters.currency(subtotal),
@@ -81,7 +82,7 @@ class StoreCheckoutSummaryCard extends StatelessWidget {
             muted: deliveryFee == 0,
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: EdgeInsets.symmetric(vertical: 8),
             child: Divider(height: 1, color: tokens.border),
           ),
           Row(
@@ -91,17 +92,17 @@ class StoreCheckoutSummaryCard extends StatelessWidget {
                   'Store Fee total',
                   style: TextStyle(
                     color: tokens.ink,
-                    fontSize: 14.5,
+                    fontSize: 14.5.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
               Text(
                 AppFormatters.currency(total),
-                key: const Key('store-total'),
+                key: Key('store-total'),
                 style: TextStyle(
                   color: tokens.brand,
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -114,7 +115,7 @@ class StoreCheckoutSummaryCard extends StatelessWidget {
 }
 
 class _TotalRow extends StatelessWidget {
-  const _TotalRow({required this.label, required this.value, this.muted = false});
+  _TotalRow({required this.label, required this.value, this.muted = false});
 
   final String label;
   final String value;
@@ -124,7 +125,7 @@ class _TotalRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Expanded(
@@ -132,7 +133,7 @@ class _TotalRow extends StatelessWidget {
               label,
               style: TextStyle(
                 color: muted ? AppPalette.success : tokens.muted,
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -141,7 +142,7 @@ class _TotalRow extends StatelessWidget {
             value,
             style: TextStyle(
               color: muted ? AppPalette.success : tokens.ink,
-              fontSize: 13.5,
+              fontSize: 13.5.sp,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -153,7 +154,7 @@ class _TotalRow extends StatelessWidget {
 
 /// Order progress, driven by the order's real status.
 class StoreOrderTrackerCard extends StatelessWidget {
-  const StoreOrderTrackerCard({required this.order, super.key});
+  StoreOrderTrackerCard({required this.order, super.key});
 
   final StoreOrder order;
 
@@ -162,7 +163,7 @@ class StoreOrderTrackerCard extends StatelessWidget {
     final cancelled = order.status == StoreOrderStatus.cancelled;
     final tokens = AppThemeTokens.of(context);
     return AppCard(
-      key: const Key('store-order-tracker'),
+      key: Key('store-order-tracker'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -173,7 +174,7 @@ class StoreOrderTrackerCard extends StatelessWidget {
                   'Order progress',
                   style: TextStyle(
                     color: tokens.ink,
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -181,17 +182,17 @@ class StoreOrderTrackerCard extends StatelessWidget {
               StoreOrderStatusPill(status: order.status),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             order.id,
-            style: TextStyle(color: tokens.muted, fontSize: 12),
+            style: TextStyle(color: tokens.muted, fontSize: 12.sp),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14.h),
           if (cancelled)
             // A cancelled order has no happy path to walk through.
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: AppPalette.danger.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -201,7 +202,7 @@ class StoreOrderTrackerCard extends StatelessWidget {
                 'released back to your statement.',
                 style: TextStyle(
                   color: AppPalette.danger,
-                  fontSize: 12.5,
+                  fontSize: 12.5.sp,
                   height: 1.35,
                   fontWeight: FontWeight.w600,
                 ),
@@ -242,7 +243,7 @@ class StoreOrderTrackerCard extends StatelessWidget {
 
 /// A single order in the resident's list, ready to open.
 class StoreOrderTrackerListCard extends StatelessWidget {
-  const StoreOrderTrackerListCard({
+  StoreOrderTrackerListCard({
     required this.order,
     required this.onTap,
     super.key,
@@ -257,7 +258,7 @@ class StoreOrderTrackerListCard extends StatelessWidget {
     return AppCard(
       key: Key('store-order-${order.id}'),
       onTap: onTap,
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -269,7 +270,7 @@ class StoreOrderTrackerListCard extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: storeOrderStatusColor(order.status, tokens).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(14.r),
                 ),
                 child: Icon(
                   storeOrderStatusIcon(order.status),
@@ -277,7 +278,7 @@ class StoreOrderTrackerListCard extends StatelessWidget {
                   size: 21,
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,18 +287,18 @@ class StoreOrderTrackerListCard extends StatelessWidget {
                       order.id,
                       style: TextStyle(
                         color: tokens.ink,
-                        fontSize: 14.5,
+                        fontSize: 14.5.sp,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    const SizedBox(height: 3),
+                    SizedBox(height: 3.h),
                     Text(
                       '${order.itemCount} ${order.itemCount == 1 ? 'item' : 'items'} · ${order.deliveryMethod.label}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: tokens.muted,
-                        fontSize: 11.5,
+                        fontSize: 11.5.sp,
                       ),
                     ),
                   ],
@@ -310,22 +311,22 @@ class StoreOrderTrackerListCard extends StatelessWidget {
                     AppFormatters.currency(order.total),
                     style: TextStyle(
                       color: tokens.ink,
-                      fontSize: 14.5,
+                      fontSize: 14.5.sp,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  SizedBox(height: 5.h),
                   StorePaymentPill(payment: order.paymentStatus),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           Text(
             order.deliveryTime,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: tokens.mutedStrong, fontSize: 12),
+            style: TextStyle(color: tokens.mutedStrong, fontSize: 12.sp),
           ),
         ],
       ),
@@ -335,31 +336,31 @@ class StoreOrderTrackerListCard extends StatelessWidget {
 
 /// Explains that a store fee is its own charge, kept away from the condo fee.
 class StoreFeeNotice extends StatelessWidget {
-  const StoreFeeNotice({super.key});
+  StoreFeeNotice({super.key});
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      key: const Key('store-fee-notice'),
+      key: Key('store-fee-notice'),
       color: AppPalette.amberSoft,
-      borderColor: const Color(0xFFF2E0B8),
-      padding: const EdgeInsets.all(14),
+      borderColor: Color(0xFFF2E0B8),
+      padding: EdgeInsets.all(14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
+          Icon(
             Icons.info_outline_rounded,
             size: 18,
             color: Color(0xFFB45309),
           ),
-          const SizedBox(width: 10),
-          const Expanded(
+          SizedBox(width: 10.w),
+          Expanded(
             child: Text(
               'This is a Store Fee. It is billed as its own line and is never '
               'added to your monthly condo fee, rent, utilities or any fine.',
               style: TextStyle(
                 color: Color(0xFF7A4A0B),
-                fontSize: 12.5,
+                fontSize: 12.5.sp,
                 height: 1.4,
                 fontWeight: FontWeight.w600,
               ),
@@ -391,18 +392,18 @@ void showStoreAddedToBasket(
     ..clearSnackBars()
     ..showSnackBar(
       SnackBar(
-        key: const Key('store-added-snackbar'),
+        key: Key('store-added-snackbar'),
         behavior: SnackBarBehavior.floating,
         backgroundColor: tokens.ink,
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        margin: EdgeInsets.fromLTRB(16, 0, 16, 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
-        duration: const Duration(milliseconds: 1600),
+        duration: Duration(milliseconds: 1600),
         content: Row(
           children: [
             StoreProductImage(product: product, size: 34),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -414,22 +415,22 @@ void showStoreAddedToBasket(
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 13.5,
+                      fontSize: 13.5.sp,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2.h),
                   Text(
                     'Added to your basket · $quantity in basket',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Color(0xB3FFFFFF),
-                      fontSize: 12,
+                      fontSize: 12.sp,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.check_circle_rounded,
               color: Color(0xFF6EE7B7),
               size: 20,
@@ -445,7 +446,7 @@ void showStoreAddedToBasket(
 /// One button so the affordance is identical from the basket and from the
 /// product sheet.
 class StoreCheckoutButton extends StatelessWidget {
-  const StoreCheckoutButton({
+  StoreCheckoutButton({
     required this.controller,
     this.addFirst = false,
     this.label,
@@ -463,7 +464,7 @@ class StoreCheckoutButton extends StatelessWidget {
     final isSubmitting = controller.isSubmitting.value;
     final canGo = controller.canCheckout || addFirst;
     return AppPrimaryAction(
-      key: const Key('store-checkout'),
+      key: Key('store-checkout'),
       onPressed: canGo && !isSubmitting
           ? () {
               if (addFirst) {
@@ -489,7 +490,7 @@ class StoreCheckoutButton extends StatelessWidget {
 
 /// Keeps the catalogue honest about what is on the shelf.
 class StoreCartBadge extends StatelessWidget {
-  const StoreCartBadge({required this.count, required this.onTap, super.key});
+  StoreCartBadge({required this.count, required this.onTap, super.key});
 
   final int count;
   final VoidCallback onTap;
@@ -505,14 +506,14 @@ class StoreCartBadge extends StatelessWidget {
           : 'Basket, $count ${count == 1 ? 'item' : 'items'}',
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         child: Container(
-          key: const Key('store-cart-badge'),
+          key: Key('store-cart-badge'),
           height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: empty ? tokens.surface : tokens.brand,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(14.r),
             border: Border.all(color: empty ? tokens.border : tokens.brand),
           ),
           child: Row(
@@ -523,12 +524,12 @@ class StoreCartBadge extends StatelessWidget {
                 size: 19,
                 color: empty ? tokens.muted : tokens.onBrand,
               ),
-              const SizedBox(width: 7),
+              SizedBox(width: 7.w),
               Text(
                 empty ? 'Basket' : '$count',
                 style: TextStyle(
                   color: empty ? tokens.muted : tokens.onBrand,
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   fontWeight: FontWeight.w800,
                 ),
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../domain/entities/maintenance_request.dart';
@@ -11,7 +12,7 @@ import '../../../../core/widgets/app_image_preview.dart';
 import '../../../../core/widgets/app_step_progress.dart';
 
 class MaintenanceDetailPage extends GetView<MaintenanceController> {
-  const MaintenanceDetailPage({required this.request, super.key});
+  MaintenanceDetailPage({required this.request, super.key});
 
   final MaintenanceRequest request;
 
@@ -23,8 +24,8 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
       return Scaffold(
         appBar: AppDetailAppBar(title: 'Request details'),
         body: ListView(
-          key: const Key('maintenance-detail-scroll'),
-          padding: const EdgeInsets.fromLTRB(
+          key: Key('maintenance-detail-scroll'),
+          padding: EdgeInsets.fromLTRB(
             AppSpacing.gutter,
             AppSpacing.pageTop,
             AppSpacing.gutter,
@@ -32,7 +33,7 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
           ),
           children: [
             _DetailHero(request: current),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             _Section(
               title: 'Request information',
               child: Column(
@@ -53,7 +54,7 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             _Section(
               title: 'Description',
               child: Text(
@@ -61,7 +62,7 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
                 style: TextStyle(color: tokens.mutedStrong, height: 1.4),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             _Section(
               title: current.photoPaths.isEmpty ? 'Attachments' : 'Attachment',
               child: current.photoPaths.isEmpty
@@ -92,12 +93,12 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
                       ],
                     ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             _StatusProgress(request: current),
             // if (current.status.next != null) ...[
-            //   const SizedBox(height: 20),
+            //   SizedBox(height: 20.h),
             //   AppPrimaryAction(
-            //     key: const Key('advance-maintenance-request'),
+            //     key: Key('advance-maintenance-request'),
             //     onPressed: () => controller.advanceRequest(current),
             //     label: 'Move to ${current.status.next!.label}',
             //     icon: Icons.arrow_forward_rounded,
@@ -128,7 +129,7 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
 }
 
 class _DetailHero extends StatelessWidget {
-  const _DetailHero({required this.request});
+  _DetailHero({required this.request});
 
   final MaintenanceRequest request;
 
@@ -136,10 +137,10 @@ class _DetailHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: tokens.brand,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(22.r),
         boxShadow: tokens.heroShadow,
       ),
       child: Column(
@@ -152,7 +153,7 @@ class _DetailHero extends StatelessWidget {
                   'MAINTENANCE REQUEST',
                   style: TextStyle(
                     color: tokens.brandOnDark,
-                    fontSize: 12,
+                    fontSize: 12.sp,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.2,
                   ),
@@ -161,19 +162,19 @@ class _DetailHero extends StatelessWidget {
               MaintenanceStatusBadge(status: request.status),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           Text(
             request.title,
             style: TextStyle(
               color: tokens.brandOnDark,
-              fontSize: 21,
+              fontSize: 21.sp,
               fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           Text(
             '${request.category.label} · ${request.priority.label}',
-            style: TextStyle(color: tokens.brandOnDarkMuted, fontSize: 13),
+            style: TextStyle(color: tokens.brandOnDarkMuted, fontSize: 13.sp),
           ),
         ],
       ),
@@ -182,7 +183,7 @@ class _DetailHero extends StatelessWidget {
 }
 
 class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child});
+  _Section({required this.title, required this.child});
 
   final String title;
   final Widget child;
@@ -191,10 +192,10 @@ class _Section extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: tokens.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: tokens.border),
       ),
       child: Column(
@@ -202,9 +203,9 @@ class _Section extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           child,
         ],
       ),
@@ -213,7 +214,7 @@ class _Section extends StatelessWidget {
 }
 
 class _Line extends StatelessWidget {
-  const _Line({required this.label, required this.value});
+  _Line({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -222,7 +223,7 @@ class _Line extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
+      padding: EdgeInsets.symmetric(vertical: 7),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -232,12 +233,12 @@ class _Line extends StatelessWidget {
               style: TextStyle(color: tokens.muted),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: const TextStyle(fontWeight: FontWeight.w800),
+              style: TextStyle(fontWeight: FontWeight.w800),
             ),
           ),
         ],
@@ -251,7 +252,7 @@ class _Line extends StatelessWidget {
 /// The step the request has reached comes from [MaintenanceRequest.status], so
 /// nothing here is hardcoded: moving the request forward moves the timeline.
 class _StatusProgress extends StatelessWidget {
-  const _StatusProgress({required this.request});
+  _StatusProgress({required this.request});
 
   final MaintenanceRequest request;
 
@@ -272,20 +273,20 @@ class _StatusProgress extends StatelessWidget {
     ];
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: tokens.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: tokens.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Request progress',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           AppStepProgress(steps: steps, currentIndex: status.index),
         ],
       ),

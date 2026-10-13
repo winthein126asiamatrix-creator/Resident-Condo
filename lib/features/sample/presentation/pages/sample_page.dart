@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/utils/app_validators.dart';
@@ -8,7 +9,7 @@ import '../controllers/sample_controller.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class SamplePage extends GetView<SampleController> {
-  const SamplePage({super.key});
+  SamplePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +18,10 @@ class SamplePage extends GetView<SampleController> {
         title: 'Sample',
         actions: [
           IconButton(
-            key: const Key('refresh-samples'),
+            key: Key('refresh-samples'),
             onPressed: controller.loadSamples,
             tooltip: 'Refresh samples',
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh),
           ),
         ],
       ),
@@ -28,23 +29,23 @@ class SamplePage extends GetView<SampleController> {
         () => Column(
           children: [
             if (controller.isLoading.value && controller.samples.isNotEmpty)
-              const LinearProgressIndicator(),
+              LinearProgressIndicator(),
             Expanded(child: _buildContent(context)),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        key: const Key('add-sample'),
+        key: Key('add-sample'),
         onPressed: () => _openEditor(context),
-        icon: const Icon(Icons.add),
-        label: const Text('Add sample'),
+        icon: Icon(Icons.add),
+        label: Text('Add sample'),
       ),
     );
   }
 
   Widget _buildContent(BuildContext context) {
     if (controller.isLoading.value && controller.samples.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator());
     }
     if (controller.errorMessage.value != null && controller.samples.isEmpty) {
       return AppStateMessage(
@@ -56,7 +57,7 @@ class SamplePage extends GetView<SampleController> {
       );
     }
     if (controller.samples.isEmpty) {
-      return const AppStateMessage(
+      return AppStateMessage(
         title: 'No samples yet',
         message: 'Add a sample to see the architecture in action.',
         icon: Icons.inbox_outlined,
@@ -66,10 +67,10 @@ class SamplePage extends GetView<SampleController> {
     return RefreshIndicator(
       onRefresh: controller.loadSamples,
       child: ListView.separated(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+        physics: AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, 96),
         itemCount: controller.samples.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 8),
+        separatorBuilder: (_, _) => SizedBox(height: 8.h),
         itemBuilder: (context, index) {
           final sample = controller.samples[index];
           return _SampleCard(
@@ -109,16 +110,16 @@ class SamplePage extends GetView<SampleController> {
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete sample?'),
+        title: Text('Delete sample?'),
         content: Text('Delete "${sample.title}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete'),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -130,7 +131,7 @@ class SamplePage extends GetView<SampleController> {
 }
 
 class _SampleCard extends StatelessWidget {
-  const _SampleCard({
+  _SampleCard({
     required this.sample,
     required this.onEdit,
     required this.onDelete,
@@ -168,7 +169,7 @@ class _SampleCard extends StatelessWidget {
                   onDelete();
                 }
               },
-              itemBuilder: (_) => const [
+              itemBuilder: (_) => [
                 PopupMenuItem(value: 'edit', child: Text('Edit')),
                 PopupMenuItem(value: 'delete', child: Text('Delete')),
               ],
@@ -182,7 +183,7 @@ class _SampleCard extends StatelessWidget {
 }
 
 class _SampleEditorDialog extends StatefulWidget {
-  const _SampleEditorDialog({this.sample});
+  _SampleEditorDialog({this.sample});
 
   final Sample? sample;
 
@@ -221,19 +222,19 @@ class _SampleEditorDialogState extends State<_SampleEditorDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextFormField(
-              key: const Key('sample-title'),
+              key: Key('sample-title'),
               controller: _titleController,
               autofocus: true,
-              decoration: const InputDecoration(labelText: 'Title'),
+              decoration: InputDecoration(labelText: 'Title'),
               validator: (value) =>
                   AppValidators.requiredText(value, field: 'Title'),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             TextFormField(
-              key: const Key('sample-description'),
+              key: Key('sample-description'),
               controller: _descriptionController,
               maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Description'),
+              decoration: InputDecoration(labelText: 'Description'),
             ),
           ],
         ),
@@ -241,12 +242,12 @@ class _SampleEditorDialogState extends State<_SampleEditorDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('Cancel'),
         ),
         FilledButton(
-          key: const Key('save-sample'),
+          key: Key('save-sample'),
           onPressed: _save,
-          child: const Text('Save'),
+          child: Text('Save'),
         ),
       ],
     );

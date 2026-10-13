@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../theme/app_spacing.dart';
 import '../theme/app_theme_tokens.dart';
@@ -12,7 +13,7 @@ import 'offline_banner.dart';
 /// with a hairline. Living in `core/widgets` means the screens cannot drift
 /// apart.
 class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const AppDetailAppBar({
+  AppDetailAppBar({
     required this.title,
     this.subtitle,
     this.onBack,
@@ -103,7 +104,7 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                     leading ?? _AppBarBackButton(onBack: onBack)
                   else
                     ?leading,
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12.w),
                   // Single lines with ellipsis so a narrow phone or a large text
                   // scale can never push the toolbar out of its bounds.
                   Expanded(
@@ -117,21 +118,21 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: tokens.ink,
-                            fontSize: 18,
+                            fontSize: 18.sp,
                             height: 1.2,
                             letterSpacing: -0.2,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                         if (subtitle != null) ...[
-                          const SizedBox(height: 3),
+                          SizedBox(height: 3.h),
                           Text(
                             subtitle!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: tokens.muted,
-                              fontSize: 12.5,
+                              fontSize: 12.5.sp,
                               height: 1.2,
                               fontWeight: FontWeight.w500,
                             ),
@@ -141,14 +142,14 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                     ),
                   ),
                   for (final action in actions)
-                    Padding(padding: const EdgeInsets.only(left: 4), child: action),
+                    Padding(padding: EdgeInsets.only(left: 4), child: action),
                 ],
               ),
             ),
           ),
           // Below the bar's hairline, above the body. Renders nothing while
           // online, so the bar is exactly the height it has always been.
-          const OfflineBannerSlot(),
+          OfflineBannerSlot(),
         ],
       ),
     );
@@ -156,7 +157,7 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
 }
 
 class _AppBarBackButton extends StatelessWidget {
-  const _AppBarBackButton({this.onBack});
+  _AppBarBackButton({this.onBack});
 
   final VoidCallback? onBack;
 
@@ -166,7 +167,7 @@ class _AppBarBackButton extends StatelessWidget {
     return Material(
       color: tokens.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14.r),
         side: BorderSide(color: tokens.border),
       ),
       clipBehavior: Clip.antiAlias,
@@ -174,7 +175,7 @@ class _AppBarBackButton extends StatelessWidget {
         message: 'Back',
         child: InkWell(
           onTap: onBack ?? () => Navigator.of(context).maybePop(),
-          child: const SizedBox(
+          child: SizedBox(
             width: 42,
             height: 42,
             child: Icon(Icons.arrow_back_rounded, size: 20),

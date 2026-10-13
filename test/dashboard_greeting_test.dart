@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 
@@ -24,9 +25,12 @@ void main() {
   Future<void> pumpDashboard(WidgetTester tester) async {
     DashboardBinding().dependencies();
     await tester.pumpWidget(
-      GetMaterialApp(
-        theme: AppTheme.forSeed(const Color(0xFF2563EB), Brightness.light),
-        home: Scaffold(body: DashboardPage(onSelectTab: (_) {})),
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        child: GetMaterialApp(
+          theme: AppTheme.forSeed(const Color(0xFF2563EB), Brightness.light),
+          home: Scaffold(body: DashboardPage(onSelectTab: (_) {})),
+        ),
       ),
     );
     // The payload resolves on a microtask; two pumps is plenty, and avoids

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// Shared colour palette used across the resident app.
 ///
@@ -38,9 +39,9 @@ abstract final class AppPalette {
     BoxShadow(color: Color(0x0A163A36), blurRadius: 16, offset: Offset(0, 5)),
   ];
 
-  static const titleStyle = TextStyle(
+  static TextStyle get titleStyle => TextStyle(
     color: ink,
-    fontSize: 25,
+    fontSize: 25.sp,
     fontWeight: FontWeight.w800,
   );
 

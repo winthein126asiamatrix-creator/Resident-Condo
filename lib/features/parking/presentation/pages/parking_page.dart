@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_palette.dart';
@@ -18,7 +19,7 @@ import '../../../../core/widgets/app_form_field.dart';
 import '../../../../core/widgets/app_primary_action.dart';
 
 class ParkingPage extends GetView<ParkingController> {
-  const ParkingPage({super.key});
+  ParkingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,13 +31,13 @@ class ParkingPage extends GetView<ParkingController> {
           IconButton(
             onPressed: controller.loadParking,
             tooltip: 'Refresh parking',
-            icon: const Icon(Icons.refresh_rounded),
+            icon: Icon(Icons.refresh_rounded),
           ),
         ],
       ),
       body: Obx(() {
         if (controller.isLoading.value && controller.spaces.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(child: CircularProgressIndicator());
         }
         if (controller.errorMessage.value != null &&
             controller.spaces.isEmpty) {
@@ -62,9 +63,9 @@ class ParkingPage extends GetView<ParkingController> {
         return RefreshIndicator(
           onRefresh: controller.loadParking,
           child: ListView(
-            key: const Key('parking-scroll'),
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(
+            key: Key('parking-scroll'),
+            physics: AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(
               AppSpacing.gutter,
               AppSpacing.pageTop,
               AppSpacing.gutter,
@@ -72,30 +73,30 @@ class ParkingPage extends GetView<ParkingController> {
             ),
             children: [
               _MySpaceCard(controller: controller, space: space),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               _QuickActions(controller: controller),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
               AppSectionHeader(
                 title: 'Building spaces',
                 count: controller.spaces.length,
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               for (final item in controller.spaces)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
+                  padding: EdgeInsets.only(bottom: 10),
                   child: _SpaceTile(space: item, isMine: item.id == space.id),
                 ),
-              const SizedBox(height: 14),
+              SizedBox(height: 14.h),
               AppSectionHeader(
                 title: 'Access log',
                 count: controller.events.length,
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               for (final event in controller.events)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: EdgeInsets.only(bottom: 8),
                   child: AppCard(
-                    padding: const EdgeInsets.symmetric(
+                    padding: EdgeInsets.symmetric(
                       horizontal: 14,
                       vertical: 12,
                     ),
@@ -110,19 +111,19 @@ class ParkingPage extends GetView<ParkingController> {
                               ? AppPalette.success
                               : AppPalette.danger,
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12.w),
                         Expanded(
                           child: Text(
                             '${event.type.label} ? ${event.slot}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w700,
-                              fontSize: 12,
+                              fontSize: 12.sp,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8.w),
                         // Flexible so a long timestamp cannot overflow the card.
                         Flexible(
                           child: Text(
@@ -132,7 +133,7 @@ class ParkingPage extends GetView<ParkingController> {
                             textAlign: TextAlign.right,
                             style: TextStyle(
                               color: tokens.muted,
-                              fontSize: 11,
+                              fontSize: 11.sp,
                             ),
                           ),
                         ),
@@ -140,21 +141,21 @@ class ParkingPage extends GetView<ParkingController> {
                     ),
                   ),
                 ),
-              const SizedBox(height: 14),
+              SizedBox(height: 14.h),
               AppSectionHeader(
                 title: 'Guest parking',
                 count: controller.activeGuestRequests,
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               if (controller.guestRequests.isEmpty)
                 Text(
                   'No guest parking requests yet.',
-                  style: TextStyle(color: tokens.muted, fontSize: 12),
+                  style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                 )
               else
                 for (final request in controller.guestRequests)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
+                    padding: EdgeInsets.only(bottom: 10),
                     child: _GuestRequestCard(
                       controller: controller,
                       request: request,
@@ -169,7 +170,7 @@ class ParkingPage extends GetView<ParkingController> {
 }
 
 class _MySpaceCard extends StatelessWidget {
-  const _MySpaceCard({required this.controller, required this.space});
+  _MySpaceCard({required this.controller, required this.space});
   final ParkingController controller;
   final ParkingSpace space;
 
@@ -200,15 +201,15 @@ class _MySpaceCard extends StatelessWidget {
                   style: TextStyle(
                     color: tokens.brandOnDark,
                     fontWeight: FontWeight.w800,
-                    fontSize: 16,
+                    fontSize: 16.sp,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
                   space.licensePlate,
                   style: TextStyle(
                     color: tokens.brandOnDarkMuted,
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     letterSpacing: 1.2,
                   ),
                 ),
@@ -218,8 +219,8 @@ class _MySpaceCard extends StatelessWidget {
           TextButton.icon(
             onPressed: () => _editVehicle(context),
             style: TextButton.styleFrom(foregroundColor: tokens.brandOnDark),
-            icon: const Icon(Icons.edit_rounded, size: 16),
-            label: const Text('Edit'),
+            icon: Icon(Icons.edit_rounded, size: 16),
+            label: Text('Edit'),
           ),
         ],
       ),
@@ -266,7 +267,7 @@ class _MySpaceCard extends StatelessWidget {
 }
 
 class _QuickActions extends StatelessWidget {
-  const _QuickActions({required this.controller});
+  _QuickActions({required this.controller});
   final ParkingController controller;
 
   @override
@@ -281,7 +282,7 @@ class _QuickActions extends StatelessWidget {
             icon: Icons.local_taxi_outlined,
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: 10.w),
         Expanded(
           child: AppOutlinedButton(
             onPressed: controller.loadParking,
@@ -298,7 +299,7 @@ class _QuickActions extends StatelessWidget {
     final details =
         await showDialog<({String name, String vehicle, String plate})>(
           context: context,
-          builder: (dialogContext) => const _GuestParkingDialog(),
+          builder: (dialogContext) => _GuestParkingDialog(),
         );
     if (details == null || !context.mounted) {
       return;
@@ -325,7 +326,7 @@ class _QuickActions extends StatelessWidget {
 }
 
 class _GuestParkingDialog extends StatefulWidget {
-  const _GuestParkingDialog();
+  _GuestParkingDialog();
 
   @override
   State<_GuestParkingDialog> createState() => _GuestParkingDialogState();
@@ -348,31 +349,31 @@ class _GuestParkingDialogState extends State<_GuestParkingDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: const Text('Request guest parking'),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+      title: Text('Request guest parking'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             AppTextField(
-              fieldKey: const Key('guest-name-field'),
+              fieldKey: Key('guest-name-field'),
               label: 'Guest name',
               controller: _name,
             ),
-            const SizedBox(height: AppSpacing.fieldGap),
+            SizedBox(height: AppSpacing.fieldGap),
             AppTextField(label: 'Vehicle model', controller: _vehicle),
-            const SizedBox(height: AppSpacing.fieldGap),
+            SizedBox(height: AppSpacing.fieldGap),
             AppTextField(
-              fieldKey: const Key('guest-plate-field'),
+              fieldKey: Key('guest-plate-field'),
               label: 'License plate',
               controller: _plate,
               textCapitalization: TextCapitalization.characters,
             ),
             if (_error.isNotEmpty) ...[
-              const SizedBox(height: 10),
+              SizedBox(height: 10.h),
               Text(
                 _error,
-                style: const TextStyle(color: AppPalette.danger, fontSize: 12),
+                style: TextStyle(color: AppPalette.danger, fontSize: 12.sp),
               ),
             ],
           ],
@@ -381,9 +382,9 @@ class _GuestParkingDialogState extends State<_GuestParkingDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text('Cancel'),
         ),
-        FilledButton(onPressed: _submit, child: const Text('Request')),
+        FilledButton(onPressed: _submit, child: Text('Request')),
       ],
     );
   }
@@ -406,7 +407,7 @@ class _GuestParkingDialogState extends State<_GuestParkingDialog> {
 }
 
 class _SpaceTile extends StatelessWidget {
-  const _SpaceTile({required this.space, required this.isMine});
+  _SpaceTile({required this.space, required this.isMine});
   final ParkingSpace space;
   final bool isMine;
 
@@ -420,7 +421,7 @@ class _SpaceTile extends StatelessWidget {
       ParkingStatus.blocked => AppPalette.danger,
     };
     return AppCard(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
         children: [
           AppIconTile(
@@ -428,7 +429,7 @@ class _SpaceTile extends StatelessWidget {
             color: color,
             size: 38,
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -441,11 +442,11 @@ class _SpaceTile extends StatelessWidget {
                         space.slot,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w800),
+                        style: TextStyle(fontWeight: FontWeight.w800),
                       ),
                     ),
                     if (isMine) ...[
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       AppStatusPill(
                         label: 'Yours',
                         color: tokens.brand,
@@ -454,14 +455,14 @@ class _SpaceTile extends StatelessWidget {
                     ],
                   ],
                 ),
-                const SizedBox(height: 3),
+                SizedBox(height: 3.h),
                 Text(
                   space.licensePlate.isEmpty
                       ? '${space.level} ? ${space.assignedTo}'
                       : '${space.level} ? ${space.licensePlate}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: tokens.muted, fontSize: 11),
+                  style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                 ),
               ],
             ),
@@ -474,7 +475,7 @@ class _SpaceTile extends StatelessWidget {
 }
 
 class _GuestRequestCard extends StatelessWidget {
-  const _GuestRequestCard({required this.controller, required this.request});
+  _GuestRequestCard({required this.controller, required this.request});
   final ParkingController controller;
   final GuestParkingRequest request;
 
@@ -491,7 +492,7 @@ class _GuestRequestCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   request.guestName,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
               ),
               AppStatusPill(
@@ -501,20 +502,20 @@ class _GuestRequestCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8.h),
           Text(
             '${request.licensePlate} · ${request.date} · ${request.window}',
-            style: TextStyle(color: tokens.mutedStrong, fontSize: 12),
+            style: TextStyle(color: tokens.mutedStrong, fontSize: 12.sp),
           ),
           if (request.vehicle.isNotEmpty) ...[
-            const SizedBox(height: 3),
+            SizedBox(height: 3.h),
             Text(
               request.vehicle,
-              style: TextStyle(color: tokens.faint, fontSize: 11),
+              style: TextStyle(color: tokens.faint, fontSize: 11.sp),
             ),
           ],
           if (!cancelled) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             AppOutlinedButton(
               onPressed: controller.isSubmitting.value
                   ? null
@@ -558,7 +559,7 @@ class _GuestRequestCard extends StatelessWidget {
 }
 
 class _VehicleSheet extends StatefulWidget {
-  const _VehicleSheet({required this.space});
+  _VehicleSheet({required this.space});
   final ParkingSpace space;
 
   @override
@@ -597,29 +598,29 @@ class _VehicleSheetState extends State<_VehicleSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Update vehicle',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20.sp),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           Text(
             'Slot ${widget.space.slot}',
-            style: TextStyle(color: tokens.muted, fontSize: 12),
+            style: TextStyle(color: tokens.muted, fontSize: 12.sp),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
           AppTextField(
-            fieldKey: const Key('vehicle-model-field'),
+            fieldKey: Key('vehicle-model-field'),
             label: 'Vehicle model',
             controller: _vehicle,
           ),
-          const SizedBox(height: AppSpacing.fieldGap),
+          SizedBox(height: AppSpacing.fieldGap),
           AppTextField(
-            fieldKey: const Key('vehicle-plate-field'),
+            fieldKey: Key('vehicle-plate-field'),
             label: 'License plate',
             controller: _plate,
             textCapitalization: TextCapitalization.characters,
           ),
-          const SizedBox(height: 18),
+          SizedBox(height: 18.h),
           AppPrimaryAction(
             onPressed: () => Navigator.pop(context, (
               vehicle: _vehicle.text,

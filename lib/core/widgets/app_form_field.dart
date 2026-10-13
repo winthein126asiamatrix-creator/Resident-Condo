@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 
 import '../theme/app_palette.dart';
@@ -14,7 +15,7 @@ import '../theme/app_theme_tokens.dart';
 /// multi line ones. Focus and error states are handled by the decoration
 /// itself, which keeps the native validation behaviour untouched.
 class AppTextField extends StatelessWidget {
-  const AppTextField({
+  AppTextField({
     required this.label,
     this.fieldKey,
     this.controller,
@@ -89,7 +90,7 @@ class AppTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _FieldLabel(label: label, icon: multiline ? icon : null),
-        const SizedBox(height: AppSpacing.fieldLabelGap),
+        SizedBox(height: AppSpacing.fieldLabelGap),
         TextFormField(
           key: fieldKey,
           controller: controller,
@@ -127,7 +128,7 @@ class AppTextField extends StatelessWidget {
 
 /// Rounded dropdown that matches [AppTextField] down to the border radius.
 class AppSelectField<T> extends StatelessWidget {
-  const AppSelectField({
+  AppSelectField({
     required this.label,
     required this.value,
     required this.items,
@@ -157,7 +158,7 @@ class AppSelectField<T> extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _FieldLabel(label: label, icon: icon),
-        const SizedBox(height: AppSpacing.fieldLabelGap),
+        SizedBox(height: AppSpacing.fieldLabelGap),
         DropdownButtonFormField<T>(
           key: fieldKey,
           initialValue: value,
@@ -221,16 +222,16 @@ InputDecoration appFormFieldDecoration({
     hintText: hint,
     hintStyle: TextStyle(
       color: enabled ? tokens.faint : tokens.muted,
-      fontSize: 15,
+      fontSize: 15.sp,
       fontWeight: FontWeight.w500,
     ),
     helperText: helperText,
     helperMaxLines: 2,
-    helperStyle: TextStyle(color: tokens.muted, fontSize: 12),
+    helperStyle: TextStyle(color: tokens.muted, fontSize: 12.sp),
     filled: true,
     fillColor: enabled ? tokens.surface : tokens.surfaceMuted,
     isDense: true,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 17),
+    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 17),
     prefixIcon: icon == null
         ? null
         : Icon(
@@ -239,8 +240,8 @@ InputDecoration appFormFieldDecoration({
             color: enabled ? tokens.muted : tokens.faint,
           ),
     prefixIconColor: tokens.muted,
-    prefixIconConstraints: const BoxConstraints(minWidth: 46, minHeight: 24),
-    suffixIconConstraints: const BoxConstraints(minWidth: 44, minHeight: 24),
+    prefixIconConstraints: BoxConstraints(minWidth: 46, minHeight: 24),
+    suffixIconConstraints: BoxConstraints(minWidth: 44, minHeight: 24),
     border: border(tokens.border),
     enabledBorder: border(tokens.border),
     // The focus ring is the only emphasis a field gets, which is enough to
@@ -251,9 +252,9 @@ InputDecoration appFormFieldDecoration({
     disabledBorder: border(tokens.border),
     // Two lines of room keeps the field from jumping when an error appears.
     errorMaxLines: 2,
-    errorStyle: const TextStyle(
+    errorStyle: TextStyle(
       color: AppPalette.danger,
-      fontSize: 12,
+      fontSize: 12.sp,
       height: 1.35,
       fontWeight: FontWeight.w600,
     ),
@@ -266,14 +267,14 @@ InputDecoration appFormFieldDecoration({
                 : IconButton(
                     onPressed: onSuffixTap,
                     tooltip: suffixIconLabel,
-                    icon: const Icon(Icons.close_rounded, size: 18),
+                    icon: Icon(Icons.close_rounded, size: 18),
                     color: tokens.muted,
                   )),
   );
 }
 
 class _FieldLabel extends StatelessWidget {
-  const _FieldLabel({required this.label, this.icon});
+  _FieldLabel({required this.label, this.icon});
 
   final String label;
   final IconData? icon;
@@ -285,7 +286,7 @@ class _FieldLabel extends StatelessWidget {
       children: [
         if (icon != null) ...[
           Icon(icon, size: 15, color: tokens.muted),
-          const SizedBox(width: 6),
+          SizedBox(width: 6.w),
         ],
         Flexible(
           child: Text(label, style: AppTextStyles.of(context).fieldLabel),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../core/theme/app_palette.dart';
@@ -32,7 +33,7 @@ Future<Color?> showAppColorPickerSheet(
 }
 
 class _AppColorPickerSheet extends StatefulWidget {
-  const _AppColorPickerSheet({required this.initial, required this.onChanged});
+  _AppColorPickerSheet({required this.initial, required this.onChanged});
 
   final Color initial;
   final ValueChanged<Color> onChanged;
@@ -118,7 +119,7 @@ class _AppColorPickerSheetState extends State<_AppColorPickerSheet> {
         top: false,
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(
+            padding: EdgeInsets.fromLTRB(
               AppSpacing.gutter,
               12,
               AppSpacing.gutter,
@@ -128,8 +129,8 @@ class _AppColorPickerSheetState extends State<_AppColorPickerSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _SheetGrabber(),
-                const SizedBox(height: AppSpacing.fieldGap),
+                _SheetGrabber(),
+                SizedBox(height: AppSpacing.fieldGap),
                 Row(
                   children: [
                     Expanded(
@@ -141,29 +142,29 @@ class _AppColorPickerSheetState extends State<_AppColorPickerSheet> {
                             'Custom color',
                             style: TextStyle(
                               color: tokens.ink,
-                              fontSize: 19,
+                              fontSize: 19.sp,
                               fontWeight: FontWeight.w800,
                               letterSpacing: -0.2,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4.h),
                           Text(
                             'Any color you like. The app builds the rest of '
                             'the palette around it.',
                             style: TextStyle(
                               color: tokens.muted,
-                              fontSize: 12.5,
+                              fontSize: 12.5.sp,
                               height: 1.35,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.fieldLabelGap),
+                    SizedBox(width: AppSpacing.fieldLabelGap),
                     _SelectedSwatch(color: _color, tokens: tokens),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.sectionGap),
+                SizedBox(height: AppSpacing.sectionGap),
                 _SaturationValueField(
                   hue: _hsv.hue,
                   saturation: _hsv.saturation,
@@ -172,37 +173,37 @@ class _AppColorPickerSheetState extends State<_AppColorPickerSheet> {
                     _hsv.withSaturation(saturation).withValue(value),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.fieldGap),
+                SizedBox(height: AppSpacing.fieldGap),
                 _HueStrip(
                   hue: _hsv.hue,
                   onChanged: (hue) => _update(_hsv.withHue(hue)),
                 ),
-                const SizedBox(height: AppSpacing.fieldGap),
+                SizedBox(height: AppSpacing.fieldGap),
                 _RecentSwatches(
                   colors: _recentColors,
                   onSelected: (color) => _update(HSVColor.fromColor(color)),
                 ),
-                const SizedBox(height: AppSpacing.sectionGap),
+                SizedBox(height: AppSpacing.sectionGap),
                 _HexField(
                   controller: _hexController,
                   tokens: tokens,
                   onChanged: _onHexChanged,
                   onEditingChanged: (editing) => _isEditingHex = editing,
                 ),
-                const SizedBox(height: AppSpacing.sectionGap),
+                SizedBox(height: AppSpacing.sectionGap),
                 AppPrimaryAction(
-                  key: const Key('appearance-color-picker-confirm'),
+                  key: Key('appearance-color-picker-confirm'),
                   onPressed: () => Navigator.of(context).pop(_color),
                   label: 'Use this color',
                   icon: Icons.check_rounded,
                   backgroundColor: _color,
                 ),
-                const SizedBox(height: AppSpacing.fieldLabelGap),
+                SizedBox(height: AppSpacing.fieldLabelGap),
                 Center(
                   child: TextButton(
-                    key: const Key('appearance-color-picker-cancel'),
+                    key: Key('appearance-color-picker-cancel'),
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
+                    child: Text('Cancel'),
                   ),
                 ),
               ],
@@ -226,7 +227,7 @@ class _AppColorPickerSheetState extends State<_AppColorPickerSheet> {
 }
 
 class _SheetGrabber extends StatelessWidget {
-  const _SheetGrabber();
+  _SheetGrabber();
 
   @override
   Widget build(BuildContext context) {
@@ -236,7 +237,7 @@ class _SheetGrabber extends StatelessWidget {
         height: 4,
         decoration: BoxDecoration(
           color: AppPalette.border,
-          borderRadius: BorderRadius.circular(2),
+          borderRadius: BorderRadius.circular(2.r),
         ),
       ),
     );
@@ -245,7 +246,7 @@ class _SheetGrabber extends StatelessWidget {
 
 /// The filled circle beside the title, echoing the selected swatch in the grid.
 class _SelectedSwatch extends StatelessWidget {
-  const _SelectedSwatch({required this.color, required this.tokens});
+  _SelectedSwatch({required this.color, required this.tokens});
 
   final Color color;
   final AppThemeTokens tokens;
@@ -266,7 +267,7 @@ class _SelectedSwatch extends StatelessWidget {
           BoxShadow(
             color: color.withValues(alpha: 0.3),
             blurRadius: 14,
-            offset: const Offset(0, 6),
+            offset: Offset(0, 6),
           ),
         ],
       ),
@@ -280,7 +281,7 @@ class _SelectedSwatch extends StatelessWidget {
 /// to black down. That is the standard construction and it stays accurate for
 /// every hue without a shader.
 class _SaturationValueField extends StatelessWidget {
-  const _SaturationValueField({
+  _SaturationValueField({
     required this.hue,
     required this.saturation,
     required this.value,
@@ -313,7 +314,7 @@ class _SaturationValueField extends StatelessWidget {
         void update(Offset local) => handle(local, size);
 
         return GestureDetector(
-          key: const Key('appearance-picker-saturation-value'),
+          key: Key('appearance-picker-saturation-value'),
           onPanDown: (details) => update(details.localPosition),
           onPanUpdate: (details) => update(details.localPosition),
           child: SizedBox(
@@ -331,7 +332,7 @@ class _SaturationValueField extends StatelessWidget {
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(AppRadius.xl),
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [Color(0x00000000), Color(0xFF000000)],
@@ -347,7 +348,7 @@ class _SaturationValueField extends StatelessWidget {
                 Positioned(
                   left: saturation * size.width - 13,
                   top: (1 - value) * size.height - 13,
-                  child: const _FieldThumb(),
+                  child: _FieldThumb(),
                 ),
               ],
             ),
@@ -359,7 +360,7 @@ class _SaturationValueField extends StatelessWidget {
 }
 
 class _FieldThumb extends StatelessWidget {
-  const _FieldThumb();
+  _FieldThumb();
 
   @override
   Widget build(BuildContext context) {
@@ -374,7 +375,7 @@ class _FieldThumb extends StatelessWidget {
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.28),
               blurRadius: 8,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2),
             ),
           ],
         ),
@@ -385,7 +386,7 @@ class _FieldThumb extends StatelessWidget {
 
 /// The horizontal hue strip.
 class _HueStrip extends StatelessWidget {
-  const _HueStrip({required this.hue, required this.onChanged});
+  _HueStrip({required this.hue, required this.onChanged});
 
   final double hue;
   final ValueChanged<double> onChanged;
@@ -402,7 +403,7 @@ class _HueStrip extends StatelessWidget {
         void update(Offset local) => onChanged((local.dx / width).clamp(0.0, 1.0));
 
         return GestureDetector(
-          key: const Key('appearance-picker-hue-strip'),
+          key: Key('appearance-picker-hue-strip'),
           onPanDown: (details) => update(details.localPosition),
           onPanUpdate: (details) => update(details.localPosition),
           child: SizedBox(
@@ -414,7 +415,7 @@ class _HueStrip extends StatelessWidget {
                   height: _height,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(AppRadius.pill),
-                    gradient: const LinearGradient(
+                    gradient: LinearGradient(
                       colors: [
                         Color(0xFFFF0000),
                         Color(0xFFFFFF00),
@@ -447,7 +448,7 @@ class _HueStrip extends StatelessWidget {
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.26),
                           blurRadius: 8,
-                          offset: const Offset(0, 2),
+                          offset: Offset(0, 2),
                         ),
                       ],
                     ),
@@ -463,7 +464,7 @@ class _HueStrip extends StatelessWidget {
 }
 
 class _RecentSwatches extends StatelessWidget {
-  const _RecentSwatches({required this.colors, required this.onSelected});
+  _RecentSwatches({required this.colors, required this.onSelected});
 
   final List<Color> colors;
   final ValueChanged<Color> onSelected;
@@ -475,7 +476,7 @@ class _RecentSwatches extends StatelessWidget {
       children: [
         for (final color in colors)
           Padding(
-            padding: const EdgeInsets.only(right: 10),
+            padding: EdgeInsets.only(right: 10),
             child: Semantics(
               button: true,
               label: 'Use ${color.toARGB32().toRadixString(16).substring(2)}',
@@ -502,7 +503,7 @@ class _RecentSwatches extends StatelessWidget {
 
 /// Hex entry, for a resident who already knows the value they want.
 class _HexField extends StatelessWidget {
-  const _HexField({
+  _HexField({
     required this.controller,
     required this.tokens,
     required this.onChanged,
@@ -524,13 +525,13 @@ class _HexField extends StatelessWidget {
           'Hex value',
           style: TextStyle(
             color: tokens.ink,
-            fontSize: 13,
+            fontSize: 13.sp,
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: AppSpacing.fieldLabelGap),
+        SizedBox(height: AppSpacing.fieldLabelGap),
         TextField(
-          key: const Key('appearance-color-hex-field'),
+          key: Key('appearance-color-hex-field'),
           controller: controller,
           onChanged: onChanged,
           onTap: () => onEditingChanged(true),
@@ -546,7 +547,7 @@ class _HexField extends StatelessWidget {
           ],
           style: TextStyle(
             color: tokens.ink,
-            fontSize: 15,
+            fontSize: 15.sp,
             fontWeight: FontWeight.w700,
             letterSpacing: 1.1,
           ),
@@ -556,7 +557,7 @@ class _HexField extends StatelessWidget {
             filled: true,
             fillColor: tokens.surfaceMuted,
             isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
+            contentPadding: EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 14,
             ),
