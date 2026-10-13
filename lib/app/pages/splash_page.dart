@@ -102,53 +102,48 @@ class _SplashPageState extends State<SplashPage>
         // report an unreachable server while it is still trying to validate the
         // session, so the banner goes at the top of the body as it does
         // everywhere else.
-        child: Column(
-          children: [
-            OfflineBannerSlot(),
-            Expanded(
-              child: Center(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 112,
-                        height: 112,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30.r),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.18),
-                              blurRadius: 24,
-                              offset: Offset(0, 12),
-                            ),
-                          ],
+        child: Expanded(
+          child: Center(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 112,
+                    height: 112,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          blurRadius: 24,
+                          offset: Offset(0, 12),
                         ),
-                        child: Image.asset(
-                          'assets/images/app_icon.png',
-                          width: 112,
-                          height: 112,
-                          fit: BoxFit.contain,
-                          filterQuality: FilterQuality.high,
-                        ),
-                      ),
-                      SizedBox(height: 24.h),
-                      Text(
-                        AppConstants.appName,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: tokens.onBrand,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: Image.asset(
+                      'assets/images/app_icon.png',
+                      width: 112,
+                      height: 112,
+                      fit: BoxFit.contain,
+                      filterQuality: FilterQuality.high,
+                    ),
                   ),
-                ),
+                  SizedBox(height: 24.h),
+                  Text(
+                    AppConstants.appName,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: tokens.onBrand,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

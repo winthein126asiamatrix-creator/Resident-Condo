@@ -20,7 +20,7 @@ abstract final class AppTextStyles {
     fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 25.sp,
+        fontSize: 26.sp,
     fontWeight: FontWeight.w800,
   );
 
@@ -30,7 +30,7 @@ abstract final class AppTextStyles {
     fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 16.sp,
+        fontSize: 17.sp,
     fontWeight: FontWeight.w800,
   );
 
@@ -40,7 +40,7 @@ abstract final class AppTextStyles {
     fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 15.sp,
+        fontSize: 16.sp,
     fontWeight: FontWeight.w800,
   );
 
@@ -48,7 +48,7 @@ abstract final class AppTextStyles {
   static TextStyle get body => TextStyle(color: AppPalette.ink, fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 14.sp);
+        fontSize: 15.sp);
 
   /// Reading size with emphasis, the most common weight in a card.
   static TextStyle get bodyStrong => TextStyle(
@@ -56,7 +56,7 @@ abstract final class AppTextStyles {
     fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 14.sp,
+        fontSize: 15.sp,
     fontWeight: FontWeight.w700,
   );
 
@@ -66,7 +66,7 @@ abstract final class AppTextStyles {
     fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 13.5.sp,
+        fontSize: 14.5.sp,
     fontWeight: FontWeight.w700,
   );
 
@@ -76,7 +76,7 @@ abstract final class AppTextStyles {
     fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 15.5.sp,
+        fontSize: 16.5.sp,
     fontWeight: FontWeight.w600,
   );
 
@@ -84,13 +84,13 @@ abstract final class AppTextStyles {
   static TextStyle get caption => TextStyle(color: AppPalette.muted, fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 12.5.sp);
+        fontSize: 13.5.sp);
 
   /// Smallest text still used, for meta lines such as a reference id.
   static TextStyle get meta => TextStyle(color: AppPalette.faint, fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 11.5.sp);
+        fontSize: 12.5.sp);
 
   /// The same type scale, bound to the colours of the active theme.
   static Bound of(BuildContext context) =>
@@ -109,7 +109,7 @@ class Bound {
         fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 25.sp,
+        fontSize: 26.sp,
         fontWeight: FontWeight.w800,
       );
 
@@ -118,7 +118,7 @@ class Bound {
         fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 16.sp,
+        fontSize: 17.sp,
         fontWeight: FontWeight.w800,
       );
 
@@ -127,21 +127,21 @@ class Bound {
         fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 15.sp,
+        fontSize: 16.sp,
         fontWeight: FontWeight.w800,
       );
 
   TextStyle get body => TextStyle(color: tokens.ink, fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 14.sp);
+        fontSize: 15.sp);
 
   TextStyle get bodyStrong => TextStyle(
         color: tokens.ink,
         fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 14.sp,
+        fontSize: 15.sp,
         fontWeight: FontWeight.w700,
       );
 
@@ -150,7 +150,7 @@ class Bound {
         fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 13.5.sp,
+        fontSize: 14.5.sp,
         fontWeight: FontWeight.w700,
       );
 
@@ -159,19 +159,19 @@ class Bound {
         fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 15.5.sp,
+        fontSize: 16.5.sp,
         fontWeight: FontWeight.w600,
       );
 
   TextStyle get caption => TextStyle(color: tokens.muted, fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 12.5.sp);
+        fontSize: 13.5.sp);
 
   TextStyle get meta => TextStyle(color: tokens.faint, fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 11.5.sp);
+        fontSize: 12.5.sp);
 
   /// A link or other interactive label, in the brand colour.
   TextStyle get link => TextStyle(
@@ -179,7 +179,7 @@ class Bound {
         fontFamily: 'DM Sans',
 
         fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 14.sp,
+        fontSize: 15.sp,
         fontWeight: FontWeight.w700,
       );
 }

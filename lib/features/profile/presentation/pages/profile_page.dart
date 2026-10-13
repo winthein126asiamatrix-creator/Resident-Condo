@@ -314,13 +314,6 @@ class ProfilePage extends GetView<ProfileController> {
         language: displayName,
       );
     }
-    if (context.mounted) {
-      _showMessage(
-        context,
-        'Language updated',
-        'Your language preference has been saved.',
-      );
-    }
   }
 
   Future<void> _changePassword(BuildContext context) async {
