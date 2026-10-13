@@ -102,8 +102,7 @@ class _SplashPageState extends State<SplashPage>
         // report an unreachable server while it is still trying to validate the
         // session, so the banner goes at the top of the body as it does
         // everywhere else.
-        child: Expanded(
-          child: Center(
+        child: Center(
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: Column(
@@ -144,7 +143,6 @@ class _SplashPageState extends State<SplashPage>
               ),
             ),
           ),
-        ),
       ),
     );
   }

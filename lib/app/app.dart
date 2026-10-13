@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../core/constants/app_constants.dart';
@@ -107,8 +108,20 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => GetMaterialApp(
+    return Obx(() {
+      final brightness = _appearance.themeMode == ThemeMode.dark
+          ? Brightness.dark
+          : _appearance.themeMode == ThemeMode.light
+              ? Brightness.light
+              : AppearanceController.currentPlatformBrightness();
+      return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness:
+              brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+          statusBarBrightness: brightness,
+        ),
+        child: GetMaterialApp(
         title: AppConstants.appName,
         debugShowCheckedModeBanner: false,
         theme: _appearance.theme,
@@ -130,6 +143,7 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
         initialRoute: AppRoutes.splash,
         getPages: AppPages.pages,
       ),
-    );
+      );
+    });
   }
 }

@@ -50,7 +50,7 @@ class AppBottomNavBar extends StatelessWidget {
             ),
           ],
         ),
-        padding: EdgeInsets.only(top: 8.h, bottom: 6.h),
+        padding: EdgeInsets.only(top: 2.h, bottom: 6.h),
         child: Row(
           children: List<Widget>.generate(items.length, (index) {
             final item = items[index];

@@ -68,6 +68,18 @@ class _MainShellPageState extends State<MainShellPage> {
         });
   }
 
+  void _jumpToTab(int index) {
+    if (_isNavigating) return;
+    _isNavigating = true;
+    _suppressSwipeSync = true;
+    if (_pages.hasClients) {
+      _pages.jumpToPage(index);
+    }
+    controller.selectTab(index);
+    _suppressSwipeSync = false;
+    _isNavigating = false;
+  }
+
   @override
   void dispose() {
     _tabWorker?.dispose();
@@ -122,7 +134,7 @@ class _MainShellPageState extends State<MainShellPage> {
             currentIndex: controller.selectedTab.value,
             onTap: (index) {
               if (_isNavigating) return;
-              controller.selectTab(index);
+              _jumpToTab(index);
             },
             items: <AppBottomNavItem>[
               AppBottomNavItem(
