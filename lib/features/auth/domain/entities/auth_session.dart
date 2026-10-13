@@ -30,6 +30,7 @@ class AuthSession {
     required this.displayName,
     required this.rememberMe,
     this.user,
+    this.unverified = false,
   });
 
   /// The account that was used to sign in.
@@ -48,17 +49,28 @@ class AuthSession {
   /// session restored from storage carries the name and nothing else.
   final Object? user;
 
+  /// True when this session was admitted because the server could not be
+  /// reached, rather than because the server verified it.
+  ///
+  /// The resident is let in on the strength of tokens they already hold, so the
+  /// offline banner explains why data may be stale and
+  /// [AuthController.revalidateSession] asks the server again once it is
+  /// reachable. It is never treated as proof the session is still valid.
+  final bool unverified;
+
   AuthSession copyWith({
     String? username,
     String? displayName,
     bool? rememberMe,
     Object? user,
+    bool? unverified,
   }) {
     return AuthSession(
       username: username ?? this.username,
       displayName: displayName ?? this.displayName,
       rememberMe: rememberMe ?? this.rememberMe,
       user: user ?? this.user,
+      unverified: unverified ?? this.unverified,
     );
   }
 }

@@ -5,6 +5,7 @@ import 'api_config.dart';
 import 'api_exception.dart';
 import 'interceptors/api_auth_interceptor.dart';
 import 'interceptors/token_refresh_interceptor.dart';
+import 'network_status_observer.dart';
 import 'token_refresher.dart';
 import 'token_storage.dart';
 
@@ -237,18 +238,41 @@ DioApiService({
   }) async {
     try {
       final response = await request();
+      // A completed request means the backend is reachable, whatever the radio
+      // reports. Reported so the connectivity layer can clear the offline
+      // banner and stop treating the active screen's data as stale.
+      NetworkStatusObserver.notify(true);
       final payload = _unwrap(response.data, response.statusCode);
       // A void call over a body-less response is a success, not a type error.
       if (payload == null && parse == null && _isVoid<T>()) {
         return null as T;
       }
       return _decode<T>(payload, parse);
-    } on ApiException {
+    } on ApiException catch (error) {
+      _reportReachability(error);
       rethrow;
     } catch (error) {
+      final apiError = ApiException.from(error);
+      _reportReachability(apiError);
       // Anything Dio did not recognise still becomes an ApiException, so a
       // failure can never be mistaken for a successful empty response.
-      throw ApiException.from(error);
+      throw apiError;
+    }
+  }
+
+  /// Reports a failure to [NetworkStatusObserver] when it means the backend is
+  /// unreachable.
+  ///
+  /// Deliberately narrow. A 401 or a 500 means the server answered, so
+  /// connectivity is fine and the banner must stay hidden. Only
+  /// [ApiFailureKind.network] and [ApiFailureKind.timeout] describe a request
+  /// that never got through.
+  ///
+  /// This never touches the session: a network error is not an authentication
+  /// failure, so it must not sign the resident out or trigger a token refresh.
+  void _reportReachability(ApiException error) {
+    if (error.isRetryable) {
+      NetworkStatusObserver.notify(false);
     }
   }
 

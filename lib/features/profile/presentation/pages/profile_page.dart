@@ -19,38 +19,6 @@ import '../../../../core/widgets/app_primary_action.dart';
 class ProfilePage extends GetView<ProfileController> {
   const ProfilePage({super.key});
 
-  ResidentRole get _role => Get.isRegistered<SessionController>()
-      ? Get.find<SessionController>().session.value.role
-      : ResidentRole.owner;
-
-  /// Switching role also swaps the payment ledger so the tenant sees their own
-  /// Monthly Rent line next to the condo fee.
-  Future<void> _applyRole(ResidentRole next) async {
-    final session = Get.find<SessionController>();
-    if (session.role == next) {
-      return;
-    }
-    final confirmed = await showAppConfirmDialog(
-      Get.context!,
-      title: 'Switch to ${next.label}?',
-      message:
-          'The app will show the screens and charges for a ${next.label.toLowerCase()} '
-          'account. ${next.description}',
-      confirmLabel: 'Switch role',
-    );
-    if (!confirmed) {
-      return;
-    }
-    session.switchRole(next);
-    if (Get.isRegistered<PaymentController>()) {
-      await Get.find<PaymentController>().applyRole(next.name);
-    }
-    if (Get.isRegistered<ProfileController>()) {
-      await Get.find<ProfileController>().syncRole(next);
-    }
-  }
-
-
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
@@ -78,7 +46,6 @@ class ProfilePage extends GetView<ProfileController> {
               icon: Icons.person_outline_rounded,
             );
           }
-          final role = _role;
 
           return RefreshIndicator(
             onRefresh: controller.loadProfile,
@@ -319,10 +286,7 @@ class ProfilePage extends GetView<ProfileController> {
                 ListTile(
                   title: Text(option),
                   trailing: option == profile.language
-                      ? Icon(
-                          Icons.check_rounded,
-                          color: tokens.brand,
-                        )
+                      ? Icon(Icons.check_rounded, color: tokens.brand)
                       : null,
                   onTap: () => Navigator.pop(context, option),
                 ),
@@ -390,7 +354,9 @@ class ProfilePage extends GetView<ProfileController> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Logout?'),
-        content: const Text('You will be signed out and asked to sign in again.'),
+        content: const Text(
+          'You will be signed out and asked to sign in again.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -513,7 +479,7 @@ class _SectionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
-        color: tokens.surface ,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: tokens.border),
       ),
@@ -604,18 +570,12 @@ class _PreferenceRow extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   value,
-                  style: TextStyle(
-                    color: tokens.muted,
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: tokens.muted, fontSize: 11),
                 ),
               ],
             ),
@@ -653,23 +613,13 @@ class _ActionRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
               ),
             ),
             if (value != null)
-              Text(
-                value!,
-                style: TextStyle(color: tokens.muted, fontSize: 11),
-              ),
+              Text(value!, style: TextStyle(color: tokens.muted, fontSize: 11)),
             const SizedBox(width: 5),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: tokens.faint,
-              size: 20,
-            ),
+            Icon(Icons.chevron_right_rounded, color: tokens.faint, size: 20),
           ],
         ),
       ),

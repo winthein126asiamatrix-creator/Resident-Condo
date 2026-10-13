@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../app/routes/app_routes.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../data/models/auth_user.dart';
@@ -133,14 +134,24 @@ class AuthController extends GetxController {
 
   Future<void> signOut() => useCases.signOut();
 
+  /// True while the session is known only locally, because the server could not
+  /// be reached when it was last checked.
+  ///
+  /// The resident is in the app on tokens they already hold, not on the
+  /// server's word, so [revalidateSession] asks again once it is reachable.
+  final isUnverified = false.obs;
+
   /// The remembered session from a previous launch, or null.
   ///
-  /// Null covers both "never signed in" and "the stored session could not be
-  /// validated", which for the resident means the same thing: sign in again.
+  /// Null means the resident has to sign in again: either nothing was stored, or
+  /// the server rejected what was stored. A session the server could not be
+  /// reached to check is *not* null — it is returned with [AuthSession.unverified]
+  /// set, so the resident is not signed out for being offline.
   Future<AuthSession?> restoreSession() async {
     isRestoring.value = true;
     try {
       final restored = await useCases.restoreSession();
+      isUnverified.value = restored?.unverified ?? false;
       if (restored != null) {
         rememberedUsername = restored.username;
         // The password is never remembered, only offered as a starting point.
@@ -150,6 +161,29 @@ class AuthController extends GetxController {
     } finally {
       isRestoring.value = false;
     }
+  }
+
+  /// Re-runs the session check now that the backend is reachable.
+  ///
+  /// Only worth calling when [isUnverified] is set: a session the server has
+  /// already said yes to needs no second opinion, and asking again would spend
+  /// a request the resident did not trigger.
+  ///
+  /// Nothing happens when the server is *still* unreachable — the repository
+  /// hands back another unverified session and the resident stays put. A null
+  /// result means the server has now refused the session, so the repository has
+  /// already cleared it and the resident is sent back to sign in.
+  Future<void> revalidateSession() async {
+    final restored = await useCases.restoreSession();
+    if (restored != null) {
+      isUnverified.value = restored.unverified;
+      adoptIntoSession(restored);
+      return;
+    }
+    if (Get.isRegistered<SessionController>()) {
+      Get.find<SessionController>().clearResident();
+    }
+    Get.offAllNamed(AppRoutes.login);
   }
 
   /// Makes the rest of the app know who signed in.

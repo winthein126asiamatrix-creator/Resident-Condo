@@ -2,21 +2,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'token_storage.dart';
 
-/// [TokenStorage] backed by the platform keychain: the iOS keychain and
-/// EncryptedSharedPreferences on Android.
-///
-/// Chosen over `SharedPreferences` because these are live credentials. Plain
-/// preferences are readable from a backup or a rooted device, so a token in
-/// there would outlive the session it belongs to.
-///
-/// Every method swallows a storage failure. A keychain that will not open, or a
-/// platform channel missing in a unit test, must not take the network layer down
-/// with it; the worst case is that the resident signs in again.
 class SecureTokenStorage implements TokenStorage {
   SecureTokenStorage([FlutterSecureStorage? storage])
     : _storage = storage ?? const FlutterSecureStorage();
 
-  /// Namespaced so a future key in the same keychain cannot collide.
   static const _accessTokenKey = 'condo.auth.access_token';
   static const _refreshTokenKey = 'condo.auth.refresh_token';
 

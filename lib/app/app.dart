@@ -3,8 +3,12 @@ import 'package:get/get.dart';
 
 import '../core/constants/app_constants.dart';
 import '../core/network/api_binding.dart';
+import '../core/network/connectivity_service.dart';
+import '../core/network/refresh_registry.dart';
 import '../features/appearance/presentation/bindings/appearance_binding.dart';
 import '../features/appearance/presentation/controllers/appearance_controller.dart';
+import '../features/auth/presentation/controllers/auth_controller.dart';
+import '../features/dashboard/presentation/controllers/dashboard_controller.dart';
 import 'routes/app_pages.dart';
 import 'routes/app_routes.dart';
 
@@ -27,6 +31,10 @@ class CondoResidentApp extends StatefulWidget {
 
 class _CondoResidentAppState extends State<CondoResidentApp> {
   late final AppearanceController _appearance;
+  late final ConnectivityService _connectivity;
+
+  /// Watches [ConnectivityService.isOnline] for the transition back to online.
+  Worker? _connectivityWorker;
 
   @override
   void initState() {
@@ -36,6 +44,53 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
     ApiBinding.register();
     AppearanceBinding().dependencies();
     _appearance = Get.find<AppearanceController>();
+
+    // Connectivity is app scoped like the client it reports on: the banner is
+    // shared by every screen, and the worker below has to outlive any route.
+    Get.put<ConnectivityService>(ConnectivityService(), permanent: true);
+    Get.put<RefreshRegistry>(RefreshRegistry(), permanent: true);
+    _connectivity = Get.find<ConnectivityService>();
+
+    _connectivityWorker = ever(_connectivity.isOnline, (_) {
+      if (!_connectivity.isOnline.value) return;
+      // The backend is reachable again. Two things follow, and only ever on the
+      // way back online: the active screen takes up any data that went stale,
+      // and a session that was only admitted locally is put to the server.
+      _refreshActiveScreen();
+      _revalidateSession();
+    });
+  }
+
+  @override
+  void dispose() {
+    _connectivityWorker?.dispose();
+    super.dispose();
+  }
+
+  /// Re-fetches the active screen's GET data after a reconnect.
+  ///
+  /// Scoped on purpose. Only the Home tab's dashboard is wired up, and the
+  /// registry re-fetches it only if its data went stale: a screen whose last
+  /// fetch succeeded is left exactly as it is. Every other tab and screen is
+  /// untouched, so a reconnect never re-issues requests the resident never
+  /// asked for — and never repeats a write.
+  Future<void> _refreshActiveScreen() async {
+    if (Get.currentRoute != AppRoutes.home) return;
+    if (!Get.isRegistered<DashboardController>()) return;
+    if (Get.find<DashboardController>().selectedTab.value != 0) return;
+    await Get.find<RefreshRegistry>().refreshIfStale(
+      DashboardController.screen,
+    );
+  }
+
+  /// Asks the server about a session that was admitted on a network failure.
+  ///
+  /// Skipped for a session the server has already verified, so reconnecting
+  /// costs nothing when the session was never in doubt.
+  Future<void> _revalidateSession() async {
+    if (!Get.isRegistered<AuthController>()) return;
+    if (!Get.find<AuthController>().isUnverified.value) return;
+    await Get.find<AuthController>().revalidateSession();
   }
 
   @override

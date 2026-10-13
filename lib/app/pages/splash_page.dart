@@ -4,6 +4,7 @@ import 'package:test/core/utils/super_print.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme_tokens.dart';
+import '../../core/widgets/offline_banner.dart';
 import '../../features/auth/domain/entities/auth_session.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../routes/app_routes.dart';
@@ -96,46 +97,57 @@ class _SplashPageState extends State<SplashPage>
     return Scaffold(
       backgroundColor: tokens.brand,
       body: SafeArea(
-        child: Center(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 112,
-                  height: 112,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.18),
-                        blurRadius: 24,
-                        offset: const Offset(0, 12),
+        // No app bar on the splash either, and this is the screen that has to
+        // report an unreachable server while it is still trying to validate the
+        // session, so the banner goes at the top of the body as it does
+        // everywhere else.
+        child: Column(
+          children: [
+            const OfflineBannerSlot(),
+            Expanded(
+              child: Center(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 112,
+                        height: 112,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.18),
+                              blurRadius: 24,
+                              offset: const Offset(0, 12),
+                            ),
+                          ],
+                        ),
+                        child: Image.asset(
+                          'assets/images/app_icon.png',
+                          width: 112,
+                          height: 112,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        AppConstants.appName,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: tokens.onBrand,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.3,
+                        ),
                       ),
                     ],
                   ),
-                  child: Image.asset(
-                    'assets/images/app_icon.png',
-                    width: 112,
-                    height: 112,
-                    fit: BoxFit.contain,
-                    filterQuality: FilterQuality.high,
-                  ),
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  AppConstants.appName,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: tokens.onBrand,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

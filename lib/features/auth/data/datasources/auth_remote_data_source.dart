@@ -110,12 +110,20 @@ class AuthRemoteDataSource {
   /// A wrong password is the one case with a message the backend chose on
   /// purpose; everything else gets app wording, because a raw status code is not
   /// something to put in front of someone trying to get through their front door.
+  /// Turns transport failures into something worth showing a resident.
+  ///
+  /// A wrong password is the one case with a message the backend chose on
+  /// purpose, so it gets the app's own wording. Everything else keeps the
+  /// [ApiException] it already is: the message is unchanged, but the caller can
+  /// still tell a network failure — where the server never answered — from a
+  /// rejected credential. Unwrapping it into a bare [AppException] would lose
+  /// that distinction and make every failure look like a sign-out.
   static AppException _translate(ApiException error) {
     return switch (error.statusCode) {
       400 || 401 || 403 => const AppException(
         'That username and password combination was not recognised.',
       ),
-      _ => AppException(error.message),
+      _ => error,
     };
   }
 }

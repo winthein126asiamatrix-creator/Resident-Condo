@@ -5,18 +5,11 @@ import '../../../facilities/presentation/pages/facilities_page.dart';
 import '../../../maintenance/presentation/pages/maintenance_page.dart';
 import '../../../payments/presentation/pages/payments_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
+import '../../../../core/network/connectivity_service.dart';
+import '../../../../core/widgets/offline_banner.dart';
 import 'dashboard_page.dart';
 import '../controllers/dashboard_controller.dart';
 
-/// The five tab root.
-///
-/// The pages live in a [PageView] so a horizontal swipe moves between them,
-/// with the bottom navigation bar following along. Taps on the bar animate the
-/// pager the other way, and [DashboardController.selectedTab] stays the single
-/// source of truth for both directions.
-///
-/// Swiping is the only thing that changed: the bar, the pages, and the routes
-/// beyond them are untouched.
 class MainShellPage extends StatefulWidget {
   const MainShellPage({super.key});
 
@@ -78,67 +71,79 @@ class _MainShellPageState extends State<MainShellPage> {
   @override
   Widget build(BuildContext context) {
     return Obx(
-      () => Scaffold(
-        body: NotificationListener<ScrollStartNotification>(
-          onNotification: (notification) {
-            // A finger starting a drag re-arms the swipe sync immediately, so a
-            // swipe that interrupts a tap animation still lands the bar on the
-            // page the resident settles on.
-            if (notification.dragDetails != null) {
-              _suppressSwipeSync = false;
-            }
-            return false;
-          },
-          child: PageView(
-            controller: _pages,
-            // First and last pages clamp on their own: Home cannot go further
-            // right and Profile cannot go further left.
-            onPageChanged: (index) {
-              if (!_suppressSwipeSync) {
-                controller.selectTab(index);
-              }
-            },
+      () {
+        // Read once, so the whole shell rebuilds on a change. This is the same
+        // ConnectivityService observable the banner already uses; no second
+        // controller, Rx variable or listener is introduced.
+        final isOnline = Get.find<ConnectivityService>().isOnline.value;
+        return Scaffold(
+          body: Column(
             children: [
-              DashboardPage(onSelectTab: controller.selectTab),
-              const PaymentsPage(),
-              const MaintenancePage(),
-              const FacilitiesPage(),
-              const ProfilePage(),
+              const OfflineBannerSlot(applyStatusBarInset: true),
+              Expanded(
+                child: MediaQuery.removePadding(
+                  context: context,
+                  removeTop: !isOnline,
+                  child: NotificationListener<ScrollStartNotification>(
+                    onNotification: (notification) {
+                      if (notification.dragDetails != null) {
+                        _suppressSwipeSync = false;
+                      }
+                      return false;
+                    },
+                    child: PageView(
+                      controller: _pages,
+                      onPageChanged: (index) {
+                        if (!_suppressSwipeSync) {
+                          controller.selectTab(index);
+                        }
+                      },
+                      children: [
+                        DashboardPage(onSelectTab: controller.selectTab),
+                        const PaymentsPage(),
+                        const MaintenancePage(),
+                        const FacilitiesPage(),
+                        const ProfilePage(),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: controller.selectedTab.value,
-          onDestinationSelected: controller.selectTab,
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home_rounded),
-              label: 'Home',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.payments_outlined),
-              selectedIcon: Icon(Icons.payments_rounded),
-              label: 'Payments',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.handyman_outlined),
-              selectedIcon: Icon(Icons.handyman_rounded),
-              label: 'Maintenance',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.event_available_outlined),
-              selectedIcon: Icon(Icons.event_available_rounded),
-              label: 'Facilities',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline_rounded),
-              selectedIcon: Icon(Icons.person_rounded),
-              label: 'Profile',
-            ),
-          ],
-        ),
-      ),
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: controller.selectedTab.value,
+            onDestinationSelected: controller.selectTab,
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home_rounded),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.payments_outlined),
+                selectedIcon: Icon(Icons.payments_rounded),
+                label: 'Payments',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.handyman_outlined),
+                selectedIcon: Icon(Icons.handyman_rounded),
+                label: 'Maintenance',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.event_available_outlined),
+                selectedIcon: Icon(Icons.event_rounded),
+                label: 'Facilities',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.person_outline_rounded),
+                selectedIcon: Icon(Icons.person_rounded),
+                label: 'Profile',
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

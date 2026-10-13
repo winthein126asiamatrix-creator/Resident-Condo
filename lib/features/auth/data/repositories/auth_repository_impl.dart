@@ -1,3 +1,5 @@
+import '../../../../core/errors/app_exception.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/session_token_storage.dart';
 import '../../../../core/network/token_storage.dart';
 import '../../domain/entities/auth_session.dart';
@@ -85,12 +87,46 @@ class AuthRepositoryImpl implements AuthRepository {
       final session = await updateMe();
       await _local.persistSession(session);
       return session;
-    } catch (_) {
-      // Anything that stops the session being validated ends it: tokens and
-      // remembered details both, so the next launch starts clean.
-      await signOut();
-      return null;
+    } on AppException catch (error) {
+      // A network-level failure says nothing about the session. The tokens are
+      // still held and the server simply cannot be reached right now, so ending
+      // the session here would sign the resident out for being offline. The
+      // stored details are used instead and the session is marked unverified
+      // until the server is reachable again.
+      //
+      // Only a failure that is not retryable is treated as real: the server
+      // answered, so what it answered with stands.
+      final unreachable = error is ApiException && error.isRetryable;
+      if (unreachable) {
+        return _restoreFromStorage();
+      }
+      return await _endSession();
     }
+  }
+
+  /// Builds a session from the locally remembered details.
+  ///
+  /// Used only when the server is unreachable, so the resident is let in on
+  /// tokens they already hold rather than on the server's word.
+  Future<AuthSession> _restoreFromStorage() async {
+    final remembered = await _local.restoreSession();
+    if (remembered != null) {
+      return remembered.copyWith(unverified: true);
+    }
+    // The tokens persisted but the name never did. Still better than signing
+    // the resident out over a connectivity problem.
+    return const AuthSession(
+      username: '',
+      displayName: 'Resident',
+      rememberMe: true,
+      unverified: true,
+    );
+  }
+
+  /// Clears everything and reports no session, for a genuine rejection.
+  Future<AuthSession?> _endSession() async {
+    await signOut();
+    return null;
   }
 
   @override

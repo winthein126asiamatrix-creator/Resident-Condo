@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_spacing.dart';
 import '../theme/app_theme_tokens.dart';
+import 'offline_banner.dart';
 
 /// The custom app bar shared by the detail and form screens.
 ///
@@ -50,9 +51,27 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// one screen's bar taller than another's.
   static const _contentHeight = 42.0;
 
+  /// How much extra the bar takes while the offline banner is showing.
+  ///
+  /// Deliberately reserved whether or not the banner is visible, because of how
+  /// a [Scaffold] treats this figure:
+  ///
+  /// * It caps the app bar with a `ConstrainedBox(maxHeight: preferredSize…)`,
+  ///   and that cap is read in `Scaffold.build` from the widget as handed to
+  ///   the route — so it only follows a rebuild of the screen, never the banner
+  ///   appearing or disappearing inside.
+  /// * It does *not* position the body. That comes from the app bar's measured
+  ///   height.
+  ///
+  /// If the figure reserved less than the banner takes, growing the banner
+  /// would overflow the cap; if it shrank when the banner went away, the body
+  /// would keep its offline offset once the cap was stale. Reserving the
+  /// constant lets the bar itself shrink and grow around the banner while the
+  /// cap always has room, so the body ends up exactly where it belongs.
   @override
-  Size get preferredSize =>
-      Size.fromHeight(_barHeight + _topInset + AppSpacing.pageTop);
+  Size get preferredSize => Size.fromHeight(
+    _barHeight + _topInset + AppSpacing.pageTop + OfflineBanner.height,
+  );
 
   /// The status bar inset, read from the implicit view because a
   /// [PreferredSizeWidget] has no [BuildContext] of its own.
@@ -65,64 +84,72 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
     final topInset = MediaQuery.paddingOf(context).top;
     return PreferredSize(
       preferredSize: preferredSize,
-      child: Container(
-        decoration: BoxDecoration(
-          color: tokens.canvas,
-          border: Border(bottom: BorderSide(color: tokens.border)),
-        ),
-        padding: EdgeInsets.fromLTRB(16, topInset + AppSpacing.pageTop, 20, 14),
-        // Fixed height so a screen with trailing actions ends up with exactly
-        // the same bar as a screen without them.
-        child: SizedBox(
-          height: _contentHeight,
-          child: Row(
-            children: [
-              if (showBackButton)
-                leading ?? _AppBarBackButton(onBack: onBack)
-              else
-                ?leading,
-              const SizedBox(width: 12),
-              // Single lines with ellipsis so a narrow phone or a large text
-              // scale can never push the toolbar out of its bounds.
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: tokens.ink,
-                        fontSize: 18,
-                        height: 1.2,
-                        letterSpacing: -0.2,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 3),
-                      Text(
-                        subtitle!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: tokens.muted,
-                          fontSize: 12.5,
-                          height: 1.2,
-                          fontWeight: FontWeight.w500,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: tokens.canvas,
+              border: Border(bottom: BorderSide(color: tokens.border)),
+            ),
+            padding: EdgeInsets.fromLTRB(16, topInset + AppSpacing.pageTop, 20, 14),
+            // Fixed height so a screen with trailing actions ends up with exactly
+            // the same bar as a screen without them.
+            child: SizedBox(
+              height: _contentHeight,
+              child: Row(
+                children: [
+                  if (showBackButton)
+                    leading ?? _AppBarBackButton(onBack: onBack)
+                  else
+                    ?leading,
+                  const SizedBox(width: 12),
+                  // Single lines with ellipsis so a narrow phone or a large text
+                  // scale can never push the toolbar out of its bounds.
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: tokens.ink,
+                            fontSize: 18,
+                            height: 1.2,
+                            letterSpacing: -0.2,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                      ),
-                    ],
-                  ],
-                ),
+                        if (subtitle != null) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            subtitle!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: tokens.muted,
+                              fontSize: 12.5,
+                              height: 1.2,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  for (final action in actions)
+                    Padding(padding: const EdgeInsets.only(left: 4), child: action),
+                ],
               ),
-              for (final action in actions)
-                Padding(padding: const EdgeInsets.only(left: 4), child: action),
-            ],
+            ),
           ),
-        ),
+          // Below the bar's hairline, above the body. Renders nothing while
+          // online, so the bar is exactly the height it has always been.
+          const OfflineBannerSlot(),
+        ],
       ),
     );
   }

@@ -21,11 +21,6 @@ import '../controllers/auth_controller.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({this.onSignedIn, super.key});
 
-  /// Called after a successful sign-in.
-  ///
-  /// Defaults to navigating to the home route, which keeps the page usable
-  /// from a route push. Tests pass their own callback so they can assert the
-  /// result without driving GetX navigation.
   final void Function()? onSignedIn;
 
   @override
@@ -73,8 +68,6 @@ class _LoginPageState extends State<LoginPage> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
-              // The gesture is only offered when there is actually something to
-              // scroll, so a drag on a tall screen does not bounce.
               physics: constraints.maxHeight > 0
                   ? const ClampingScrollPhysics()
                   : const NeverScrollableScrollPhysics(),
@@ -82,13 +75,9 @@ class _LoginPageState extends State<LoginPage> {
                 AppSpacing.gutter,
                 AppSpacing.pageTop,
                 AppSpacing.gutter,
-                // Leaves breathing room under the last field once the keyboard
-                // is open, so the Sign In button is never flush against it.
                 AppSpacing.pageBottom + MediaQuery.viewInsetsOf(context).bottom,
               ),
               child: ConstrainedBox(
-                // Fills the viewport so the content can centre itself, while
-                // still growing if the keyboard makes it taller than the screen.
                 constraints: BoxConstraints(
                   minHeight: constraints.maxHeight - AppSpacing.pageTop * 2,
                 ),
