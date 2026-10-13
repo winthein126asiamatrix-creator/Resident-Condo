@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 
 import '../core/constants/app_constants.dart';
+import '../core/localization/app_locale_controller.dart';
+import '../core/localization/app_translations.dart';
 import '../core/network/api_binding.dart';
 import '../core/network/connectivity_service.dart';
 import '../core/network/refresh_registry.dart';
@@ -23,7 +26,9 @@ import 'routes/app_routes.dart';
 /// *applied* preference, so only "Apply Theme" — never a preview — rebuilds
 /// `GetMaterialApp` and repaints every mounted screen at once.
 class CondoResidentApp extends StatefulWidget {
-  const CondoResidentApp({super.key});
+  const CondoResidentApp({this.initialLocale = const Locale('en'), super.key});
+
+  final Locale initialLocale;
 
   @override
   State<CondoResidentApp> createState() => _CondoResidentAppState();
@@ -32,6 +37,7 @@ class CondoResidentApp extends StatefulWidget {
 class _CondoResidentAppState extends State<CondoResidentApp> {
   late final AppearanceController _appearance;
   late final ConnectivityService _connectivity;
+  late final AppLocaleController _localeController;
 
   /// Watches [ConnectivityService.isOnline] for the transition back to online.
   Worker? _connectivityWorker;
@@ -44,6 +50,12 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
     ApiBinding.register();
     AppearanceBinding().dependencies();
     _appearance = Get.find<AppearanceController>();
+
+    Get.put<AppLocaleController>(
+      AppLocaleController(initialLocale: widget.initialLocale),
+      permanent: true,
+    );
+    _localeController = Get.find<AppLocaleController>();
 
     // Connectivity is app scoped like the client it reports on: the banner is
     // shared by every screen, and the worker below has to outlive any route.
@@ -102,6 +114,19 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
         theme: _appearance.theme,
         darkTheme: _appearance.darkTheme,
         themeMode: _appearance.themeMode,
+        translations: AppTranslations(),
+        locale: _localeController.locale,
+        fallbackLocale: const Locale('en'),
+        supportedLocales: const <Locale>[
+          Locale('en'),
+          Locale('my'),
+          Locale('zh'),
+        ],
+        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         initialRoute: AppRoutes.splash,
         getPages: AppPages.pages,
       ),

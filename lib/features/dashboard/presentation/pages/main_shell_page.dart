@@ -114,31 +114,31 @@ class _MainShellPageState extends State<MainShellPage> {
           bottomNavigationBar: NavigationBar(
             selectedIndex: controller.selectedTab.value,
             onDestinationSelected: controller.selectTab,
-            destinations: const [
+            destinations: [
               NavigationDestination(
                 icon: Icon(Icons.home_outlined),
                 selectedIcon: Icon(Icons.home_rounded),
-                label: 'Home',
+                label: 'home'.tr,
               ),
               NavigationDestination(
                 icon: Icon(Icons.payments_outlined),
                 selectedIcon: Icon(Icons.payments_rounded),
-                label: 'Payments',
+                label: 'payments'.tr,
               ),
               NavigationDestination(
                 icon: Icon(Icons.handyman_outlined),
                 selectedIcon: Icon(Icons.handyman_rounded),
-                label: 'Maintenance',
+                label: 'maintenance'.tr,
               ),
               NavigationDestination(
                 icon: Icon(Icons.event_available_outlined),
                 selectedIcon: Icon(Icons.event_rounded),
-                label: 'Facilities',
+                label: 'facilities'.tr,
               ),
               NavigationDestination(
                 icon: Icon(Icons.person_outline_rounded),
                 selectedIcon: Icon(Icons.person_rounded),
-                label: 'Profile',
+                label: 'profile'.tr,
               ),
             ],
           ),

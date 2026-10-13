@@ -15,6 +15,7 @@ import '../../domain/entities/profile.dart';
 import '../controllers/profile_controller.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/app_form_field.dart';
+import '../../../../core/localization/app_locale_controller.dart';
 import '../../../../core/widgets/app_primary_action.dart';
 
 class ProfilePage extends GetView<ProfileController> {
@@ -268,7 +269,8 @@ class ProfilePage extends GetView<ProfileController> {
 
   Future<void> _chooseLanguage(BuildContext context, Profile profile) async {
     final tokens = AppThemeTokens.of(context);
-    final language = await showModalBottomSheet<String>(
+    final localeController = Get.find<AppLocaleController>();
+    final chosen = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: false,
       builder: (_) => SafeArea(
@@ -283,31 +285,39 @@ class ProfilePage extends GetView<ProfileController> {
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20.sp),
               ),
               SizedBox(height: 10.h),
-              for (final option in ['English', 'Myanmar', 'Chinese'])
+              for (final code in AppLocaleController.supportedCodes)
                 ListTile(
-                  title: Text(option),
-                  trailing: option == profile.language
+                  title: Text(localeController.displayName(code)),
+                  trailing: code == localeController.locale.languageCode
                       ? Icon(Icons.check_rounded, color: tokens.brand)
                       : null,
-                  onTap: () => Navigator.pop(context, option),
+                  onTap: () => Navigator.pop(context, code),
                 ),
             ],
           ),
         ),
       ),
     );
-    if (language == null) return;
-    final updated = await controller.updateProfile(
-      name: profile.name,
-      email: profile.email,
-      phone: profile.phone,
-      language: language,
-    );
-    if (updated != null && context.mounted) {
+    if (chosen == null || chosen == localeController.locale.languageCode) return;
+    final displayName = chosen == 'my'
+        ? 'Myanmar'
+        : chosen == 'zh'
+            ? 'Chinese'
+            : 'English';
+    await localeController.setLanguageCode(chosen);
+    if (profile != null) {
+      await controller.updateProfile(
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        language: displayName,
+      );
+    }
+    if (context.mounted) {
       _showMessage(
         context,
         'Language updated',
-        'Your language preference has been saved locally.',
+        'Your language preference has been saved.',
       );
     }
   }
