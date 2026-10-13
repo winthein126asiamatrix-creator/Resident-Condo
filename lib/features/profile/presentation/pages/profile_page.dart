@@ -24,6 +24,7 @@ class ProfilePage extends GetView<ProfileController> {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+     final localeController = Get.find<AppLocaleController>();
     return Scaffold(
       body: SafeArea(
         child: Obx(() {
@@ -131,7 +132,7 @@ class ProfilePage extends GetView<ProfileController> {
                     _ActionRow(
                       icon: Icons.language_rounded,
                       label: 'Language',
-                      value: profile.language,
+                      value: localeController.displayName(localeController.locale.languageCode),
                       onTap: () => _chooseLanguage(context, profile),
                     ),
                   ],

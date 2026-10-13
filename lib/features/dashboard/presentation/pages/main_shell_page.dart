@@ -6,6 +6,7 @@ import '../../../maintenance/presentation/pages/maintenance_page.dart';
 import '../../../payments/presentation/pages/payments_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 import '../../../../core/network/connectivity_service.dart';
+import '../../../../core/widgets/app_bottom_nav_bar.dart';
 import '../../../../core/widgets/offline_banner.dart';
 import 'dashboard_page.dart';
 import '../controllers/dashboard_controller.dart';
@@ -28,6 +29,7 @@ class _MainShellPageState extends State<MainShellPage> {
   /// one fires [PageView.onPageChanged]. Without the guard the navigation bar
   /// would visibly cycle through the pages in between.
   bool _suppressSwipeSync = false;
+  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -51,6 +53,8 @@ class _MainShellPageState extends State<MainShellPage> {
   }
 
   void _animateToTab(int index) {
+    if (_isNavigating) return;
+    _isNavigating = true;
     _suppressSwipeSync = true;
     _pages
         .animateToPage(
@@ -58,7 +62,10 @@ class _MainShellPageState extends State<MainShellPage> {
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
         )
-        .whenComplete(() => _suppressSwipeSync = false);
+        .whenComplete(() {
+          _suppressSwipeSync = false;
+          _isNavigating = false;
+        });
   }
 
   @override
@@ -111,33 +118,36 @@ class _MainShellPageState extends State<MainShellPage> {
               ),
             ],
           ),
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: controller.selectedTab.value,
-            onDestinationSelected: controller.selectTab,
-            destinations: [
-              NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home_rounded),
+          bottomNavigationBar: AppBottomNavBar(
+            currentIndex: controller.selectedTab.value,
+            onTap: (index) {
+              if (_isNavigating) return;
+              controller.selectTab(index);
+            },
+            items: <AppBottomNavItem>[
+              AppBottomNavItem(
+                icon: Icons.home_outlined,
+                selectedIcon: Icons.home_rounded,
                 label: 'home'.tr,
               ),
-              NavigationDestination(
-                icon: Icon(Icons.payments_outlined),
-                selectedIcon: Icon(Icons.payments_rounded),
+              AppBottomNavItem(
+                icon: Icons.payments_outlined,
+                selectedIcon: Icons.payments_rounded,
                 label: 'payments'.tr,
               ),
-              NavigationDestination(
-                icon: Icon(Icons.handyman_outlined),
-                selectedIcon: Icon(Icons.handyman_rounded),
+              AppBottomNavItem(
+                icon: Icons.handyman_outlined,
+                selectedIcon: Icons.handyman_rounded,
                 label: 'maintenance'.tr,
               ),
-              NavigationDestination(
-                icon: Icon(Icons.event_available_outlined),
-                selectedIcon: Icon(Icons.event_rounded),
+              AppBottomNavItem(
+                icon: Icons.event_available_outlined,
+                selectedIcon: Icons.event_rounded,
                 label: 'facilities'.tr,
               ),
-              NavigationDestination(
-                icon: Icon(Icons.person_outline_rounded),
-                selectedIcon: Icon(Icons.person_rounded),
+              AppBottomNavItem(
+                icon: Icons.person_outline_rounded,
+                selectedIcon: Icons.person_rounded,
                 label: 'profile'.tr,
               ),
             ],
