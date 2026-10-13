@@ -28,3 +28,20 @@ flutter:
     - assets/images/app_logo.png
     - assets/images/app_icon.png
     - assets/images/amenities/
+  fonts:
+    - family: DM Sans
+      fonts:
+        - asset: assets/fonts/DMSans-Regular.otf
+          weight: 400
+        - asset: assets/fonts/DMSans-Medium.otf
+          weight: 500
+        - asset: assets/fonts/DMSans-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/DMSans-Bold.otf
+          weight: 700
+    - family: Pyidaungsu
+      fonts:
+        - asset: assets/fonts/Pyidaungsu-2.5.3_Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Pyidaungsu-2.5.3_Bold.ttf
+          weight: 700

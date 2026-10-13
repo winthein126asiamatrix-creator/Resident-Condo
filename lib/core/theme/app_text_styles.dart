@@ -17,53 +17,80 @@ abstract final class AppTextStyles {
   /// Screen level heading, e.g. "Facilities".
   static TextStyle get screenTitle => TextStyle(
     color: AppPalette.ink,
-    fontSize: 25.sp,
+    fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
+        fontSize: 25.sp,
     fontWeight: FontWeight.w800,
   );
 
   /// Group heading inside a screen, e.g. "Your requests".
   static TextStyle get sectionTitle => TextStyle(
     color: AppPalette.ink,
-    fontSize: 16.sp,
+    fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
+        fontSize: 16.sp,
     fontWeight: FontWeight.w800,
   );
 
   /// Card title, e.g. a facility or request name.
   static TextStyle get cardTitle => TextStyle(
     color: AppPalette.ink,
-    fontSize: 15.sp,
+    fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
+        fontSize: 15.sp,
     fontWeight: FontWeight.w800,
   );
 
   /// Default reading size.
-  static TextStyle get body => TextStyle(color: AppPalette.ink, fontSize: 14.sp);
+  static TextStyle get body => TextStyle(color: AppPalette.ink, fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
+        fontSize: 14.sp);
 
   /// Reading size with emphasis, the most common weight in a card.
   static TextStyle get bodyStrong => TextStyle(
     color: AppPalette.ink,
-    fontSize: 14.sp,
+    fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
+        fontSize: 14.sp,
     fontWeight: FontWeight.w700,
   );
 
   /// Field label above an input.
   static TextStyle get fieldLabel => TextStyle(
     color: AppPalette.ink,
-    fontSize: 13.5.sp,
+    fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
+        fontSize: 13.5.sp,
     fontWeight: FontWeight.w700,
   );
 
   /// Text inside an input.
   static TextStyle get fieldValue => TextStyle(
     color: AppPalette.ink,
-    fontSize: 15.5.sp,
+    fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
+        fontSize: 15.5.sp,
     fontWeight: FontWeight.w600,
   );
 
   /// Supporting line under a heading or field.
-  static TextStyle get caption => TextStyle(color: AppPalette.muted, fontSize: 12.5.sp);
+  static TextStyle get caption => TextStyle(color: AppPalette.muted, fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
+        fontSize: 12.5.sp);
 
   /// Smallest text still used, for meta lines such as a reference id.
-  static TextStyle get meta => TextStyle(color: AppPalette.faint, fontSize: 11.5.sp);
+  static TextStyle get meta => TextStyle(color: AppPalette.faint, fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
+        fontSize: 11.5.sp);
 
   /// The same type scale, bound to the colours of the active theme.
   static Bound of(BuildContext context) =>
@@ -79,49 +106,79 @@ class Bound {
 
   TextStyle get screenTitle => TextStyle(
         color: tokens.ink,
+        fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
         fontSize: 25.sp,
         fontWeight: FontWeight.w800,
       );
 
   TextStyle get sectionTitle => TextStyle(
         color: tokens.ink,
+        fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
         fontSize: 16.sp,
         fontWeight: FontWeight.w800,
       );
 
   TextStyle get cardTitle => TextStyle(
         color: tokens.ink,
+        fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
         fontSize: 15.sp,
         fontWeight: FontWeight.w800,
       );
 
-  TextStyle get body => TextStyle(color: tokens.ink, fontSize: 14.sp);
+  TextStyle get body => TextStyle(color: tokens.ink, fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
+        fontSize: 14.sp);
 
   TextStyle get bodyStrong => TextStyle(
         color: tokens.ink,
+        fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
         fontSize: 14.sp,
         fontWeight: FontWeight.w700,
       );
 
   TextStyle get fieldLabel => TextStyle(
         color: tokens.ink,
+        fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
         fontSize: 13.5.sp,
         fontWeight: FontWeight.w700,
       );
 
   TextStyle get fieldValue => TextStyle(
         color: tokens.ink,
+        fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
         fontSize: 15.5.sp,
         fontWeight: FontWeight.w600,
       );
 
-  TextStyle get caption => TextStyle(color: tokens.muted, fontSize: 12.5.sp);
+  TextStyle get caption => TextStyle(color: tokens.muted, fontFamily: 'DM Sans',
 
-  TextStyle get meta => TextStyle(color: tokens.faint, fontSize: 11.5.sp);
+        fontFamilyFallback: const ['Pyidaungsu'],
+        fontSize: 12.5.sp);
+
+  TextStyle get meta => TextStyle(color: tokens.faint, fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
+        fontSize: 11.5.sp);
 
   /// A link or other interactive label, in the brand colour.
   TextStyle get link => TextStyle(
         color: tokens.brand,
+        fontFamily: 'DM Sans',
+
+        fontFamilyFallback: const ['Pyidaungsu'],
         fontSize: 14.sp,
         fontWeight: FontWeight.w700,
       );

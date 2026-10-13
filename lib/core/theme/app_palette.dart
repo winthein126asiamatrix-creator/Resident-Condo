@@ -41,6 +41,8 @@ abstract final class AppPalette {
 
   static TextStyle get titleStyle => TextStyle(
     color: ink,
+    fontFamily: 'DM Sans',
+    fontFamilyFallback: const ['Pyidaungsu'],
     fontSize: 25.sp,
     fontWeight: FontWeight.w800,
   );

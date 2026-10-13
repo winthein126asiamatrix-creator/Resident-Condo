@@ -48,6 +48,8 @@ abstract final class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      fontFamily: 'DM Sans',
+      fontFamilyFallback: const ['Pyidaungsu'],
       colorScheme: colorScheme,
       scaffoldBackgroundColor: tokens.canvas,
       extensions: <ThemeExtension<dynamic>>[tokens],
