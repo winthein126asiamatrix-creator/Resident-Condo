@@ -1,11 +1,11 @@
 {
-    "name": "Condo Residents",
-    "short_name": "Condo Residents",
+    "name": "Matrix Condo",
+    "short_name": "Matrix Condo",
     "start_url": ".",
     "display": "standalone",
     "background_color": " #2563EB",
     "theme_color": " #2563EB",
-    "description": "Condo Residents mobile portal.",
+    "description": "Matrix Condo mobile portal.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

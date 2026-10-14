@@ -185,7 +185,7 @@ class _LoginHeader extends StatelessWidget {
             ],
           ),
           child: Image.asset(
-            'assets/images/app_icon.png',
+            'assets/images/condo-phone-app-icon-hexagon.png',
             width: 64,
             height: 64,
             fit: BoxFit.contain,

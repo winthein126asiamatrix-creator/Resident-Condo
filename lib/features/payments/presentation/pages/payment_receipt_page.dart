@@ -79,7 +79,7 @@ class PaymentReceiptPage extends StatelessWidget {
                 ),
                 8.h.heightBox(),
                 Text(
-                  'Condo Residents',
+                  'Matrix Condo',
                   style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                 ),
                 Divider(height: 30),

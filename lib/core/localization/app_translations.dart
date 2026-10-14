@@ -4,7 +4,7 @@ class AppTranslations extends Translations {
   @override
   Map<String, Map<String, String>> get keys => <String, Map<String, String>>{
     'en': {
-      'appName': 'Condo Residents',
+      'appName': 'Matrix Condo',
       'home': 'Home',
       'payments': 'Payments',
       'maintenance': 'Maintenance',
@@ -56,7 +56,7 @@ class AppTranslations extends Translations {
       'languageUpdated': 'Language updated',
       'preferences': 'Preferences',
       'languageTestTitle': 'Language Preview',
-      'languageTestMessage': 'Welcome to Condo Residents',
+      'languageTestMessage': 'Welcome to Matrix Condo',
     },
     'my': {
       'appName': 'နေထိုင်သူများ',
@@ -111,7 +111,7 @@ class AppTranslations extends Translations {
       'languageUpdated': 'ဘာသာစကားအပ်ဒိတ်လုပ်ပြီး',
       'preferences': 'နှစ်သက်ရွေးချယ်မှုများ',
       'languageTestTitle': 'ဘာသာစကား စမ်းသပ်မှု',
-      'languageTestMessage': 'Condo Residents မှ ကြိုဆိုပါတယ်',
+      'languageTestMessage': 'Matrix Condo မှ ကြိုဆိုပါတယ်',
     },
     'zh': {
       'appName': '公寓居民',
@@ -166,7 +166,7 @@ class AppTranslations extends Translations {
       'languageUpdated': '语言已更新',
       'preferences': '偏好设置',
       'languageTestTitle': '语言预览',
-      'languageTestMessage': '欢迎使用 Condo Residents',
+      'languageTestMessage': '欢迎使用 Matrix Condo',
     },
   };
 }

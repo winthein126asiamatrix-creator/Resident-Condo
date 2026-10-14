@@ -36,6 +36,7 @@ flutter:
   assets:
     - assets/images/app_logo.png
     - assets/images/app_icon.png
+    - assets/images/condo-phone-app-icon-hexagon.png
     - assets/images/amenities/
   fonts:
     - family: DM Sans

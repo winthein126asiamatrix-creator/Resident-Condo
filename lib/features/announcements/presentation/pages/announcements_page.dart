@@ -107,7 +107,7 @@ class AnnouncementsPage extends GetView<AnnouncementController> {
 }
 
 class _AnnouncementSummary extends StatelessWidget {
-  _AnnouncementSummary({required this.unreadCount, required this.totalCount});
+ const _AnnouncementSummary({required this.unreadCount, required this.totalCount});
 
   final int unreadCount;
   final int totalCount;

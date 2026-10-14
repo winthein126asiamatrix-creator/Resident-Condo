@@ -37,7 +37,7 @@ class BrandedLoadingView extends StatelessWidget {
                   ],
                 ),
                 child: Image.asset(
-                  'assets/images/app_icon.png',
+                  'assets/images/condo-phone-app-icon-hexagon.png',
                   width: 72,
                   height: 72,
                   fit: BoxFit.contain,

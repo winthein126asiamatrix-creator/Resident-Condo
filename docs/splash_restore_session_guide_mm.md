@@ -1,6 +1,6 @@
 ﻿# Splash Screen, Restore Session နဲ့ DummyJSON Token Refresh Logic — အသေးစိတ် ရှင်းပြချက်
 
-> **Project** — Flutter Condo Residents
+> **Project** — Flutter Matrix Condo
 > **ဖိုင်** — `lib/`
 > **ရည်ရွယ်ချက်** — App စဖွင့်လိုက်တဲ့အခါကနေ Home Page ဒါမှမဟုတ် Login Page ကို ရောက်တဲ့အထိ လက်ရှိ Code က အမှန်တကယ် ဘယ်လိုအလုပ်လုပ်နေသလဲ အသေးစိတ် ဖော်ပြထားတာပါ။
 >
@@ -12,7 +12,7 @@
 
 ## အကြောင်းအရာ အကျဉ်းချုပ်
 
-Condo Residents App က GetX Architecture ကို အသုံးပြုပြီး Dio ကို HTTP client အဖြစ်သုံးပါတယ်။ Session စီမံခြင်းကို **Clean Architecture** လမ်းကြောင်းအတိုင်း —
+Matrix Condo App က GetX Architecture ကို အသုံးပြုပြီး Dio ကို HTTP client အဖြစ်သုံးပါတယ်။ Session စီမံခြင်းကို **Clean Architecture** လမ်းကြောင်းအတိုင်း —
 
 ```
 presentation (Controller / Page / Binding)

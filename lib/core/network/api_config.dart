@@ -13,7 +13,7 @@ abstract final class ApiConfig {
   /// Root of the backend.
   ///
   /// Defaults to DummyJSON, the public mock backend the app is developed
-  /// against. A release build points at the real Condo Residents backend with:
+  /// against. A release build points at the real Matrix Condo backend with:
   ///
   /// ```
   /// flutter run --dart-define=API_BASE_URL=https://condo.example.com

@@ -247,7 +247,7 @@ class _Body extends StatelessWidget {
       context,
       title: 'Reset appearance?',
       message:
-          'Your app color returns to the original Condo Residents teal and '
+          'Your app color returns to the original Matrix Condo teal and '
           'follows your phone setting.',
       confirmLabel: 'Reset',
     );
@@ -400,7 +400,7 @@ class _AppearanceActionBar extends StatelessWidget {
 }
 
 class _CurrentSwatch extends StatelessWidget {
-  _CurrentSwatch({required this.color});
+ const _CurrentSwatch({required this.color});
 
   final Color color;
 

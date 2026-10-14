@@ -108,7 +108,6 @@ class _SplashPageState extends State<SplashPage>
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Scaffold(
-      backgroundColor: tokens.brand,
       body: SafeArea(
         // No app bar on the splash either, and this is the screen that has to
         // report an unreachable server while it is still trying to validate the
@@ -125,16 +124,16 @@ class _SplashPageState extends State<SplashPage>
                   height: 112,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(30.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.18),
-                        blurRadius: 24,
-                        offset: Offset(0, 12),
-                      ),
-                    ],
+                    // boxShadow: [
+                    //   BoxShadow(
+                    //     color: Colors.black.withValues(alpha: 0.12),
+                    //     blurRadius: 24,
+                    //     offset: Offset(0, 12),
+                    //   ),
+                    // ],
                   ),
                   child: Image.asset(
-                    'assets/images/app_icon.png',
+                    'assets/images/condo-phone-app-icon-hexagon.png',
                     width: 112,
                     height: 112,
                     fit: BoxFit.contain,
@@ -146,7 +145,7 @@ class _SplashPageState extends State<SplashPage>
                   AppConstants.appName,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: tokens.onBrand,
+                    color: tokens.brand,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.3,
                   ),
