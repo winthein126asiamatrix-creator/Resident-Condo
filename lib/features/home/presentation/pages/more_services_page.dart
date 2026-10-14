@@ -39,9 +39,9 @@ class MoreServicesPage extends StatelessWidget {
             AppHeroPanel(
               icon: Icons.grid_view_rounded,
               title: 'Resident services',
-              subtitle: 'Everything for ${session.session.value.unitLabel}',
+              subtitle: 'Everything for ${session.session.value?.unitLabel ?? ''}',
               footnote:
-                  'You are signed in as ${session.session.value.role.label}. '
+                  'You are signed in as ${session.session.value?.role.label ?? 'Resident'}. '
                   'Some screens change with your role.',
             ),
             SizedBox(height: 20.h),

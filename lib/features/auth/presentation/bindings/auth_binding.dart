@@ -6,6 +6,7 @@ import '../../../../core/network/dio_api_service.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../data/datasources/auth_local_data_source.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
+import '../../../../core/cache/api_cache_store.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/auth_usecases.dart';
@@ -38,6 +39,7 @@ class AuthBinding extends Bindings {
         remoteDataSource: AuthRemoteDataSource(controller),
         localDataSource: AuthLocalDataSource(),
         tokenStorage: Get.find(),
+        cacheStore: Get.find<ApiCacheStore>(),
       ),
       permanent: true,
     );

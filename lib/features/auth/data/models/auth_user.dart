@@ -21,6 +21,15 @@ class AuthUser {
   final String? gender;
   final String? image;
 
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'id': id,
+        'username': username,
+        'email': email,
+        'firstName': firstName,
+        'lastName': lastName,
+        'gender': gender,
+        'image': image,
+      };
   /// The name to greet the resident by.
   ///
   /// Falls back through the parts before settling on the username, so a record
@@ -65,7 +74,7 @@ class AuthUser {
   /// incomplete profile should still let the resident in, and the only required
   /// pieces are the id and the username the session is keyed on.
   ///
-  /// Takes [Object?] rather than a map so it matches the client's parser
+  /// Takes [Object?] rather than a map so it matches the client's parserPa
   /// signature and can be handed straight to a request.
   static AuthUser parse(Object? json) {
     if (json is! Map) {

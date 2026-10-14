@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:test/app/routes/app_routes.dart';
 
-import '../../../../app/routes/app_routes.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../data/models/auth_user.dart';

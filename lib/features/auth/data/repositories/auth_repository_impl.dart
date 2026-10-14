@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import '../../../../core/cache/api_cache_store.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/session_token_storage.dart';
@@ -6,19 +9,23 @@ import '../../domain/entities/auth_session.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_local_data_source.dart';
 import '../datasources/auth_remote_data_source.dart';
+import '../models/auth_user.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   const AuthRepositoryImpl({
     required AuthRemoteDataSource remoteDataSource,
     required AuthLocalDataSource localDataSource,
     required TokenStorage tokenStorage,
+    ApiCacheStore? cacheStore,
   }) : _remote = remoteDataSource,
        _local = localDataSource,
-       _tokens = tokenStorage;
+       _tokens = tokenStorage,
+       _cache = cacheStore;
 
   final AuthRemoteDataSource _remote;
   final AuthLocalDataSource _local;
   final TokenStorage _tokens;
+  final ApiCacheStore? _cache;
 
   /// The registered store when it is the switchable one, null otherwise.
   ///
@@ -29,6 +36,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<AuthSession> signIn(SignInRequest request) async {
+    // A new session must not inherit profile data from the previous account.
+    await _cache?.clearAll();
     final result = await _remote.signIn(request);
 
     // Remember Me decides where the pair is allowed to live, and it has to be
@@ -52,13 +61,50 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<AuthSession> updateMe() async {
-    final user = await _remote.updateMe();
-    return AuthSession(
-      username: user.username,
-      displayName: user.displayName,
-      rememberMe: true,
-      user: user,
-    );
+    const cacheKey = 'auth.me';
+    try {
+      final user = await _remote.updateMe();
+      try {
+        await _cache?.save(
+          key: cacheKey,
+          accountKey: user.id.toString(),
+          payload: user.toJson(),
+        );
+      } on Object {
+        // Caching is a local convenience and must not turn a successful API
+        // request into a failure.
+      }
+      return AuthSession(
+        username: user.username,
+        displayName: user.displayName,
+        rememberMe: true,
+        user: user,
+      );
+    } on ApiException catch (error) {
+      // Transport-level failures may still allow a stale-but-usable profile read
+      // from SQLite. 401/403 are handled by the refresh interceptor and never
+      // reach here; only genuine server/network failures are considered offline.
+      if (!error.isRetryable) {
+        rethrow;
+      }
+      final cached = await _cache?.read(cacheKey);
+      if (cached == null) {
+        rethrow;
+      }
+      try {
+        final user = AuthUser.fromJson(
+          jsonDecode(cached.payloadJson) as Map<String, dynamic>,
+        );
+        return AuthSession(
+          username: user.username,
+          displayName: user.displayName,
+          rememberMe: true,
+          user: user,
+        );
+      } on Object {
+        rethrow;
+      }
+    }
   }
 
   @override
@@ -67,6 +113,8 @@ class AuthRepositoryImpl implements AuthRepository {
     // credential behind for a session the resident believes they have ended.
     await _tokens.clearTokens();
     await _local.signOut();
+    // Profile cache is private to the signed-out account and must not survive.
+    await _cache?.clearAll();
   }
 
   @override

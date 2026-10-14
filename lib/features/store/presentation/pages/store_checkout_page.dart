@@ -289,7 +289,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
   /// The resident on the session, or a sensible stand-in when there is none.
   String get _residentName {
     if (!Get.isRegistered<SessionController>()) {
-      return 'Alex Johnson';
+      return '';
     }
     return Get.find<SessionController>().name;
   }

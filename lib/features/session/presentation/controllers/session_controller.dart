@@ -5,60 +5,72 @@ import '../../domain/entities/resident_session.dart';
 
 /// Holds the active resident session so every feature can render
 /// role-aware UI (owner / tenant / resident) without duplicating auth code.
+///
+/// `null` is an explicit "no signed-in resident" state. It is never seeded
+/// with demo data: an unauthenticated user must not look authenticated.
 class SessionController extends GetxController {
-  /// The demo resident shown before anyone signs in.
-  static const ResidentSession _signedOut = ResidentSession(
-    name: 'Alex Johnson',
-    role: ResidentRole.owner,
-    tower: 'Tower A',
-    unitNumber: '1205',
-    email: 'alex.johnson@example.com',
-    phone: '+959772611100',
-  );
+  final session = Rxn<ResidentSession>();
 
-  final session = _signedOut.obs;
+  /// The active signed-in resident, or null when nobody is signed in.
+  ResidentSession? get current => session.value;
 
-  ResidentRole get role => session.value.role;
+  ResidentRole? get role => session.value?.role;
 
-  String get name => session.value.name;
+  String get name => session.value?.name ?? '';
 
-  String get unitLabel => session.value.unitLabel;
+  String get unitLabel => session.value?.unitLabel ?? '';
 
-  bool get isOwner => session.value.role.managesLease;
+  bool get isOwner => session.value?.role.managesLease ?? false;
 
-  bool get isTenant => session.value.role.paysRent;
+  bool get isTenant => session.value?.role.paysRent ?? false;
 
   void switchRole(ResidentRole next) {
-    if (session.value.role == next) {
+    final currentSession = session.value;
+    if (currentSession == null || currentSession.role == next) {
       return;
     }
-    session.value = session.value.copyWith(role: next);
+    session.value = currentSession.copyWith(role: next);
   }
 
   /// Adopts the name from a successful sign-in, so the greeting on the
-  /// dashboard and the name on the profile match the account just used. The
-  /// rest of the demo session stays as it is: this build has a single unit.
+  /// dashboard and the name on the profile match the account just used.
+  /// Ignored while there is an unauthenticated (null) session context unless
+  /// both values are empty, matching the existing guard.
   void signInAs(String displayName, {String? email}) {
-    if (displayName.trim().isEmpty && (email == null || email.isEmpty)) {
+    final currentSession = session.value;
+    final name = displayName.trim().isEmpty
+        ? (currentSession?.name ?? '')
+        : displayName.trim();
+
+    if (name.isEmpty && (email == null || email.isEmpty)) {
       return;
     }
-    final current = session.value;
-    final name = displayName.trim().isEmpty ? current.name : displayName;
-    if (current.name == name && (email == null || current.email == email)) {
+
+    if (currentSession == null) {
+      // Build only from authenticated remote data. Non-user-specific display
+      // fields stay empty instead of reusing a former demo resident.
+      session.value = ResidentSession(
+        name: name.isEmpty ? 'Resident' : name,
+        role: ResidentRole.resident,
+        tower: '',
+        unitNumber: '',
+        email: email?.isNotEmpty == true ? email! : '',
+        phone: '',
+      );
       return;
     }
-    session.value = current.copyWith(
-      name: name,
-      email: email?.isNotEmpty == true ? email : null,
+    if (currentSession.name == name &&
+        (email == null || currentSession.email == email)) {
+      return;
+    }
+    session.value = currentSession.copyWith(
+      name: name.isEmpty ? currentSession.name : name,
+      email: email?.isNotEmpty == true ? email : currentSession.email,
     );
   }
 
   /// Puts the session back to its signed-out state.
-  ///
-  /// Logout and an unrecoverable token expiry both land here: without this the
-  /// previous resident's name, email and role would stay on screen for whoever
-  /// signs in next, on this device, until the process is killed.
   void clearResident() {
-    session.value = _signedOut;
+    session.value = null;
   }
 }

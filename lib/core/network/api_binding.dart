@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../cache/api_cache_store.dart';
+import '../cache/app_cache_database.dart';
 import 'dio_api_service.dart';
 import 'secure_token_storage.dart';
 import 'session_token_storage.dart';
@@ -34,6 +36,16 @@ abstract final class ApiBinding extends Bindings {
       service ?? DioApiService(tokenStorage: storage),
       permanent: true,
     );
+
+    if (!Get.isRegistered<AppCacheDatabase>()) {
+      Get.put<AppCacheDatabase>(AppCacheDatabase(), permanent: true);
+    }
+    if (!Get.isRegistered<ApiCacheStore>()) {
+      Get.put<ApiCacheStore>(
+        ApiCacheStore(Get.find<AppCacheDatabase>()),
+        permanent: true,
+      );
+    }
   }
 
   /// Satisfies [Bindings] so the layer can also be attached to a route.
