@@ -131,7 +131,9 @@ class ParkingLocalDataSource {
     }
     for (final other in _spaces) {
       if (other.id != space.id && other.licensePlate == plate.trim()) {
-        throw const AppException('That plate is already registered in the building.');
+        throw const AppException(
+          'That plate is already registered in the building.',
+        );
       }
     }
     final index = _spaces.indexWhere((item) => item.id == space.id);

@@ -1,14 +1,30 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../domain/entities/unit.dart';
+
+
 import '../controllers/unit_controller.dart';
+
+
 import '../widgets/unit_info_tile.dart';
+
+
 import '../widgets/unit_person_tile.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
 
 class UnitPage extends GetView<UnitController> {
@@ -61,20 +77,25 @@ class UnitPage extends GetView<UnitController> {
       onRefresh: controller.loadMyUnit,
       child: ListView(
         physics: AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.gutter,
+          AppSpacing.pageTop,
+          AppSpacing.gutter,
+          32,
+        ),
         children: [
           _UnitHero(unit: unit),
-          SizedBox(height: 24.h),
+          24.h.heightBox(),
           _SectionTitle(title: 'Unit information'),
-          SizedBox(height: 11.h),
+          11.h.heightBox(),
           _UnitInformationCard(unit: unit),
-          SizedBox(height: 24.h),
+          24.h.heightBox(),
           _SectionTitle(title: 'People'),
-          SizedBox(height: 11.h),
+          11.h.heightBox(),
           _PeopleCard(unit: unit),
-          SizedBox(height: 24.h),
+          24.h.heightBox(),
           _SectionTitle(title: 'Parking'),
-          SizedBox(height: 11.h),
+          11.h.heightBox(),
           _ParkingCard(parking: unit.parking),
         ],
       ),
@@ -132,24 +153,24 @@ class _UnitHero extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 20.h),
+                20.h.heightBox(),
                 Text(
-                  '${unit.tower} · Unit ${unit.unitNumber}',
+                  '${unit.tower} Â· Unit ${unit.unitNumber}',
                   style: TextStyle(
                     color: tokens.brandOnDark,
                     fontSize: 22.sp,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                SizedBox(height: 6.h),
+                6.h.heightBox(),
                 Text(
-                  '${unit.unitType} · ${unit.area} · ${unit.floor}',
+                  '${unit.unitType} Â· ${unit.area} Â· ${unit.floor}',
                   style: TextStyle(
                     color: tokens.brandOnDarkMuted,
                     fontSize: 13.sp,
                   ),
                 ),
-                SizedBox(height: 18.h),
+                18.h.heightBox(),
                 Row(
                   children: [
                     Icon(
@@ -157,9 +178,9 @@ class _UnitHero extends StatelessWidget {
                       color: tokens.brandOnDark,
                       size: 17,
                     ),
-                    SizedBox(width: 6.w),
+                    6.w.widthBox(),
                     Text(
-                      '${unit.ownershipStatus} · Parking ${unit.parking.slot}',
+                      '${unit.ownershipStatus} Â· Parking ${unit.parking.slot}',
                       style: TextStyle(
                         color: tokens.brandOnDarkMuted,
                         fontSize: 12.sp,
@@ -258,7 +279,7 @@ class _PeopleCard extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: 2.h),
+          2.h.heightBox(),
           UnitPersonTile(person: unit.owner),
           Divider(height: 24),
           Text(
@@ -269,7 +290,7 @@ class _PeopleCard extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
-          SizedBox(height: 2.h),
+          2.h.heightBox(),
           ...unit.residents.map((resident) => UnitPersonTile(person: resident)),
           if (unit.tenant != null) ...[
             Divider(height: 24),
@@ -314,7 +335,7 @@ class _ParkingCard extends StatelessWidget {
                   color: Color(0xFFB45309),
                 ),
               ),
-              SizedBox(width: 12.w),
+              12.w.widthBox(),
               Expanded(
                 child: Text(
                   'Registered vehicle',
@@ -336,7 +357,7 @@ class _ParkingCard extends StatelessWidget {
               Expanded(
                 child: _ParkingValue(label: 'Vehicle', value: parking.vehicle),
               ),
-              SizedBox(width: 12.w),
+              12.w.widthBox(),
               Expanded(
                 child: _ParkingValue(
                   label: 'License plate',
@@ -367,7 +388,7 @@ class _ParkingValue extends StatelessWidget {
           label,
           style: TextStyle(fontSize: 11.sp, color: tokens.muted),
         ),
-        SizedBox(height: 4.h),
+        4.h.heightBox(),
         Text(value, style: TextStyle(fontWeight: FontWeight.w800)),
       ],
     );
@@ -405,10 +426,8 @@ class _SectionTitle extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     return Text(
       title,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-        fontWeight: FontWeight.w800,
-        color: tokens.ink,
-      ),
+      style: Theme.of(context).textTheme.titleMedium
+          ?.copyWith(fontWeight: FontWeight.w800, color: tokens.ink),
     );
   }
 }

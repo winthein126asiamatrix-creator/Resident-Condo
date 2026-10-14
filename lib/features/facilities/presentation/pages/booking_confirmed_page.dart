@@ -1,18 +1,42 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/utils/app_dates.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_primary_action.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../domain/entities/facility.dart';
+
+
 import '../widgets/facility_labels.dart';
+
+
 import '../widgets/reservation_status_badge.dart';
 
 /// Success state shown once a reservation has actually been created.
@@ -55,7 +79,7 @@ class BookingConfirmedPage extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 22.h),
+          22.h.heightBox(),
           Text(
             'Reservation Confirmed',
             key: Key('booking-confirmed-title'),
@@ -66,13 +90,13 @@ class BookingConfirmedPage extends StatelessWidget {
               color: tokens.ink,
             ),
           ),
-          SizedBox(height: 8.h),
+          8.h.heightBox(),
           Text(
             'Your facility reservation has been successfully confirmed.',
             textAlign: TextAlign.center,
             style: TextStyle(color: tokens.muted, height: 1.4),
           ),
-          SizedBox(height: 26.h),
+          26.h.heightBox(),
           AppCard(
             key: Key('booking-confirmed-summary'),
             child: Column(
@@ -102,14 +126,14 @@ class BookingConfirmedPage extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 22.h),
+          22.h.heightBox(),
           AppPrimaryAction(
             key: Key('booking-confirmed-done'),
             onPressed: () => Get.offAllNamed(AppRoutes.myReservations),
             label: 'Done',
             icon: Icons.check_rounded,
           ),
-          SizedBox(height: 12.h),
+          12.h.heightBox(),
           Center(
             child: TextButton.icon(
               key: Key('booking-confirmed-facilities'),

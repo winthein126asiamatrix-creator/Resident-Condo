@@ -6,7 +6,8 @@ class AuthUseCases {
 
   final AuthRepository repository;
 
-  Future<AuthSession> signIn(SignInRequest request) => repository.signIn(request);
+  Future<AuthSession> signIn(SignInRequest request) =>
+      repository.signIn(request);
 
   Future<AuthSession> updateMe() => repository.updateMe();
 

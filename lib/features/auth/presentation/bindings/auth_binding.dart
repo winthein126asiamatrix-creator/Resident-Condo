@@ -43,7 +43,10 @@ class AuthBinding extends Bindings {
       ),
       permanent: true,
     );
-    Get.put<AuthUseCases>(AuthUseCases(Get.find<AuthRepository>()), permanent: true);
+    Get.put<AuthUseCases>(
+      AuthUseCases(Get.find<AuthRepository>()),
+      permanent: true,
+    );
     Get.put<AuthController>(
       AuthController(Get.find<AuthUseCases>()),
       permanent: true,

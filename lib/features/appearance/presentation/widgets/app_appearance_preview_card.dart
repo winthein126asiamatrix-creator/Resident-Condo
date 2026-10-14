@@ -1,7 +1,11 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../../../../core/theme/app_radius.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
 
 /// A realistic miniature of the resident home screen, painted with the colour
@@ -73,15 +77,15 @@ class AppAppearancePreviewCard extends StatelessWidget {
                     greeting: greeting,
                     unitLabel: unitLabel,
                   ),
-                  SizedBox(height: 10.h),
+                  10.h.heightBox(),
                   _PreviewBalanceCard(
                     tokens: tokens,
                     amount: balanceAmount,
                     due: balanceDue,
                   ),
-                  SizedBox(height: 8.h),
+                  8.h.heightBox(),
                   _PreviewShortcuts(tokens: tokens),
-                  SizedBox(height: 8.h),
+                  8.h.heightBox(),
                   _PreviewAnnouncement(tokens: tokens),
                 ],
               ),
@@ -116,9 +120,9 @@ class _PreviewStatusBar extends StatelessWidget {
           ),
           Spacer(),
           Icon(Icons.signal_cellular_alt_rounded, size: 10, color: tokens.ink),
-          SizedBox(width: 4.w),
+          4.w.widthBox(),
           Icon(Icons.wifi_rounded, size: 10, color: tokens.ink),
-          SizedBox(width: 4.w),
+          4.w.widthBox(),
           Icon(Icons.battery_full_rounded, size: 10, color: tokens.ink),
         ],
       ),
@@ -157,7 +161,7 @@ class _PreviewGreeting extends StatelessWidget {
                   letterSpacing: -0.2,
                 ),
               ),
-              SizedBox(height: 2.h),
+              2.h.heightBox(),
               Text(
                 unitLabel,
                 maxLines: 1,
@@ -171,7 +175,7 @@ class _PreviewGreeting extends StatelessWidget {
             ],
           ),
         ),
-        SizedBox(width: 8.w),
+        8.w.widthBox(),
         _PreviewAvatar(tokens: tokens),
       ],
     );
@@ -188,7 +192,10 @@ class _PreviewAvatar extends StatelessWidget {
     return Container(
       width: 30,
       height: 30,
-      decoration: BoxDecoration(color: tokens.brandSoft, shape: BoxShape.circle),
+      decoration: BoxDecoration(
+        color: tokens.brandSoft,
+        shape: BoxShape.circle,
+      ),
       child: Center(
         child: Text(
           'M',
@@ -250,7 +257,7 @@ class _PreviewBalanceCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 6.h),
+          6.h.heightBox(),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
@@ -264,7 +271,7 @@ class _PreviewBalanceCard extends StatelessWidget {
                   letterSpacing: -0.5,
                 ),
               ),
-              SizedBox(width: 6.w),
+              6.w.widthBox(),
               Expanded(
                 child: Text(
                   due,
@@ -279,7 +286,7 @@ class _PreviewBalanceCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 10.h),
+          10.h.heightBox(),
           // A progress track, so the brand colour is shown as an indicator fill
           // too and not only as a large solid surface.
           ClipRRect(
@@ -297,7 +304,7 @@ class _PreviewBalanceCard extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 10.h),
+          10.h.heightBox(),
           // The primary action. Its fill and label both come from the tokens, so
           // this is the clearest read on whether the chosen colour works.
           Container(
@@ -329,11 +336,7 @@ class _PreviewShortcuts extends StatelessWidget {
   final AppThemeTokens tokens;
 
   static const _items = <({IconData icon, String label, String value})>[
-    (
-      icon: Icons.handyman_rounded,
-      label: 'Maintenance',
-      value: '1 open',
-    ),
+    (icon: Icons.handyman_rounded, label: 'Maintenance', value: '1 open'),
     (icon: Icons.event_available_rounded, label: 'Facilities', value: '3 free'),
   ];
 
@@ -363,7 +366,7 @@ class _PreviewShortcuts extends StatelessWidget {
                     // real shortcut rows use.
                     child: Icon(item.icon, size: 14, color: tokens.brand),
                   ),
-                  SizedBox(width: 8.w),
+                  8.w.widthBox(),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -379,7 +382,7 @@ class _PreviewShortcuts extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        SizedBox(height: 1.h),
+                        1.h.heightBox(),
                         Text(
                           item.value,
                           maxLines: 1,
@@ -397,7 +400,7 @@ class _PreviewShortcuts extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 8.w),
+          8.w.widthBox(),
         ],
       ],
     );
@@ -428,13 +431,9 @@ class _PreviewAnnouncement extends StatelessWidget {
               color: tokens.brandTint,
               borderRadius: BorderRadius.circular(9.r),
             ),
-            child: Icon(
-              Icons.campaign_rounded,
-              size: 14,
-              color: tokens.brand,
-            ),
+            child: Icon(Icons.campaign_rounded, size: 14, color: tokens.brand),
           ),
-          SizedBox(width: 8.w),
+          8.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,9 +449,9 @@ class _PreviewAnnouncement extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 2.h),
+                2.h.heightBox(),
                 Text(
-                  '9:00 AM – 12:00 PM',
+                  '9:00 AM â€“ 12:00 PM',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: tokens.muted, fontSize: 9.5.sp),
@@ -460,7 +459,7 @@ class _PreviewAnnouncement extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(width: 6.w),
+          6.w.widthBox(),
           // An important link, in the brand colour.
           Text(
             'Read',
@@ -483,29 +482,34 @@ class _PreviewNavigationBar extends StatelessWidget {
 
   final AppThemeTokens tokens;
 
-  static const _destinations = <({IconData icon, IconData selected, String label})>[
-    (icon: Icons.home_outlined, selected: Icons.home_rounded, label: 'Home'),
-    (
-      icon: Icons.payments_outlined,
-      selected: Icons.payments_rounded,
-      label: 'Payments'
-    ),
-    (
-      icon: Icons.handyman_outlined,
-      selected: Icons.handyman_rounded,
-      label: 'Maintenance'
-    ),
-    (
-      icon: Icons.calendar_today,
-      selected: Icons.handyman_rounded,
-      label: 'Facilities'
-    ),
-    (
-      icon: Icons.person_outline_rounded,
-      selected: Icons.person_rounded,
-      label: 'Profile'
-    ),
-  ];
+  static const _destinations =
+      <({IconData icon, IconData selected, String label})>[
+        (
+          icon: Icons.home_outlined,
+          selected: Icons.home_rounded,
+          label: 'Home',
+        ),
+        (
+          icon: Icons.payments_outlined,
+          selected: Icons.payments_rounded,
+          label: 'Payments',
+        ),
+        (
+          icon: Icons.handyman_outlined,
+          selected: Icons.handyman_rounded,
+          label: 'Maintenance',
+        ),
+        (
+          icon: Icons.calendar_today,
+          selected: Icons.handyman_rounded,
+          label: 'Facilities',
+        ),
+        (
+          icon: Icons.person_outline_rounded,
+          selected: Icons.person_rounded,
+          label: 'Profile',
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -544,8 +548,7 @@ class _PreviewNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground =
-        selected ? tokens.brand : tokens.muted;
+    final foreground = selected ? tokens.brand : tokens.muted;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -563,7 +566,7 @@ class _PreviewNavItem extends StatelessWidget {
             color: foreground,
           ),
         ),
-        SizedBox(height: 3.h),
+        3.h.heightBox(),
         Text(
           destination.label,
           maxLines: 1,
@@ -578,4 +581,3 @@ class _PreviewNavItem extends StatelessWidget {
     );
   }
 }
-

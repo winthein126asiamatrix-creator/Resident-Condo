@@ -1,16 +1,36 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_primary_action.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../../domain/entities/maintenance_request.dart';
+
+
 import '../controllers/maintenance_controller.dart';
+
+
 import '../widgets/maintenance_status_badge.dart';
 
 class MaintenancePage extends GetView<MaintenanceController> {
@@ -41,12 +61,12 @@ class MaintenancePage extends GetView<MaintenanceController> {
                     padding: EdgeInsets.fromLTRB(20, 18, 20, 32),
                     children: [
                       _MaintenanceHeader(onRefresh: controller.loadRequests),
-                      SizedBox(height: 20.h),
+                      20.h.heightBox(),
                       AppHeroPanel(
                         icon: Icons.handyman_rounded,
                         title: 'Maintenance summary',
                         subtitle:
-                            '${controller.inProgressCount} in progress  ·  '
+                            '${controller.inProgressCount} in progress  Â·  '
                             '${controller.completedCount} completed',
                         footnote: 'Our team reviews every request and keeps you posted.',
                         trailing: Icon(
@@ -54,7 +74,7 @@ class MaintenancePage extends GetView<MaintenanceController> {
                           color: tokens.brandOnDark,
                         ),
                       ),
-                      SizedBox(height: 18.h),
+                      18.h.heightBox(),
                       AppPrimaryAction(
                         key: Key('add-maintenance-request'),
                         onPressed: () =>
@@ -64,12 +84,12 @@ class MaintenancePage extends GetView<MaintenanceController> {
                         trailingIcon: Icons.arrow_forward_rounded,
                         centerContent: false,
                       ),
-                      SizedBox(height: 25.h),
+                      25.h.heightBox(),
                       AppSectionHeader(
                         title: 'Your requests',
                         count: controller.requests.length,
                       ),
-                      SizedBox(height: 10.h),
+                      10.h.heightBox(),
                       if (controller.requests.isEmpty)
                         AppStateMessage(
                           title: 'No requests',
@@ -113,7 +133,7 @@ class _MaintenanceHeader extends StatelessWidget {
                   color: tokens.ink,
                 ),
               ),
-              SizedBox(height: 4.h),
+              4.h.heightBox(),
               Text(
                 'Keep your home running smoothly',
                 style: TextStyle(color: tokens.muted),
@@ -143,11 +163,8 @@ class _RequestCard extends StatelessWidget {
       borderRadius: 18,
       child: Row(
         children: [
-          AppIconTile(
-            icon: Icons.build_circle_outlined,
-            color: tokens.brand,
-          ),
-          SizedBox(width: 12.w),
+          AppIconTile(icon: Icons.build_circle_outlined, color: tokens.brand),
+          12.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,12 +176,12 @@ class _RequestCard extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                4.h.heightBox(),
                 Text(
-                  '${request.category.label} · ${request.priority.label}',
+                  '${request.category.label} Â· ${request.priority.label}',
                   style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                 ),
-                SizedBox(height: 4.h),
+                4.h.heightBox(),
                 Text(
                   request.createdAt,
                   style: TextStyle(color: tokens.faint, fontSize: 11.sp),
@@ -176,7 +193,7 @@ class _RequestCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               MaintenanceStatusBadge(status: request.status),
-              SizedBox(height: 8.h),
+              8.h.heightBox(),
               Icon(Icons.chevron_right_rounded, color: tokens.faint),
             ],
           ),

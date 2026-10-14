@@ -18,11 +18,7 @@ class UnitLocalDataSource {
         UnitPerson(name: 'Alex Johnson', role: 'Resident', initials: 'AJ'),
         UnitPerson(name: 'Sarah Johnson', role: 'Resident', initials: 'SJ'),
       ],
-      tenant: UnitPerson(
-        name: 'Jamie Rivera',
-        role: 'Tenant',
-        initials: 'JR',
-      ),
+      tenant: UnitPerson(name: 'Jamie Rivera', role: 'Tenant', initials: 'JR'),
       parking: ParkingInfo(
         slot: 'B2-125',
         vehicle: 'Toyota Camry',

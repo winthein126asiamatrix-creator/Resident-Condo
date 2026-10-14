@@ -162,23 +162,14 @@ class VisitorController extends GetxController {
     }
   }
 
-  Future<Visitor?> checkIn(Visitor visitor) => _run(
-    visitor,
-    () => useCases.checkIn(visitor),
-    'checked in',
-  );
+  Future<Visitor?> checkIn(Visitor visitor) =>
+      _run(visitor, () => useCases.checkIn(visitor), 'checked in');
 
-  Future<Visitor?> checkOut(Visitor visitor) => _run(
-    visitor,
-    () => useCases.checkOut(visitor),
-    'checked out',
-  );
+  Future<Visitor?> checkOut(Visitor visitor) =>
+      _run(visitor, () => useCases.checkOut(visitor), 'checked out');
 
-  Future<Visitor?> cancelVisitor(Visitor visitor) => _run(
-    visitor,
-    () => useCases.cancelVisitor(visitor),
-    'cancelled',
-  );
+  Future<Visitor?> cancelVisitor(Visitor visitor) =>
+      _run(visitor, () => useCases.cancelVisitor(visitor), 'cancelled');
 
   void onVerificationChanged(String value) {
     verificationCode.value = value;
@@ -204,7 +195,8 @@ class VisitorController extends GetxController {
       final result = visitor == null
           ? const VisitorVerification(
               isValid: false,
-              message: 'No visitor matches that access code. Ask the visitor to '
+              message:
+                  'No visitor matches that access code. Ask the visitor to '
                   'check the code in their message.',
             )
           : visitor.status == VisitorStatus.cancelled
@@ -216,7 +208,8 @@ class VisitorController extends GetxController {
           : visitor.status == VisitorStatus.checkedOut
           ? VisitorVerification(
               isValid: false,
-              message: 'This visitor already checked out at '
+              message:
+                  'This visitor already checked out at '
                   '${visitor.checkedOutAt ?? 'an earlier time'}.',
               visitor: visitor,
             )

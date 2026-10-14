@@ -1,9 +1,17 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../theme/app_palette.dart';
+
+
 import '../theme/app_radius.dart';
+
+
 import '../theme/app_theme_tokens.dart';
+
+
 import 'app_primary_action.dart';
 
 /// A label / value pair shown inside [showAppConfirmSummaryDialog].
@@ -73,10 +81,10 @@ void showAppFeedback(
   required String title,
   required String message,
   required bool isError,
-  Color? backgroundColor
+  Color? backgroundColor,
 }) {
   final messenger = ScaffoldMessenger.maybeOf(context);
-   final tokens = AppThemeTokens.of(context);
+  final tokens = AppThemeTokens.of(context);
   if (messenger == null) {
     return;
   }
@@ -88,7 +96,10 @@ void showAppFeedback(
         backgroundColor: isError
             ? Color(0xFFC2410C)
             : backgroundColor ?? tokens.surface,
-        content: Text('$title: $message',style: TextStyle(color: Colors.white),),
+        content: Text(
+          '$title: $message',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
     );
 }
@@ -207,7 +218,7 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
                 ),
                 child: Icon(widget.icon, color: tokens.brand, size: 26),
               ),
-              SizedBox(height: 14.h),
+              14.h.heightBox(),
               Text(
                 widget.title,
                 key: Key('app-confirm-dialog-title'),
@@ -217,7 +228,7 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              SizedBox(height: 6.h),
+              6.h.heightBox(),
               Text(
                 widget.message,
                 key: Key('app-confirm-dialog-message'),
@@ -227,13 +238,10 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
                   height: 1.35,
                 ),
               ),
-              SizedBox(height: 18.h),
+              18.h.heightBox(),
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 4,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                 decoration: BoxDecoration(
                   color: tokens.surfaceMuted,
                   borderRadius: BorderRadius.circular(18.r),
@@ -256,7 +264,7 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
                                 ),
                               ),
                             ),
-                            SizedBox(width: 12.w),
+                            12.w.widthBox(),
                             Flexible(
                               child: Text(
                                 row.value,
@@ -277,7 +285,7 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
                 ),
               ),
               if (_error != null) ...[
-                SizedBox(height: 14.h),
+                14.h.heightBox(),
                 Container(
                   key: Key('app-confirm-dialog-error'),
                   width: double.infinity,
@@ -297,7 +305,7 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
                         size: 17,
                         color: AppPalette.danger,
                       ),
-                      SizedBox(width: 8.w),
+                      8.w.widthBox(),
                       Expanded(
                         child: Text(
                           _error!,
@@ -312,7 +320,7 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
                   ),
                 ),
               ],
-              SizedBox(height: 18.h),
+              18.h.heightBox(),
               // Stacked full width actions: a long confirm label such as
               // "Confirm Reservation" fits on a small phone without clipping.
               SizedBox(
@@ -332,7 +340,7 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
                   child: Text(widget.cancelLabel),
                 ),
               ),
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               AppPrimaryAction(
                 key: Key('app-confirm-dialog-confirm'),
                 onPressed: _isSubmitting ? null : _confirm,
@@ -393,7 +401,7 @@ Future<bool> showAppFormDialog(
                     ),
                     child: Icon(icon, color: tokens.brand, size: 26),
                   ),
-                  SizedBox(height: 14.h),
+                  14.h.heightBox(),
                 ],
                 Text(
                   title,
@@ -405,7 +413,7 @@ Future<bool> showAppFormDialog(
                   ),
                 ),
                 if (message != null) ...[
-                  SizedBox(height: 6.h),
+                  6.h.heightBox(),
                   Text(
                     message,
                     style: TextStyle(
@@ -415,9 +423,9 @@ Future<bool> showAppFormDialog(
                     ),
                   ),
                 ],
-                SizedBox(height: 18.h),
+                18.h.heightBox(),
                 child,
-                SizedBox(height: 18.h),
+                18.h.heightBox(),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
@@ -433,7 +441,7 @@ Future<bool> showAppFormDialog(
                     child: Text(cancelLabel),
                   ),
                 ),
-                SizedBox(height: 10.h),
+                10.h.heightBox(),
                 AppPrimaryAction(
                   key: Key('app-form-dialog-confirm'),
                   onPressed: () => Navigator.of(dialogContext).pop(true),

@@ -1,21 +1,49 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:test/features/dashboard/presentation/controllers/dashboard_controller.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/models/resident_role.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../../payments/presentation/controllers/payment_controller.dart';
+
+
 import '../../../session/presentation/controllers/session_controller.dart';
+
+
 import '../../../auth/presentation/controllers/auth_controller.dart';
+
+
 import '../../domain/entities/profile.dart';
+
+
 import '../controllers/profile_controller.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/widgets/app_form_field.dart';
+
+
 import '../../../../core/localization/app_locale_controller.dart';
+
+
 import '../../../../core/widgets/app_primary_action.dart';
 
 class ProfilePage extends GetView<ProfileController> {
@@ -24,7 +52,7 @@ class ProfilePage extends GetView<ProfileController> {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
-     final localeController = Get.find<AppLocaleController>();
+    final localeController = Get.find<AppLocaleController>();
     return Scaffold(
       body: SafeArea(
         child: Obx(() {
@@ -65,9 +93,9 @@ class ProfilePage extends GetView<ProfileController> {
                     color: tokens.ink,
                   ),
                 ),
-                SizedBox(height: 18.h),
+                18.h.heightBox(),
                 _ProfileHero(profile: profile),
-                SizedBox(height: 22.h),
+                22.h.heightBox(),
                 // _SectionCard(
                 //   title: 'Role-based view',
                 //   subtitle: 'Demo switch: the app adapts to each role.',
@@ -78,7 +106,7 @@ class ProfilePage extends GetView<ProfileController> {
                 //     ),
                 //   ],
                 // ),
-                // SizedBox(height: 14.h),
+                // 14.h.heightBox(),
                 _SectionCard(
                   title: 'Personal information',
                   children: [
@@ -109,7 +137,7 @@ class ProfilePage extends GetView<ProfileController> {
                     // ),
                   ],
                 ),
-                SizedBox(height: 14.h),
+                14.h.heightBox(),
                 _SectionCard(
                   title: 'Preferences',
                   children: [
@@ -132,12 +160,14 @@ class ProfilePage extends GetView<ProfileController> {
                     _ActionRow(
                       icon: Icons.language_rounded,
                       label: 'Language',
-                      value: localeController.displayName(localeController.locale.languageCode),
+                      value: localeController.displayName(
+                        localeController.locale.languageCode,
+                      ),
                       onTap: () => _chooseLanguage(context, profile),
                     ),
                   ],
                 ),
-                SizedBox(height: 14.h),
+                14.h.heightBox(),
                 _SectionCard(
                   title: 'Resident services',
                   children: [
@@ -183,7 +213,7 @@ class ProfilePage extends GetView<ProfileController> {
                     ),
                   ],
                 ),
-                SizedBox(height: 14.h),
+                14.h.heightBox(),
                 _SectionCard(
                   title: 'Account',
                   children: [
@@ -206,7 +236,7 @@ class ProfilePage extends GetView<ProfileController> {
                     _ActionRow(
                       icon: Icons.credit_card_outlined,
                       label: 'Payment methods',
-                      value: '•••• 4821',
+                      value: 'â€¢â€¢â€¢â€¢ 4821',
                       onTap: () => _showMessage(
                         context,
                         'Payment methods',
@@ -224,7 +254,7 @@ class ProfilePage extends GetView<ProfileController> {
                     ),
                   ],
                 ),
-                SizedBox(height: 18.h),
+                18.h.heightBox(),
                 OutlinedButton.icon(
                   onPressed: () => _confirmLogout(context),
                   icon: Icon(Icons.logout_rounded, size: 18),
@@ -285,7 +315,7 @@ class ProfilePage extends GetView<ProfileController> {
                 'Language',
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20.sp),
               ),
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               for (final code in AppLocaleController.supportedCodes)
                 ListTile(
                   title: Text(localeController.displayName(code)),
@@ -299,12 +329,13 @@ class ProfilePage extends GetView<ProfileController> {
         ),
       ),
     );
-    if (chosen == null || chosen == localeController.locale.languageCode) return;
+    if (chosen == null || chosen == localeController.locale.languageCode)
+      return;
     final displayName = chosen == 'my'
         ? 'Myanmar'
         : chosen == 'zh'
-            ? 'Chinese'
-            : 'English';
+        ? 'Chinese'
+        : 'English';
     await localeController.setLanguageCode(chosen);
     if (profile != null) {
       await controller.updateProfile(
@@ -331,7 +362,7 @@ class ProfilePage extends GetView<ProfileController> {
             obscureText: true,
             icon: Icons.lock_outline_rounded,
           ),
-          SizedBox(height: 14.h),
+          14.h.heightBox(),
           AppTextField(
             label: 'New password',
             obscureText: true,
@@ -359,9 +390,7 @@ class ProfilePage extends GetView<ProfileController> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Logout?'),
-        content: Text(
-          'You will be signed out and asked to sign in again.',
-        ),
+        content: Text('You will be signed out and asked to sign in again.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -429,7 +458,7 @@ class _ProfileHero extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 15.w),
+          15.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,7 +471,7 @@ class _ProfileHero extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                SizedBox(height: 5.h),
+                5.h.heightBox(),
                 Text(
                   profile.unit,
                   style: TextStyle(
@@ -469,11 +498,7 @@ class _ProfileHero extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
-  _SectionCard({
-    required this.title,
-    required this.children,
-    this.subtitle,
-  });
+  _SectionCard({required this.title, required this.children, this.subtitle});
   final String title;
   final String? subtitle;
   final List<Widget> children;
@@ -496,13 +521,13 @@ class _SectionCard extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
           ),
           if (subtitle != null) ...[
-            SizedBox(height: 4.h),
+            4.h.heightBox(),
             Text(
               subtitle!,
               style: TextStyle(color: tokens.muted, fontSize: 11.sp),
             ),
           ],
-          SizedBox(height: 5.h),
+          5.h.heightBox(),
           ...children,
         ],
       ),
@@ -511,11 +536,7 @@ class _SectionCard extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
+  _InfoRow({required this.icon, required this.label, required this.value});
   final IconData icon;
   final String label;
   final String value;
@@ -528,7 +549,7 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         children: [
           Icon(icon, size: 20, color: tokens.brand),
-          SizedBox(width: 12.w),
+          12.w.widthBox(),
           Expanded(
             child: Text(
               label,
@@ -568,16 +589,19 @@ class _PreferenceRow extends StatelessWidget {
       child: Row(
         children: [
           Icon(icon, size: 20, color: tokens.brand),
-          SizedBox(width: 12.w),
+          12.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.sp),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.sp,
+                  ),
                 ),
-                SizedBox(height: 3.h),
+                3.h.heightBox(),
                 Text(
                   value,
                   style: TextStyle(color: tokens.muted, fontSize: 11.sp),
@@ -614,7 +638,7 @@ class _ActionRow extends StatelessWidget {
         child: Row(
           children: [
             Icon(icon, size: 20, color: tokens.brand),
-            SizedBox(width: 12.w),
+            12.w.widthBox(),
             Expanded(
               child: Text(
                 label,
@@ -622,8 +646,11 @@ class _ActionRow extends StatelessWidget {
               ),
             ),
             if (value != null)
-              Text(value!, style: TextStyle(color: tokens.muted, fontSize: 11.sp)),
-            SizedBox(width: 5.w),
+              Text(
+                value!,
+                style: TextStyle(color: tokens.muted, fontSize: 11.sp),
+              ),
+            5.w.widthBox(),
             Icon(Icons.chevron_right_rounded, color: tokens.faint, size: 20),
           ],
         ),
@@ -686,19 +713,19 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                 ),
               ),
             ),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             Text(
               'Edit profile',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20.sp),
             ),
-            SizedBox(height: 15.h),
+            15.h.heightBox(),
             AppTextField(
               fieldKey: Key('profile-name-field'),
               label: 'Full name',
               controller: _nameController,
               icon: Icons.person_outline_rounded,
             ),
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             AppTextField(
               fieldKey: Key('profile-email-field'),
               label: 'Email',
@@ -706,7 +733,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               icon: Icons.alternate_email_rounded,
               keyboardType: TextInputType.emailAddress,
             ),
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             AppTextField(
               fieldKey: Key('profile-phone-field'),
               label: 'Phone',
@@ -714,7 +741,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               icon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
             ),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             AppPrimaryAction(
               key: Key('profile-save'),
               onPressed: _save,

@@ -18,10 +18,7 @@ class UnitPersonTile extends StatelessWidget {
         backgroundColor: tokens.brandTint,
         child: Text(
           person.initials,
-          style: TextStyle(
-            color: tokens.brand,
-            fontWeight: FontWeight.w800,
-          ),
+          style: TextStyle(color: tokens.brand, fontWeight: FontWeight.w800),
         ),
       ),
       title: Text(

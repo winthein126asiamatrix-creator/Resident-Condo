@@ -1,15 +1,33 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../domain/entities/invoice.dart';
+
+
 import '../controllers/payment_controller.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
 
 class PaymentSummaryPage extends GetView<PaymentController> {
@@ -53,13 +71,16 @@ class PaymentSummaryPage extends GetView<PaymentController> {
           ),
           children: [
             _SummaryIntro(invoice: invoice),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             Row(
               children: [
                 Expanded(
                   child: Text(
                     'Select items',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16.sp,
+                    ),
                   ),
                 ),
                 TextButton.icon(
@@ -72,13 +93,13 @@ class PaymentSummaryPage extends GetView<PaymentController> {
                 ),
               ],
             ),
-            SizedBox(height: 4.h),
+            4.h.heightBox(),
             Text(
               'Pick one or several fees. Mandatory fees are always included '
               'and settled items are locked.',
               style: TextStyle(color: tokens.muted, fontSize: 12.sp),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             for (final item in invoice.items)
               _SelectableItem(
                 key: Key('invoice-item-${item.key}'),
@@ -88,16 +109,16 @@ class PaymentSummaryPage extends GetView<PaymentController> {
                     ? (_) => controller.toggleInvoiceItem(item)
                     : null,
               ),
-            SizedBox(height: 18.h),
+            18.h.heightBox(),
             _TotalCard(
               total: controller.selectedTotal,
               count: controller.selectedCount,
             ),
             if (controller.missingMandatoryItems.isNotEmpty) ...[
-              SizedBox(height: 12.h),
+              12.h.heightBox(),
               _MandatoryWarning(message: controller.mandatoryValidationMessage),
             ],
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             FilledButton(
               key: Key('continue-to-payment'),
               onPressed: controller.canProceedToPayment
@@ -108,9 +129,7 @@ class PaymentSummaryPage extends GetView<PaymentController> {
                       Get.toNamed(AppRoutes.paymentMethod);
                     }
                   : null,
-              style: FilledButton.styleFrom(
-                minimumSize: Size.fromHeight(52),
-              ),
+              style: FilledButton.styleFrom(minimumSize: Size.fromHeight(52)),
               child: Text('Continue to Payment'),
             ),
           ],
@@ -153,14 +172,11 @@ class _SummaryIntro extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 5.h),
+          5.h.heightBox(),
+          Text(invoice.unitLabel, style: TextStyle(color: tokens.muted)),
+          4.h.heightBox(),
           Text(
-            invoice.unitLabel,
-            style: TextStyle(color: tokens.muted),
-          ),
-          SizedBox(height: 4.h),
-          Text(
-            'Due ${invoice.dueDate} Â· ${invoice.unpaidItems.length} unpaid items',
+            'Due ${invoice.dueDate} Ã‚Â· ${invoice.unpaidItems.length} unpaid items',
             style: TextStyle(color: tokens.muted, fontSize: 12.sp),
           ),
         ],
@@ -222,10 +238,7 @@ class _SelectableItem extends StatelessWidget {
                   ),
                 ),
               ),
-              if (item.isMandatory) ...[
-                _MandatoryBadge(),
-                SizedBox(width: 8.w),
-              ],
+              if (item.isMandatory) ...[_MandatoryBadge(), 8.w.widthBox()],
               Text(
                 item.isZero ? 'No charge' : AppFormatters.currency(item.amount),
                 style: TextStyle(
@@ -239,7 +252,7 @@ class _SelectableItem extends StatelessWidget {
             item.isPaid
                 ? 'Paid${item.paidDate == null ? '' : ' on ${item.paidDate}'}'
                 : item.isMandatory
-                ? 'Mandatory fee Â· always included'
+                ? 'Mandatory fee Ã‚Â· always included'
                 : item.isZero
                 ? 'Not charged this period'
                 : item.note.isEmpty
@@ -258,17 +271,9 @@ class _SelectableItem extends StatelessWidget {
             ),
           ),
           secondary: item.isPaid
-              ? Icon(
-                  Icons.lock_rounded,
-                  size: 18,
-                  color: AppPalette.success,
-                )
+              ? Icon(Icons.lock_rounded, size: 18, color: AppPalette.success)
               : item.isMandatory
-              ? Icon(
-                  Icons.lock_rounded,
-                  size: 18,
-                  color: tokens.brand,
-                )
+              ? Icon(Icons.lock_rounded, size: 18, color: tokens.brand)
               : null,
         ),
       ),
@@ -318,12 +323,8 @@ class _MandatoryWarning extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.error_outline_rounded,
-            size: 18,
-            color: AppPalette.danger,
-          ),
-          SizedBox(width: 8.w),
+          Icon(Icons.error_outline_rounded, size: 18, color: AppPalette.danger),
+          8.w.widthBox(),
           Expanded(
             child: Text(
               message,
@@ -370,14 +371,11 @@ class _TotalCard extends StatelessWidget {
               ),
               Text(
                 '$count item${count == 1 ? '' : 's'}',
-                style: TextStyle(
-                  color: tokens.brandOnDark,
-                  fontSize: 12.sp,
-                ),
+                style: TextStyle(color: tokens.brandOnDark, fontSize: 12.sp),
               ),
             ],
           ),
-          SizedBox(height: 6.h),
+          6.h.heightBox(),
           Text(
             AppFormatters.currency(total),
             style: TextStyle(

@@ -1,22 +1,52 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/text_input_formatters.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../domain/entities/visitor.dart';
+
+
 import '../controllers/visitor_controller.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/widgets/app_form_field.dart';
+
+
 import '../../../../core/widgets/app_primary_action.dart';
+
+
 import '../../../../core/theme/app_radius.dart';
+
+
 import '../../../../core/utils/app_dates.dart';
+
+
 import '../../../../core/utils/app_times.dart';
 
 class RegisterVisitorPage extends StatefulWidget {
@@ -167,11 +197,11 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.vpn_key_outlined, color: tokens.brand),
-                  SizedBox(width: 10.w),
+                  10.w.widthBox(),
                   Expanded(
                     child: Text(
                       'An alphanumeric access code is generated automatically '
-                      'when you register. Share the code with your visitor — no '
+                      'when you register. Share the code with your visitor â€” no '
                       'QR pass is used.',
                       style: TextStyle(
                         color: tokens.mutedStrong,
@@ -183,7 +213,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                 ],
               ),
             ),
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             AppTextField(
               fieldKey: Key('visitor-name-field'),
               label: 'Full name',
@@ -192,7 +222,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
               hint: 'Jamie Johnson',
               icon: Icons.person_outline_rounded,
             ),
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             AppTextField(
               fieldKey: Key('visitor-phone-field'),
               label: 'Contact number',
@@ -204,9 +234,9 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
               hint: '+959772611100',
               icon: Icons.phone_outlined,
             ),
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             _Label('Relation'),
-            SizedBox(height: 8.h),
+            8.h.heightBox(),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -227,24 +257,24 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                   )
                   .toList(),
             ),
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             AppTextField(
               label: 'Purpose of visit',
               controller: _notesController,
-              hint: 'Dinner, delivery, maintenance visit…',
+              hint: 'Dinner, delivery, maintenance visitâ€¦',
               icon: Icons.notes_rounded,
             ),
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             _Label('Visit date'),
-            SizedBox(height: 8.h),
+            8.h.heightBox(),
             _VisitDatePicker(
               dates: _visitDates,
               selected: _date,
               onSelected: _selectDate,
             ),
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             _Label('Arrival time'),
-            SizedBox(height: 8.h),
+            8.h.heightBox(),
             if (_arrivalSlots.isEmpty)
               _NoSlotsToday()
             else ...[
@@ -293,10 +323,10 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                   ),
                 ],
               ),
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               _VisitWindow(range: _visitWindow),
             ],
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             AppTextField(
               label: 'Vehicle plate (optional)',
               controller: _plateController,
@@ -305,7 +335,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
               hint: 'ABC-1234',
               icon: Icons.directions_car_outlined,
             ),
-            SizedBox(height: 24.h),
+            24.h.heightBox(),
             AppPrimaryAction(
               key: Key('submit-visitor'),
               onPressed: controller.isSubmitting.value ? null : _submit,
@@ -316,11 +346,11 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
               icon: Icons.person_add_alt_1_rounded,
             ),
             if (_error.isNotEmpty) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(_error, style: TextStyle(color: AppPalette.danger)),
             ],
             if (controller.errorMessage.value != null) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(
                 controller.errorMessage.value!,
                 style: TextStyle(color: AppPalette.danger),
@@ -484,7 +514,7 @@ class _VisitDatePicker extends StatelessWidget {
               onTap: () => onSelected(dates[index].value),
             ),
           ),
-          if (index < dates.length - 1) SizedBox(width: 8.w),
+          if (index < dates.length - 1) 8.w.widthBox(),
         ],
       ],
     );
@@ -538,7 +568,7 @@ class _VisitDateCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                4.h.heightBox(),
                 Text(
                   date.day,
                   style: TextStyle(
@@ -547,7 +577,7 @@ class _VisitDateCard extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                SizedBox(height: 1.h),
+                1.h.heightBox(),
                 Text(
                   date.month,
                   style: TextStyle(
@@ -584,12 +614,8 @@ class _NoSlotsToday extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.schedule_rounded,
-            size: 18,
-            color: AppPalette.warning,
-          ),
-          SizedBox(width: 9.w),
+          Icon(Icons.schedule_rounded, size: 18, color: AppPalette.warning),
+          9.w.widthBox(),
           Expanded(
             child: Text(
               'No arrival times are left today. Choose a later visit date.',
@@ -623,12 +649,8 @@ class _VisitWindow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.timelapse_rounded,
-            size: 18,
-            color: tokens.brand,
-          ),
-          SizedBox(width: 10.w),
+          Icon(Icons.timelapse_rounded, size: 18, color: tokens.brand),
+          10.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -641,7 +663,7 @@ class _VisitWindow extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 2.h),
+                2.h.heightBox(),
                 Text(
                   range.label,
                   style: TextStyle(

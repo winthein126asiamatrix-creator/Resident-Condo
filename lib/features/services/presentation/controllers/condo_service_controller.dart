@@ -58,7 +58,6 @@ class CondoServiceController extends GetxController {
       .where((request) => request.status != ServiceRequestStatus.cancelled)
       .fold(0, (total, request) => total + request.price);
 
-
   void selectTab(ServicesTab value) {
     tab.value = value;
   }

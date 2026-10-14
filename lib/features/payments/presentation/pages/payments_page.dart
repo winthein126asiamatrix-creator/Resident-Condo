@@ -1,18 +1,42 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_text_styles.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../../domain/entities/invoice.dart';
+
+
 import '../../domain/entities/payment.dart';
+
+
 import '../controllers/payment_controller.dart';
+
+
 import '../widgets/payment_status_badge.dart';
 
 class PaymentsPage extends GetView<PaymentController> {
@@ -43,16 +67,16 @@ class PaymentsPage extends GetView<PaymentController> {
                     padding: EdgeInsets.fromLTRB(20, 18, 20, 32),
                     children: [
                       _PaymentsHeader(onRefresh: controller.loadPayments),
-                      SizedBox(height: 20.h),
+                      20.h.heightBox(),
                       _BalanceSummary(controller: controller),
-                      SizedBox(height: 20.h),
+                      20.h.heightBox(),
                       _FeeBreakdown(controller: controller),
-                      SizedBox(height: 25.h),
+                      25.h.heightBox(),
                       _SectionHeader(
                         title: 'Invoices',
                         count: controller.invoices.length,
                       ),
-                      SizedBox(height: 10.h),
+                      10.h.heightBox(),
                       if (controller.invoices.isEmpty)
                         AppStateMessage(
                           title: 'No invoices',
@@ -66,14 +90,14 @@ class PaymentsPage extends GetView<PaymentController> {
                             child: _InvoiceCard(invoice: invoice),
                           ),
                         ),
-                      SizedBox(height: 16.h),
+                      16.h.heightBox(),
                       _SectionHeader(
                         title: 'Payment history',
                         count: controller.paymentHistory.length,
                         actionLabel: 'View all',
                         onAction: () => Get.toNamed(AppRoutes.paymentHistory),
                       ),
-                      SizedBox(height: 10.h),
+                      10.h.heightBox(),
                       if (controller.paymentHistory.isEmpty)
                         Text(
                           'No payment history yet.',
@@ -110,11 +134,8 @@ class _PaymentsHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Payments',
-                style: AppTextStyles.of(context).screenTitle,
-              ),
-              SizedBox(height: 4.h),
+              Text('Payments', style: AppTextStyles.of(context).screenTitle),
+              4.h.heightBox(),
               Text(
                 'Pay a single fee or several at once',
                 style: TextStyle(color: tokens.muted),
@@ -183,7 +204,7 @@ class _BalanceSummary extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 8.h),
+          8.h.heightBox(),
           Text(
             AppFormatters.currency(outstanding),
             style: TextStyle(
@@ -192,12 +213,12 @@ class _BalanceSummary extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
-          SizedBox(height: 4.h),
+          4.h.heightBox(),
           Text(
             'Across all open invoices',
             style: TextStyle(color: tokens.brandOnDarkMuted, fontSize: 12.sp),
           ),
-          SizedBox(height: 19.h),
+          19.h.heightBox(),
           Row(
             children: [
               Expanded(
@@ -223,7 +244,7 @@ class _BalanceSummary extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 18.h),
+          18.h.heightBox(),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
@@ -240,7 +261,7 @@ class _BalanceSummary extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 8.h),
+          8.h.heightBox(),
           Text(
             'Pay Now takes you to the item list. Nothing is charged until you '
             'confirm the items you selected.',
@@ -309,12 +330,12 @@ class _FeeBreakdown extends StatelessWidget {
             'Balance by fee type',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
           ),
-          SizedBox(height: 4.h),
+          4.h.heightBox(),
           Text(
             'Rent and the monthly condo fee are billed separately.',
             style: TextStyle(color: tokens.muted, fontSize: 11.sp),
           ),
-          SizedBox(height: 12.h),
+          12.h.heightBox(),
           for (final row in rows)
             Padding(
               padding: EdgeInsets.symmetric(vertical: 5),
@@ -328,7 +349,7 @@ class _FeeBreakdown extends StatelessWidget {
                       borderRadius: BorderRadius.circular(3.r),
                     ),
                   ),
-                  SizedBox(width: 10.w),
+                  10.w.widthBox(),
                   Expanded(
                     child: Text(
                       row.label,
@@ -374,7 +395,7 @@ class _SummaryMetric extends StatelessWidget {
           label,
           style: TextStyle(color: tokens.brandOnDark, fontSize: 10.sp),
         ),
-        SizedBox(height: 4.h),
+        4.h.heightBox(),
         Text(
           value,
           style: TextStyle(
@@ -383,7 +404,7 @@ class _SummaryMetric extends StatelessWidget {
             fontSize: 14.sp,
           ),
         ),
-        SizedBox(height: 2.h),
+        2.h.heightBox(),
         Text(
           detail,
           maxLines: 1,
@@ -417,7 +438,7 @@ class _SectionHeader extends StatelessWidget {
           style: Theme.of(context).textTheme.titleMedium
               ?.copyWith(fontWeight: FontWeight.w800, color: tokens.ink),
         ),
-        SizedBox(width: 7.w),
+        7.w.widthBox(),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
           decoration: BoxDecoration(
@@ -467,7 +488,7 @@ class _InvoiceCard extends StatelessWidget {
                   : Icons.receipt_long_outlined,
               color: invoice.isFullyPaid ? AppPalette.success : tokens.brand,
             ),
-            SizedBox(width: 12.w),
+            12.w.widthBox(),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -476,15 +497,15 @@ class _InvoiceCard extends StatelessWidget {
                     invoice.title,
                     style: TextStyle(fontWeight: FontWeight.w800),
                   ),
-                  SizedBox(height: 4.h),
+                  4.h.heightBox(),
                   Text(
-                    '${invoice.billingPeriod} · ${invoice.number}',
+                    '${invoice.billingPeriod} Â· ${invoice.number}',
                     style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                   ),
-                  SizedBox(height: 6.h),
+                  6.h.heightBox(),
                   if (openItems.isNotEmpty)
                     Text(
-                      openItems.map((item) => item.type.shortLabel).join(' · '),
+                      openItems.map((item) => item.type.shortLabel).join(' Â· '),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -502,12 +523,12 @@ class _InvoiceCard extends StatelessWidget {
                   AppFormatters.currency(invoice.amountDue),
                   style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                SizedBox(height: 4.h),
+                4.h.heightBox(),
                 Text(
                   invoice.isFullyPaid ? 'Settled' : 'Due ${invoice.dueDate}',
                   style: TextStyle(color: tokens.muted, fontSize: 10.sp),
                 ),
-                SizedBox(height: 5.h),
+                5.h.heightBox(),
                 PaymentStatusBadge(status: invoice.status),
               ],
             ),
@@ -543,7 +564,7 @@ class _PaymentPreview extends StatelessWidget {
                 ? AppPalette.success
                 : AppPalette.danger,
           ),
-          SizedBox(width: 10.w),
+          10.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -552,9 +573,9 @@ class _PaymentPreview extends StatelessWidget {
                   payment.invoiceNumber,
                   style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                SizedBox(height: 3.h),
+                3.h.heightBox(),
                 Text(
-                  '${payment.date} · ${payment.status.label}',
+                  '${payment.date} Â· ${payment.status.label}',
                   style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                 ),
               ],

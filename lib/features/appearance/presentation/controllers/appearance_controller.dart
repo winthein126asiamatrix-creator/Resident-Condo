@@ -100,7 +100,10 @@ class AppearanceController extends GetxController {
 
   void selectPreset(AppColorSeed seed) {
     customColorDraft.value = seed.color;
-    draft.value = draft.value.copyWith(seedColor: seed.color, presetId: seed.id);
+    draft.value = draft.value.copyWith(
+      seedColor: seed.color,
+      presetId: seed.id,
+    );
   }
 
   /// Picks the colour the custom picker is editing, without persisting it. The
@@ -185,7 +188,7 @@ class AppearanceController extends GetxController {
   /// The tokens the preview paints with, so the mini app on the screen matches
   /// what the app itself is rendering.
   AppThemeTokens get previewTokens => AppThemeTokens.from(
-        AppTheme.schemeFor(draft.value.seedColor, previewBrightness),
-        draft.value.seedColor,
-      );
+    AppTheme.schemeFor(draft.value.seedColor, previewBrightness),
+    draft.value.seedColor,
+  );
 }

@@ -1,8 +1,14 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../../../../core/theme/app_radius.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../domain/entities/app_color_seed.dart';
 
 /// Light / Dark / System, as three equal options rather than a switch.
@@ -32,7 +38,7 @@ class AppBrightnessModeSelector extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-        for (final mode in AppBrightnessMode.values) ...[
+          for (final mode in AppBrightnessMode.values) ...[
             Expanded(
               child: _ModeOption(
                 key: Key('appearance-mode-${mode.id}'),
@@ -41,8 +47,7 @@ class AppBrightnessModeSelector extends StatelessWidget {
                 onTap: () => onChanged(mode),
               ),
             ),
-            if (mode != AppBrightnessMode.values.last)
-              SizedBox(width: 10.w),
+            if (mode != AppBrightnessMode.values.last) 10.w.widthBox(),
           ],
         ],
       ),
@@ -85,16 +90,13 @@ class _ModeOption extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 12,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _ModeIllustration(mode: mode, selected: selected),
-                  SizedBox(height: 10.h),
+                  10.h.heightBox(),
                   Row(
                     children: [
                       Expanded(
@@ -122,7 +124,7 @@ class _ModeOption extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 3.h),
+                  3.h.heightBox(),
                   Text(
                     mode.description,
                     maxLines: 2,
@@ -217,11 +219,13 @@ class _Half extends StatelessWidget {
           child: Container(
             width: 12,
             height: 12,
-            decoration: BoxDecoration(color: foreground, shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: foreground,
+              shape: BoxShape.circle,
+            ),
           ),
         ),
       ),
     );
   }
 }
-

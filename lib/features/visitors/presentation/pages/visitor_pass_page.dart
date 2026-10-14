@@ -1,15 +1,31 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../domain/entities/visitor.dart';
+
+
 import '../controllers/visitor_controller.dart';
+
+
 import '../widgets/visitor_status_badge.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class VisitorPassPage extends GetView<VisitorController> {
@@ -30,7 +46,7 @@ class VisitorPassPage extends GetView<VisitorController> {
           padding: EdgeInsets.fromLTRB(20, 8, 20, 32),
           children: [
             _CodeCard(visitor: current, color: color),
-            SizedBox(height: 18.h),
+            18.h.heightBox(),
             AppSectionCard(
               title: 'Visit details',
               child: Column(
@@ -59,7 +75,7 @@ class VisitorPassPage extends GetView<VisitorController> {
                 ],
               ),
             ),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             AppSectionCard(
               title: 'Lobby log',
               child: Column(
@@ -78,34 +94,29 @@ class VisitorPassPage extends GetView<VisitorController> {
                   ),
                   AppLabelValueRow(
                     label: 'Checked out',
-                    value: current.checkedOutAt ?? '—',
+                    value: current.checkedOutAt ?? 'â€”',
                   ),
                 ],
               ),
             ),
             if (current.notes.isNotEmpty) ...[
-              SizedBox(height: 16.h),
+              16.h.heightBox(),
               AppSectionCard(
                 title: 'Notes',
                 child: Text(
                   current.notes,
-                  style: TextStyle(
-                    color: tokens.mutedStrong,
-                    height: 1.4,
-                  ),
+                  style: TextStyle(color: tokens.mutedStrong, height: 1.4),
                 ),
               ),
             ],
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             OutlinedButton.icon(
               onPressed: () => _copy(context, current),
               icon: Icon(Icons.copy_rounded, size: 18),
               label: Text('Copy access code'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: Size.fromHeight(48),
-              ),
+              style: OutlinedButton.styleFrom(minimumSize: Size.fromHeight(48)),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             if (current.canCheckIn)
               FilledButton.icon(
                 onPressed: controller.isSubmitting.value
@@ -113,9 +124,7 @@ class VisitorPassPage extends GetView<VisitorController> {
                     : () => _checkIn(context, current),
                 icon: Icon(Icons.login_rounded, size: 18),
                 label: Text('Mark as checked in'),
-                style: FilledButton.styleFrom(
-                  minimumSize: Size.fromHeight(50),
-                ),
+                style: FilledButton.styleFrom(minimumSize: Size.fromHeight(50)),
               )
             else if (current.canCheckOut)
               FilledButton.icon(
@@ -129,7 +138,7 @@ class VisitorPassPage extends GetView<VisitorController> {
                   minimumSize: Size.fromHeight(50),
                 ),
               ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             OutlinedButton.icon(
               onPressed: controller.isSubmitting.value
                   ? null
@@ -270,7 +279,7 @@ class _CodeCard extends StatelessWidget {
               letterSpacing: 1.5,
             ),
           ),
-          SizedBox(height: 16.h),
+          16.h.heightBox(),
           Text(
             visitor.accessCode,
             textAlign: TextAlign.center,
@@ -281,9 +290,9 @@ class _CodeCard extends StatelessWidget {
               letterSpacing: 3,
             ),
           ),
-          SizedBox(height: 14.h),
+          14.h.heightBox(),
           Container(height: 1, color: Colors.white.withValues(alpha: 0.2)),
-          SizedBox(height: 14.h),
+          14.h.heightBox(),
           Text(
             visitor.name,
             style: TextStyle(
@@ -292,15 +301,12 @@ class _CodeCard extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
-          SizedBox(height: 4.h),
+          4.h.heightBox(),
           Text(
-            '${visitor.date} · ${visitor.arrivalWindow}',
-            style: TextStyle(
-              color: tokens.brandOnDarkMuted,
-              fontSize: 12.sp,
-            ),
+            '${visitor.date} Â· ${visitor.arrivalWindow}',
+            style: TextStyle(color: tokens.brandOnDarkMuted, fontSize: 12.sp),
           ),
-          SizedBox(height: 14.h),
+          14.h.heightBox(),
           VisitorStatusPill(status: visitor.status),
         ],
       ),

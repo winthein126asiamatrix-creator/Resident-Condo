@@ -124,11 +124,7 @@ class InvoiceItem {
 
   double get paidAmount => isPaid ? amount : 0;
 
-  InvoiceItem copyWith({
-    bool? isPaid,
-    String? paidDate,
-    bool? mustPaid,
-  }) {
+  InvoiceItem copyWith({bool? isPaid, String? paidDate, bool? mustPaid}) {
     return InvoiceItem(
       type: type,
       amount: amount,
@@ -184,8 +180,7 @@ class Invoice {
   double get total => items.fold(0, (sum, item) => sum + item.amount);
 
   /// Value that is still open. This is what the resident has to pay.
-  double get amountDue =>
-      items.fold(0, (sum, item) => sum + item.dueAmount);
+  double get amountDue => items.fold(0, (sum, item) => sum + item.dueAmount);
 
   double get amountPaid => total - amountDue;
 
@@ -197,10 +192,8 @@ class Invoice {
       items.where((item) => item.isMandatory).toList();
 
   /// Value of the mandatory charges that are still open.
-  double get mandatoryDue => mandatoryItems.fold(
-    0,
-    (sum, item) => sum + item.dueAmount,
-  );
+  double get mandatoryDue =>
+      mandatoryItems.fold(0, (sum, item) => sum + item.dueAmount);
 
   bool get hasPaidItems => items.any((item) => item.isPaid);
 
@@ -227,6 +220,7 @@ class Invoice {
     }
     return null;
   }
+
   Invoice copyWith({
     InvoiceStatus? status,
     List<InvoiceItem>? items,

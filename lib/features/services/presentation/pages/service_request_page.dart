@@ -1,18 +1,42 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../controllers/condo_service_controller.dart';
+
+
 import '../widgets/service_widgets.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_form_field.dart';
 
 class ServiceRequestPage extends StatefulWidget {
@@ -27,7 +51,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
   final TextEditingController _notesController = TextEditingController();
 
   String _date = 'Sep 27, 2026';
-  String _slot = '9:00 AM – 11:00 AM';
+  String _slot = '9:00 AM â€“ 11:00 AM';
   String _error = '';
 
   static const _dates = [
@@ -37,9 +61,9 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
     'Sep 29, 2026',
   ];
   static const _slots = [
-    '9:00 AM – 11:00 AM',
-    '1:00 PM – 3:00 PM',
-    '4:00 PM – 6:00 PM',
+    '9:00 AM â€“ 11:00 AM',
+    '1:00 PM â€“ 3:00 PM',
+    '4:00 PM â€“ 6:00 PM',
   ];
 
   @override
@@ -82,7 +106,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                     icon: serviceIcon(service.category),
                     color: tokens.brand,
                   ),
-                  SizedBox(width: 12.w),
+                  12.w.widthBox(),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,12 +118,15 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                             fontSize: 16.sp,
                           ),
                         ),
-                        SizedBox(height: 3.h),
+                        3.h.heightBox(),
                         Text(
                           service.provider,
-                          style: TextStyle(color: tokens.muted, fontSize: 11.sp),
+                          style: TextStyle(
+                            color: tokens.muted,
+                            fontSize: 11.sp,
+                          ),
                         ),
-                        SizedBox(height: 6.h),
+                        6.h.heightBox(),
                         Text(
                           '${AppFormatters.currency(service.price)} ${service.unit}',
                           style: TextStyle(
@@ -114,12 +141,12 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                 ],
               ),
             ),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             Text(
               'Preferred date',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -137,12 +164,12 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                   )
                   .toList(),
             ),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             Text(
               'Time slot',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -157,20 +184,20 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                   )
                   .toList(),
             ),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             Text(
               'Notes for the team',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             AppTextField(
               fieldKey: Key('service-notes-field'),
               label: 'Notes for the team',
               controller: _notesController,
-              hint: 'Anything the team should know…',
+              hint: 'Anything the team should knowâ€¦',
               maxLines: 3,
             ),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             AppCard(
               color: AppPalette.amberSoft,
               borderColor: Color(0xFFF2E0B8),
@@ -182,7 +209,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                     color: AppPalette.warning,
                     size: 20,
                   ),
-                  SizedBox(width: 10.w),
+                  10.w.widthBox(),
                   Expanded(
                     child: Text(
                       'The service fee is billed as its own line on your next '
@@ -197,7 +224,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                 ],
               ),
             ),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             FilledButton.icon(
               key: Key('confirm-service-booking'),
               onPressed: controller.isSubmitting.value ? null : _submit,
@@ -216,16 +243,14 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                     ? 'Booking...'
                     : 'Confirm booking',
               ),
-              style: FilledButton.styleFrom(
-                minimumSize: Size.fromHeight(52),
-              ),
+              style: FilledButton.styleFrom(minimumSize: Size.fromHeight(52)),
             ),
             if (_error.isNotEmpty) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(_error, style: TextStyle(color: AppPalette.danger)),
             ],
             if (controller.errorMessage.value != null) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(
                 controller.errorMessage.value!,
                 style: TextStyle(color: AppPalette.danger),

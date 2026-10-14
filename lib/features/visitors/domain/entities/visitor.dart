@@ -20,7 +20,14 @@ extension VisitorStatusLabel on VisitorStatus {
       this == VisitorStatus.preRegistered || this == VisitorStatus.checkedIn;
 }
 
-enum VisitorRelation { family, friend, colleague, delivery, serviceProvider, other }
+enum VisitorRelation {
+  family,
+  friend,
+  colleague,
+  delivery,
+  serviceProvider,
+  other,
+}
 
 extension VisitorRelationLabel on VisitorRelation {
   String get label {
@@ -93,7 +100,8 @@ class Visitor {
   }
 
   bool get canCheckIn =>
-      status == VisitorStatus.preRegistered || status == VisitorStatus.checkedOut;
+      status == VisitorStatus.preRegistered ||
+      status == VisitorStatus.checkedOut;
 
   bool get canCheckOut => status == VisitorStatus.checkedIn;
 
@@ -124,7 +132,11 @@ class Visitor {
 
 /// Result of validating an access code typed at the lobby desk.
 class VisitorVerification {
-  const VisitorVerification({required this.isValid, required this.message, this.visitor});
+  const VisitorVerification({
+    required this.isValid,
+    required this.message,
+    this.visitor,
+  });
 
   final bool isValid;
   final String message;

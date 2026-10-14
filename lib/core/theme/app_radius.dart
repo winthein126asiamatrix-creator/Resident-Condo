@@ -1,4 +1,5 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 /// Corner radii used across the app.
 ///
 /// Screens used to repeat `BorderRadius.circular(20.r)` and friends, which let the

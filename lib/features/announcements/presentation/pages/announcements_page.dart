@@ -1,13 +1,27 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../domain/entities/announcement.dart';
+
+
 import '../controllers/announcement_controller.dart';
+
+
 import '../widgets/announcement_card.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class AnnouncementsPage extends GetView<AnnouncementController> {
@@ -49,20 +63,25 @@ class AnnouncementsPage extends GetView<AnnouncementController> {
           onRefresh: controller.loadAnnouncements,
           child: ListView(
             physics: AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.gutter,
+              AppSpacing.pageTop,
+              AppSpacing.gutter,
+              32,
+            ),
             children: [
               _AnnouncementSummary(
                 unreadCount: controller.unreadCount,
                 totalCount: controller.announcements.length,
               ),
-              SizedBox(height: 18.h),
+              18.h.heightBox(),
               Text(
                 'Filter by category',
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
               ),
-              SizedBox(height: 9.h),
+              9.h.heightBox(),
               _CategoryFilters(controller: controller),
-              SizedBox(height: 20.h),
+              20.h.heightBox(),
               if (visible.isEmpty)
                 AppStateMessage(
                   title: 'No announcements',
@@ -88,10 +107,7 @@ class AnnouncementsPage extends GetView<AnnouncementController> {
 }
 
 class _AnnouncementSummary extends StatelessWidget {
-  _AnnouncementSummary({
-    required this.unreadCount,
-    required this.totalCount,
-  });
+  _AnnouncementSummary({required this.unreadCount, required this.totalCount});
 
   final int unreadCount;
   final int totalCount;
@@ -121,7 +137,7 @@ class _AnnouncementSummary extends StatelessWidget {
               size: 27,
             ),
           ),
-          SizedBox(width: 14.w),
+          14.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,7 +150,7 @@ class _AnnouncementSummary extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 6.h),
+                6.h.heightBox(),
                 Text(
                   unreadCount == 0
                       ? 'You are all caught up'
@@ -174,9 +190,9 @@ class _CategoryFilters extends StatelessWidget {
             label: Text('All'),
             selected: controller.selectedCategory.value == null,
             onSelected: (_) => controller.selectCategory(null),
-                selectedColor: tokens.brandOnDark,
+            selectedColor: tokens.brandOnDark,
           ),
-          SizedBox(width: 8.w),
+          8.w.widthBox(),
           ...AnnouncementCategory.values.map(
             (category) => Padding(
               padding: EdgeInsets.only(right: 8),
@@ -184,7 +200,7 @@ class _CategoryFilters extends StatelessWidget {
                 label: Text(category.label),
                 selected: controller.selectedCategory.value == category,
                 onSelected: (_) => controller.selectCategory(category),
-            selectedColor: tokens.brandOnDark,
+                selectedColor: tokens.brandOnDark,
               ),
             ),
           ),

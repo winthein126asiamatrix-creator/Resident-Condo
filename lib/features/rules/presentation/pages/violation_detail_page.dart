@@ -1,18 +1,42 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../../domain/entities/rules.dart';
+
+
 import '../controllers/rules_controller.dart';
+
+
 import '../widgets/rules_widgets.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class ViolationDetailPage extends GetView<RulesController> {
@@ -35,7 +59,7 @@ class ViolationDetailPage extends GetView<RulesController> {
               icon: Icons.report_rounded,
               title: current.reference,
               subtitle: current.ruleTitle,
-              footnote: 'Issued ${current.issuedOn} · due ${current.dueDate}',
+              footnote: 'Issued ${current.issuedOn} Â· due ${current.dueDate}',
               trailing: ViolationStatusPill(
                 status: current.status,
                 dense: false,
@@ -64,7 +88,7 @@ class ViolationDetailPage extends GetView<RulesController> {
                 ],
               ),
             ),
-            SizedBox(height: 18.h),
+            18.h.heightBox(),
             AppSectionCard(
               title: 'What happened',
               child: Text(
@@ -72,7 +96,7 @@ class ViolationDetailPage extends GetView<RulesController> {
                 style: TextStyle(color: tokens.mutedStrong, height: 1.45),
               ),
             ),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             AppSectionCard(
               title: 'Record',
               child: Column(
@@ -97,12 +121,12 @@ class ViolationDetailPage extends GetView<RulesController> {
               ),
             ),
             if (appeal != null) ...[
-              SizedBox(height: 18.h),
+              18.h.heightBox(),
               AppSectionHeader(title: 'Appeal'),
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               _AppealCard(controller: controller, appeal: appeal),
             ],
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             if (current.canAppeal && appeal == null)
               FilledButton.icon(
                 key: Key('appeal-violation'),
@@ -112,9 +136,7 @@ class ViolationDetailPage extends GetView<RulesController> {
                 },
                 icon: Icon(Icons.balance_rounded, size: 18),
                 label: Text('Appeal this violation'),
-                style: FilledButton.styleFrom(
-                  minimumSize: Size.fromHeight(52),
-                ),
+                style: FilledButton.styleFrom(minimumSize: Size.fromHeight(52)),
               ),
             if (appeal != null && appeal.isOpen)
               OutlinedButton.icon(
@@ -135,11 +157,8 @@ class ViolationDetailPage extends GetView<RulesController> {
                 borderColor: tokens.brandSoft,
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.check_circle_rounded,
-                      color: AppPalette.success,
-                    ),
-                    SizedBox(width: 12.w),
+                    Icon(Icons.check_circle_rounded, color: AppPalette.success),
+                    12.w.widthBox(),
                     Expanded(
                       child: Text(
                         'This fine is already settled. It is shown as a Violation '
@@ -155,7 +174,7 @@ class ViolationDetailPage extends GetView<RulesController> {
                 ),
               ),
             if (controller.errorMessage.value != null) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(
                 controller.errorMessage.value!,
                 style: TextStyle(color: AppPalette.danger),
@@ -233,7 +252,7 @@ class _AppealCard extends StatelessWidget {
               AppealStatusPill(status: appeal.status),
             ],
           ),
-          SizedBox(height: 10.h),
+          10.h.heightBox(),
           Text(
             appeal.reason,
             style: TextStyle(
@@ -243,7 +262,7 @@ class _AppealCard extends StatelessWidget {
             ),
           ),
           if (appeal.decisionNote != null) ...[
-            SizedBox(height: 12.h),
+            12.h.heightBox(),
             Container(
               padding: EdgeInsets.all(12),
               decoration: BoxDecoration(

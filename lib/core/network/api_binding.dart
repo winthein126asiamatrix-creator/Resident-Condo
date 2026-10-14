@@ -25,7 +25,8 @@ abstract final class ApiBinding extends Bindings {
     if (Get.isRegistered<DioApiService>()) {
       return;
     }
-    final storage = tokenStorage ??
+    final storage =
+        tokenStorage ??
         (Get.isRegistered<TokenStorage>()
             ? Get.find<TokenStorage>()
             // Wrapped rather than registered bare, so a sign-in can route the

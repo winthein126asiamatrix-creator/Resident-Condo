@@ -1,4 +1,12 @@
-enum RuleCategory { noise, parking, pets, appearance, waste, safety, commonAreas }
+enum RuleCategory {
+  noise,
+  parking,
+  pets,
+  appearance,
+  waste,
+  safety,
+  commonAreas,
+}
 
 extension RuleCategoryLabel on RuleCategory {
   String get label {
@@ -43,7 +51,14 @@ class CommunityRule {
   final String updatedOn;
 }
 
-enum ViolationStatus { open, appealed, appealApproved, appealRejected, paid, closed }
+enum ViolationStatus {
+  open,
+  appealed,
+  appealApproved,
+  appealRejected,
+  paid,
+  closed,
+}
 
 extension ViolationStatusLabel on ViolationStatus {
   String get label {
@@ -107,7 +122,11 @@ class ViolationAppeal {
   bool get isOpen =>
       status == AppealStatus.pending || status == AppealStatus.underReview;
 
-  ViolationAppeal copyWith({AppealStatus? status, String? decidedOn, String? decisionNote}) {
+  ViolationAppeal copyWith({
+    AppealStatus? status,
+    String? decidedOn,
+    String? decisionNote,
+  }) {
     return ViolationAppeal(
       id: id,
       violationId: violationId,
@@ -152,10 +171,10 @@ class Violation {
   final String dueDate;
   final String evidenceNote;
 
-  bool get canAppeal =>
-      status == ViolationStatus.open && amount > 0;
+  bool get canAppeal => status == ViolationStatus.open && amount > 0;
 
-  bool get isOverdue => status == ViolationStatus.open || status == ViolationStatus.appealed;
+  bool get isOverdue =>
+      status == ViolationStatus.open || status == ViolationStatus.appealed;
 
   Violation copyWith({ViolationStatus? status}) {
     return Violation(

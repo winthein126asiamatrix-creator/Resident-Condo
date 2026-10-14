@@ -1,3 +1,5 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -5,19 +7,46 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
+
 import '../../../../core/services/photo_picker.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_dates.dart';
+
+
 import '../../../../core/utils/app_validators.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_form_field.dart';
+
+
 import '../../../../core/widgets/app_picker_field.dart';
+
+
 import '../../../../core/widgets/app_primary_action.dart';
+
+
 import '../../domain/entities/maintenance_request.dart';
+
+
 import '../controllers/maintenance_controller.dart';
+
+
 import '../../../../core/widgets/app_segmented_control.dart';
 
 class CreateMaintenanceRequestPage extends StatefulWidget {
@@ -102,7 +131,7 @@ class _CreateMaintenanceRequestPageState
                   textInputAction: TextInputAction.next,
                   onSubmitted: (_) => _descriptionFocus.requestFocus(),
                 ),
-                SizedBox(height: 18.h),
+                18.h.heightBox(),
                 AppTextField(
                   fieldKey: Key('maintenance-description'),
                   label: 'Description',
@@ -117,7 +146,7 @@ class _CreateMaintenanceRequestPageState
                   textInputAction: TextInputAction.next,
                   onSubmitted: (_) => _locationFocus.requestFocus(),
                 ),
-                SizedBox(height: 18.h),
+                18.h.heightBox(),
                 AppSelectField<MaintenanceCategory>(
                   fieldKey: Key('maintenance-category'),
                   label: 'Category',
@@ -127,7 +156,7 @@ class _CreateMaintenanceRequestPageState
                   itemBuilder: (category) => category.label,
                   onChanged: (value) => setState(() => _category = value),
                 ),
-                SizedBox(height: 18.h),
+                18.h.heightBox(),
                 AppSegmentedControl<MaintenancePriority>(
                   label: 'Priority',
                   segments: {
@@ -150,7 +179,7 @@ class _CreateMaintenanceRequestPageState
                   value: _priority,
                   onChanged: (value) => setState(() => _priority = value),
                 ),
-                SizedBox(height: 24.h),
+                24.h.heightBox(),
                 _FormSection(
                   title: 'Location & schedule',
                   subtitle: 'Where should our technician go, and when?',
@@ -167,21 +196,21 @@ class _CreateMaintenanceRequestPageState
                       AppValidators.requiredText(value, field: 'Location'),
                   textInputAction: TextInputAction.done,
                 ),
-                SizedBox(height: 18.h),
+                18.h.heightBox(),
                 _DateTimeRow(
                   date: _preferredDate,
                   time: _preferredTime,
                   onPickDate: _pickDate,
                   onPickTime: _pickTime,
                 ),
-                SizedBox(height: 24.h),
+                24.h.heightBox(),
                 _FormSection(
                   title: 'Photos',
                   subtitle: 'Photos are optional and help us diagnose faster.',
                   icon: Icons.photo_camera_outlined,
                 ),
                 if (_photos.isNotEmpty) ...[
-                  SizedBox(height: 14.h),
+                  14.h.heightBox(),
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
@@ -195,7 +224,7 @@ class _CreateMaintenanceRequestPageState
                         ),
                     ],
                   ),
-                  SizedBox(height: 10.h),
+                  10.h.heightBox(),
                   Text(
                     _photos.length == 1
                         ? '1 photo attached'
@@ -208,12 +237,12 @@ class _CreateMaintenanceRequestPageState
                     ),
                   ),
                 ],
-                if (_photos.isNotEmpty) SizedBox(height: 12.h),
+                if (_photos.isNotEmpty) 12.h.heightBox(),
                 _AttachPhotoButton(onPressed: _attachPhoto),
-                SizedBox(height: 28.h),
+                28.h.heightBox(),
                 if (controller.errorMessage.value != null) ...[
                   _ErrorBanner(message: controller.errorMessage.value!),
-                  SizedBox(height: 14.h),
+                  14.h.heightBox(),
                 ],
                 AppPrimaryAction(
                   key: Key('submit-maintenance-request'),
@@ -270,7 +299,7 @@ class _CreateMaintenanceRequestPageState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             Container(
               width: 38,
               height: 4,
@@ -279,13 +308,10 @@ class _CreateMaintenanceRequestPageState
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
-            SizedBox(height: 6.h),
+            6.h.heightBox(),
             ListTile(
               key: Key('photo-source-gallery'),
-              leading: Icon(
-                Icons.photo_library_outlined,
-                color: tokens.brand,
-              ),
+              leading: Icon(Icons.photo_library_outlined, color: tokens.brand),
               title: Text(
                 'Choose from gallery',
                 style: TextStyle(
@@ -302,10 +328,7 @@ class _CreateMaintenanceRequestPageState
             ),
             ListTile(
               key: Key('photo-source-camera'),
-              leading: Icon(
-                Icons.photo_camera_outlined,
-                color: tokens.brand,
-              ),
+              leading: Icon(Icons.photo_camera_outlined, color: tokens.brand),
               title: Text(
                 'Take a photo',
                 style: TextStyle(
@@ -320,7 +343,7 @@ class _CreateMaintenanceRequestPageState
               ),
               onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
             ),
-            SizedBox(height: 8.h),
+            8.h.heightBox(),
           ],
         ),
       ),
@@ -405,7 +428,7 @@ class _FormSection extends StatelessWidget {
               ),
               child: Icon(icon, size: 17, color: tokens.brand),
             ),
-            SizedBox(width: 10.w),
+            10.w.widthBox(),
             Expanded(
               child: Text(
                 title,
@@ -418,7 +441,7 @@ class _FormSection extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 4.h),
+        4.h.heightBox(),
         Padding(
           padding: EdgeInsets.only(left: 40),
           child: Text(
@@ -545,7 +568,7 @@ class _DateTimeRow extends StatelessWidget {
             onPressed: onPickDate,
           ),
         ),
-        SizedBox(width: 10.w),
+        10.w.widthBox(),
         Expanded(
           flex: 2,
           child: AppPickerField(
@@ -583,12 +606,8 @@ class _AttachPhotoButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.add_a_photo_outlined,
-                size: 18,
-                color: tokens.brand,
-              ),
-              SizedBox(width: 9.w),
+              Icon(Icons.add_a_photo_outlined, size: 18, color: tokens.brand),
+              9.w.widthBox(),
               Text(
                 'Attach photo',
                 style: TextStyle(
@@ -622,12 +641,8 @@ class _ErrorBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.error_outline_rounded,
-            size: 18,
-            color: AppPalette.danger,
-          ),
-          SizedBox(width: 8.w),
+          Icon(Icons.error_outline_rounded, size: 18, color: AppPalette.danger),
+          8.w.widthBox(),
           Expanded(
             child: Text(
               message,

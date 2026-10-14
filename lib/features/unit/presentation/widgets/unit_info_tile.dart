@@ -1,5 +1,7 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
@@ -27,19 +29,16 @@ class UnitInfoTile extends StatelessWidget {
       child: Row(
         children: [
           Icon(icon, size: 19, color: tokens.brand),
-          SizedBox(width: 9.w),
+          9.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 11.sp,
-                    color: tokens.muted,
-                  ),
+                  style: TextStyle(fontSize: 11.sp, color: tokens.muted),
                 ),
-                SizedBox(height: 3.h),
+                3.h.heightBox(),
                 Text(
                   value,
                   style: TextStyle(

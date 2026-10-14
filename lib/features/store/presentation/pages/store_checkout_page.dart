@@ -1,20 +1,48 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../features/session/presentation/controllers/session_controller.dart';
+
+
 import '../../../../core/widgets/app_primary_action.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../domain/entities/store_product.dart';
+
+
 import '../controllers/store_controller.dart';
+
+
 import '../widgets/store_cards.dart';
+
+
 import '../widgets/store_widgets.dart';
 
 /// Delivery method, delivery slot, how to settle the Store Fee, then review and
@@ -25,14 +53,14 @@ class StoreCheckoutPage extends GetView<StoreController> {
   /// The windows a resident can choose from for either delivery method.
   static const _slots = <String, List<String>>{
     'Deliver to Doorstep': [
-      'Today · 6:00 PM – 7:00 PM',
-      'Today · 7:00 PM – 8:00 PM',
-      'Tomorrow · 8:00 AM – 9:00 AM',
+      'Today Â· 6:00 PM â€“ 7:00 PM',
+      'Today Â· 7:00 PM â€“ 8:00 PM',
+      'Tomorrow Â· 8:00 AM â€“ 9:00 AM',
     ],
     'Pick-up at Lobby': [
-      'Today · 5:00 PM – 6:00 PM',
-      'Today · 6:00 PM – 7:00 PM',
-      'Tomorrow · 9:00 AM – 10:00 AM',
+      'Today Â· 5:00 PM â€“ 6:00 PM',
+      'Today Â· 6:00 PM â€“ 7:00 PM',
+      'Tomorrow Â· 9:00 AM â€“ 10:00 AM',
     ],
   };
 
@@ -45,7 +73,8 @@ class StoreCheckoutPage extends GetView<StoreController> {
         if (controller.cart.isEmpty) {
           return AppStateMessage(
             title: 'Nothing to check out',
-            message: 'Your basket is empty. Add something from the store first.',
+            message:
+                'Your basket is empty. Add something from the store first.',
             icon: Icons.shopping_basket_outlined,
             actionLabel: 'Back to the store',
             onAction: () => Get.back<void>(),
@@ -74,7 +103,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
                 ],
               ),
             ),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             _Section(
               title: 'Delivery time',
               child: Column(
@@ -82,24 +111,22 @@ class StoreCheckoutPage extends GetView<StoreController> {
                 children: [
                   Text(
                     controller.deliveryLocation,
-                    style: TextStyle(
-                      color: tokens.muted,
-                      fontSize: 12.5.sp,
-                    ),
+                    style: TextStyle(color: tokens.muted, fontSize: 12.5.sp),
                   ),
-                  SizedBox(height: 12.h),
+                  12.h.heightBox(),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      for (final slot in _slots[
-                          controller.deliveryMethod.value.label] ??
-                          <String>[])
+                      for (final slot
+                          in _slots[controller.deliveryMethod.value.label] ??
+                              <String>[])
                         ChoiceChip(
                           key: Key('store-slot-$slot'),
                           label: Text(slot),
                           selected: slot == controller.deliveryTime.value,
-                          onSelected: (_) => controller.selectDeliveryTime(slot),
+                          onSelected: (_) =>
+                              controller.selectDeliveryTime(slot),
                           selectedColor: tokens.brandOnDark,
                           labelStyle: TextStyle(
                             color: slot == controller.deliveryTime.value
@@ -113,7 +140,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
                 ],
               ),
             ),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             _Section(
               title: 'How would you like to pay?',
               child: Column(
@@ -139,25 +166,27 @@ class StoreCheckoutPage extends GetView<StoreController> {
             ),
             // Paying now needs a method before the button can say what it
             // charges, so the list only appears for that choice.
-            if (controller.paymentChoice.value == StorePaymentChoice.payNow) ...[
-              SizedBox(height: 16.h),
+            if (controller.paymentChoice.value ==
+                StorePaymentChoice.payNow) ...[
+              16.h.heightBox(),
               _Section(
                 title: 'Payment method',
                 child: _PaymentMethodPicker(controller: controller),
               ),
             ],
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             StoreFeeNotice(),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             _Section(
               title: 'Your items',
               child: Column(
                 children: [
-                  for (final line in controller.cart) StoreOrderLineRow(line: line),
+                  for (final line in controller.cart)
+                    StoreOrderLineRow(line: line),
                 ],
               ),
             ),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             StoreCheckoutSummaryCard(
               keyName: 'store-checkout-summary',
               subtotal: controller.cartSubtotal,
@@ -165,48 +194,43 @@ class StoreCheckoutPage extends GetView<StoreController> {
               total: controller.cartTotal,
               itemCount: controller.cartCount,
             ),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             // The button states the exact amount and the method, so there is no
             // second guessing about what is about to be charged. Paying now
             // needs a method, and the button stays out of reach until one is
             // picked rather than failing silently.
-            Obx(
-              () {
-                final method = controller.selectedMethod.value;
-                final payingNow = controller.paymentChoice.value ==
-                        StorePaymentChoice.payNow;
-                final busy =
-                    controller.isSubmitting.value || controller.isPaying.value;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    AppPrimaryAction(
-                      key: Key('store-place-order'),
-                      onPressed: busy || (payingNow && method == null)
-                          ? null
-                          : () => _place(context),
-                      isLoading: busy,
-                      label: _actionLabel,
-                      icon: payingNow
-                          ? Icons.lock_rounded
-                          : Icons.receipt_long_rounded,
+            Obx(() {
+              final method = controller.selectedMethod.value;
+              final payingNow =
+                  controller.paymentChoice.value == StorePaymentChoice.payNow;
+              final busy =
+                  controller.isSubmitting.value || controller.isPaying.value;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AppPrimaryAction(
+                    key: Key('store-place-order'),
+                    onPressed: busy || (payingNow && method == null)
+                        ? null
+                        : () => _place(context),
+                    isLoading: busy,
+                    label: _actionLabel,
+                    icon: payingNow
+                        ? Icons.lock_rounded
+                        : Icons.receipt_long_rounded,
+                  ),
+                  if (payingNow && method == null) ...[
+                    10.h.heightBox(),
+                    Text(
+                      'Choose a payment method to continue.',
+                      key: Key('store-method-required'),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: tokens.muted, fontSize: 12.5.sp),
                     ),
-                    if (payingNow && method == null) ...[
-                      SizedBox(height: 10.h),
-                      Text(
-                        'Choose a payment method to continue.',
-                        key: Key('store-method-required'),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: tokens.muted,
-                          fontSize: 12.5.sp,
-                        ),
-                      ),
-                    ],
                   ],
-                );
-              },
-            ),
+                ],
+              );
+            }),
           ],
         );
       }),
@@ -224,7 +248,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
         method != null) {
       return 'Pay $total via ${method.buttonLabel}';
     }
-    return 'Place order · $total';
+    return 'Place order Â· $total';
   }
 
   Future<void> _place(BuildContext context) {
@@ -315,7 +339,8 @@ class StoreCheckoutPage extends GetView<StoreController> {
       summary: [
         AppSummaryRow(
           label: 'Items',
-          value: '${controller.cartCount} item${controller.cartCount == 1 ? '' : 's'}',
+          value:
+              '${controller.cartCount} item${controller.cartCount == 1 ? '' : 's'}',
         ),
         AppSummaryRow(
           label: 'Delivery',
@@ -386,12 +411,9 @@ class _PaymentMethodPicker extends StatelessWidget {
               title: saved.title,
               description: saved.subtitle,
               selected: controller.selectedSavedMethod.value?.id == saved.id,
-              onTap: () => controller.selectMethod(
-                saved.method,
-                saved: saved,
-              ),
+              onTap: () => controller.selectMethod(saved.method, saved: saved),
             ),
-          SizedBox(height: 14.h),
+          14.h.heightBox(),
         ],
         Padding(
           padding: EdgeInsets.only(bottom: 8),
@@ -413,7 +435,8 @@ class _PaymentMethodPicker extends StatelessWidget {
             description: method.description,
             // A plain method row is only selected when no saved one is, so the
             // two lists never both look picked.
-            selected: controller.selectedSavedMethod.value == null &&
+            selected:
+                controller.selectedSavedMethod.value == null &&
                 controller.selectedMethod.value == method,
             onTap: () => controller.selectMethod(method),
           ),
@@ -473,7 +496,7 @@ class _MethodRow extends StatelessWidget {
                     color: selected ? tokens.brand : tokens.mutedStrong,
                   ),
                 ),
-                SizedBox(width: 12.w),
+                12.w.widthBox(),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,7 +509,7 @@ class _MethodRow extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      SizedBox(height: 2.h),
+                      2.h.heightBox(),
                       Text(
                         description,
                         style: TextStyle(
@@ -534,7 +557,7 @@ class _Section extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
-          SizedBox(height: 12.h),
+          12.h.heightBox(),
           child,
         ],
       ),
@@ -593,7 +616,7 @@ class _DeliveryOption extends StatelessWidget {
                   size: 20,
                   color: selected ? tokens.brand : tokens.muted,
                 ),
-                SizedBox(width: 12.w),
+                12.w.widthBox(),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -606,7 +629,7 @@ class _DeliveryOption extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      SizedBox(height: 3.h),
+                      3.h.heightBox(),
                       Text(
                         detail,
                         style: TextStyle(

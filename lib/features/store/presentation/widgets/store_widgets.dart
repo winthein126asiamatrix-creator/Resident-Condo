@@ -1,10 +1,20 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../../domain/entities/store_product.dart';
 
 /// Aisle icon for a category, so the catalogue reads at a glance.
@@ -259,10 +269,7 @@ class StoreProductImage extends StatelessWidget {
                   return AnimatedSwitcher(
                     duration: Duration(milliseconds: 220),
                     child: frame == null
-                        ? _Placeholder(
-                            key: ValueKey('pending'),
-                            size: size,
-                          )
+                        ? _Placeholder(key: ValueKey('pending'), size: size)
                         : child,
                   );
                 },
@@ -320,7 +327,7 @@ class StoreOrderLineRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Text(
-              '${line.quantity}×',
+              '${line.quantity}Ã—',
               style: TextStyle(
                 color: tokens.brand,
                 fontSize: 11.5.sp,
@@ -328,7 +335,7 @@ class StoreOrderLineRow extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 10.w),
+          10.w.widthBox(),
           Expanded(
             child: Text(
               line.product.name,
@@ -339,7 +346,7 @@ class StoreOrderLineRow extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 10.w),
+          10.w.widthBox(),
           Text(
             AppFormatters.currency(line.lineTotal),
             style: TextStyle(

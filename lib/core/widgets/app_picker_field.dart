@@ -1,9 +1,17 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../theme/app_radius.dart';
+
+
 import '../theme/app_spacing.dart';
+
+
 import '../theme/app_text_styles.dart';
+
+
 import '../theme/app_theme_tokens.dart';
 
 /// Read only field that looks like a form control and opens a picker.
@@ -61,7 +69,7 @@ class AppPickerField extends StatelessWidget {
                   size: 18,
                   color: enabled ? tokens.muted : tokens.faint,
                 ),
-                SizedBox(width: 9.w),
+                9.w.widthBox(),
                 Flexible(
                   child: Text(
                     value,
@@ -74,7 +82,7 @@ class AppPickerField extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(width: 6.w),
+                6.w.widthBox(),
                 Icon(
                   trailingIcon,
                   size: 18,
@@ -94,10 +102,10 @@ class AppPickerField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label!, style: AppTextStyles.of(context).fieldLabel),
-        SizedBox(height: AppSpacing.fieldLabelGap),
+        AppSpacing.fieldLabelGap.heightBox(),
         field,
         if (helperText != null) ...[
-          SizedBox(height: 6.h),
+          6.h.heightBox(),
           Text(
             helperText!,
             style: TextStyle(color: tokens.muted, fontSize: 12.sp),

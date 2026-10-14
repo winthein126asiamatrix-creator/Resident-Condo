@@ -55,8 +55,7 @@ class NotificationLocalDataSource {
       id: 'notification-007',
       type: NotificationType.violationIssued,
       title: 'Rule violation issued',
-      message:
-          'A quiet hours violation of \$80.00 was issued on Sep 12, 2026. You can appeal it from Rules & violations.',
+      message: 'A quiet hours violation of \$80.00 was issued on Sep 12, 2026. You can appeal it from Rules & violations.',
       period: NotificationPeriod.yesterday,
       isRead: false,
     ),
@@ -64,8 +63,7 @@ class NotificationLocalDataSource {
       id: 'notification-008',
       type: NotificationType.leaseRenewal,
       title: 'Lease ends in 36 days',
-      message:
-          'Your rental agreement for Tower A · 1205 ends on Oct 31, 2026. Submit a renewal request from the lease screen.',
+      message: 'Your rental agreement for Tower A · 1205 ends on Oct 31, 2026. Submit a renewal request from the lease screen.',
       period: NotificationPeriod.today,
       isRead: false,
     ),

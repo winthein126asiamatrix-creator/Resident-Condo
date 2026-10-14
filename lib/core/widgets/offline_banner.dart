@@ -1,8 +1,12 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../core/theme/app_palette.dart';
+
+
 import '../network/connectivity_service.dart';
 
 class OfflineBanner extends StatelessWidget {
@@ -26,7 +30,7 @@ class OfflineBanner extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.wifi_off_rounded, size: 15, color: Colors.red),
-          SizedBox(width: 8.w),
+          8.w.widthBox(),
           Text(
             'No internet connection',
             style: TextStyle(
@@ -41,10 +45,10 @@ class OfflineBanner extends StatelessWidget {
     );
   }
 }
+
 class OfflineBannerSlot extends StatelessWidget {
   OfflineBannerSlot({super.key, this.applyStatusBarInset = false});
 
-  
   final bool applyStatusBarInset;
 
   @override
@@ -76,11 +80,9 @@ class _OfflineBannerHost extends StatelessWidget {
     if (!applyStatusBarInset) {
       return OfflineBanner();
     }
-     return Padding(
-    padding: EdgeInsets.only(
-      top: MediaQuery.paddingOf(context).top,
-    ),
-    child: OfflineBanner(),
-  );
+    return Padding(
+      padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
+      child: OfflineBanner(),
+    );
   }
 }

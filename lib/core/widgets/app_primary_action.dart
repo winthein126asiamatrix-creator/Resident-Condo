@@ -1,5 +1,7 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 
 import '../theme/app_theme_tokens.dart';
 
@@ -58,8 +60,9 @@ class AppPrimaryAction extends StatelessWidget {
     final radius = BorderRadius.circular(18.r);
     final fill = backgroundColor ?? tokens.brand;
     final background = enabled ? fill : tokens.surfaceMuted;
-    final foreground =
-        enabled ? (foregroundColor ?? tokens.onBrand) : tokens.faint;
+    final foreground = enabled
+        ? (foregroundColor ?? tokens.onBrand)
+        : tokens.faint;
 
     final labelText = Text(
       label,
@@ -139,10 +142,10 @@ class AppPrimaryAction extends StatelessWidget {
           : Row(
               mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
               children: [
-                if (hasLeading) ...[leading(), SizedBox(width: 10.w)],
+                if (hasLeading) ...[leading(), 10.w.widthBox()],
                 Flexible(child: labelText),
                 if (expand) Spacer(),
-                if (hasTrailing) ...[SizedBox(width: 10.w), trailing()],
+                if (hasTrailing) ...[10.w.widthBox(), trailing()],
               ],
             ),
     );
@@ -164,16 +167,13 @@ class AppPrimaryAction extends StatelessWidget {
         color: background,
         shape: RoundedRectangleBorder(
           borderRadius: radius,
-          side: BorderSide(
-            color: enabled ? Colors.transparent : tokens.border,
-          ),
+          side: BorderSide(color: enabled ? Colors.transparent : tokens.border),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: enabled ? onPressed : null,
           child: Padding(
-            padding:
-                padding ?? EdgeInsets.symmetric(horizontal: 20),
+            padding: padding ?? EdgeInsets.symmetric(horizontal: 20),
             child: content,
           ),
         ),

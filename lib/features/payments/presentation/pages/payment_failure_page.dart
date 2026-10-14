@@ -1,15 +1,33 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../domain/entities/invoice.dart';
+
+
 import '../../domain/entities/payment.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
 
 /// Shown when the gateway declines the payment.
@@ -34,7 +52,7 @@ class PaymentFailurePage extends StatelessWidget {
           32,
         ),
         children: [
-          SizedBox(height: 18.h),
+          18.h.heightBox(),
           Center(
             child: Container(
               width: 88,
@@ -50,7 +68,7 @@ class PaymentFailurePage extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 20.h),
+          20.h.heightBox(),
           Text(
             'Payment Not Completed',
             textAlign: TextAlign.center,
@@ -60,14 +78,14 @@ class PaymentFailurePage extends StatelessWidget {
               color: tokens.ink,
             ),
           ),
-          SizedBox(height: 8.h),
+          8.h.heightBox(),
           Text(
             payment.failureReason ??
                 'The transaction was declined. No amount has been charged.',
             textAlign: TextAlign.center,
             style: TextStyle(color: tokens.muted, height: 1.4),
           ),
-          SizedBox(height: 24.h),
+          24.h.heightBox(),
           AppCard(
             color: tokens.brandTint,
             borderColor: Color(0xFFF0C6C0),
@@ -81,7 +99,7 @@ class PaymentFailurePage extends StatelessWidget {
                     color: AppPalette.danger,
                   ),
                 ),
-                SizedBox(height: 6.h),
+                6.h.heightBox(),
                 Text(
                   'A failed payment never changes an invoice. These items stay '
                   'unpaid and can be selected again.',
@@ -91,7 +109,7 @@ class PaymentFailurePage extends StatelessWidget {
                     height: 1.4,
                   ),
                 ),
-                SizedBox(height: 12.h),
+                12.h.heightBox(),
                 for (final item in payment.items)
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
@@ -102,7 +120,7 @@ class PaymentFailurePage extends StatelessWidget {
                           size: 16,
                           color: AppPalette.danger,
                         ),
-                        SizedBox(width: 8.w),
+                        8.w.widthBox(),
                         Expanded(
                           child: Text(
                             item.type.label,
@@ -132,22 +150,18 @@ class PaymentFailurePage extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 20.h),
+          20.h.heightBox(),
           FilledButton.icon(
             key: Key('retry-payment'),
             onPressed: () => Get.offNamed(AppRoutes.paymentMethod),
             icon: Icon(Icons.refresh_rounded, size: 18),
             label: Text('Try another method'),
-            style: FilledButton.styleFrom(
-              minimumSize: Size.fromHeight(52),
-            ),
+            style: FilledButton.styleFrom(minimumSize: Size.fromHeight(52)),
           ),
-          SizedBox(height: 10.h),
+          10.h.heightBox(),
           OutlinedButton(
             onPressed: () => Get.offAllNamed(AppRoutes.home),
-            style: OutlinedButton.styleFrom(
-              minimumSize: Size.fromHeight(50),
-            ),
+            style: OutlinedButton.styleFrom(minimumSize: Size.fromHeight(50)),
             child: Text('Back to payments'),
           ),
         ],

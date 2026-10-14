@@ -1,19 +1,45 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../../domain/entities/visitor.dart';
+
+
 import '../controllers/visitor_controller.dart';
+
+
 import '../widgets/visitor_status_badge.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/widgets/app_buttons.dart';
+
+
 import '../../../../core/widgets/app_primary_action.dart';
 
 class VisitorsPage extends GetView<VisitorController> {
@@ -52,14 +78,14 @@ class VisitorsPage extends GetView<VisitorController> {
             ),
             children: [
               _VisitorHero(controller: controller),
-              SizedBox(height: 16.h),
+              16.h.heightBox(),
               AppCard(
                 color: tokens.brandTint,
                 borderColor: tokens.brandSoft,
                 child: Row(
                   children: [
                     Icon(Icons.badge_outlined, color: tokens.brand),
-                    SizedBox(width: 10.w),
+                    10.w.widthBox(),
                     Expanded(
                       child: Text(
                         'Visitors are verified with an alphanumeric access code '
@@ -78,7 +104,7 @@ class VisitorsPage extends GetView<VisitorController> {
                   ],
                 ),
               ),
-              SizedBox(height: 16.h),
+              16.h.heightBox(),
               // The primary action sits in the content flow rather than
               // floating over it, so it reads as part of the page and never
               // covers a visitor card.
@@ -92,9 +118,9 @@ class VisitorsPage extends GetView<VisitorController> {
                   icon: Icons.person_add_alt_1_rounded,
                 ),
               ),
-              SizedBox(height: 18.h),
+              18.h.heightBox(),
               _FilterRow(controller: controller),
-              SizedBox(height: 14.h),
+              14.h.heightBox(),
               if (visible.isEmpty)
                 AppStateMessage(
                   title: 'Nothing here yet',
@@ -129,7 +155,7 @@ class _VisitorHero extends StatelessWidget {
       icon: Icons.people_alt_rounded,
       title: 'Visitor access',
       subtitle:
-          '${controller.activeCount} active  ·  ${controller.onSiteCount} on site now',
+          '${controller.activeCount} active  Â·  ${controller.onSiteCount} on site now',
       footnote: 'Codes expire automatically after the visitor checks out.',
       trailing: IconButton(
         tooltip: 'Refresh visitors',
@@ -200,7 +226,7 @@ class _VisitorCard extends StatelessWidget {
                   style: TextStyle(color: color, fontWeight: FontWeight.w800),
                 ),
               ),
-              SizedBox(width: 12.w),
+              12.w.widthBox(),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,15 +235,12 @@ class _VisitorCard extends StatelessWidget {
                       visitor.name,
                       style: TextStyle(fontWeight: FontWeight.w800),
                     ),
-                    SizedBox(height: 3.h),
+                    3.h.heightBox(),
                     Text(
-                      '${visitor.relation.label} · ${visitor.purpose}',
+                      '${visitor.relation.label} Â· ${visitor.purpose}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: tokens.muted,
-                        fontSize: 12.sp,
-                      ),
+                      style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                     ),
                   ],
                 ),
@@ -225,7 +248,7 @@ class _VisitorCard extends StatelessWidget {
               AppStatusPill(label: visitor.status.label, color: color),
             ],
           ),
-          SizedBox(height: 12.h),
+          12.h.heightBox(),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
@@ -234,12 +257,8 @@ class _VisitorCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.vpn_key_outlined,
-                  size: 16,
-                  color: tokens.brand,
-                ),
-                SizedBox(width: 8.w),
+                Icon(Icons.vpn_key_outlined, size: 16, color: tokens.brand),
+                8.w.widthBox(),
                 Flexible(
                   child: Text(
                     visitor.accessCode,
@@ -252,7 +271,7 @@ class _VisitorCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(width: 8.w),
+                8.w.widthBox(),
                 Spacer(),
                 Flexible(
                   child: Text(
@@ -260,16 +279,13 @@ class _VisitorCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.right,
-                    style: TextStyle(
-                      color: tokens.muted,
-                      fontSize: 11.sp,
-                    ),
+                    style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 12.h),
+          12.h.heightBox(),
           Row(
             children: [
               if (visitor.canCheckIn)
@@ -284,8 +300,7 @@ class _VisitorCard extends StatelessWidget {
                     icon: Icons.login_rounded,
                   ),
                 ),
-              if (visitor.canCheckIn && visitor.canCheckOut)
-                SizedBox(width: 10.w),
+              if (visitor.canCheckIn && visitor.canCheckOut) 10.w.widthBox(),
               if (visitor.canCheckOut)
                 Expanded(
                   child: AppPrimaryAction(

@@ -26,7 +26,7 @@ typedef JsonParser<T> = T Function(Object? json);
 /// plain REST endpoints. Failures always surface as [ApiException], which is an
 /// [AppException] the feature controllers already handle.
 class DioApiService {
-DioApiService({
+  DioApiService({
     required TokenStorage tokenStorage,
     Dio? dio,
     String baseUrl = ApiConfig.baseUrl,
@@ -79,7 +79,7 @@ DioApiService({
 
   // --- Verbs ---------------------------------------------------------------
 
-/// GET, with [query] as the query string and the response parsed by [parse].
+  /// GET, with [query] as the query string and the response parsed by [parse].
   Future<T> get<T>(
     String path, {
     Map<String, dynamic>? query,

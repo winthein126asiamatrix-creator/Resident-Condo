@@ -1,8 +1,14 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../theme/app_spacing.dart';
+
+
 import '../theme/app_theme_tokens.dart';
+
+
 import 'offline_banner.dart';
 
 /// The custom app bar shared by the detail and form screens.
@@ -57,9 +63,9 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// Deliberately reserved whether or not the banner is visible, because of how
   /// a [Scaffold] treats this figure:
   ///
-  /// * It caps the app bar with a `ConstrainedBox(maxHeight: preferredSize…)`,
+  /// * It caps the app bar with a `ConstrainedBox(maxHeight: preferredSizeâ€¦)`,
   ///   and that cap is read in `Scaffold.build` from the widget as handed to
-  ///   the route — so it only follows a rebuild of the screen, never the banner
+  ///   the route â€” so it only follows a rebuild of the screen, never the banner
   ///   appearing or disappearing inside.
   /// * It does *not* position the body. That comes from the app bar's measured
   ///   height.
@@ -93,7 +99,12 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
               color: tokens.canvas,
               border: Border(bottom: BorderSide(color: tokens.border)),
             ),
-            padding: EdgeInsets.fromLTRB(16, topInset + AppSpacing.pageTop, 20, 14),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              topInset + AppSpacing.pageTop,
+              20,
+              14,
+            ),
             // Fixed height so a screen with trailing actions ends up with exactly
             // the same bar as a screen without them.
             child: SizedBox(
@@ -104,7 +115,7 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                     leading ?? _AppBarBackButton(onBack: onBack)
                   else
                     ?leading,
-                  SizedBox(width: 12.w),
+                  12.w.widthBox(),
                   // Single lines with ellipsis so a narrow phone or a large text
                   // scale can never push the toolbar out of its bounds.
                   Expanded(
@@ -125,7 +136,7 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                           ),
                         ),
                         if (subtitle != null) ...[
-                          SizedBox(height: 3.h),
+                          3.h.heightBox(),
                           Text(
                             subtitle!,
                             maxLines: 1,

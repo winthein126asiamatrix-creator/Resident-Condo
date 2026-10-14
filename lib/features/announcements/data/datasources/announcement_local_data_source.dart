@@ -31,8 +31,7 @@ class AnnouncementLocalDataSource {
       id: 'announcement-003',
       category: AnnouncementCategory.security,
       title: 'Visitor access codes at the lobby',
-      description:
-          'Digital visitor passes are now live. Register a visitor and share their alphanumeric access code for a smoother lobby arrival. No QR pass is needed.',
+      description: 'Digital visitor passes are now live. Register a visitor and share their alphanumeric access code for a smoother lobby arrival. No QR pass is needed.',
       date: 'Sep 18, 2026',
       isRead: true,
       urgency: AnnouncementUrgency.normal,

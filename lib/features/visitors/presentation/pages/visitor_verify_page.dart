@@ -1,19 +1,43 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/text_input_formatters.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../../domain/entities/visitor.dart';
+
+
 import '../controllers/visitor_controller.dart';
+
+
 import '../widgets/visitor_status_badge.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_form_field.dart';
 
 /// Lobby desk screen: type the code the visitor reads out and confirm entry.
@@ -48,7 +72,7 @@ class VisitorVerifyPage extends GetView<VisitorController> {
                       letterSpacing: 1.4,
                     ),
                   ),
-                  SizedBox(height: 12.h),
+                  12.h.heightBox(),
                   AppTextField(
                     fieldKey: Key('verify-code-field'),
                     label: 'Verification code',
@@ -68,7 +92,7 @@ class VisitorVerifyPage extends GetView<VisitorController> {
                       letterSpacing: 2,
                     ),
                   ),
-                  SizedBox(height: 14.h),
+                  14.h.heightBox(),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
@@ -100,7 +124,7 @@ class VisitorVerifyPage extends GetView<VisitorController> {
                 ],
               ),
             ),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             if (controller.verification.value != null)
               _VerificationResult(controller: controller)
             else
@@ -109,11 +133,11 @@ class VisitorVerifyPage extends GetView<VisitorController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.info_outline_rounded, color: tokens.muted),
-                    SizedBox(width: 10.w),
+                    10.w.widthBox(),
                     Expanded(
                       child: Text(
                         'The code is printed on the resident app and shared '
-                        'with the visitor. Codes are alphanumeric — for example '
+                        'with the visitor. Codes are alphanumeric â€” for example '
                         'VIS K7M-4QX.',
                         style: TextStyle(
                           color: tokens.muted,
@@ -125,13 +149,16 @@ class VisitorVerifyPage extends GetView<VisitorController> {
                   ],
                 ),
               ),
-            SizedBox(height: 22.h),
+            22.h.heightBox(),
             Row(
               children: [
                 Expanded(
                   child: Text(
                     'Expected today',
-                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16.sp,
+                    ),
                   ),
                 ),
                 TextButton.icon(
@@ -141,7 +168,7 @@ class VisitorVerifyPage extends GetView<VisitorController> {
                 ),
               ],
             ),
-            SizedBox(height: 8.h),
+            8.h.heightBox(),
             if (controller.visitors.isEmpty)
               Text(
                 'No visitors registered.',
@@ -159,7 +186,7 @@ class VisitorVerifyPage extends GetView<VisitorController> {
                     ),
                   ),
             if (controller.errorMessage.value != null) ...[
-              SizedBox(height: 12.h),
+              12.h.heightBox(),
               Text(
                 controller.errorMessage.value!,
                 style: TextStyle(color: AppPalette.danger),
@@ -187,9 +214,7 @@ class _VerificationResult extends StatelessWidget {
       children: [
         AppCard(
           color: result.isValid ? tokens.brandTint : AppPalette.accentSoft,
-          borderColor: result.isValid
-              ? tokens.brandSoft
-              : Color(0xFFF0C6C0),
+          borderColor: result.isValid ? tokens.brandSoft : Color(0xFFF0C6C0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -201,7 +226,7 @@ class _VerificationResult extends StatelessWidget {
                         : Icons.gpp_bad_rounded,
                     color: color,
                   ),
-                  SizedBox(width: 12.w),
+                  12.w.widthBox(),
                   Expanded(
                     child: Text(
                       result.isValid ? 'Access granted' : 'Access denied',
@@ -214,7 +239,7 @@ class _VerificationResult extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(
                 result.message,
                 style: TextStyle(
@@ -224,9 +249,9 @@ class _VerificationResult extends StatelessWidget {
                 ),
               ),
               if (visitor != null) ...[
-                SizedBox(height: 12.h),
+                12.h.heightBox(),
                 Divider(height: 1),
-                SizedBox(height: 12.h),
+                12.h.heightBox(),
                 Row(
                   children: [
                     Expanded(
@@ -241,21 +266,21 @@ class _VerificationResult extends StatelessWidget {
                     VisitorStatusPill(status: visitor.status),
                   ],
                 ),
-                SizedBox(height: 6.h),
+                6.h.heightBox(),
                 Text(
-                  '${visitor.arrivalWindow} · ${visitor.purpose}',
+                  '${visitor.arrivalWindow} Â· ${visitor.purpose}',
                   style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                 ),
-                SizedBox(height: 4.h),
+                4.h.heightBox(),
                 Text(
-                  'Code ${visitor.accessCode} · unit ${visitor.registeredBy}\'s host',
+                  'Code ${visitor.accessCode} Â· unit ${visitor.registeredBy}\'s host',
                   style: TextStyle(color: tokens.faint, fontSize: 11.sp),
                 ),
               ],
             ],
           ),
         ),
-        SizedBox(height: 12.h),
+        12.h.heightBox(),
         if (visitor != null && visitor.canCheckIn)
           FilledButton.icon(
             key: Key('verify-check-in'),
@@ -264,12 +289,10 @@ class _VerificationResult extends StatelessWidget {
                 : () => _checkIn(context, visitor),
             icon: Icon(Icons.login_rounded, size: 18),
             label: Text('Check in visitor'),
-            style: FilledButton.styleFrom(
-              minimumSize: Size.fromHeight(50),
-            ),
+            style: FilledButton.styleFrom(minimumSize: Size.fromHeight(50)),
           ),
         if (visitor != null && visitor.canCheckOut) ...[
-          SizedBox(height: 10.h),
+          10.h.heightBox(),
           FilledButton.icon(
             onPressed: controller.isSubmitting.value
                 ? null
@@ -282,7 +305,7 @@ class _VerificationResult extends StatelessWidget {
             ),
           ),
         ],
-        SizedBox(height: 10.h),
+        10.h.heightBox(),
         TextButton.icon(
           onPressed: controller.clearVerification,
           icon: Icon(Icons.refresh_rounded, size: 18),
@@ -362,7 +385,7 @@ class _ExpectedTile extends StatelessWidget {
             color: visitorStatusColor(context, visitor.status),
             size: 38,
           ),
-          SizedBox(width: 12.w),
+          12.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -371,7 +394,7 @@ class _ExpectedTile extends StatelessWidget {
                   visitor.name,
                   style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                SizedBox(height: 3.h),
+                3.h.heightBox(),
                 Text(
                   visitor.arrivalWindow,
                   style: TextStyle(color: tokens.muted, fontSize: 11.sp),

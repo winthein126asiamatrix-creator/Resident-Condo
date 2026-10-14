@@ -1,5 +1,7 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 
 import '../theme/app_theme_tokens.dart';
 
@@ -98,7 +100,7 @@ class _StepColumn extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _StepCircle(position: position, state: state, size: circleSize),
-        SizedBox(height: 7.h),
+        7.h.heightBox(),
         // Bounded to two lines and ellipsized so neighbouring labels can never
         // overlap each other.
         Text(
@@ -107,16 +109,14 @@ class _StepColumn extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: state == ProgressState.upcoming
-                ? tokens.muted
-                : tokens.ink,
+            color: state == ProgressState.upcoming ? tokens.muted : tokens.ink,
             fontSize: 10.5.sp,
             height: 1.25,
             fontWeight: FontWeight.w700,
           ),
         ),
         if (step.subtitle != null) ...[
-          SizedBox(height: 2.h),
+          2.h.heightBox(),
           Text(
             step.subtitle!,
             maxLines: 1,
@@ -214,7 +214,11 @@ class _StepCircle extends StatelessWidget {
         // whatever the circle size is.
         alignment: Alignment.center,
         child: isDone
-            ? Icon(Icons.check_rounded, size: size * 0.55, color: tokens.onBrand)
+            ? Icon(
+                Icons.check_rounded,
+                size: size * 0.55,
+                color: tokens.onBrand,
+              )
             : Text(
                 '${position + 1}',
                 textAlign: TextAlign.center,

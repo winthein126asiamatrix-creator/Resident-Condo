@@ -1,15 +1,33 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../domain/entities/invoice.dart';
+
+
 import '../../domain/entities/payment.dart';
+
+
 import '../widgets/payment_record_badge.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
 
 class PaymentReceiptPage extends StatelessWidget {
@@ -59,7 +77,7 @@ class PaymentReceiptPage extends StatelessWidget {
                     PaymentRecordBadge(status: payment.status),
                   ],
                 ),
-                SizedBox(height: 8.h),
+                8.h.heightBox(),
                 Text(
                   'Condo Residents',
                   style: TextStyle(color: tokens.muted, fontSize: 12.sp),
@@ -68,12 +86,12 @@ class PaymentReceiptPage extends StatelessWidget {
                 _ReceiptLine(label: 'Resident', value: payment.residentName),
                 _ReceiptLine(label: 'Unit', value: payment.unitLabel),
                 _ReceiptLine(label: 'Invoice', value: payment.invoiceNumber),
-                SizedBox(height: 18.h),
+                18.h.heightBox(),
                 Text(
                   isSuccess ? 'Items paid' : 'Items attempted',
                   style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                SizedBox(height: 8.h),
+                8.h.heightBox(),
                 for (final item in payment.items)
                   _ReceiptLine(
                     label: item.note.isEmpty
@@ -88,7 +106,7 @@ class PaymentReceiptPage extends StatelessWidget {
                   value: AppFormatters.currency(payment.amount),
                   emphasize: true,
                 ),
-                SizedBox(height: 16.h),
+                16.h.heightBox(),
                 _ReceiptLine(
                   label: 'Payment method',
                   value: payment.method.label,
@@ -99,7 +117,7 @@ class PaymentReceiptPage extends StatelessWidget {
                   value: payment.transactionId,
                 ),
                 if (payment.isFailed) ...[
-                  SizedBox(height: 12.h),
+                  12.h.heightBox(),
                   Text(
                     payment.failureReason ?? 'Payment was declined.',
                     style: TextStyle(
@@ -112,14 +130,12 @@ class PaymentReceiptPage extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 20.h),
+          20.h.heightBox(),
           OutlinedButton.icon(
             onPressed: () => Get.offAllNamed(AppRoutes.home),
             icon: Icon(Icons.check_rounded),
             label: Text('Done'),
-            style: OutlinedButton.styleFrom(
-              minimumSize: Size.fromHeight(50),
-            ),
+            style: OutlinedButton.styleFrom(minimumSize: Size.fromHeight(50)),
           ),
         ],
       ),
@@ -159,19 +175,16 @@ class _ReceiptLine extends StatelessWidget {
                   ),
                 ),
                 if (detail != null && detail!.isNotEmpty) ...[
-                  SizedBox(height: 2.h),
+                  2.h.heightBox(),
                   Text(
                     detail!,
-                    style: TextStyle(
-                      color: tokens.faint,
-                      fontSize: 11.sp,
-                    ),
+                    style: TextStyle(color: tokens.faint, fontSize: 11.sp),
                   ),
                 ],
               ],
             ),
           ),
-          SizedBox(width: 10.w),
+          10.w.widthBox(),
           Text(
             value,
             style: TextStyle(

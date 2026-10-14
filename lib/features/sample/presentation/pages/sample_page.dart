@@ -1,11 +1,21 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../core/utils/app_validators.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../domain/entities/sample.dart';
+
+
 import '../controllers/sample_controller.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class SamplePage extends GetView<SampleController> {
@@ -70,7 +80,7 @@ class SamplePage extends GetView<SampleController> {
         physics: AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.fromLTRB(16, 16, 16, 96),
         itemCount: controller.samples.length,
-        separatorBuilder: (_, _) => SizedBox(height: 8.h),
+        separatorBuilder: (_, _) => 8.h.heightBox(),
         itemBuilder: (context, index) {
           final sample = controller.samples[index];
           return _SampleCard(
@@ -229,7 +239,7 @@ class _SampleEditorDialogState extends State<_SampleEditorDialog> {
               validator: (value) =>
                   AppValidators.requiredText(value, field: 'Title'),
             ),
-            SizedBox(height: 12.h),
+            12.h.heightBox(),
             TextFormField(
               key: Key('sample-description'),
               controller: _descriptionController,

@@ -23,7 +23,11 @@ Color violationStatusColor(ViolationStatus status) {
 }
 
 class ViolationStatusPill extends StatelessWidget {
-  const ViolationStatusPill({required this.status, this.dense = true, super.key});
+  const ViolationStatusPill({
+    required this.status,
+    this.dense = true,
+    super.key,
+  });
 
   final ViolationStatus status;
   final bool dense;

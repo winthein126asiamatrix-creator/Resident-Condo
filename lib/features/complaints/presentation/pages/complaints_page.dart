@@ -1,18 +1,42 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/theme/app_radius.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../../domain/entities/complaint.dart';
+
+
 import '../controllers/complaint_controller.dart';
+
+
 import '../widgets/complaint_widgets.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
 
 class ComplaintsPage extends StatefulWidget {
@@ -102,12 +126,12 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                     ),
                   ),
                 ),
-                SizedBox(height: 20.h),
+                20.h.heightBox(),
                 AppSectionHeader(
                   title: 'Open complaints',
                   count: controller.openComplaints.length,
                 ),
-                SizedBox(height: 10.h),
+                10.h.heightBox(),
                 if (controller.openComplaints.isEmpty)
                   AppStateMessage(
                     title: 'Nothing open',
@@ -124,12 +148,12 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                       ),
                     ),
                 if (controller.closedComplaints.isNotEmpty) ...[
-                  SizedBox(height: 16.h),
+                  16.h.heightBox(),
                   AppSectionHeader(
                     title: 'Closed',
                     count: controller.closedComplaints.length,
                   ),
-                  SizedBox(height: 10.h),
+                  10.h.heightBox(),
                   for (final complaint in controller.closedComplaints)
                     Padding(
                       padding: EdgeInsets.only(bottom: 10),
@@ -350,7 +374,7 @@ class _ComplaintCard extends StatelessWidget {
             icon: Icons.report_gmailerrorred_outlined,
             color: complaintStatusColor(complaint.status, tokens),
           ),
-          SizedBox(width: 12.w),
+          12.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -361,18 +385,18 @@ class _ComplaintCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                SizedBox(height: 4.h),
+                4.h.heightBox(),
                 Text(
-                  '${complaint.reference} · ${complaint.category.label}',
+                  '${complaint.reference} Â· ${complaint.category.label}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                 ),
-                SizedBox(height: 8.h),
+                8.h.heightBox(),
                 Row(
                   children: [
                     ComplaintStatusPill(status: complaint.status),
-                    SizedBox(width: 8.w),
+                    8.w.widthBox(),
                     // Flexible so a long date cannot push the row past the card.
                     Expanded(
                       child: Text(

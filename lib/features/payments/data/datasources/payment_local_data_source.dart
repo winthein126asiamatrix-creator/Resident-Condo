@@ -65,7 +65,9 @@ class PaymentLocalDataSource {
 
     final index = _invoices.indexWhere((invoice) => invoice.isPayable);
     if (index == -1) {
-      throw const AppException('There is no open statement to add the store fee to.');
+      throw const AppException(
+        'There is no open statement to add the store fee to.',
+      );
     }
 
     final invoice = _invoices[index];
@@ -77,7 +79,9 @@ class PaymentLocalDataSource {
 
     // Re-submitting the same order must not double-charge the resident.
     final existing = invoice.items.indexWhere(
-      (candidate) => candidate.type == InvoiceItemType.storeFee && candidate.note == item.note,
+      (candidate) =>
+          candidate.type == InvoiceItemType.storeFee &&
+          candidate.note == item.note,
     );
     final items = List<InvoiceItem>.of(invoice.items);
     if (existing == -1) {
@@ -126,7 +130,9 @@ class PaymentLocalDataSource {
     for (final key in keys) {
       final existing = invoice.itemByKey(key);
       if (existing == null) {
-        throw const AppException('One of the selected items is no longer valid.');
+        throw const AppException(
+          'One of the selected items is no longer valid.',
+        );
       }
       if (!existing.isPayable) {
         throw const AppException('One of the selected items is already paid.');
@@ -140,7 +146,10 @@ class PaymentLocalDataSource {
               : item,
         )
         .toList();
-    final dueAfter = updatedItems.fold(0.0, (sum, item) => sum + item.dueAmount);
+    final dueAfter = updatedItems.fold(
+      0.0,
+      (sum, item) => sum + item.dueAmount,
+    );
     final fullyPaid = dueAfter <= 0;
 
     _invoices[index] = InvoiceModel(
@@ -313,9 +322,22 @@ class PaymentLocalDataSource {
           residentName: 'Alex Johnson',
           unitLabel: 'Tower A · 1205',
           items: [
-            InvoiceItem(type: InvoiceItemType.condoFee, mustPaid: true, amount: 135, note: 'Aug 2026'),
-            InvoiceItem(type: InvoiceItemType.parking, amount: 45, note: 'Aug 2026 · Slot B2-125'),
-            InvoiceItem(type: InvoiceItemType.utility, amount: 58.10, note: 'Water & power · Jul–Aug'),
+            InvoiceItem(
+              type: InvoiceItemType.condoFee,
+              mustPaid: true,
+              amount: 135,
+              note: 'Aug 2026',
+            ),
+            InvoiceItem(
+              type: InvoiceItemType.parking,
+              amount: 45,
+              note: 'Aug 2026 · Slot B2-125',
+            ),
+            InvoiceItem(
+              type: InvoiceItemType.utility,
+              amount: 58.10,
+              note: 'Water & power · Jul–Aug',
+            ),
           ],
           amount: 238.10,
           date: 'Sep 01, 2026',
@@ -328,9 +350,22 @@ class PaymentLocalDataSource {
           residentName: 'Alex Johnson',
           unitLabel: 'Tower A · 1205',
           items: [
-            InvoiceItem(type: InvoiceItemType.condoFee, mustPaid: true, amount: 135, note: 'Jul 2026'),
-            InvoiceItem(type: InvoiceItemType.parking, amount: 45, note: 'Jul 2026 · Slot B2-125'),
-            InvoiceItem(type: InvoiceItemType.utility, amount: 54.20, note: 'Water & power · Jun–Jul'),
+            InvoiceItem(
+              type: InvoiceItemType.condoFee,
+              mustPaid: true,
+              amount: 135,
+              note: 'Jul 2026',
+            ),
+            InvoiceItem(
+              type: InvoiceItemType.parking,
+              amount: 45,
+              note: 'Jul 2026 · Slot B2-125',
+            ),
+            InvoiceItem(
+              type: InvoiceItemType.utility,
+              amount: 54.20,
+              note: 'Water & power · Jun–Jul',
+            ),
           ],
           amount: 234.20,
           date: 'Aug 01, 2026',
@@ -343,8 +378,17 @@ class PaymentLocalDataSource {
           residentName: 'Alex Johnson',
           unitLabel: 'Tower A · 1205',
           items: [
-            InvoiceItem(type: InvoiceItemType.condoFee, mustPaid: true, amount: 135, note: 'Jun 2026'),
-            InvoiceItem(type: InvoiceItemType.parking, amount: 45, note: 'Jun 2026 · Slot B2-125'),
+            InvoiceItem(
+              type: InvoiceItemType.condoFee,
+              mustPaid: true,
+              amount: 135,
+              note: 'Jun 2026',
+            ),
+            InvoiceItem(
+              type: InvoiceItemType.parking,
+              amount: 45,
+              note: 'Jun 2026 · Slot B2-125',
+            ),
           ],
           amount: 180,
           date: 'Jul 02, 2026',
@@ -357,8 +401,17 @@ class PaymentLocalDataSource {
           residentName: 'Alex Johnson',
           unitLabel: 'Tower A · 1205',
           items: [
-            InvoiceItem(type: InvoiceItemType.condoFee, mustPaid: true, amount: 135, note: 'May 2026'),
-            InvoiceItem(type: InvoiceItemType.parking, amount: 45, note: 'May 2026 · Slot B2-125'),
+            InvoiceItem(
+              type: InvoiceItemType.condoFee,
+              mustPaid: true,
+              amount: 135,
+              note: 'May 2026',
+            ),
+            InvoiceItem(
+              type: InvoiceItemType.parking,
+              amount: 45,
+              note: 'May 2026 · Slot B2-125',
+            ),
           ],
           amount: 180,
           date: 'Jun 03, 2026',
@@ -371,8 +424,17 @@ class PaymentLocalDataSource {
           residentName: 'Alex Johnson',
           unitLabel: 'Tower A · 1205',
           items: [
-            InvoiceItem(type: InvoiceItemType.condoFee, mustPaid: true, amount: 135, note: 'Apr 2026'),
-            InvoiceItem(type: InvoiceItemType.parking, amount: 45, note: 'Apr 2026 · Slot B2-125'),
+            InvoiceItem(
+              type: InvoiceItemType.condoFee,
+              mustPaid: true,
+              amount: 135,
+              note: 'Apr 2026',
+            ),
+            InvoiceItem(
+              type: InvoiceItemType.parking,
+              amount: 45,
+              note: 'Apr 2026 · Slot B2-125',
+            ),
           ],
           amount: 180,
           date: 'May 04, 2026',
@@ -385,8 +447,17 @@ class PaymentLocalDataSource {
           residentName: 'Alex Johnson',
           unitLabel: 'Tower A · 1205',
           items: [
-            InvoiceItem(type: InvoiceItemType.condoFee, mustPaid: true, amount: 135, note: 'Mar 2026'),
-            InvoiceItem(type: InvoiceItemType.parking, amount: 45, note: 'Mar 2026 · Slot B2-125'),
+            InvoiceItem(
+              type: InvoiceItemType.condoFee,
+              mustPaid: true,
+              amount: 135,
+              note: 'Mar 2026',
+            ),
+            InvoiceItem(
+              type: InvoiceItemType.parking,
+              amount: 45,
+              note: 'Mar 2026 · Slot B2-125',
+            ),
           ],
           amount: 180,
           date: 'Apr 06, 2026',
@@ -399,7 +470,11 @@ class PaymentLocalDataSource {
           residentName: 'Alex Johnson',
           unitLabel: 'Tower A · 1205',
           items: [
-            InvoiceItem(type: InvoiceItemType.utility, amount: 54.20, note: 'Water & power · Jun–Jul'),
+            InvoiceItem(
+              type: InvoiceItemType.utility,
+              amount: 54.20,
+              note: 'Water & power · Jun–Jul',
+            ),
           ],
           amount: 54.20,
           date: 'Jul 29, 2026',
@@ -522,8 +597,18 @@ class PaymentLocalDataSource {
           residentName: 'Alex Johnson',
           unitLabel: 'Tower A · 1205',
           items: [
-            InvoiceItem(type: InvoiceItemType.rent, mustPaid: true, amount: 2400, note: 'Aug 2026'),
-            InvoiceItem(type: InvoiceItemType.condoFee, mustPaid: true, amount: 135, note: 'Aug 2026'),
+            InvoiceItem(
+              type: InvoiceItemType.rent,
+              mustPaid: true,
+              amount: 2400,
+              note: 'Aug 2026',
+            ),
+            InvoiceItem(
+              type: InvoiceItemType.condoFee,
+              mustPaid: true,
+              amount: 135,
+              note: 'Aug 2026',
+            ),
           ],
           amount: 2535,
           date: 'Sep 01, 2026',
@@ -536,8 +621,18 @@ class PaymentLocalDataSource {
           residentName: 'Alex Johnson',
           unitLabel: 'Tower A · 1205',
           items: [
-            InvoiceItem(type: InvoiceItemType.rent, mustPaid: true, amount: 2400, note: 'Jul 2026'),
-            InvoiceItem(type: InvoiceItemType.condoFee, mustPaid: true, amount: 135, note: 'Jul 2026'),
+            InvoiceItem(
+              type: InvoiceItemType.rent,
+              mustPaid: true,
+              amount: 2400,
+              note: 'Jul 2026',
+            ),
+            InvoiceItem(
+              type: InvoiceItemType.condoFee,
+              mustPaid: true,
+              amount: 135,
+              note: 'Jul 2026',
+            ),
           ],
           amount: 2535,
           date: 'Aug 01, 2026',

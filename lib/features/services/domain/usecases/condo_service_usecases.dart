@@ -13,12 +13,17 @@ class CondoServiceUseCases {
   Future<ServiceRequest> createRequest(ServiceRequest request) =>
       repository.createRequest(request);
 
-  Future<ServiceRequest> updateStatus(ServiceRequest request, ServiceRequestStatus status) =>
-      repository.updateStatus(request, status);
+  Future<ServiceRequest> updateStatus(
+    ServiceRequest request,
+    ServiceRequestStatus status,
+  ) => repository.updateStatus(request, status);
 
   Future<ServiceRequest> cancelRequest(ServiceRequest request) =>
       repository.cancelRequest(request);
 
-  Future<ServiceRequest> rateRequest(ServiceRequest request, int rating, String feedback) =>
-      repository.rateRequest(request, rating, feedback);
+  Future<ServiceRequest> rateRequest(
+    ServiceRequest request,
+    int rating,
+    String feedback,
+  ) => repository.rateRequest(request, rating, feedback);
 }

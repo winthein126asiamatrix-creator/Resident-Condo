@@ -112,37 +112,38 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
       final brightness = _appearance.themeMode == ThemeMode.dark
           ? Brightness.dark
           : _appearance.themeMode == ThemeMode.light
-              ? Brightness.light
-              : AppearanceController.currentPlatformBrightness();
+          ? Brightness.light
+          : AppearanceController.currentPlatformBrightness();
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
-          statusBarIconBrightness:
-              brightness == Brightness.dark ? Brightness.light : Brightness.dark,
+          statusBarIconBrightness: brightness == Brightness.dark
+              ? Brightness.light
+              : Brightness.dark,
           statusBarBrightness: brightness,
         ),
         child: GetMaterialApp(
-        title: AppConstants.appName,
-        debugShowCheckedModeBanner: false,
-        theme: _appearance.theme,
-        darkTheme: _appearance.darkTheme,
-        themeMode: _appearance.themeMode,
-        translations: AppTranslations(),
-        locale: _localeController.locale,
-        fallbackLocale: const Locale('en'),
-        supportedLocales: const <Locale>[
-          Locale('en'),
-          Locale('my'),
-          Locale('zh'),
-        ],
-        localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        initialRoute: AppRoutes.splash,
-        getPages: AppPages.pages,
-      ),
+          title: AppConstants.appName,
+          debugShowCheckedModeBanner: false,
+          theme: _appearance.theme,
+          darkTheme: _appearance.darkTheme,
+          themeMode: _appearance.themeMode,
+          translations: AppTranslations(),
+          locale: _localeController.locale,
+          fallbackLocale: const Locale('en'),
+          supportedLocales: const <Locale>[
+            Locale('en'),
+            Locale('my'),
+            Locale('zh'),
+          ],
+          localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          initialRoute: AppRoutes.splash,
+          getPages: AppPages.pages,
+        ),
       );
     });
   }

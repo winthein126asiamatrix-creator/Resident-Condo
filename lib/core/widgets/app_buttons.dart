@@ -1,8 +1,14 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../theme/app_radius.dart';
+
+
 import '../theme/app_spacing.dart';
+
+
 import '../theme/app_theme_tokens.dart';
 
 /// Secondary call to action: an outlined button with the same height, radius
@@ -42,10 +48,7 @@ class AppOutlinedButton extends StatelessWidget {
       color: tokens.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        side: BorderSide(
-          color: tokens.border,
-          width: 1,
-        ),
+        side: BorderSide(color: tokens.border, width: 1),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -70,7 +73,7 @@ class AppOutlinedButton extends StatelessWidget {
                   )
                 else if (icon != null) ...[
                   Icon(icon, size: 20, color: color),
-                  SizedBox(width: 10.w),
+                  10.w.widthBox(),
                 ],
                 Flexible(
                   child: Text(
@@ -120,7 +123,9 @@ class AppTextButton extends StatelessWidget {
       icon: icon == null ? SizedBox.shrink() : Icon(icon, size: 18),
       label: Text(label),
       style: TextButton.styleFrom(
-        foregroundColor: onPressed == null ? tokens.faint : (color ?? tokens.brand),
+        foregroundColor: onPressed == null
+            ? tokens.faint
+            : (color ?? tokens.brand),
         minimumSize: Size(0, AppSpacing.minTouchTarget),
         textStyle: TextStyle(fontSize: 14.5.sp, fontWeight: FontWeight.w700),
       ),

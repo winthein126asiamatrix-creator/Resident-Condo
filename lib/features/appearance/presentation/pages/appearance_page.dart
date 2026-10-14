@@ -1,20 +1,48 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../core/theme/app_radius.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_primary_action.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../domain/entities/appearance_preference.dart';
+
+
 import '../controllers/appearance_controller.dart';
+
+
 import '../widgets/app_appearance_preview_card.dart';
+
+
 import '../widgets/app_brightness_mode_selector.dart';
+
+
 import '../widgets/app_color_picker_sheet.dart';
+
+
 import '../widgets/app_color_seed_grid.dart';
 
 /// The Appearance screen.
@@ -114,7 +142,7 @@ class _Body extends StatelessWidget {
             letterSpacing: -0.2,
           ),
         ),
-        SizedBox(height: AppSpacing.fieldLabelGap),
+        AppSpacing.fieldLabelGap.heightBox(),
         Text(
           AppAppearanceCopy.description,
           style: TextStyle(
@@ -123,9 +151,9 @@ class _Body extends StatelessWidget {
             height: 1.45,
           ),
         ),
-        SizedBox(height: AppSpacing.sectionGap),
+        AppSpacing.sectionGap.heightBox(),
         AppSectionHeader(title: 'App color'),
-        SizedBox(height: AppSpacing.cardGap + 4),
+        (AppSpacing.cardGap + 4).heightBox(),
         Obx(
           () => AppColorSeedGrid(
             selected: controller.draft.value.preset,
@@ -138,25 +166,26 @@ class _Body extends StatelessWidget {
             selectionColor: controller.draft.value.seedColor,
           ),
         ),
-        SizedBox(height: AppSpacing.sectionGap),
+        AppSpacing.sectionGap.heightBox(),
         AppSectionHeader(
           title: 'Appearance',
           actionLabel: 'Reset to Default',
-          onAction: () => _reset(context, controller,controller.appliedThemeColor),
+          onAction: () =>
+              _reset(context, controller, controller.appliedThemeColor),
         ),
-        SizedBox(height: 4.h),
+        4.h.heightBox(),
         Text(
           'Light, dark, or follow your phone setting.',
           style: TextStyle(color: tokens.muted, fontSize: 12.5.sp, height: 1.4),
         ),
-        SizedBox(height: AppSpacing.fieldGap + 2),
+        (AppSpacing.fieldGap + 2).heightBox(),
         Obx(
           () => AppBrightnessModeSelector(
             value: controller.draft.value.brightnessMode,
             onChanged: controller.selectBrightnessMode,
           ),
         ),
-        SizedBox(height: AppSpacing.sectionGap + 4),
+        (AppSpacing.sectionGap + 4).heightBox(),
         Text(
           AppAppearanceCopy.previewTitle,
           style: TextStyle(
@@ -166,12 +195,12 @@ class _Body extends StatelessWidget {
             letterSpacing: -0.2,
           ),
         ),
-        SizedBox(height: AppSpacing.fieldLabelGap),
+        AppSpacing.fieldLabelGap.heightBox(),
         Text(
           AppAppearanceCopy.previewDescription,
           style: TextStyle(color: tokens.muted, fontSize: 13.sp, height: 1.4),
         ),
-        SizedBox(height: AppSpacing.cardGap + 4),
+        (AppSpacing.cardGap + 4).heightBox(),
         // The preview is wrapped in its own Theme so it paints with the draft
         // tokens. The surrounding screen keeps the applied theme, which is what
         // makes the contrast between the two readable: the resident sees the new
@@ -182,7 +211,7 @@ class _Body extends StatelessWidget {
             child: AppAppearancePreviewCard(
               tokens: controller.previewTokens,
               greeting: 'Good morning, Mary',
-              unitLabel: 'Building A · Unit A-101',
+              unitLabel: 'Building A Â· Unit A-101',
               balanceAmount: '\$100',
               balanceDue: 'Due Sep 30',
             ),
@@ -212,7 +241,7 @@ class _Body extends StatelessWidget {
   Future<void> _reset(
     BuildContext context,
     AppearanceController controller,
-    Color backgroundColor
+    Color backgroundColor,
   ) async {
     final confirmed = await showAppConfirmDialog(
       context,
@@ -233,12 +262,9 @@ class _Body extends StatelessWidget {
     showAppFeedback(
       context,
       title: applied ? 'Appearance reset' : 'Could not reset',
-      message: applied
-          ? 'The default  theme is back.'
-          : 'Please try again.',
+      message: applied ? 'The default  theme is back.' : 'Please try again.',
       isError: !applied,
-      backgroundColor: defaults.seedColor
-      
+      backgroundColor: defaults.seedColor,
     );
   }
 }
@@ -302,7 +328,7 @@ class _AppearanceActionBar extends StatelessWidget {
               Row(
                 children: [
                   _CurrentSwatch(color: draft.seedColor),
-                  SizedBox(width: 10.w),
+                  10.w.widthBox(),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -318,9 +344,9 @@ class _AppearanceActionBar extends StatelessWidget {
                             color: changed ? tokens.brand : tokens.muted,
                           ),
                         ),
-                        SizedBox(height: 1.h),
+                        1.h.heightBox(),
                         Text(
-                          '${draft.label} · ${draft.brightnessMode.label}',
+                          '${draft.label} Â· ${draft.brightnessMode.label}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -334,16 +360,16 @@ class _AppearanceActionBar extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               AppPrimaryAction(
                 key: Key('appearance-apply'),
                 onPressed: changed
-                    ? () => _apply(context, controller,draft.seedColor)
+                    ? () => _apply(context, controller, draft.seedColor)
                     : null,
                 isLoading: controller.isSaving.value,
                 label: 'Apply Theme',
                 icon: Icons.check_rounded,
-                backgroundColor:draft.seedColor,
+                backgroundColor: draft.seedColor,
               ),
             ],
           );
@@ -355,7 +381,7 @@ class _AppearanceActionBar extends StatelessWidget {
   Future<void> _apply(
     BuildContext context,
     AppearanceController controller,
-    Color backgroundColor
+    Color backgroundColor,
   ) async {
     final applied = await controller.applyTheme();
     if (!context.mounted) {
@@ -368,7 +394,7 @@ class _AppearanceActionBar extends StatelessWidget {
           ? 'The app now uses ${controller.saved.value.label}.'
           : 'Please try again.',
       isError: !applied,
-      backgroundColor: backgroundColor
+      backgroundColor: backgroundColor,
     );
   }
 }

@@ -1,11 +1,21 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_radius.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/widgets/app_primary_action.dart';
 
 /// Bottom sheet holding the free colour picker.
@@ -25,10 +35,8 @@ Future<Color?> showAppColorPickerSheet(
     context: context,
     isScrollControlled: true,
     showDragHandle: false,
-    builder: (sheetContext) => _AppColorPickerSheet(
-      initial: initial,
-      onChanged: onChanged,
-    ),
+    builder: (sheetContext) =>
+        _AppColorPickerSheet(initial: initial, onChanged: onChanged),
   );
 }
 
@@ -130,7 +138,7 @@ class _AppColorPickerSheetState extends State<_AppColorPickerSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _SheetGrabber(),
-                SizedBox(height: AppSpacing.fieldGap),
+                AppSpacing.fieldGap.heightBox(),
                 Row(
                   children: [
                     Expanded(
@@ -147,7 +155,7 @@ class _AppColorPickerSheetState extends State<_AppColorPickerSheet> {
                               letterSpacing: -0.2,
                             ),
                           ),
-                          SizedBox(height: 4.h),
+                          4.h.heightBox(),
                           Text(
                             'Any color you like. The app builds the rest of '
                             'the palette around it.',
@@ -160,37 +168,36 @@ class _AppColorPickerSheetState extends State<_AppColorPickerSheet> {
                         ],
                       ),
                     ),
-                    SizedBox(width: AppSpacing.fieldLabelGap),
+                    AppSpacing.fieldLabelGap.widthBox(),
                     _SelectedSwatch(color: _color, tokens: tokens),
                   ],
                 ),
-                SizedBox(height: AppSpacing.sectionGap),
+                AppSpacing.sectionGap.heightBox(),
                 _SaturationValueField(
                   hue: _hsv.hue,
                   saturation: _hsv.saturation,
                   value: _hsv.value,
-                  onChanged: (saturation, value) => _update(
-                    _hsv.withSaturation(saturation).withValue(value),
-                  ),
+                  onChanged: (saturation, value) =>
+                      _update(_hsv.withSaturation(saturation).withValue(value)),
                 ),
-                SizedBox(height: AppSpacing.fieldGap),
+                AppSpacing.fieldGap.heightBox(),
                 _HueStrip(
                   hue: _hsv.hue,
                   onChanged: (hue) => _update(_hsv.withHue(hue)),
                 ),
-                SizedBox(height: AppSpacing.fieldGap),
+                AppSpacing.fieldGap.heightBox(),
                 _RecentSwatches(
                   colors: _recentColors,
                   onSelected: (color) => _update(HSVColor.fromColor(color)),
                 ),
-                SizedBox(height: AppSpacing.sectionGap),
+                AppSpacing.sectionGap.heightBox(),
                 _HexField(
                   controller: _hexController,
                   tokens: tokens,
                   onChanged: _onHexChanged,
                   onEditingChanged: (editing) => _isEditingHex = editing,
                 ),
-                SizedBox(height: AppSpacing.sectionGap),
+                AppSpacing.sectionGap.heightBox(),
                 AppPrimaryAction(
                   key: Key('appearance-color-picker-confirm'),
                   onPressed: () => Navigator.of(context).pop(_color),
@@ -198,7 +205,7 @@ class _AppColorPickerSheetState extends State<_AppColorPickerSheet> {
                   icon: Icons.check_rounded,
                   backgroundColor: _color,
                 ),
-                SizedBox(height: AppSpacing.fieldLabelGap),
+                AppSpacing.fieldLabelGap.heightBox(),
                 Center(
                   child: TextButton(
                     key: Key('appearance-color-picker-cancel'),
@@ -324,9 +331,7 @@ class _SaturationValueField extends StatelessWidget {
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(AppRadius.xl),
-                    gradient: LinearGradient(
-                      colors: [Colors.white, pureHue],
-                    ),
+                    gradient: LinearGradient(colors: [Colors.white, pureHue]),
                   ),
                 ),
                 Container(
@@ -400,7 +405,8 @@ class _HueStrip extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        void update(Offset local) => onChanged((local.dx / width).clamp(0.0, 1.0));
+        void update(Offset local) =>
+            onChanged((local.dx / width).clamp(0.0, 1.0));
 
         return GestureDetector(
           key: Key('appearance-picker-hue-strip'),
@@ -529,7 +535,7 @@ class _HexField extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        SizedBox(height: AppSpacing.fieldLabelGap),
+        AppSpacing.fieldLabelGap.heightBox(),
         TextField(
           key: Key('appearance-color-hex-field'),
           controller: controller,
@@ -557,10 +563,7 @@ class _HexField extends StatelessWidget {
             filled: true,
             fillColor: tokens.surfaceMuted,
             isDense: true,
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 14,
-            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.lg),
               borderSide: BorderSide(color: tokens.border),

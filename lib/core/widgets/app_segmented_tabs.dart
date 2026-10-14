@@ -1,7 +1,11 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../theme/app_radius.dart';
+
+
 import '../theme/app_theme_tokens.dart';
 
 /// One segment of a [AppSegmentedTabs] strip.
@@ -231,7 +235,7 @@ class _SegmentButtonState extends State<_SegmentButton> {
                   builder: (context, animated, _) =>
                       Icon(widget.tab.icon, size: 18, color: animated),
                 ),
-                SizedBox(width: 6.w),
+                6.w.widthBox(),
                 AnimatedDefaultTextStyle(
                   duration: AppSegmentedTabs.slideDuration,
                   curve: AppSegmentedTabs.slideCurve,

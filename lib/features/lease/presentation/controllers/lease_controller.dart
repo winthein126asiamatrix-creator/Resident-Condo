@@ -112,7 +112,8 @@ class LeaseController extends GetxController {
         ),
       );
       renewals.removeWhere(
-        (item) => item.leaseId == lease.id && item.status == RenewalStatus.pending,
+        (item) =>
+            item.leaseId == lease.id && item.status == RenewalStatus.pending,
       );
       renewals.insert(0, renewal);
       return renewal;

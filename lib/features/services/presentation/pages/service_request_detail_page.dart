@@ -1,18 +1,42 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../../domain/entities/condo_service.dart';
+
+
 import '../controllers/condo_service_controller.dart';
+
+
 import '../widgets/service_widgets.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_form_field.dart';
 
 class ServiceRequestDetailPage extends GetView<CondoServiceController> {
@@ -33,11 +57,11 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
             AppHeroPanel(
               icon: serviceIcon(current.category),
               title: current.serviceName,
-              subtitle: '${current.scheduledDate} · ${current.scheduledSlot}',
+              subtitle: '${current.scheduledDate} Â· ${current.scheduledSlot}',
               footnote: 'Provider: ${current.provider}',
               trailing: ServiceStatusPill(status: current.status, dense: false),
             ),
-            SizedBox(height: 18.h),
+            18.h.heightBox(),
             AppSectionCard(
               title: 'Request details',
               child: Column(
@@ -63,7 +87,7 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
               ),
             ),
             if (current.notes.isNotEmpty) ...[
-              SizedBox(height: 16.h),
+              16.h.heightBox(),
               AppSectionCard(
                 title: 'Your notes',
                 child: Text(
@@ -72,12 +96,12 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                 ),
               ),
             ],
-            SizedBox(height: 18.h),
+            18.h.heightBox(),
             AppSectionHeader(title: 'Progress'),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             _Timeline(status: current.status),
             if (current.rating != null) ...[
-              SizedBox(height: 18.h),
+              18.h.heightBox(),
               AppSectionCard(
                 title: 'Your rating',
                 child: Row(
@@ -90,7 +114,7 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                         color: AppPalette.warning,
                         size: 22,
                       ),
-                    SizedBox(width: 10.w),
+                    10.w.widthBox(),
                     Expanded(
                       child: Text(
                         current.feedback ?? '',
@@ -104,7 +128,7 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                 ),
               ),
             ],
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             if (current.canCancel)
               OutlinedButton.icon(
                 onPressed: controller.isSubmitting.value
@@ -119,20 +143,18 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                 ),
               ),
             if (current.canRate) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               FilledButton.icon(
                 onPressed: controller.isSubmitting.value
                     ? null
                     : () => _rate(context, current),
                 icon: Icon(Icons.star_rounded, size: 18),
                 label: Text('Rate this service'),
-                style: FilledButton.styleFrom(
-                  minimumSize: Size.fromHeight(50),
-                ),
+                style: FilledButton.styleFrom(minimumSize: Size.fromHeight(50)),
               ),
             ],
             if (controller.errorMessage.value != null) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(
                 controller.errorMessage.value!,
                 style: TextStyle(color: AppPalette.danger),
@@ -260,7 +282,7 @@ class _Timeline extends StatelessWidget {
                       ),
                   ],
                 ),
-                SizedBox(width: 12.w),
+                12.w.widthBox(),
                 Padding(
                   padding: EdgeInsets.only(top: 2),
                   child: Text(
@@ -287,7 +309,7 @@ class _Timeline extends StatelessWidget {
                     size: 18,
                     color: AppPalette.danger,
                   ),
-                  SizedBox(width: 10.w),
+                  10.w.widthBox(),
                   Text(
                     'Cancelled',
                     style: TextStyle(
@@ -345,7 +367,7 @@ class _RatingDialogState extends State<_RatingDialog> {
                 ),
             ],
           ),
-          SizedBox(height: 8.h),
+          8.h.heightBox(),
           AppTextField(
             label: 'Optional comment',
             controller: _feedback,

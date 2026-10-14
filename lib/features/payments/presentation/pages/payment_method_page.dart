@@ -1,18 +1,40 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../domain/entities/invoice.dart';
+
+
 import '../../domain/entities/payment.dart';
+
+
 import '../controllers/payment_controller.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/widgets/app_form_field.dart';
 
 class PaymentMethodPage extends StatefulWidget {
@@ -62,15 +84,15 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               'Review and confirm',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             _ReviewCard(controller: controller),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             Text(
               'Choose how you want to pay',
               style: Theme.of(context).textTheme.titleMedium
                   ?.copyWith(fontWeight: FontWeight.w800),
             ),
-            SizedBox(height: 12.h),
+            12.h.heightBox(),
             _MethodSelector(
               selected: method,
               onChanged: (value) {
@@ -78,16 +100,16 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                 controller.selectPaymentMethod(value);
               },
             ),
-            SizedBox(height: 18.h),
+            18.h.heightBox(),
             if (method == PaymentMethod.card)
               _CardForm(controller: _cardNumberController)
             else if (method == PaymentMethod.bankTransfer)
               _BankTransferInfo()
             else
               _WalletInfo(),
-            SizedBox(height: 12.h),
+            12.h.heightBox(),
             _DemoGatewayHint(),
-            SizedBox(height: 12.h),
+            12.h.heightBox(),
             FilledButton.icon(
               key: Key('confirm-payment'),
               onPressed: controller.isPaymentProcessing.value
@@ -108,16 +130,14 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                     ? 'Processing payment...'
                     : 'Confirm Payment',
               ),
-              style: FilledButton.styleFrom(
-                minimumSize: Size.fromHeight(52),
-              ),
+              style: FilledButton.styleFrom(minimumSize: Size.fromHeight(52)),
             ),
             if (_error.isNotEmpty) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(_error, style: TextStyle(color: AppPalette.danger)),
             ],
             if (controller.errorMessage.value != null) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(
                 controller.errorMessage.value!,
                 style: TextStyle(color: AppPalette.danger),
@@ -135,7 +155,9 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
         title: Text('Confirm payment'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -145,19 +167,16 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               'Payment amount',
               style: TextStyle(color: tokens.muted, fontSize: 12.sp),
             ),
-            SizedBox(height: 3.h),
+            3.h.heightBox(),
             Text(
               AppFormatters.currency(controller.selectedTotal),
               style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.w800),
             ),
-            SizedBox(height: 6.h),
+            6.h.heightBox(),
             Text(
               '${controller.selectedCount} selected item'
               '${controller.selectedCount == 1 ? '' : 's'}',
-              style: TextStyle(
-                color: tokens.mutedStrong,
-                fontSize: 12.sp,
-              ),
+              style: TextStyle(color: tokens.mutedStrong, fontSize: 12.sp),
             ),
             Divider(height: 24),
             for (final item in controller.selectedItems)
@@ -181,22 +200,22 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                   ],
                 ),
               ),
-            SizedBox(height: 12.h),
+            12.h.heightBox(),
             Text(
               'Payment method',
               style: TextStyle(color: tokens.muted, fontSize: 12.sp),
             ),
-            SizedBox(height: 3.h),
+            3.h.heightBox(),
             Text(
               controller.selectedPaymentMethod.value.label,
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
-            SizedBox(height: 12.h),
+            12.h.heightBox(),
             Text(
               'Unit',
               style: TextStyle(color: tokens.muted, fontSize: 12.sp),
             ),
-            SizedBox(height: 3.h),
+            3.h.heightBox(),
             Text(
               controller.selectedInvoice.value!.unitLabel,
               style: TextStyle(fontWeight: FontWeight.w700),
@@ -265,7 +284,7 @@ class _ReviewCard extends StatelessWidget {
               letterSpacing: 1.2,
             ),
           ),
-          SizedBox(height: 6.h),
+          6.h.heightBox(),
           Text(
             AppFormatters.currency(controller.selectedTotal),
             style: TextStyle(
@@ -274,14 +293,11 @@ class _ReviewCard extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
-          SizedBox(height: 6.h),
+          6.h.heightBox(),
           Text(
             '${controller.selectedCount} of '
             '${controller.selectedInvoice.value?.unpaidItems.length ?? 0} unpaid items selected',
-            style: TextStyle(
-              color: tokens.brandOnDarkMuted,
-              fontSize: 12.sp,
-            ),
+            style: TextStyle(color: tokens.brandOnDarkMuted, fontSize: 12.sp),
           ),
         ],
       ),
@@ -352,11 +368,8 @@ class _CardForm extends StatelessWidget {
   Widget build(BuildContext context) {
     return _FormCard(
       children: [
-        Text(
-          'Card details',
-          style: TextStyle(fontWeight: FontWeight.w800),
-        ),
-        SizedBox(height: 12.h),
+        Text('Card details', style: TextStyle(fontWeight: FontWeight.w800)),
+        12.h.heightBox(),
         AppTextField(
           fieldKey: Key('card-number-field'),
           label: 'Card number',
@@ -369,12 +382,9 @@ class _CardForm extends StatelessWidget {
             LengthLimitingTextInputFormatter(19),
           ],
         ),
-        SizedBox(height: AppSpacing.fieldGap),
-        AppTextField(
-          label: 'Name on card',
-          icon: Icons.person_outline_rounded,
-        ),
-        SizedBox(height: AppSpacing.fieldGap),
+        AppSpacing.fieldGap.heightBox(),
+        AppTextField(label: 'Name on card', icon: Icons.person_outline_rounded),
+        AppSpacing.fieldGap.heightBox(),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -385,7 +395,7 @@ class _CardForm extends StatelessWidget {
                 keyboardType: TextInputType.number,
               ),
             ),
-            SizedBox(width: 10.w),
+            10.w.widthBox(),
             Expanded(
               child: AppTextField(
                 label: 'CVV',
@@ -414,7 +424,7 @@ class _DemoGatewayHint extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(Icons.science_outlined, size: 18, color: AppPalette.warning),
-          SizedBox(width: 8.w),
+          8.w.widthBox(),
           Expanded(
             child: Text(
               'Demo gateway: a card number ending in 0000 is declined so you can '
@@ -440,23 +450,19 @@ class _BankTransferInfo extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     return _FormCard(
       children: [
-        Icon(
-          Icons.account_balance_rounded,
-          color: tokens.brand,
-          size: 32,
-        ),
-        SizedBox(height: 10.h),
+        Icon(Icons.account_balance_rounded, color: tokens.brand, size: 32),
+        10.h.heightBox(),
         Text(
           'Mock bank transfer',
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
-        SizedBox(height: 5.h),
+        5.h.heightBox(),
         Text(
           'Transfer to the condo management account shown in your resident portal.',
           textAlign: TextAlign.center,
           style: TextStyle(color: tokens.muted, height: 1.4),
         ),
-        SizedBox(height: 12.h),
+        12.h.heightBox(),
         Text(
           'Account ending in 4821',
           style: TextStyle(fontWeight: FontWeight.w700),
@@ -479,17 +485,14 @@ class _WalletInfo extends StatelessWidget {
           color: tokens.brand,
           size: 32,
         ),
-        SizedBox(height: 10.h),
-        Text(
-          'Connected wallet',
-          style: TextStyle(fontWeight: FontWeight.w800),
-        ),
-        SizedBox(height: 5.h),
+        10.h.heightBox(),
+        Text('Connected wallet', style: TextStyle(fontWeight: FontWeight.w800)),
+        5.h.heightBox(),
         Text(
           'Alex Johnson Wallet',
           style: TextStyle(color: tokens.mutedStrong),
         ),
-        SizedBox(height: 8.h),
+        8.h.heightBox(),
         Text(
           'Available balance: \$2,450.00',
           style: TextStyle(fontWeight: FontWeight.w700),

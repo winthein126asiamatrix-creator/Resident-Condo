@@ -1,16 +1,36 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/constants/app_constants.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_radius.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_form_field.dart';
+
+
 import '../../../../core/widgets/app_primary_action.dart';
+
+
 import '../controllers/auth_controller.dart';
 
 /// The resident sign-in screen.
@@ -85,9 +105,9 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SizedBox(height: 12.h),
+                    12.h.heightBox(),
                     _LoginHeader(),
-                    SizedBox(height: 28.h),
+                    28.h.heightBox(),
                     _LoginForm(
                       formKey: _formKey,
                       auth: _auth,
@@ -97,7 +117,7 @@ class _LoginPageState extends State<LoginPage> {
                       passwordFocus: _passwordFocus,
                       onSubmit: _submit,
                     ),
-                    SizedBox(height: AppSpacing.sectionGap),
+                    AppSpacing.sectionGap.heightBox(),
                     _LoginFooter(),
                   ],
                 ),
@@ -172,7 +192,7 @@ class _LoginHeader extends StatelessWidget {
             filterQuality: FilterQuality.high,
           ),
         ),
-        SizedBox(height: 22.h),
+        22.h.heightBox(),
         Text(
           'Welcome back',
           style: TextStyle(
@@ -183,7 +203,7 @@ class _LoginHeader extends StatelessWidget {
             fontWeight: FontWeight.w800,
           ),
         ),
-        SizedBox(height: 6.h),
+        6.h.heightBox(),
         Text(
           'Sign in to manage your residence',
           style: TextStyle(color: tokens.muted, fontSize: 14.5.sp, height: 1.4),
@@ -258,7 +278,7 @@ class _LoginForm extends StatelessWidget {
                       ?.message
                 : null,
           ),
-          SizedBox(height: AppSpacing.fieldGap),
+          AppSpacing.fieldGap.heightBox(),
           Obx(
             () => AppTextField(
               fieldKey: Key('login-password'),
@@ -294,9 +314,9 @@ class _LoginForm extends StatelessWidget {
                   : null,
             ),
           ),
-          SizedBox(height: AppSpacing.fieldGap),
+          AppSpacing.fieldGap.heightBox(),
           _RememberMeAndForgot(auth: auth),
-          SizedBox(height: AppSpacing.sectionGap),
+          AppSpacing.sectionGap.heightBox(),
           Obx(
             () => AppPrimaryAction(
               key: Key('login-submit'),
@@ -403,7 +423,7 @@ class _RememberMeAndForgot extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             rememberMeControl,
-            SizedBox(width: 8.w),
+            8.w.widthBox(),
             Flexible(child: rememberMeLabel),
           ],
         );
@@ -466,7 +486,7 @@ class _ErrorBanner extends StatelessWidget {
               size: 18,
               color: AppPalette.danger,
             ),
-            SizedBox(width: 10.w),
+            10.w.widthBox(),
             Expanded(
               child: Text(
                 message,
@@ -494,9 +514,9 @@ class _LoginFooter extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     return Column(
       children: [
-        SizedBox(height: 8.h),
+        8.h.heightBox(),
         Icon(Icons.shield_outlined, size: 16, color: tokens.faint),
-        SizedBox(height: 8.h),
+        8.h.heightBox(),
         Text(
           'Secure access to your residence',
           textAlign: TextAlign.center,
@@ -507,7 +527,7 @@ class _LoginFooter extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        SizedBox(height: 12.h),
+        12.h.heightBox(),
         Text(
           AppConstants.appName,
           style: TextStyle(

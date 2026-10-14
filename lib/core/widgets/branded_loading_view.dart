@@ -1,7 +1,11 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../constants/app_constants.dart';
+
+
 import '../theme/app_theme_tokens.dart';
 
 class BrandedLoadingView extends StatelessWidget {
@@ -40,7 +44,7 @@ class BrandedLoadingView extends StatelessWidget {
                   filterQuality: FilterQuality.high,
                 ),
               ),
-              SizedBox(height: 20.h),
+              20.h.heightBox(),
               Text(
                 AppConstants.appName,
                 style: TextStyle(
@@ -49,9 +53,9 @@ class BrandedLoadingView extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              SizedBox(height: 6.h),
+              6.h.heightBox(),
               Text(message, style: TextStyle(color: tokens.muted)),
-              SizedBox(height: 20.h),
+              20.h.heightBox(),
               SizedBox(
                 width: 132,
                 child: LinearProgressIndicator(

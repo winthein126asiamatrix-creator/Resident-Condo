@@ -81,27 +81,27 @@ enum AppBrightnessMode {
 
   /// Short line explaining what the mode does, shown under the control.
   String get description => switch (this) {
-        AppBrightnessMode.light => 'Always the light palette',
-        AppBrightnessMode.dark => 'Always the dark palette',
-        AppBrightnessMode.system => 'Follows your phone setting',
-      };
+    AppBrightnessMode.light => 'Always the light palette',
+    AppBrightnessMode.dark => 'Always the dark palette',
+    AppBrightnessMode.system => 'Follows your phone setting',
+  };
 
   /// Resolves the mode against the platform brightness.
   Brightness resolve(Brightness platformBrightness) => switch (this) {
-        AppBrightnessMode.light => Brightness.light,
-        AppBrightnessMode.dark => Brightness.dark,
-        AppBrightnessMode.system => platformBrightness,
-      };
+    AppBrightnessMode.light => Brightness.light,
+    AppBrightnessMode.dark => Brightness.dark,
+    AppBrightnessMode.system => platformBrightness,
+  };
 
   /// How a [GetMaterialApp] should be told to pick between the light and dark
   /// palettes. System has to map to `ThemeMode.system` rather than to a
   /// resolved brightness, otherwise the app would stop following the phone while
   /// the resident is in a different room.
   ThemeMode get themeMode => switch (this) {
-        AppBrightnessMode.light => ThemeMode.light,
-        AppBrightnessMode.dark => ThemeMode.dark,
-        AppBrightnessMode.system => ThemeMode.system,
-      };
+    AppBrightnessMode.light => ThemeMode.light,
+    AppBrightnessMode.dark => ThemeMode.dark,
+    AppBrightnessMode.system => ThemeMode.system,
+  };
 
   static AppBrightnessMode byId(String id) {
     for (final mode in AppBrightnessMode.values) {

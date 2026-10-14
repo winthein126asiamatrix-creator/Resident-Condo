@@ -15,7 +15,7 @@ import '../../domain/entities/appearance_preference.dart';
 /// platform channel is involved.
 class AppearanceLocalDataSource {
   AppearanceLocalDataSource([SharedPreferences? preferences])
-      : _preferences = preferences;
+    : _preferences = preferences;
 
   static const _seedKey = 'appearance.seed_color';
   static const _presetKey = 'appearance.preset_id';

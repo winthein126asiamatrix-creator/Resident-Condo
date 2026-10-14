@@ -33,7 +33,6 @@ class ParkingRepositoryImpl implements ParkingRepository {
   ) => localDataSource.requestGuestParking(request);
 
   @override
-  Future<GuestParkingRequest> cancelGuestParking(
-    GuestParkingRequest request,
-  ) => localDataSource.cancelGuestParking(request);
+  Future<GuestParkingRequest> cancelGuestParking(GuestParkingRequest request) =>
+      localDataSource.cancelGuestParking(request);
 }

@@ -26,10 +26,10 @@ class AppearancePreference {
   /// What the app looks like before Appearance is saved over: brand blue,
   /// following the system brightness.
   factory AppearancePreference.defaults() => AppearancePreference(
-        seedColor: AppColorSeeds.defaultSeed.color,
-        presetId: AppColorSeeds.defaultSeed.id,
-        brightnessMode: AppBrightnessMode.system,
-      );
+    seedColor: AppColorSeeds.defaultSeed.color,
+    presetId: AppColorSeeds.defaultSeed.id,
+    brightnessMode: AppBrightnessMode.system,
+  );
 
   /// The preset matching this preference, or null for a custom colour.
   AppColorSeed? get preset =>

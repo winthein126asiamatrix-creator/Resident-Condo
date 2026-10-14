@@ -1,9 +1,14 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../theme/app_radius.dart';
+
+
 import '../theme/app_theme_tokens.dart';
 
 /// A photo attached to a request, shown as a tappable card.
@@ -60,12 +65,8 @@ class AppImagePreview extends StatelessWidget {
                 padding: EdgeInsets.fromLTRB(12, 9, 12, 10),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.photo_outlined,
-                      size: 15,
-                      color: tokens.muted,
-                    ),
-                    SizedBox(width: 7.w),
+                    Icon(Icons.photo_outlined, size: 15, color: tokens.muted),
+                    7.w.widthBox(),
                     Expanded(
                       child: Text(
                         caption,
@@ -156,7 +157,7 @@ class _AppImageViewer extends StatelessWidget {
                       ),
                       icon: Icon(Icons.close_rounded),
                     ),
-                    SizedBox(width: 8.w),
+                    8.w.widthBox(),
                     Expanded(
                       child: Text(
                         caption,
@@ -229,7 +230,7 @@ class _ImageFallback extends StatelessWidget {
               color: tokens.faint,
             ),
             if (!loading) ...[
-              SizedBox(height: 8.h),
+              8.h.heightBox(),
               Text(
                 'Image unavailable',
                 style: TextStyle(color: tokens.muted, fontSize: 12.5.sp),

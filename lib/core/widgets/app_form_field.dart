@@ -1,11 +1,21 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 
+
 import '../theme/app_palette.dart';
+
+
 import '../theme/app_radius.dart';
+
+
 import '../theme/app_spacing.dart';
+
+
 import '../theme/app_text_styles.dart';
+
+
 import '../theme/app_theme_tokens.dart';
 
 /// Rounded, filled input used by every resident facing form.
@@ -90,7 +100,7 @@ class AppTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _FieldLabel(label: label, icon: multiline ? icon : null),
-        SizedBox(height: AppSpacing.fieldLabelGap),
+        AppSpacing.fieldLabelGap.heightBox(),
         TextFormField(
           key: fieldKey,
           controller: controller,
@@ -158,7 +168,7 @@ class AppSelectField<T> extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _FieldLabel(label: label, icon: icon),
-        SizedBox(height: AppSpacing.fieldLabelGap),
+        AppSpacing.fieldLabelGap.heightBox(),
         DropdownButtonFormField<T>(
           key: fieldKey,
           initialValue: value,
@@ -234,11 +244,7 @@ InputDecoration appFormFieldDecoration({
     contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 17),
     prefixIcon: icon == null
         ? null
-        : Icon(
-            icon,
-            size: 20,
-            color: enabled ? tokens.muted : tokens.faint,
-          ),
+        : Icon(icon, size: 20, color: enabled ? tokens.muted : tokens.faint),
     prefixIconColor: tokens.muted,
     prefixIconConstraints: BoxConstraints(minWidth: 46, minHeight: 24),
     suffixIconConstraints: BoxConstraints(minWidth: 44, minHeight: 24),
@@ -262,14 +268,14 @@ InputDecoration appFormFieldDecoration({
     suffixIcon: isSelect
         ? Icon(Icons.keyboard_arrow_down_rounded, color: tokens.muted)
         : suffixIcon ??
-            (suffixIconLabel == null
-                ? null
-                : IconButton(
-                    onPressed: onSuffixTap,
-                    tooltip: suffixIconLabel,
-                    icon: Icon(Icons.close_rounded, size: 18),
-                    color: tokens.muted,
-                  )),
+              (suffixIconLabel == null
+                  ? null
+                  : IconButton(
+                      onPressed: onSuffixTap,
+                      tooltip: suffixIconLabel,
+                      icon: Icon(Icons.close_rounded, size: 18),
+                      color: tokens.muted,
+                    )),
   );
 }
 
@@ -286,7 +292,7 @@ class _FieldLabel extends StatelessWidget {
       children: [
         if (icon != null) ...[
           Icon(icon, size: 15, color: tokens.muted),
-          SizedBox(width: 6.w),
+          6.w.widthBox(),
         ],
         Flexible(
           child: Text(label, style: AppTextStyles.of(context).fieldLabel),

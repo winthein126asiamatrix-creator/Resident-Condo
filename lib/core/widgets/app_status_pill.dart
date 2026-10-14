@@ -1,5 +1,7 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 
 import '../theme/app_theme_tokens.dart';
 
@@ -31,7 +33,7 @@ class AppStatusPill extends StatelessWidget {
         children: [
           if (icon != null) ...[
             Icon(icon, size: dense ? 12 : 14, color: color),
-            SizedBox(width: 4.w),
+            4.w.widthBox(),
           ],
           Text(
             label,
@@ -118,7 +120,7 @@ class AppHeroPanel extends StatelessWidget {
                   ),
                   child: Icon(icon, color: tokens.brandOnDark, size: 27),
                 ),
-                SizedBox(width: 14.w),
+                14.w.widthBox(),
               ],
               Expanded(
                 child: Column(
@@ -132,7 +134,7 @@ class AppHeroPanel extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    SizedBox(height: 6.h),
+                    6.h.heightBox(),
                     Text(
                       subtitle,
                       style: TextStyle(
@@ -148,9 +150,9 @@ class AppHeroPanel extends StatelessWidget {
               ?trailing,
             ],
           ),
-          if (leading != null) ...[SizedBox(height: 18.h), leading!],
+          if (leading != null) ...[18.h.heightBox(), leading!],
           if (footnote != null) ...[
-            SizedBox(height: 14.h),
+            14.h.heightBox(),
             Row(
               children: [
                 Icon(
@@ -158,7 +160,7 @@ class AppHeroPanel extends StatelessWidget {
                   color: tokens.brandOnDark,
                   size: 15,
                 ),
-                SizedBox(width: 6.w),
+                6.w.widthBox(),
                 Expanded(
                   child: Text(
                     footnote!,

@@ -16,7 +16,10 @@ class SecureTokenStorage implements TokenStorage {
     try {
       final access = await _storage.read(key: _accessTokenKey);
       final refresh = await _storage.read(key: _refreshTokenKey);
-      if (access == null || access.isEmpty || refresh == null || refresh.isEmpty) {
+      if (access == null ||
+          access.isEmpty ||
+          refresh == null ||
+          refresh.isEmpty) {
         // Half a pair is as good as none: it would fail on first refresh.
         return null;
       }

@@ -13,7 +13,10 @@ class StoreBinding extends Bindings {
       StoreRepositoryImpl(StoreLocalDataSource()),
       permanent: true,
     );
-    Get.put<StoreUseCases>(StoreUseCases(Get.find<StoreRepository>()), permanent: true);
+    Get.put<StoreUseCases>(
+      StoreUseCases(Get.find<StoreRepository>()),
+      permanent: true,
+    );
     Get.put<StoreController>(
       StoreController(Get.find<StoreUseCases>()),
       permanent: true,

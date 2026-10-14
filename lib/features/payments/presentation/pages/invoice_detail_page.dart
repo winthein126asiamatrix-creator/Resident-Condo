@@ -1,17 +1,39 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../domain/entities/invoice.dart';
+
+
 import '../../domain/entities/payment.dart';
+
+
 import '../controllers/payment_controller.dart';
+
+
 import '../widgets/payment_status_badge.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
 
 class InvoiceDetailPage extends GetView<PaymentController> {
@@ -42,7 +64,7 @@ class InvoiceDetailPage extends GetView<PaymentController> {
       ),
       children: [
         _InvoiceHero(invoice: currentInvoice),
-        SizedBox(height: 20.h),
+        20.h.heightBox(),
         AppSectionCard(
           title: 'Invoice information',
           child: Column(
@@ -72,7 +94,7 @@ class InvoiceDetailPage extends GetView<PaymentController> {
             ],
           ),
         ),
-        SizedBox(height: 16.h),
+        16.h.heightBox(),
         AppSectionCard(
           title: 'Breakdown',
           subtitle: 'Every charge is billed and paid separately.',
@@ -92,7 +114,7 @@ class InvoiceDetailPage extends GetView<PaymentController> {
             ],
           ),
         ),
-        SizedBox(height: 18.h),
+        18.h.heightBox(),
         if (currentInvoice.isPayable)
           FilledButton.icon(
             key: Key('invoice-pay-selected'),
@@ -114,9 +136,9 @@ class InvoiceDetailPage extends GetView<PaymentController> {
             payment: _paymentFor(currentInvoice),
           ),
         if (currentInvoice.isPayable) ...[
-          SizedBox(height: 8.h),
+          8.h.heightBox(),
           Text(
-            'Pay Now never charges the full balance automatically — you pick '
+            'Pay Now never charges the full balance automatically â€” you pick '
             'exactly which fees to settle.',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -181,7 +203,7 @@ class _InvoiceHero extends StatelessWidget {
               PaymentStatusBadge(status: invoice.status),
             ],
           ),
-          SizedBox(height: 14.h),
+          14.h.heightBox(),
           Text(
             AppFormatters.currency(invoice.amountDue),
             style: TextStyle(
@@ -190,13 +212,10 @@ class _InvoiceHero extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
-          SizedBox(height: 5.h),
+          5.h.heightBox(),
           Text(
-            '${invoice.number} · ${invoice.billingPeriod}',
-            style: TextStyle(
-              color: tokens.brandOnDarkMuted,
-              fontSize: 12.sp,
-            ),
+            '${invoice.number} Â· ${invoice.billingPeriod}',
+            style: TextStyle(color: tokens.brandOnDarkMuted, fontSize: 12.sp),
           ),
         ],
       ),
@@ -229,7 +248,7 @@ class _ItemLine extends StatelessWidget {
                 ? tokens.faint
                 : AppPalette.warning,
           ),
-          SizedBox(width: 10.w),
+          10.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,10 +262,10 @@ class _ItemLine extends StatelessWidget {
                   ),
                 ),
                 if (item.note.isNotEmpty) ...[
-                  SizedBox(height: 2.h),
+                  2.h.heightBox(),
                   Text(
                     item.isPaid && item.paidDate != null
-                        ? '${item.note} · paid ${item.paidDate}'
+                        ? '${item.note} Â· paid ${item.paidDate}'
                         : item.note,
                     style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                   ),
@@ -254,7 +273,7 @@ class _ItemLine extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(width: 10.w),
+          10.w.widthBox(),
           Text(
             item.isZero ? 'No charge' : AppFormatters.currency(item.amount),
             style: TextStyle(
@@ -289,7 +308,7 @@ class _PaidCard extends StatelessWidget {
             backgroundColor: tokens.brandSoft,
             child: Icon(Icons.check_rounded, color: AppPalette.success),
           ),
-          SizedBox(width: 12.w),
+          12.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,15 +320,12 @@ class _PaidCard extends StatelessWidget {
                     color: AppPalette.success,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                4.h.heightBox(),
                 Text(
                   invoice.paidDate == null
                       ? 'Payment complete'
                       : 'Paid on ${invoice.paidDate}',
-                  style: TextStyle(
-                    color: tokens.mutedStrong,
-                    fontSize: 12.sp,
-                  ),
+                  style: TextStyle(color: tokens.mutedStrong, fontSize: 12.sp),
                 ),
               ],
             ),

@@ -24,10 +24,7 @@ final String _divider = '_ ' * 28;
 /// );
 /// superPrint({'isLoading': true}, title: 'Auth Controller');
 /// ```
-void superPrint(
-  dynamic content, {
-  dynamic title = 'Super Print',
-}) {
+void superPrint(dynamic content, {dynamic title = 'Super Print'}) {
   if (!kDebugMode) {
     return;
   }

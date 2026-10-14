@@ -81,9 +81,12 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
       // Label colour on a solid brand hero panel, a light tint of the hue rather
       // than plain white so it sits comfortably on the fill. In dark mode the
       // fill is already light, so the on-colour is correct there.
-      brandOnDark: dark ? scheme.onPrimary : Color.lerp(brand, Colors.white, 0.82)!,
-      brandOnDarkMuted:
-          dark ? scheme.onPrimary : Color.lerp(brand, Colors.white, 0.62)!,
+      brandOnDark: dark
+          ? scheme.onPrimary
+          : Color.lerp(brand, Colors.white, 0.82)!,
+      brandOnDarkMuted: dark
+          ? scheme.onPrimary
+          : Color.lerp(brand, Colors.white, 0.62)!,
       heroShadow: <BoxShadow>[
         BoxShadow(
           color: brand.withValues(alpha: dark ? 0.32 : 0.16),
@@ -106,9 +109,9 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
   /// Light tokens for the default brand colour. Used as a fallback so a widget
   /// built outside a themed subtree still has sensible colours.
   factory AppThemeTokens.fallback() => AppThemeTokens.from(
-        ColorScheme.fromSeed(seedColor: const Color(0xFF0F766E)),
-        const Color(0xFF0F766E),
-      );
+    ColorScheme.fromSeed(seedColor: const Color(0xFF0F766E)),
+    const Color(0xFF0F766E),
+  );
 
   /// Reads the tokens from the ambient theme.
   ///
@@ -116,7 +119,8 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
   /// placed outside a [MaterialApp] (a bare test pump, for example) still paints
   /// with the shipped palette.
   static AppThemeTokens of(BuildContext context) =>
-      Theme.of(context).extension<AppThemeTokens>() ?? AppThemeTokens.fallback();
+      Theme.of(context).extension<AppThemeTokens>() ??
+      AppThemeTokens.fallback();
 
   /// The seed colour the whole palette was derived from.
   final Color seed;
@@ -178,8 +182,9 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
   ///
   /// The palette can be chosen by hand through the custom picker, so the
   /// checkmark on a swatch cannot rely on the brand tokens.
-  static Color onColor(Color background) =>
-      background.computeLuminance() > 0.45 ? const Color(0xFF1D2B2A) : Colors.white;
+  static Color onColor(Color background) => background.computeLuminance() > 0.45
+      ? const Color(0xFF1D2B2A)
+      : Colors.white;
 
   @override
   AppThemeTokens copyWith({
@@ -251,7 +256,11 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
       brandTint: Color.lerp(brandTint, other.brandTint, t)!,
       brandBorder: Color.lerp(brandBorder, other.brandBorder, t)!,
       brandOnDark: Color.lerp(brandOnDark, other.brandOnDark, t)!,
-      brandOnDarkMuted: Color.lerp(brandOnDarkMuted, other.brandOnDarkMuted, t)!,
+      brandOnDarkMuted: Color.lerp(
+        brandOnDarkMuted,
+        other.brandOnDarkMuted,
+        t,
+      )!,
       heroShadow: t < 0.5 ? heroShadow : other.heroShadow,
       cardShadow: t < 0.5 ? cardShadow : other.cardShadow,
     );

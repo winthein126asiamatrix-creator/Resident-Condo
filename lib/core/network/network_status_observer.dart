@@ -1,4 +1,3 @@
-
 abstract final class NetworkStatusObserver {
   static final _listeners = <void Function(bool online)>{};
 

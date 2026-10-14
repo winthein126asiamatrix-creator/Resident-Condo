@@ -1,5 +1,7 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 
 import '../theme/app_theme_tokens.dart';
 
@@ -69,7 +71,10 @@ class AppBottomNavBar extends StatelessWidget {
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 220),
                         curve: Curves.easeOutCubic,
-                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 6.h,
+                        ),
                         decoration: BoxDecoration(
                           color: selected
                               ? tokens.brand.withValues(alpha: 0.12)
@@ -82,7 +87,7 @@ class AppBottomNavBar extends StatelessWidget {
                           color: color,
                         ),
                       ),
-                      SizedBox(height: 2.h),
+                      2.h.heightBox(),
                       Text(
                         item.label,
                         maxLines: 1,
@@ -91,7 +96,9 @@ class AppBottomNavBar extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 12.sp,
-                          fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                          fontWeight: selected
+                              ? FontWeight.w700
+                              : FontWeight.w600,
                           color: color,
                           height: 1.1,
                         ),

@@ -111,7 +111,10 @@ class AuthController extends GetxController {
           rememberMe: rememberMe.value,
         ),
       );
-      final remembered = session.copyWith(rememberMe: rememberMe.value,displayName: "Win Thein");
+      final remembered = session.copyWith(
+        rememberMe: rememberMe.value,
+        displayName: "Win Thein",
+      );
       await useCases.persistSession(remembered);
       // Cleared as soon as the attempt lands, so a password never lingers in
       // memory after the resident is through with it.

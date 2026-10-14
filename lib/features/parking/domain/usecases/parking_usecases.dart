@@ -25,7 +25,6 @@ class ParkingUseCases {
     GuestParkingRequest request,
   ) => repository.requestGuestParking(request);
 
-  Future<GuestParkingRequest> cancelGuestParking(
-    GuestParkingRequest request,
-  ) => repository.cancelGuestParking(request);
+  Future<GuestParkingRequest> cancelGuestParking(GuestParkingRequest request) =>
+      repository.cancelGuestParking(request);
 }

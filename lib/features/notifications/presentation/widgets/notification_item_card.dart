@@ -1,15 +1,15 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../../domain/entities/notification_item.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class NotificationItemCard extends StatelessWidget {
-  NotificationItemCard({
-    required this.item,
-    required this.onTap,
-    super.key,
-  });
+  NotificationItemCard({required this.item, required this.onTap, super.key});
 
   final NotificationItem item;
   final VoidCallback onTap;
@@ -27,9 +27,7 @@ class NotificationItemCard extends StatelessWidget {
           color: tokens.surface,
           borderRadius: BorderRadius.circular(18.r),
           border: Border.all(
-            color: item.isRead
-                ? tokens.border
-                : color.withValues(alpha: 0.35),
+            color: item.isRead ? tokens.border : color.withValues(alpha: 0.35),
           ),
         ),
         child: Row(
@@ -44,7 +42,7 @@ class NotificationItemCard extends StatelessWidget {
               ),
               child: Icon(_iconFor(item.type), color: color, size: 21),
             ),
-            SizedBox(width: 12.w),
+            12.w.widthBox(),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,7 +66,7 @@ class NotificationItemCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                  SizedBox(height: 6.h),
+                  6.h.heightBox(),
                   Text(
                     item.message,
                     style: TextStyle(
@@ -77,7 +75,7 @@ class NotificationItemCard extends StatelessWidget {
                       height: 1.35,
                     ),
                   ),
-                  SizedBox(height: 8.h),
+                  8.h.heightBox(),
                   Text(
                     item.type.label,
                     style: TextStyle(

@@ -1,21 +1,51 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../../domain/entities/parking.dart';
+
+
 import '../controllers/parking_controller.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/widgets/app_buttons.dart';
+
+
 import '../../../../core/widgets/app_form_field.dart';
+
+
 import '../../../../core/widgets/app_primary_action.dart';
 
 class ParkingPage extends GetView<ParkingController> {
@@ -73,33 +103,30 @@ class ParkingPage extends GetView<ParkingController> {
             ),
             children: [
               _MySpaceCard(controller: controller, space: space),
-              SizedBox(height: 16.h),
+              16.h.heightBox(),
               _QuickActions(controller: controller),
-              SizedBox(height: 20.h),
+              20.h.heightBox(),
               AppSectionHeader(
                 title: 'Building spaces',
                 count: controller.spaces.length,
               ),
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               for (final item in controller.spaces)
                 Padding(
                   padding: EdgeInsets.only(bottom: 10),
                   child: _SpaceTile(space: item, isMine: item.id == space.id),
                 ),
-              SizedBox(height: 14.h),
+              14.h.heightBox(),
               AppSectionHeader(
                 title: 'Access log',
                 count: controller.events.length,
               ),
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               for (final event in controller.events)
                 Padding(
                   padding: EdgeInsets.only(bottom: 8),
                   child: AppCard(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     child: Row(
                       children: [
                         Icon(
@@ -111,7 +138,7 @@ class ParkingPage extends GetView<ParkingController> {
                               ? AppPalette.success
                               : AppPalette.danger,
                         ),
-                        SizedBox(width: 12.w),
+                        12.w.widthBox(),
                         Expanded(
                           child: Text(
                             '${event.type.label} ? ${event.slot}',
@@ -123,7 +150,7 @@ class ParkingPage extends GetView<ParkingController> {
                             ),
                           ),
                         ),
-                        SizedBox(width: 8.w),
+                        8.w.widthBox(),
                         // Flexible so a long timestamp cannot overflow the card.
                         Flexible(
                           child: Text(
@@ -141,12 +168,12 @@ class ParkingPage extends GetView<ParkingController> {
                     ),
                   ),
                 ),
-              SizedBox(height: 14.h),
+              14.h.heightBox(),
               AppSectionHeader(
                 title: 'Guest parking',
                 count: controller.activeGuestRequests,
               ),
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               if (controller.guestRequests.isEmpty)
                 Text(
                   'No guest parking requests yet.',
@@ -180,10 +207,10 @@ class _MySpaceCard extends StatelessWidget {
     return AppHeroPanel(
       icon: Icons.directions_car_filled_rounded,
       title: 'Slot ${space.slot}',
-      subtitle: '${space.level} · ${space.type.label}',
+      subtitle: '${space.level} Â· ${space.type.label}',
       footnote:
           'Monthly parking fee '
-          '${AppFormatters.currency(space.monthlyFee)} · billed separately',
+          '${AppFormatters.currency(space.monthlyFee)} Â· billed separately',
       trailing: AppStatusPill(
         label: space.status.label,
         color: space.status == ParkingStatus.occupied
@@ -204,7 +231,7 @@ class _MySpaceCard extends StatelessWidget {
                     fontSize: 16.sp,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                4.h.heightBox(),
                 Text(
                   space.licensePlate,
                   style: TextStyle(
@@ -282,7 +309,7 @@ class _QuickActions extends StatelessWidget {
             icon: Icons.local_taxi_outlined,
           ),
         ),
-        SizedBox(width: 10.w),
+        10.w.widthBox(),
         Expanded(
           child: AppOutlinedButton(
             onPressed: controller.loadParking,
@@ -309,7 +336,7 @@ class _QuickActions extends StatelessWidget {
       vehicle: details.vehicle,
       plate: details.plate,
       date: 'Sep 26, 2026',
-      window: '10:00 AM – 6:00 PM',
+      window: '10:00 AM â€“ 6:00 PM',
     );
     if (!context.mounted) {
       return;
@@ -360,9 +387,9 @@ class _GuestParkingDialogState extends State<_GuestParkingDialog> {
               label: 'Guest name',
               controller: _name,
             ),
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             AppTextField(label: 'Vehicle model', controller: _vehicle),
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             AppTextField(
               fieldKey: Key('guest-plate-field'),
               label: 'License plate',
@@ -370,7 +397,7 @@ class _GuestParkingDialogState extends State<_GuestParkingDialog> {
               textCapitalization: TextCapitalization.characters,
             ),
             if (_error.isNotEmpty) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(
                 _error,
                 style: TextStyle(color: AppPalette.danger, fontSize: 12.sp),
@@ -429,7 +456,7 @@ class _SpaceTile extends StatelessWidget {
             color: color,
             size: 38,
           ),
-          SizedBox(width: 12.w),
+          12.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -446,7 +473,7 @@ class _SpaceTile extends StatelessWidget {
                       ),
                     ),
                     if (isMine) ...[
-                      SizedBox(width: 8.w),
+                      8.w.widthBox(),
                       AppStatusPill(
                         label: 'Yours',
                         color: tokens.brand,
@@ -455,7 +482,7 @@ class _SpaceTile extends StatelessWidget {
                     ],
                   ],
                 ),
-                SizedBox(height: 3.h),
+                3.h.heightBox(),
                 Text(
                   space.licensePlate.isEmpty
                       ? '${space.level} ? ${space.assignedTo}'
@@ -502,20 +529,20 @@ class _GuestRequestCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 8.h),
+          8.h.heightBox(),
           Text(
-            '${request.licensePlate} · ${request.date} · ${request.window}',
+            '${request.licensePlate} Â· ${request.date} Â· ${request.window}',
             style: TextStyle(color: tokens.mutedStrong, fontSize: 12.sp),
           ),
           if (request.vehicle.isNotEmpty) ...[
-            SizedBox(height: 3.h),
+            3.h.heightBox(),
             Text(
               request.vehicle,
               style: TextStyle(color: tokens.faint, fontSize: 11.sp),
             ),
           ],
           if (!cancelled) ...[
-            SizedBox(height: 12.h),
+            12.h.heightBox(),
             AppOutlinedButton(
               onPressed: controller.isSubmitting.value
                   ? null
@@ -602,25 +629,25 @@ class _VehicleSheetState extends State<_VehicleSheet> {
             'Update vehicle',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20.sp),
           ),
-          SizedBox(height: 4.h),
+          4.h.heightBox(),
           Text(
             'Slot ${widget.space.slot}',
             style: TextStyle(color: tokens.muted, fontSize: 12.sp),
           ),
-          SizedBox(height: 16.h),
+          16.h.heightBox(),
           AppTextField(
             fieldKey: Key('vehicle-model-field'),
             label: 'Vehicle model',
             controller: _vehicle,
           ),
-          SizedBox(height: AppSpacing.fieldGap),
+          AppSpacing.fieldGap.heightBox(),
           AppTextField(
             fieldKey: Key('vehicle-plate-field'),
             label: 'License plate',
             controller: _plate,
             textCapitalization: TextCapitalization.characters,
           ),
-          SizedBox(height: 18.h),
+          18.h.heightBox(),
           AppPrimaryAction(
             onPressed: () => Navigator.pop(context, (
               vehicle: _vehicle.text,

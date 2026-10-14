@@ -14,7 +14,10 @@ abstract interface class StoreRepository {
 
   /// Moves an order along the pipeline, including a resident cancelling their
   /// own order while it is still inside the store.
-  Future<StoreOrder> updateOrderStatus(StoreOrder order, StoreOrderStatus status);
+  Future<StoreOrder> updateOrderStatus(
+    StoreOrder order,
+    StoreOrderStatus status,
+  );
 
   /// Settles or re-opens the store fee on one of the resident's own orders.
   Future<StoreOrder> updateOrderPayment(

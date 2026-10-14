@@ -136,19 +136,18 @@ class StoreController extends GetxController {
   double get cartSubtotal =>
       cart.fold(0, (total, line) => total + line.lineTotal);
 
-  double get deliveryFee =>
-      cart.isEmpty || cartSubtotal >= freeDeliveryOver ? 0 : standardDeliveryFee;
+  double get deliveryFee => cart.isEmpty || cartSubtotal >= freeDeliveryOver
+      ? 0
+      : standardDeliveryFee;
 
   /// What the resident pays: the goods plus delivery.
   double get cartTotal => cartSubtotal + deliveryFee;
 
-  List<StoreOrder> get activeOrders => orders
-      .where((order) => !order.status.isFinished)
-      .toList();
+  List<StoreOrder> get activeOrders =>
+      orders.where((order) => !order.status.isFinished).toList();
 
-  List<StoreOrder> get pastOrders => orders
-      .where((order) => order.status.isFinished)
-      .toList();
+  List<StoreOrder> get pastOrders =>
+      orders.where((order) => order.status.isFinished).toList();
 
   /// Store fees still owed, which appear on the statement as their own line.
   double get outstandingStoreFee => orders
@@ -191,10 +190,7 @@ class StoreController extends GetxController {
   }
 
   /// Picks a method to pay with, which may be a saved one or a new one.
-  void selectMethod(
-    StorePaymentMethod method, {
-    StoreSavedMethod? saved,
-  }) {
+  void selectMethod(StorePaymentMethod method, {StoreSavedMethod? saved}) {
     paymentChoice.value = StorePaymentChoice.payNow;
     selectedMethod.value = method;
     selectedSavedMethod.value = saved;
@@ -227,17 +223,15 @@ class StoreController extends GetxController {
       orders.assignAll(loadedOrders);
       // Keep the basket in step with the shelf after a reload.
       cart.assignAll(
-        cart
-            .map((line) {
-              final fresh = _findProduct(line.product.id);
-              return fresh == null
-                  ? null
-                  : StoreCartLine(
-                      product: fresh,
-                      quantity: line.quantity.clamp(0, fresh.stock),
-                    );
-            })
-            .whereType<StoreCartLine>(),
+        cart.map((line) {
+          final fresh = _findProduct(line.product.id);
+          return fresh == null
+              ? null
+              : StoreCartLine(
+                  product: fresh,
+                  quantity: line.quantity.clamp(0, fresh.stock),
+                );
+        }).whereType<StoreCartLine>(),
       );
       final product = selectedProduct.value;
       if (product != null) {
@@ -307,8 +301,8 @@ class StoreController extends GetxController {
   // ---------------------------------------------------------------- checkout
 
   /// Where the order is going, which depends on the delivery method.
-  String get deliveryLocation => deliveryMethod.value ==
-          StoreDeliveryMethod.doorstep
+  String get deliveryLocation =>
+      deliveryMethod.value == StoreDeliveryMethod.doorstep
       ? doorstepLocation
       : lobbyLocation;
 
@@ -351,7 +345,10 @@ class StoreController extends GetxController {
           id: '',
           items: cart
               .map(
-                (line) => StoreCartLine(product: line.product, quantity: line.quantity),
+                (line) => StoreCartLine(
+                  product: line.product,
+                  quantity: line.quantity,
+                ),
               )
               .toList(),
           deliveryMethod: deliveryMethod.value,

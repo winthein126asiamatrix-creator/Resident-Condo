@@ -17,8 +17,7 @@ class CondoServiceLocalDataSource {
       id: 'service-cleaning',
       name: 'Deep cleaning',
       category: ServiceCategory.cleaning,
-      description:
-          'Full home deep clean including kitchen, bathrooms, windows and floors.',
+      description: 'Full home deep clean including kitchen, bathrooms, windows and floors.',
       price: 55,
       unit: 'per visit',
       leadTimeDays: 2,
@@ -48,7 +47,8 @@ class CondoServiceLocalDataSource {
       id: 'service-waste',
       name: 'Bulky item disposal',
       category: ServiceCategory.waste,
-      description: 'Collection and disposal of furniture or e-waste up to 3 items.',
+      description:
+          'Collection and disposal of furniture or e-waste up to 3 items.',
       price: 40,
       unit: 'per collection',
       leadTimeDays: 4,
@@ -68,7 +68,8 @@ class CondoServiceLocalDataSource {
       id: 'service-catering',
       name: 'Private catering',
       category: ServiceCategory.catering,
-      description: 'In-unit catering for up to eight guests with setup and cleanup.',
+      description:
+          'In-unit catering for up to eight guests with setup and cleanup.',
       price: 120,
       unit: 'per booking',
       leadTimeDays: 5,
@@ -179,7 +180,9 @@ class CondoServiceLocalDataSource {
     if (rating < 1 || rating > 5) {
       throw const AppException('Choose a rating between 1 and 5.');
     }
-    return _replace(request.copyWith(rating: rating, feedback: feedback.trim()));
+    return _replace(
+      request.copyWith(rating: rating, feedback: feedback.trim()),
+    );
   }
 
   ServiceRequestModel _replace(ServiceRequest updated) {

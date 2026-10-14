@@ -412,7 +412,8 @@ class StoreOrder {
       unitLabel: unitLabel,
       placedOn: placedOn,
       assignedTo: assignedTo ?? this.assignedTo,
-      storeFeeInvoiceItemKey: storeFeeInvoiceItemKey ?? this.storeFeeInvoiceItemKey,
+      storeFeeInvoiceItemKey:
+          storeFeeInvoiceItemKey ?? this.storeFeeInvoiceItemKey,
     );
   }
 }

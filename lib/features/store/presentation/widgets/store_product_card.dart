@@ -1,11 +1,23 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/theme/app_radius.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../domain/entities/store_product.dart';
+
+
 import 'store_widgets.dart';
 
 /// Catalogue tile: photo, name, brand, price, stock and the basket control.
@@ -50,7 +62,7 @@ class StoreProductCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           StoreProductImage(product: product, size: 76),
-          SizedBox(width: 14.w),
+          14.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,7 +80,7 @@ class StoreProductCard extends StatelessWidget {
                   ),
                 ),
                 if (product.brand.isNotEmpty) ...[
-                  SizedBox(height: 2.h),
+                  2.h.heightBox(),
                   Text(
                     product.brand,
                     maxLines: 1,
@@ -80,7 +92,7 @@ class StoreProductCard extends StatelessWidget {
                     ),
                   ),
                 ],
-                SizedBox(height: 8.h),
+                8.h.heightBox(),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -93,7 +105,7 @@ class StoreProductCard extends StatelessWidget {
                         letterSpacing: -0.2,
                       ),
                     ),
-                    SizedBox(width: 7.w),
+                    7.w.widthBox(),
                     // The unit gives way rather than the price: a narrow phone
                     // may not fit both, and the price is what matters.
                     Flexible(
@@ -109,9 +121,9 @@ class StoreProductCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 8.h),
+                8.h.heightBox(),
                 StoreStockPill(status: product.stockStatus, dense: true),
-                SizedBox(height: 10.h),
+                10.h.heightBox(),
                 _BasketControl(
                   product: product,
                   quantity: inCartQuantity,
@@ -194,12 +206,8 @@ class _AddButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.add_rounded,
-                size: 18,
-                color: tokens.onBrand,
-              ),
-              SizedBox(width: 6.w),
+              Icon(Icons.add_rounded, size: 18, color: tokens.onBrand),
+              6.w.widthBox(),
               Text(
                 'Add to basket',
                 style: TextStyle(
@@ -282,7 +290,7 @@ class _QuantityStepper extends StatelessWidget {
               ? 'Only ${product.stock} left'
               : 'Add one more ${product.name}',
         ),
-        SizedBox(width: 8.w),
+        8.w.widthBox(),
         Expanded(
           child: _LineTotal(
             height: height,

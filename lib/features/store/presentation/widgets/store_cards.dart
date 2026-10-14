@@ -1,17 +1,39 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/theme/app_radius.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_primary_action.dart';
+
+
 import '../../../../core/widgets/app_step_progress.dart';
+
+
 import '../../domain/entities/store_product.dart';
+
+
 import '../controllers/store_controller.dart';
+
+
 import 'store_widgets.dart';
 
 /// Totals block for the basket and for the checkout review.
@@ -44,12 +66,8 @@ class StoreCheckoutSummaryCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.receipt_long_rounded,
-                size: 18,
-                color: tokens.brand,
-              ),
-              SizedBox(width: 8.w),
+              Icon(Icons.receipt_long_rounded, size: 18, color: tokens.brand),
+              8.w.widthBox(),
               Flexible(
                 child: Text(
                   'Order summary',
@@ -69,11 +87,8 @@ class StoreCheckoutSummaryCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 12.h),
-          _TotalRow(
-            label: 'Subtotal',
-            value: AppFormatters.currency(subtotal),
-          ),
+          12.h.heightBox(),
+          _TotalRow(label: 'Subtotal', value: AppFormatters.currency(subtotal)),
           _TotalRow(
             label: 'Delivery',
             value: deliveryFee == 0
@@ -182,12 +197,12 @@ class StoreOrderTrackerCard extends StatelessWidget {
               StoreOrderStatusPill(status: order.status),
             ],
           ),
-          SizedBox(height: 4.h),
+          4.h.heightBox(),
           Text(
             order.id,
             style: TextStyle(color: tokens.muted, fontSize: 12.sp),
           ),
-          SizedBox(height: 14.h),
+          14.h.heightBox(),
           if (cancelled)
             // A cancelled order has no happy path to walk through.
             Container(
@@ -269,7 +284,10 @@ class StoreOrderTrackerListCard extends StatelessWidget {
                 height: 42,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: storeOrderStatusColor(order.status, tokens).withValues(alpha: 0.12),
+                  color: storeOrderStatusColor(
+                    order.status,
+                    tokens,
+                  ).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14.r),
                 ),
                 child: Icon(
@@ -278,7 +296,7 @@ class StoreOrderTrackerListCard extends StatelessWidget {
                   size: 21,
                 ),
               ),
-              SizedBox(width: 12.w),
+              12.w.widthBox(),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -291,15 +309,12 @@ class StoreOrderTrackerListCard extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    SizedBox(height: 3.h),
+                    3.h.heightBox(),
                     Text(
-                      '${order.itemCount} ${order.itemCount == 1 ? 'item' : 'items'} · ${order.deliveryMethod.label}',
+                      '${order.itemCount} ${order.itemCount == 1 ? 'item' : 'items'} Â· ${order.deliveryMethod.label}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: tokens.muted,
-                        fontSize: 11.5.sp,
-                      ),
+                      style: TextStyle(color: tokens.muted, fontSize: 11.5.sp),
                     ),
                   ],
                 ),
@@ -315,13 +330,13 @@ class StoreOrderTrackerListCard extends StatelessWidget {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  SizedBox(height: 5.h),
+                  5.h.heightBox(),
                   StorePaymentPill(payment: order.paymentStatus),
                 ],
               ),
             ],
           ),
-          SizedBox(height: 10.h),
+          10.h.heightBox(),
           Text(
             order.deliveryTime,
             maxLines: 1,
@@ -348,12 +363,8 @@ class StoreFeeNotice extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.info_outline_rounded,
-            size: 18,
-            color: Color(0xFFB45309),
-          ),
-          SizedBox(width: 10.w),
+          Icon(Icons.info_outline_rounded, size: 18, color: Color(0xFFB45309)),
+          10.w.widthBox(),
           Expanded(
             child: Text(
               'This is a Store Fee. It is billed as its own line and is never '
@@ -403,7 +414,7 @@ void showStoreAddedToBasket(
         content: Row(
           children: [
             StoreProductImage(product: product, size: 34),
-            SizedBox(width: 12.w),
+            12.w.widthBox(),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -419,13 +430,10 @@ void showStoreAddedToBasket(
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  SizedBox(height: 2.h),
+                  2.h.heightBox(),
                   Text(
-                    'Added to your basket · $quantity in basket',
-                    style: TextStyle(
-                      color: Color(0xB3FFFFFF),
-                      fontSize: 12.sp,
-                    ),
+                    'Added to your basket Â· $quantity in basket',
+                    style: TextStyle(color: Color(0xB3FFFFFF), fontSize: 12.sp),
                   ),
                 ],
               ),
@@ -482,7 +490,7 @@ class StoreCheckoutButton extends StatelessWidget {
           label ??
           (controller.cart.isEmpty
               ? 'Choose a delivery time'
-              : 'Review & checkout · ${controller.cartCount}'),
+              : 'Review & checkout Â· ${controller.cartCount}'),
       icon: Icons.shopping_cart_checkout_rounded,
     );
   }
@@ -524,7 +532,7 @@ class StoreCartBadge extends StatelessWidget {
                 size: 19,
                 color: empty ? tokens.muted : tokens.onBrand,
               ),
-              SizedBox(width: 7.w),
+              7.w.widthBox(),
               Text(
                 empty ? 'Basket' : '$count',
                 style: TextStyle(

@@ -1,18 +1,42 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_primary_action.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../domain/entities/facility.dart';
+
+
 import '../controllers/facility_controller.dart';
+
+
 import '../widgets/facility_labels.dart';
+
+
 import '../../../../core/utils/app_times.dart';
 
 class FacilityReservationPage extends GetView<FacilityController> {
@@ -50,23 +74,23 @@ class FacilityReservationPage extends GetView<FacilityController> {
           ),
           children: [
             _FacilityReservationIntro(facility: facility),
-            SizedBox(height: 22.h),
+            22.h.heightBox(),
             Text(
               'Select a date',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             _DateSelector(
               dates: controller.reservationDates,
               selected: controller.selectedDate.value,
               onSelected: controller.selectDate,
             ),
-            SizedBox(height: 22.h),
+            22.h.heightBox(),
             Text(
               'Start time',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             _SlotSelector(
               facility: facility,
               selected: controller.selectedStartTimeLabel,
@@ -74,22 +98,22 @@ class FacilityReservationPage extends GetView<FacilityController> {
               onSelected: controller.selectSlot,
               onPickCustomTime: () => _pickCustomTime(context),
             ),
-            SizedBox(height: 22.h),
+            22.h.heightBox(),
             Text(
               'Duration',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             _DurationSelector(
               selected: controller.selectedDurationHours.value,
               onSelected: controller.selectDuration,
             ),
-            SizedBox(height: 14.h),
+            14.h.heightBox(),
             _ReservationInterval(
               range: controller.reservationRange,
               error: controller.durationError,
             ),
-            SizedBox(height: 24.h),
+            24.h.heightBox(),
             // The CTA is the only way a reservation is created: picking a date,
             // a time or a duration never submits anything.
             AppPrimaryAction(
@@ -101,7 +125,7 @@ class FacilityReservationPage extends GetView<FacilityController> {
               icon: Icons.event_available_rounded,
             ),
             if (!controller.canConfirmBooking) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(
                 controller.durationError ??
                     'Choose a date and a start time to continue.',
@@ -218,12 +242,9 @@ class _FacilityReservationIntro extends StatelessWidget {
           CircleAvatar(
             radius: 22,
             backgroundColor: tokens.brandOnDark,
-            child: Icon(
-              Icons.event_available_rounded,
-              color: tokens.brand,
-            ),
+            child: Icon(Icons.event_available_rounded, color: tokens.brand),
           ),
-          SizedBox(width: 12.w),
+          12.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,13 +256,10 @@ class _FacilityReservationIntro extends StatelessWidget {
                     color: tokens.ink,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                4.h.heightBox(),
                 Text(
                   facility.location,
-                  style: TextStyle(
-                    color: tokens.mutedStrong,
-                    fontSize: 12.sp,
-                  ),
+                  style: TextStyle(color: tokens.mutedStrong, fontSize: 12.sp),
                 ),
               ],
             ),
@@ -281,9 +299,7 @@ class _DateSelector extends StatelessWidget {
                   onSelected: (_) => onSelected(date),
                   selectedColor: tokens.brandOnDark,
                   labelStyle: TextStyle(
-                    color: date == selected
-                        ? tokens.brand
-                        : tokens.mutedStrong,
+                    color: date == selected ? tokens.brand : tokens.mutedStrong,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -316,9 +332,7 @@ class _DurationSelector extends StatelessWidget {
             onSelected: (_) => onSelected(hours),
             selectedColor: tokens.brandOnDark,
             labelStyle: TextStyle(
-              color: hours == selected
-                  ? tokens.brand
-                  : tokens.mutedStrong,
+              color: hours == selected ? tokens.brand : tokens.mutedStrong,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -360,7 +374,7 @@ class _ReservationInterval extends StatelessWidget {
             size: 18,
             color: hasError ? AppPalette.danger : tokens.brand,
           ),
-          SizedBox(width: 10.w),
+          10.w.widthBox(),
           Expanded(
             child: hasError
                 ? Text(
@@ -377,9 +391,7 @@ class _ReservationInterval extends StatelessWidget {
                         ? 'Pick a start time to see your time range.'
                         : range!.label,
                     style: TextStyle(
-                      color: range == null
-                          ? tokens.muted
-                          : tokens.brand,
+                      color: range == null ? tokens.muted : tokens.brand,
                       fontSize: range == null ? 12.5 : 15,
                       fontWeight: FontWeight.w800,
                     ),
@@ -425,9 +437,7 @@ class _SlotSelector extends StatelessWidget {
             onSelected: (_) => onSelected(slot),
             selectedColor: tokens.brandOnDark,
             labelStyle: TextStyle(
-              color: slot == selected
-                  ? tokens.brand
-                  : tokens.mutedStrong,
+              color: slot == selected ? tokens.brand : tokens.mutedStrong,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -438,9 +448,7 @@ class _SlotSelector extends StatelessWidget {
           avatar: Icon(
             Icons.schedule_rounded,
             size: 17,
-            color: customTimeSelected
-                ? tokens.brand
-                : tokens.mutedStrong,
+            color: customTimeSelected ? tokens.brand : tokens.mutedStrong,
           ),
           label: Text(
             customTimeSelected && selected != null ? selected! : _customLabel,
@@ -449,9 +457,7 @@ class _SlotSelector extends StatelessWidget {
           onSelected: (_) => onPickCustomTime(),
           selectedColor: tokens.brandOnDark,
           labelStyle: TextStyle(
-            color: customTimeSelected
-                ? tokens.brand
-                : tokens.mutedStrong,
+            color: customTimeSelected ? tokens.brand : tokens.mutedStrong,
             fontWeight: FontWeight.w700,
           ),
         ),

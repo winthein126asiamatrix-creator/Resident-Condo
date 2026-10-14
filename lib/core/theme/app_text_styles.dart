@@ -19,8 +19,8 @@ abstract final class AppTextStyles {
     color: AppPalette.ink,
     fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 26.sp,
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 26.sp,
     fontWeight: FontWeight.w800,
   );
 
@@ -29,8 +29,8 @@ abstract final class AppTextStyles {
     color: AppPalette.ink,
     fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 17.sp,
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 17.sp,
     fontWeight: FontWeight.w800,
   );
 
@@ -39,24 +39,27 @@ abstract final class AppTextStyles {
     color: AppPalette.ink,
     fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 16.sp,
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 16.sp,
     fontWeight: FontWeight.w800,
   );
 
   /// Default reading size.
-  static TextStyle get body => TextStyle(color: AppPalette.ink, fontFamily: 'DM Sans',
+  static TextStyle get body => TextStyle(
+    color: AppPalette.ink,
+    fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 15.sp);
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 15.sp,
+  );
 
   /// Reading size with emphasis, the most common weight in a card.
   static TextStyle get bodyStrong => TextStyle(
     color: AppPalette.ink,
     fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 15.sp,
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 15.sp,
     fontWeight: FontWeight.w700,
   );
 
@@ -65,8 +68,8 @@ abstract final class AppTextStyles {
     color: AppPalette.ink,
     fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 14.5.sp,
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 14.5.sp,
     fontWeight: FontWeight.w700,
   );
 
@@ -75,26 +78,31 @@ abstract final class AppTextStyles {
     color: AppPalette.ink,
     fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 16.5.sp,
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 16.5.sp,
     fontWeight: FontWeight.w600,
   );
 
   /// Supporting line under a heading or field.
-  static TextStyle get caption => TextStyle(color: AppPalette.muted, fontFamily: 'DM Sans',
+  static TextStyle get caption => TextStyle(
+    color: AppPalette.muted,
+    fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 13.5.sp);
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 13.5.sp,
+  );
 
   /// Smallest text still used, for meta lines such as a reference id.
-  static TextStyle get meta => TextStyle(color: AppPalette.faint, fontFamily: 'DM Sans',
+  static TextStyle get meta => TextStyle(
+    color: AppPalette.faint,
+    fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 12.5.sp);
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 12.5.sp,
+  );
 
   /// The same type scale, bound to the colours of the active theme.
-  static Bound of(BuildContext context) =>
-      Bound(AppThemeTokens.of(context));
+  static Bound of(BuildContext context) => Bound(AppThemeTokens.of(context));
 }
 
 /// [AppTextStyles] resolved against a theme. Same sizes and weights, colours
@@ -105,81 +113,90 @@ class Bound {
   final AppThemeTokens tokens;
 
   TextStyle get screenTitle => TextStyle(
-        color: tokens.ink,
-        fontFamily: 'DM Sans',
+    color: tokens.ink,
+    fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 26.sp,
-        fontWeight: FontWeight.w800,
-      );
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 26.sp,
+    fontWeight: FontWeight.w800,
+  );
 
   TextStyle get sectionTitle => TextStyle(
-        color: tokens.ink,
-        fontFamily: 'DM Sans',
+    color: tokens.ink,
+    fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 17.sp,
-        fontWeight: FontWeight.w800,
-      );
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 17.sp,
+    fontWeight: FontWeight.w800,
+  );
 
   TextStyle get cardTitle => TextStyle(
-        color: tokens.ink,
-        fontFamily: 'DM Sans',
+    color: tokens.ink,
+    fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 16.sp,
-        fontWeight: FontWeight.w800,
-      );
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 16.sp,
+    fontWeight: FontWeight.w800,
+  );
 
-  TextStyle get body => TextStyle(color: tokens.ink, fontFamily: 'DM Sans',
+  TextStyle get body => TextStyle(
+    color: tokens.ink,
+    fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 15.sp);
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 15.sp,
+  );
 
   TextStyle get bodyStrong => TextStyle(
-        color: tokens.ink,
-        fontFamily: 'DM Sans',
+    color: tokens.ink,
+    fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 15.sp,
-        fontWeight: FontWeight.w700,
-      );
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 15.sp,
+    fontWeight: FontWeight.w700,
+  );
 
   TextStyle get fieldLabel => TextStyle(
-        color: tokens.ink,
-        fontFamily: 'DM Sans',
+    color: tokens.ink,
+    fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 14.5.sp,
-        fontWeight: FontWeight.w700,
-      );
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 14.5.sp,
+    fontWeight: FontWeight.w700,
+  );
 
   TextStyle get fieldValue => TextStyle(
-        color: tokens.ink,
-        fontFamily: 'DM Sans',
+    color: tokens.ink,
+    fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 16.5.sp,
-        fontWeight: FontWeight.w600,
-      );
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 16.5.sp,
+    fontWeight: FontWeight.w600,
+  );
 
-  TextStyle get caption => TextStyle(color: tokens.muted, fontFamily: 'DM Sans',
+  TextStyle get caption => TextStyle(
+    color: tokens.muted,
+    fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 13.5.sp);
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 13.5.sp,
+  );
 
-  TextStyle get meta => TextStyle(color: tokens.faint, fontFamily: 'DM Sans',
+  TextStyle get meta => TextStyle(
+    color: tokens.faint,
+    fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 12.5.sp);
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 12.5.sp,
+  );
 
   /// A link or other interactive label, in the brand colour.
   TextStyle get link => TextStyle(
-        color: tokens.brand,
-        fontFamily: 'DM Sans',
+    color: tokens.brand,
+    fontFamily: 'DM Sans',
 
-        fontFamilyFallback: const ['Pyidaungsu'],
-        fontSize: 15.sp,
-        fontWeight: FontWeight.w700,
-      );
+    fontFamilyFallback: const ['Pyidaungsu'],
+    fontSize: 15.sp,
+    fontWeight: FontWeight.w700,
+  );
 }

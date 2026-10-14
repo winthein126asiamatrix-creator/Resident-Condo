@@ -10,11 +10,16 @@ class StoreUseCases {
 
   Future<List<StoreOrder>> getOrders() => repository.getOrders();
 
-  Future<StoreOrder> placeOrder(StoreOrder order) => repository.placeOrder(order);
+  Future<StoreOrder> placeOrder(StoreOrder order) =>
+      repository.placeOrder(order);
 
-  Future<StoreOrder> updateOrderStatus(StoreOrder order, StoreOrderStatus status) =>
-      repository.updateOrderStatus(order, status);
+  Future<StoreOrder> updateOrderStatus(
+    StoreOrder order,
+    StoreOrderStatus status,
+  ) => repository.updateOrderStatus(order, status);
 
-  Future<StoreOrder> updateOrderPayment(StoreOrder order, StorePaymentStatus status) =>
-      repository.updateOrderPayment(order, status);
+  Future<StoreOrder> updateOrderPayment(
+    StoreOrder order,
+    StorePaymentStatus status,
+  ) => repository.updateOrderPayment(order, status);
 }

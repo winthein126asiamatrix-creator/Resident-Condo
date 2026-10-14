@@ -1,7 +1,11 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../../domain/entities/announcement.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class AnnouncementCard extends StatelessWidget {
@@ -48,7 +52,7 @@ class AnnouncementCard extends StatelessWidget {
                 size: 21,
               ),
             ),
-            SizedBox(width: 12.w),
+            12.w.widthBox(),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +76,7 @@ class AnnouncementCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                  SizedBox(height: 6.h),
+                  6.h.heightBox(),
                   Text(
                     announcement.description,
                     maxLines: 2,
@@ -83,7 +87,7 @@ class AnnouncementCard extends StatelessWidget {
                       height: 1.35,
                     ),
                   ),
-                  SizedBox(height: 10.h),
+                  10.h.heightBox(),
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
@@ -96,13 +100,10 @@ class AnnouncementCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                  SizedBox(height: 8.h),
+                  8.h.heightBox(),
                   Text(
                     announcement.date,
-                    style: TextStyle(
-                      color: tokens.faint,
-                      fontSize: 11.sp,
-                    ),
+                    style: TextStyle(color: tokens.faint, fontSize: 11.sp),
                   ),
                 ],
               ),

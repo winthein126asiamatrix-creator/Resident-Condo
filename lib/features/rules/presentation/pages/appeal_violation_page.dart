@@ -1,15 +1,33 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../controllers/rules_controller.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_form_field.dart';
 
 class AppealViolationPage extends StatefulWidget {
@@ -83,16 +101,16 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
             AppStateMessage(
               title: violation.reference,
               message:
-                  '${violation.ruleTitle} · fine '
+                  '${violation.ruleTitle} Â· fine '
                   '${AppFormatters.currency(violation.amount)}',
               icon: Icons.report_rounded,
             ),
-            SizedBox(height: 12.h),
+            12.h.heightBox(),
             Text(
               'Requested outcome',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -107,12 +125,12 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
                   )
                   .toList(),
             ),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             Text(
               'Why should this be reviewed?',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             AppTextField(
               fieldKey: Key('appeal-reason-field'),
               label: 'Why should this be reviewed?',
@@ -123,13 +141,13 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
                   'Explain the circumstances. Add dates, witness names or '
                   'evidence that support your appeal.',
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             Text(
               'Minimum 20 characters. The management committee reviews every '
               'appeal within 14 days.',
               style: TextStyle(color: tokens.faint, fontSize: 11.sp),
             ),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             FilledButton.icon(
               key: Key('submit-appeal'),
               onPressed: controller.isSubmitting.value ? null : _submit,
@@ -148,16 +166,14 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
                     ? 'Submitting...'
                     : 'Submit appeal',
               ),
-              style: FilledButton.styleFrom(
-                minimumSize: Size.fromHeight(52),
-              ),
+              style: FilledButton.styleFrom(minimumSize: Size.fromHeight(52)),
             ),
             if (_error.isNotEmpty) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(_error, style: TextStyle(color: AppPalette.danger)),
             ],
             if (controller.errorMessage.value != null) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(
                 controller.errorMessage.value!,
                 style: TextStyle(color: AppPalette.danger),

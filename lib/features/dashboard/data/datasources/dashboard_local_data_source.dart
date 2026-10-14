@@ -72,8 +72,7 @@ class DashboardLocalDataSource {
         AnnouncementSummary(
           category: 'Security',
           title: 'Visitor access codes at the lobby',
-          description:
-              'Register a visitor and share their alphanumeric access code for a smoother lobby arrival.',
+          description: 'Register a visitor and share their alphanumeric access code for a smoother lobby arrival.',
           date: 'Sep 18, 2026',
           isUrgent: false,
         ),

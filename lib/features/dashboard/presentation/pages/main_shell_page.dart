@@ -89,83 +89,81 @@ class _MainShellPageState extends State<MainShellPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () {
-        // Read once, so the whole shell rebuilds on a change. This is the same
-        // ConnectivityService observable the banner already uses; no second
-        // controller, Rx variable or listener is introduced.
-        final isOnline = Get.find<ConnectivityService>().isOnline.value;
-        return Scaffold(
-          body: Column(
-            children: [
-              OfflineBannerSlot(applyStatusBarInset: true),
-              Expanded(
-                child: MediaQuery.removePadding(
-                  context: context,
-                  removeTop: !isOnline,
-                  child: NotificationListener<ScrollStartNotification>(
-                    onNotification: (notification) {
-                      if (notification.dragDetails != null) {
-                        _suppressSwipeSync = false;
+    return Obx(() {
+      // Read once, so the whole shell rebuilds on a change. This is the same
+      // ConnectivityService observable the banner already uses; no second
+      // controller, Rx variable or listener is introduced.
+      final isOnline = Get.find<ConnectivityService>().isOnline.value;
+      return Scaffold(
+        body: Column(
+          children: [
+            OfflineBannerSlot(applyStatusBarInset: true),
+            Expanded(
+              child: MediaQuery.removePadding(
+                context: context,
+                removeTop: !isOnline,
+                child: NotificationListener<ScrollStartNotification>(
+                  onNotification: (notification) {
+                    if (notification.dragDetails != null) {
+                      _suppressSwipeSync = false;
+                    }
+                    return false;
+                  },
+                  child: PageView(
+                    controller: _pages,
+                    onPageChanged: (index) {
+                      if (!_suppressSwipeSync) {
+                        controller.selectTab(index);
                       }
-                      return false;
                     },
-                    child: PageView(
-                      controller: _pages,
-                      onPageChanged: (index) {
-                        if (!_suppressSwipeSync) {
-                          controller.selectTab(index);
-                        }
-                      },
-                      children: [
-                        DashboardPage(onSelectTab: controller.selectTab),
-                        PaymentsPage(),
-                        MaintenancePage(),
-                        FacilitiesPage(),
-                        ProfilePage(),
-                      ],
-                    ),
+                    children: [
+                      DashboardPage(onSelectTab: controller.selectTab),
+                      PaymentsPage(),
+                      MaintenancePage(),
+                      FacilitiesPage(),
+                      ProfilePage(),
+                    ],
                   ),
                 ),
               ),
-            ],
-          ),
-          bottomNavigationBar: AppBottomNavBar(
-            currentIndex: controller.selectedTab.value,
-            onTap: (index) {
-              if (_isNavigating) return;
-              _jumpToTab(index);
-            },
-            items: <AppBottomNavItem>[
-              AppBottomNavItem(
-                icon: Icons.home_outlined,
-                selectedIcon: Icons.home_rounded,
-                label: 'home'.tr,
-              ),
-              AppBottomNavItem(
-                icon: Icons.payments_outlined,
-                selectedIcon: Icons.payments_rounded,
-                label: 'payments'.tr,
-              ),
-              AppBottomNavItem(
-                icon: Icons.handyman_outlined,
-                selectedIcon: Icons.handyman_rounded,
-                label: 'maintenance'.tr,
-              ),
-              AppBottomNavItem(
-                icon: Icons.event_available_outlined,
-                selectedIcon: Icons.event_rounded,
-                label: 'facilities'.tr,
-              ),
-              AppBottomNavItem(
-                icon: Icons.person_outline_rounded,
-                selectedIcon: Icons.person_rounded,
-                label: 'profile'.tr,
-              ),
-            ],
-          ),
-        );
-      },
-    );
+            ),
+          ],
+        ),
+        bottomNavigationBar: AppBottomNavBar(
+          currentIndex: controller.selectedTab.value,
+          onTap: (index) {
+            if (_isNavigating) return;
+            _jumpToTab(index);
+          },
+          items: <AppBottomNavItem>[
+            AppBottomNavItem(
+              icon: Icons.home_outlined,
+              selectedIcon: Icons.home_rounded,
+              label: 'home'.tr,
+            ),
+            AppBottomNavItem(
+              icon: Icons.payments_outlined,
+              selectedIcon: Icons.payments_rounded,
+              label: 'payments'.tr,
+            ),
+            AppBottomNavItem(
+              icon: Icons.handyman_outlined,
+              selectedIcon: Icons.handyman_rounded,
+              label: 'maintenance'.tr,
+            ),
+            AppBottomNavItem(
+              icon: Icons.event_available_outlined,
+              selectedIcon: Icons.event_rounded,
+              label: 'facilities'.tr,
+            ),
+            AppBottomNavItem(
+              icon: Icons.person_outline_rounded,
+              selectedIcon: Icons.person_rounded,
+              label: 'profile'.tr,
+            ),
+          ],
+        ),
+      );
+    });
   }
 }

@@ -9,8 +9,8 @@ import '../models/store_model.dart';
 /// here: residents can only read the shelf and act on their own orders.
 class StoreLocalDataSource {
   StoreLocalDataSource()
-      : _products = List<StoreProductModel>.of(_initialProducts),
-        _orders = List<StoreOrderModel>.of(_initialOrders);
+    : _products = List<StoreProductModel>.of(_initialProducts),
+      _orders = List<StoreOrderModel>.of(_initialOrders);
 
   final List<StoreProductModel> _products;
   final List<StoreOrderModel> _orders;
@@ -324,9 +324,7 @@ class StoreLocalDataSource {
       }
     }
     for (final line in order.items) {
-      final index = _products.indexWhere(
-        (item) => item.id == line.product.id,
-      );
+      final index = _products.indexWhere((item) => item.id == line.product.id);
       final product = _products[index];
       _products[index] = StoreProductModel(
         id: product.id,
@@ -346,8 +344,10 @@ class StoreLocalDataSource {
       id: _nextOrderId(),
       items: order.items
           .map(
-            (line) =>
-                StoreCartLineModel(product: line.product, quantity: line.quantity),
+            (line) => StoreCartLineModel(
+              product: line.product,
+              quantity: line.quantity,
+            ),
           )
           .toList(),
       deliveryMethod: order.deliveryMethod,
@@ -404,8 +404,10 @@ class StoreLocalDataSource {
       id: updated.id,
       items: updated.items
           .map(
-            (line) =>
-                StoreCartLineModel(product: line.product, quantity: line.quantity),
+            (line) => StoreCartLineModel(
+              product: line.product,
+              quantity: line.quantity,
+            ),
           )
           .toList(),
       deliveryMethod: updated.deliveryMethod,
@@ -430,8 +432,7 @@ class StoreLocalDataSource {
   String _nextOrderId() {
     final now = DateTime.now();
     String two(int value) => value.toString().padLeft(2, '0');
-    final day =
-        '${now.year}${two(now.month)}${two(now.day)}';
+    final day = '${now.year}${two(now.month)}${two(now.day)}';
     final prefix = 'ST-$day-';
     final used = _orders
         .where((order) => order.id.startsWith(prefix))

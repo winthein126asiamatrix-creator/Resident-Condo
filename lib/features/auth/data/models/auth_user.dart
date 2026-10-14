@@ -22,31 +22,33 @@ class AuthUser {
   final String? image;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'username': username,
-        'email': email,
-        'firstName': firstName,
-        'lastName': lastName,
-        'gender': gender,
-        'image': image,
-      };
+    'id': id,
+    'username': username,
+    'email': email,
+    'firstName': firstName,
+    'lastName': lastName,
+    'gender': gender,
+    'image': image,
+  };
+
   /// The name to greet the resident by.
   ///
   /// Falls back through the parts before settling on the username, so a record
   /// missing a name still greets the account it belongs to rather than showing a
   /// blank dashboard.
   String get displayName {
-    final joined = <String>[firstName, lastName]
-        .where((part) => part.trim().isNotEmpty)
-        .join(' ')
-        .trim();
+    final joined = <String>[
+      firstName,
+      lastName,
+    ].where((part) => part.trim().isNotEmpty).join(' ').trim();
     return joined.isNotEmpty ? joined : username;
   }
 
   String get initials {
-    final parts = <String>[firstName, lastName]
-        .where((part) => part.trim().isNotEmpty)
-        .toList();
+    final parts = <String>[
+      firstName,
+      lastName,
+    ].where((part) => part.trim().isNotEmpty).toList();
     if (parts.isEmpty) {
       return username.isEmpty ? '?' : username[0].toUpperCase();
     }

@@ -1,4 +1,13 @@
-enum ServiceCategory { cleaning, laundry, pestControl, waste, aircon, catering, moving, other }
+enum ServiceCategory {
+  cleaning,
+  laundry,
+  pestControl,
+  waste,
+  aircon,
+  catering,
+  moving,
+  other,
+}
 
 extension ServiceCategoryLabel on ServiceCategory {
   String get label {
@@ -23,7 +32,13 @@ extension ServiceCategoryLabel on ServiceCategory {
   }
 }
 
-enum ServiceRequestStatus { requested, scheduled, inProgress, completed, cancelled }
+enum ServiceRequestStatus {
+  requested,
+  scheduled,
+  inProgress,
+  completed,
+  cancelled,
+}
 
 extension ServiceRequestStatusLabel on ServiceRequestStatus {
   String get label {
@@ -112,9 +127,11 @@ class ServiceRequest {
   final int? rating;
 
   bool get canCancel =>
-      status == ServiceRequestStatus.requested || status == ServiceRequestStatus.scheduled;
+      status == ServiceRequestStatus.requested ||
+      status == ServiceRequestStatus.scheduled;
 
-  bool get canRate => status == ServiceRequestStatus.completed && rating == null;
+  bool get canRate =>
+      status == ServiceRequestStatus.completed && rating == null;
 
   ServiceRequest copyWith({
     ServiceRequestStatus? status,

@@ -9,7 +9,11 @@ abstract interface class ParkingRepository {
 
   Future<List<GuestParkingRequest>> getGuestRequests();
 
-  Future<ParkingSpace> updateVehicle(ParkingSpace space, String vehicle, String plate);
+  Future<ParkingSpace> updateVehicle(
+    ParkingSpace space,
+    String vehicle,
+    String plate,
+  );
 
   Future<GuestParkingRequest> requestGuestParking(GuestParkingRequest request);
 

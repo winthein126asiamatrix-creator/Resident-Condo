@@ -30,22 +30,22 @@ class AppCacheDatabase extends _$AppCacheDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (migrator) async {
-          await migrator.createAll();
-        },
-        onUpgrade: (migrator, from, to) async {
-          if (from < 2) {
-            try {
-              await customStatement(
-                'ALTER TABLE cache_entries DROP COLUMN ttl_seconds;',
-              );
-            } on Object {
-              // Older SQLite builds may not support DROP COLUMN. These installs
-              // keep the unused extra column and v2 code simply ignores it.
-            }
-          }
-        },
-      );
+    onCreate: (migrator) async {
+      await migrator.createAll();
+    },
+    onUpgrade: (migrator, from, to) async {
+      if (from < 2) {
+        try {
+          await customStatement(
+            'ALTER TABLE cache_entries DROP COLUMN ttl_seconds;',
+          );
+        } on Object {
+          // Older SQLite builds may not support DROP COLUMN. These installs
+          // keep the unused extra column and v2 code simply ignores it.
+        }
+      }
+    },
+  );
 }
 
 LazyDatabase _openConnection() {

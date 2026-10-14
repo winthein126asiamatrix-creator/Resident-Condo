@@ -1,9 +1,17 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_radius.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../domain/entities/app_color_seed.dart';
 
 /// The grid of circular colour swatches.
@@ -200,7 +208,7 @@ class _SeedButton extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   swatch,
-                  SizedBox(height: 8.h),
+                  8.h.heightBox(),
                   AnimatedDefaultTextStyle(
                     duration: Duration(milliseconds: 180),
                     curve: Curves.easeOut,
@@ -281,10 +289,7 @@ class _SwatchCircle extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.all(_gap + _ringWidth),
         child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           child: selected ? _tick(color) : null,
         ),
       ),

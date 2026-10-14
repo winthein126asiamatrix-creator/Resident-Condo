@@ -22,14 +22,11 @@ class ParkingController extends GetxController {
     loadParking();
   }
 
-  int get availableCount => spaces
-      .where((space) => space.status == ParkingStatus.available)
-      .length;
+  int get availableCount =>
+      spaces.where((space) => space.status == ParkingStatus.available).length;
 
-  int get activeGuestRequests => guestRequests
-      .where((request) => request.status != 'Cancelled')
-      .length;
-
+  int get activeGuestRequests =>
+      guestRequests.where((request) => request.status != 'Cancelled').length;
 
   Future<void> loadParking() async {
     isLoading.value = true;

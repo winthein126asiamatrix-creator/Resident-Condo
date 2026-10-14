@@ -31,7 +31,10 @@ abstract final class AppTheme {
   /// Dark mode keeps the generated primary: the raw seed would be too dark to
   /// read against a dark canvas.
   static ColorScheme schemeFor(Color seed, Brightness brightness) {
-    final scheme = ColorScheme.fromSeed(seedColor: seed, brightness: brightness);
+    final scheme = ColorScheme.fromSeed(
+      seedColor: seed,
+      brightness: brightness,
+    );
     if (brightness == Brightness.light) {
       return scheme.copyWith(
         primary: seed,
@@ -91,9 +94,7 @@ abstract final class AppTheme {
         circularTrackColor: tokens.surfaceMuted,
       ),
       inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
@@ -102,9 +103,7 @@ abstract final class AppTheme {
           color: Colors.white,
           fontWeight: FontWeight.w600,
         ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: tokens.surface,
@@ -116,9 +115,7 @@ abstract final class AppTheme {
       dialogTheme: DialogThemeData(
         backgroundColor: tokens.surface,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
       sliderTheme: SliderThemeData(
         activeTrackColor: tokens.brand,

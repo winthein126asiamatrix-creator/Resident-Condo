@@ -1,13 +1,25 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:test/core/utils/super_print.dart';
 
+
 import '../../core/constants/app_constants.dart';
+
+
 import '../../core/theme/app_theme_tokens.dart';
+
+
 import '../../core/widgets/offline_banner.dart';
+
+
 import '../../features/auth/domain/entities/auth_session.dart';
+
+
 import '../../features/auth/presentation/controllers/auth_controller.dart';
+
+
 import '../routes/app_routes.dart';
 
 class SplashPage extends StatefulWidget {
@@ -77,11 +89,11 @@ class _SplashPageState extends State<SplashPage>
   Future<AuthSession?> _restoreSession() async {
     final auth = Get.find<AuthController>();
     final restored = await auth.restoreSession();
-    superPrint(restored,title: "Restore Session");
+    superPrint(restored, title: "Restore Session");
     if (!mounted || restored == null) {
       return null;
     }
-     superPrint(restored.displayName,title: "Restore Session Display Name");
+    superPrint(restored.displayName, title: "Restore Session Display Name");
     auth.adoptIntoSession(restored);
     return restored;
   }
@@ -103,46 +115,46 @@ class _SplashPageState extends State<SplashPage>
         // session, so the banner goes at the top of the body as it does
         // everywhere else.
         child: Center(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 112,
+                  height: 112,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.18),
+                        blurRadius: 24,
+                        offset: Offset(0, 12),
+                      ),
+                    ],
+                  ),
+                  child: Image.asset(
+                    'assets/images/app_icon.png',
                     width: 112,
                     height: 112,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.18),
-                          blurRadius: 24,
-                          offset: Offset(0, 12),
-                        ),
-                      ],
-                    ),
-                    child: Image.asset(
-                      'assets/images/app_icon.png',
-                      width: 112,
-                      height: 112,
-                      fit: BoxFit.contain,
-                      filterQuality: FilterQuality.high,
-                    ),
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
                   ),
-                  SizedBox(height: 24.h),
-                  Text(
-                    AppConstants.appName,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: tokens.onBrand,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.3,
-                    ),
+                ),
+                24.h.heightBox(),
+                Text(
+                  AppConstants.appName,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: tokens.onBrand,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
+        ),
       ),
     );
   }

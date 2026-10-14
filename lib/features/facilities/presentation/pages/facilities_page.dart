@@ -1,12 +1,24 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../domain/entities/facility.dart';
+
+
 import '../controllers/facility_controller.dart';
+
+
 import '../widgets/facility_labels.dart';
 
 class FacilitiesPage extends GetView<FacilityController> {
@@ -36,12 +48,12 @@ class FacilitiesPage extends GetView<FacilityController> {
                     padding: EdgeInsets.fromLTRB(20, 18, 20, 32),
                     children: [
                       _FacilitiesHeader(onRefresh: controller.loadFacilities),
-                      SizedBox(height: 20.h),
+                      20.h.heightBox(),
                       _FacilitySummary(
                         facilityCount: controller.facilities.length,
                         reservationCount: controller.reservations.length,
                       ),
-                      SizedBox(height: 14.h),
+                      14.h.heightBox(),
                       // Secondary entry point, kept out of the way of browsing.
                       Align(
                         alignment: Alignment.centerLeft,
@@ -65,12 +77,12 @@ class FacilitiesPage extends GetView<FacilityController> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 22.h),
+                      22.h.heightBox(),
                       _SectionHeader(
                         title: 'Amenities',
                         count: controller.facilities.length,
                       ),
-                      SizedBox(height: 10.h),
+                      10.h.heightBox(),
                       if (controller.facilities.isEmpty)
                         AppStateMessage(
                           title: 'No facilities',
@@ -118,7 +130,7 @@ class _FacilitiesHeader extends StatelessWidget {
                   color: tokens.ink,
                 ),
               ),
-              SizedBox(height: 4.h),
+              4.h.heightBox(),
               Text(
                 'Find your next place to unwind',
                 style: TextStyle(color: tokens.muted),
@@ -170,7 +182,7 @@ class _FacilitySummary extends StatelessWidget {
               size: 27,
             ),
           ),
-          SizedBox(width: 14.w),
+          14.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,9 +195,9 @@ class _FacilitySummary extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 6.h),
+                6.h.heightBox(),
                 Text(
-                  '$facilityCount facilities · $reservationCount reservations',
+                  '$facilityCount facilities Â· $reservationCount reservations',
                   style: TextStyle(
                     color: tokens.brandOnDark,
                     fontSize: 15.sp,
@@ -195,10 +207,7 @@ class _FacilitySummary extends StatelessWidget {
               ],
             ),
           ),
-          Icon(
-            Icons.chevron_right_rounded,
-            color: tokens.brandOnDark,
-          ),
+          Icon(Icons.chevron_right_rounded, color: tokens.brandOnDark),
         ],
       ),
     );
@@ -218,12 +227,10 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-            color: tokens.ink,
-          ),
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w800, color: tokens.ink),
         ),
-        SizedBox(width: 7.w),
+        7.w.widthBox(),
         Container(
           padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
           decoration: BoxDecoration(
@@ -245,10 +252,7 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _ResponsiveFacilityGrid extends StatelessWidget {
-  _ResponsiveFacilityGrid({
-    required this.facilities,
-    required this.onReserve,
-  });
+  _ResponsiveFacilityGrid({required this.facilities, required this.onReserve});
 
   final List<Facility> facilities;
   final ValueChanged<Facility> onReserve;
@@ -385,7 +389,7 @@ class _FacilityCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 7.h),
+                  7.h.heightBox(),
                   Text(
                     facility.description,
                     maxLines: 2,
@@ -396,7 +400,7 @@ class _FacilityCard extends StatelessWidget {
                       height: 1.35,
                     ),
                   ),
-                  SizedBox(height: 12.h),
+                  12.h.heightBox(),
                   Row(
                     children: [
                       Icon(
@@ -404,7 +408,7 @@ class _FacilityCard extends StatelessWidget {
                         size: 16,
                         color: tokens.muted,
                       ),
-                      SizedBox(width: 5.w),
+                      5.w.widthBox(),
                       Expanded(
                         child: Text(
                           facility.openingHours,
@@ -417,7 +421,7 @@ class _FacilityCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 8.h),
+                  8.h.heightBox(),
                   Row(
                     children: [
                       Icon(
@@ -425,7 +429,7 @@ class _FacilityCard extends StatelessWidget {
                         size: 16,
                         color: tokens.muted,
                       ),
-                      SizedBox(width: 5.w),
+                      5.w.widthBox(),
                       Text(
                         '${facility.capacity} capacity',
                         style: TextStyle(
@@ -446,7 +450,7 @@ class _FacilityCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 14.h),
+                  14.h.heightBox(),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(

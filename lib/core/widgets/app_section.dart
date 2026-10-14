@@ -1,7 +1,11 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../theme/app_theme_tokens.dart';
+
+
 import 'app_card.dart';
 
 /// Section title with optional count chip and trailing action.
@@ -35,7 +39,7 @@ class AppSectionHeader extends StatelessWidget {
           ),
         ),
         if (count != null) ...[
-          SizedBox(width: 7.w),
+          7.w.widthBox(),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
             decoration: BoxDecoration(
@@ -92,7 +96,7 @@ class AppLabelValueRow extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 12.w),
+          12.w.widthBox(),
           valueWidget ??
               Flexible(
                 child: Text(
@@ -139,13 +143,13 @@ class AppSectionCard extends StatelessWidget {
             ),
           ),
           if (subtitle != null) ...[
-            SizedBox(height: 4.h),
+            4.h.heightBox(),
             Text(
               subtitle!,
               style: TextStyle(color: tokens.muted, fontSize: 12.sp),
             ),
           ],
-          SizedBox(height: 10.h),
+          10.h.heightBox(),
           child,
         ],
       ),

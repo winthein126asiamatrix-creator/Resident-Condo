@@ -23,7 +23,11 @@ class PaymentRecordBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(color: color, fontSize: 11.sp, fontWeight: FontWeight.w800),
+        style: TextStyle(
+          color: color,
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }

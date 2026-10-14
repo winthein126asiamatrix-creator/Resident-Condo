@@ -1,9 +1,17 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+
 import '../theme/app_radius.dart';
+
+
 import '../theme/app_spacing.dart';
+
+
 import '../theme/app_text_styles.dart';
+
+
 import '../theme/app_theme_tokens.dart';
 
 /// Segmented choice control, used where a resident picks one of a few options
@@ -63,7 +71,7 @@ class AppSegmentedControl<T> extends StatelessWidget {
               onTap: () => onChanged(entry.key),
             ),
           ),
-          if (entry.key != options.last.key) SizedBox(width: 10.w),
+          if (entry.key != options.last.key) 10.w.widthBox(),
         ],
       ],
     );
@@ -75,7 +83,7 @@ class AppSegmentedControl<T> extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label!, style: AppTextStyles.of(context).fieldLabel),
-        SizedBox(height: AppSpacing.fieldLabelGap),
+        AppSpacing.fieldLabelGap.heightBox(),
         SizedBox(height: height, child: control),
       ],
     );
@@ -125,12 +133,8 @@ class _SegmentOption extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (icon != null) ...[
-                  Icon(
-                    icon,
-                    size: 18,
-                    color: selected ? active : tokens.muted,
-                  ),
-                  SizedBox(width: 6.w),
+                  Icon(icon, size: 18, color: selected ? active : tokens.muted),
+                  6.w.widthBox(),
                 ],
                 Flexible(
                   child: Text(
@@ -147,7 +151,7 @@ class _SegmentOption extends StatelessWidget {
                 ),
                 // A tick as well as the tint, so the choice is not colour only.
                 if (selected) ...[
-                  SizedBox(width: 6.w),
+                  6.w.widthBox(),
                   Icon(Icons.check_rounded, size: 15, color: active),
                 ],
               ],

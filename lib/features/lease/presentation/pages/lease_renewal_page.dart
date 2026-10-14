@@ -1,21 +1,49 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_radius.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_dates.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../../domain/entities/lease.dart';
+
+
 import '../controllers/lease_controller.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_form_field.dart';
 
 class LeaseRenewalPage extends StatefulWidget {
@@ -118,7 +146,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
                     icon: Icons.autorenew_rounded,
                     color: tokens.brand,
                   ),
-                  SizedBox(width: 12.w),
+                  12.w.widthBox(),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,18 +158,18 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
                             color: tokens.ink,
                           ),
                         ),
-                        SizedBox(height: 3.h),
+                        3.h.heightBox(),
                         Text(
-                          '${AppDates.format(lease.startDate)} → '
+                          '${AppDates.format(lease.startDate)} â†’ '
                           '${AppDates.format(lease.endDate)}',
                           style: TextStyle(
                             color: tokens.mutedStrong,
                             fontSize: 12.sp,
                           ),
                         ),
-                        SizedBox(height: 3.h),
+                        3.h.heightBox(),
                         Text(
-                          '${AppFormatters.currency(lease.monthlyRent)} / month · '
+                          '${AppFormatters.currency(lease.monthlyRent)} / month Â· '
                           '${lease.daysRemaining} days left',
                           style: TextStyle(
                             color: tokens.muted,
@@ -154,12 +182,12 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
                 ],
               ),
             ),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             Text(
               'Proposed term',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             _TermPicker(
               lease: lease,
               start: _start,
@@ -173,33 +201,31 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
               onPickEnd: _pickCustomEnd,
               durationLabel: _durationLabel(),
             ),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             Text(
               'Proposed monthly rent',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             AppTextField(
               fieldKey: Key('renewal-rent-field'),
               label: 'Proposed monthly rent',
               controller: _rentController,
               icon: Icons.payments_outlined,
-              keyboardType: TextInputType.numberWithOptions(
-                decimal: true,
-              ),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
               ],
               hint: '2400',
             ),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             AppTextField(
               label: 'Note (optional)',
               controller: _noteController,
               maxLines: 3,
-              hint: 'Add context for the other party…',
+              hint: 'Add context for the other partyâ€¦',
             ),
-            SizedBox(height: 24.h),
+            24.h.heightBox(),
             FilledButton.icon(
               key: Key('submit-renewal'),
               onPressed: controller.isSubmitting.value ? null : _submit,
@@ -218,16 +244,14 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
                     ? 'Sending request...'
                     : 'Send renewal request',
               ),
-              style: FilledButton.styleFrom(
-                minimumSize: Size.fromHeight(52),
-              ),
+              style: FilledButton.styleFrom(minimumSize: Size.fromHeight(52)),
             ),
             if (_error.isNotEmpty) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(_error, style: TextStyle(color: AppPalette.danger)),
             ],
             if (controller.errorMessage.value != null) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(
                 controller.errorMessage.value!,
                 style: TextStyle(color: AppPalette.danger),
@@ -351,7 +375,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
       parts.add('$months month${months == 1 ? '' : 's'}');
     }
     parts.add('$days day${days == 1 ? '' : 's'}');
-    return parts.join(' · ');
+    return parts.join(' Â· ');
   }
 }
 
@@ -430,12 +454,12 @@ class _TermPicker extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 12.h),
+              12.h.heightBox(),
               _DurationStrip(lease: lease, start: start, label: durationLabel),
             ],
           ),
         ),
-        SizedBox(height: 16.h),
+        16.h.heightBox(),
         Text(
           'Quick lengths',
           style: TextStyle(
@@ -444,7 +468,7 @@ class _TermPicker extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        SizedBox(height: 8.h),
+        8.h.heightBox(),
         _QuickDateRow(
           presets: endPresets,
           selected: end,
@@ -495,7 +519,7 @@ class _DateTile extends StatelessWidget {
                   letterSpacing: 1.1,
                 ),
               ),
-              SizedBox(height: 6.h),
+              6.h.heightBox(),
               // Shrinks rather than wraps, so a long date never breaks the row.
               FittedBox(
                 fit: BoxFit.scaleDown,
@@ -510,22 +534,18 @@ class _DateTile extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 2.h),
+              2.h.heightBox(),
               Text(
                 AppDates.weekday(value),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(color: tokens.muted, fontSize: 11.sp),
               ),
-              SizedBox(height: 8.h),
+              8.h.heightBox(),
               Row(
                 children: [
-                  Icon(
-                    Icons.event_rounded,
-                    size: 13,
-                    color: tokens.brand,
-                  ),
-                  SizedBox(width: 4.w),
+                  Icon(Icons.event_rounded, size: 13, color: tokens.brand),
+                  4.w.widthBox(),
                   Flexible(
                     child: Text(
                       'Pick a date',
@@ -588,12 +608,8 @@ class _DurationStrip extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.timelapse_rounded,
-            size: 18,
-            color: tokens.brand,
-          ),
-          SizedBox(width: 9.w),
+          Icon(Icons.timelapse_rounded, size: 18, color: tokens.brand),
+          9.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -612,7 +628,7 @@ class _DurationStrip extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 2.h),
+                2.h.heightBox(),
                 Text(
                   _timing,
                   maxLines: 2,
@@ -707,7 +723,7 @@ class _QuickDateChip extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                SizedBox(height: 2.h),
+                2.h.heightBox(),
                 Text(
                   AppDates.formatShort(preset.value),
                   style: TextStyle(

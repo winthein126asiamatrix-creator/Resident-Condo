@@ -1,20 +1,48 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_dates.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../../domain/entities/lease.dart';
+
+
 import '../controllers/lease_controller.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
 
 class LeasePage extends GetView<LeaseController> {
@@ -76,7 +104,7 @@ class LeasePage extends GetView<LeaseController> {
                   lease: lease,
                   perspective: controller.rentPerspectiveLabel,
                 ),
-                SizedBox(height: 16.h),
+                16.h.heightBox(),
                 AppSectionCard(
                   title: 'People on the lease',
                   child: Column(
@@ -87,7 +115,7 @@ class LeasePage extends GetView<LeaseController> {
                     ],
                   ),
                 ),
-                SizedBox(height: 16.h),
+                16.h.heightBox(),
                 AppSectionCard(
                   title: 'Lease terms',
                   child: Column(
@@ -119,16 +147,16 @@ class LeasePage extends GetView<LeaseController> {
                     ],
                   ),
                 ),
-                SizedBox(height: 22.h),
+                22.h.heightBox(),
                 AppSectionHeader(title: 'Renewal requests'),
-                SizedBox(height: 4.h),
+                4.h.heightBox(),
                 Text(
                   'The tenant and the owner can both propose a renewal.',
                   style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                 ),
-                SizedBox(height: 10.h),
+                10.h.heightBox(),
                 _RenewalList(controller: controller, lease: lease),
-                SizedBox(height: 20.h),
+                20.h.heightBox(),
                 FilledButton.icon(
                   key: Key('request-lease-renewal'),
                   onPressed: controller.pendingRenewal != null
@@ -148,7 +176,7 @@ class LeasePage extends GetView<LeaseController> {
                   ),
                 ),
                 if (controller.pendingRenewal == null) ...[
-                  SizedBox(height: 8.h),
+                  8.h.heightBox(),
                   Text(
                     'Rent is billed separately from your monthly condo fee.',
                     textAlign: TextAlign.center,
@@ -182,11 +210,11 @@ class _LeaseProgressCard extends StatelessWidget {
       icon: Icons.description_rounded,
       title: lease.unitLabel,
       subtitle:
-          '${lease.reference} · $perspective '
+          '${lease.reference} Â· $perspective '
           '${AppFormatters.currency(lease.monthlyRent)} / month',
       footnote: lease.hasExpired
           ? 'This term has ended. Submit a renewal to continue the tenancy.'
-          : 'Ends ${AppDates.format(lease.endDate)} · ${lease.daysRemaining} days left',
+          : 'Ends ${AppDates.format(lease.endDate)} Â· ${lease.daysRemaining} days left',
       trailing: AppStatusPill(label: lease.status.label, color: color),
       leading: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,7 +239,7 @@ class _LeaseProgressCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 8.h),
+          8.h.heightBox(),
           ClipRRect(
             borderRadius: BorderRadius.circular(6.r),
             child: LinearProgressIndicator(
@@ -221,7 +249,7 @@ class _LeaseProgressCard extends StatelessWidget {
               valueColor: AlwaysStoppedAnimation<Color>(tokens.brandOnDark),
             ),
           ),
-          SizedBox(height: 10.h),
+          10.h.heightBox(),
           Row(
             children: [
               Text(
@@ -261,27 +289,21 @@ class _PartyTile extends StatelessWidget {
           backgroundColor: tokens.brandSoft,
           child: Text(
             party.initials,
-            style: TextStyle(
-              color: tokens.brand,
-              fontWeight: FontWeight.w800,
-            ),
+            style: TextStyle(color: tokens.brand, fontWeight: FontWeight.w800),
           ),
         ),
-        SizedBox(width: 12.w),
+        12.w.widthBox(),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                party.name,
-                style: TextStyle(fontWeight: FontWeight.w800),
-              ),
-              SizedBox(height: 2.h),
+              Text(party.name, style: TextStyle(fontWeight: FontWeight.w800)),
+              2.h.heightBox(),
               Text(
                 party.role.label,
                 style: TextStyle(color: tokens.muted, fontSize: 11.sp),
               ),
-              SizedBox(height: 2.h),
+              2.h.heightBox(),
               Text(
                 party.phone,
                 style: TextStyle(color: tokens.faint, fontSize: 11.sp),
@@ -358,18 +380,18 @@ class _RenewalCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 12.h),
+          12.h.heightBox(),
           Text(
             '${AppFormatters.currency(renewal.proposedRent)} / month',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17.sp),
           ),
-          SizedBox(height: 4.h),
+          4.h.heightBox(),
           Text(
-            '${renewal.proposedStart} → ${renewal.proposedEnd}',
+            '${renewal.proposedStart} â†’ ${renewal.proposedEnd}',
             style: TextStyle(color: tokens.mutedStrong, fontSize: 12.sp),
           ),
           if (renewal.note.isNotEmpty) ...[
-            SizedBox(height: 8.h),
+            8.h.heightBox(),
             Text(
               renewal.note,
               style: TextStyle(
@@ -379,14 +401,14 @@ class _RenewalCard extends StatelessWidget {
               ),
             ),
           ],
-          SizedBox(height: 8.h),
+          8.h.heightBox(),
           Text(
             'Requested by ${renewal.requestedBy}'
-            '${renewal.decidedOn == null ? '' : ' · updated ${renewal.decidedOn}'}',
+            '${renewal.decidedOn == null ? '' : ' Â· updated ${renewal.decidedOn}'}',
             style: TextStyle(color: tokens.faint, fontSize: 11.sp),
           ),
           if (renewal.status == RenewalStatus.pending) ...[
-            SizedBox(height: 12.h),
+            12.h.heightBox(),
             OutlinedButton.icon(
               key: Key('withdraw-renewal-${renewal.id}'),
               onPressed: () => _withdraw(context),

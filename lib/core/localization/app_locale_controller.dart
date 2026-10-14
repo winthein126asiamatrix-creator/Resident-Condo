@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// verifies and repairs it in the background.
 class AppLocaleController extends GetxController {
   AppLocaleController({Locale? initialLocale})
-      : _locale = Rx<Locale>(initialLocale ?? const Locale('en')) {
+    : _locale = Rx<Locale>(initialLocale ?? const Locale('en')) {
     Get.updateLocale(_locale.value);
     Get.forceAppUpdate();
   }

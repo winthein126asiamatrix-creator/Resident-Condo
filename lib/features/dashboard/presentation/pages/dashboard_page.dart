@@ -1,17 +1,39 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../../../core/widgets/branded_loading_view.dart';
+
+
 import '../../../notifications/presentation/controllers/notification_controller.dart';
+
+
 import '../../../session/domain/entities/resident_session.dart';
+
+
 import '../../../session/presentation/controllers/session_controller.dart';
+
+
 import '../../domain/entities/dashboard.dart';
+
+
 import '../controllers/dashboard_controller.dart';
+
+
 import '../widgets/section_header.dart';
+
+
 import '../widgets/status_badge.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class DashboardPage extends GetView<DashboardController> {
@@ -34,7 +56,7 @@ class DashboardPage extends GetView<DashboardController> {
   /// Read from [SessionController] for the same reason the unread count is read
   /// from [NotificationController]: it is the one place the app already keeps
   /// the authenticated resident, and [AuthController.adoptIntoSession] writes
-  /// it from `/auth/me` during login and Restore Session — before this page is
+  /// it from `/auth/me` during login and Restore Session â€” before this page is
   /// ever mounted. No extra request is made.
   ///
   /// Null when no session controller is registered. That cannot happen on the
@@ -92,16 +114,16 @@ class DashboardPage extends GetView<DashboardController> {
                       unit: data.unit,
                       onViewDetails: () => Get.toNamed(AppRoutes.unit),
                     ),
-                    SizedBox(height: 22.h),
+                    22.h.heightBox(),
                     _BalanceCard(
                       balance: data.balance,
                       onPayNow: () => onSelectTab(1),
                     ),
-                    SizedBox(height: 26.h),
+                    26.h.heightBox(),
                     SectionHeader(title: 'Quick actions'),
-                    SizedBox(height: 12.h),
+                    12.h.heightBox(),
                     _QuickActions(onSelectTab: onSelectTab),
-                    SizedBox(height: 10.h),
+                    10.h.heightBox(),
                     OutlinedButton.icon(
                       key: Key('dashboard-all-services'),
                       onPressed: () => Get.toNamed(AppRoutes.more),
@@ -111,33 +133,33 @@ class DashboardPage extends GetView<DashboardController> {
                         minimumSize: Size.fromHeight(46),
                       ),
                     ),
-                    SizedBox(height: 26.h),
+                    26.h.heightBox(),
                     SectionHeader(
                       title: 'Maintenance',
                       actionLabel: 'View all',
                       onAction: () => onSelectTab(2),
                     ),
-                    SizedBox(height: 10.h),
+                    10.h.heightBox(),
                     _MaintenanceCard(
                       requests: data.maintenance,
                       inProgress: data.inProgressMaintenance,
                       completed: data.completedMaintenance,
                     ),
-                    SizedBox(height: 26.h),
+                    26.h.heightBox(),
                     SectionHeader(
                       title: 'Reservations',
                       actionLabel: 'Book',
                       onAction: () => onSelectTab(3),
                     ),
-                    SizedBox(height: 10.h),
+                    10.h.heightBox(),
                     _ReservationsCard(reservations: data.reservations),
-                    SizedBox(height: 26.h),
+                    26.h.heightBox(),
                     SectionHeader(
                       title: 'Latest announcements',
                       actionLabel: 'View all',
                       onAction: () => Get.toNamed(AppRoutes.announcements),
                     ),
-                    SizedBox(height: 10.h),
+                    10.h.heightBox(),
                     ...data.announcements.map(
                       (announcement) => Padding(
                         padding: EdgeInsets.only(bottom: 10),
@@ -170,9 +192,9 @@ class _GreetingHeader extends StatelessWidget {
 
   /// The given name, or a neutral word rather than a blank greeting.
   ///
-  /// [ResidentSession.name] is never blank in practice — the controller seeds
+  /// [ResidentSession.name] is never blank in practice â€” the controller seeds
   /// it with a placeholder and [AuthController.adoptIntoSession] refuses to
-  /// overwrite it with an empty string — but a blank greeting reads as a bug,
+  /// overwrite it with an empty string â€” but a blank greeting reads as a bug,
   /// so one is never painted. Splitting on whitespace rather than a single
   /// space also keeps a doubled space from yielding an empty first name.
   static String _firstName(String? name) {
@@ -194,12 +216,10 @@ class _GreetingHeader extends StatelessWidget {
             children: [
               Text(
                 'Good morning, ${_firstName(resident?.name)}',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: tokens.ink,
-                ),
+                style: Theme.of(context).textTheme.headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.w800, color: tokens.ink),
               ),
-              SizedBox(height: 4.h),
+              4.h.heightBox(),
               Text(
                 "Here's what's happening with your condo today.",
                 style: Theme.of(context).textTheme.bodyMedium
@@ -208,7 +228,7 @@ class _GreetingHeader extends StatelessWidget {
             ],
           ),
         ),
-        SizedBox(width: 12.w),
+        12.w.widthBox(),
         IconButton(
           key: Key('dashboard-all-services-icon'),
           onPressed: onMore,
@@ -300,61 +320,61 @@ class _HomeCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'YOUR HOME',
-                            style: TextStyle(
-                              color: tokens.brandOnDark,
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.4,
-                            ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'YOUR HOME',
+                          style: TextStyle(
+                            color: tokens.brandOnDark,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.4,
                           ),
                         ),
-                        StatusBadge(label: unit.occupancy),
-                      ],
+                      ),
+                      StatusBadge(label: unit.occupancy),
+                    ],
+                  ),
+                  18.h.heightBox(),
+                  Text(
+                    '${unit.tower} Â· Unit ${unit.unit}',
+                    style: TextStyle(
+                      color: tokens.brandOnDark,
+                      fontSize: 21.sp,
+                      fontWeight: FontWeight.w800,
                     ),
-                    SizedBox(height: 18.h),
-                    Text(
-                      '${unit.tower} · Unit ${unit.unit}',
-                      style: TextStyle(
+                  ),
+                  6.h.heightBox(),
+                  Text(
+                    '${unit.type} Â· ${unit.area} Â· ${unit.floor}',
+                    style: TextStyle(
+                      color: tokens.brandOnDarkMuted,
+                      fontSize: 13.sp,
+                    ),
+                  ),
+                  20.h.heightBox(),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.verified_rounded,
                         color: tokens.brandOnDark,
-                        fontSize: 21.sp,
-                        fontWeight: FontWeight.w800,
+                        size: 17,
                       ),
-                    ),
-                    SizedBox(height: 6.h),
-                    Text(
-                      '${unit.type} · ${unit.area} · ${unit.floor}',
-                      style: TextStyle(
-                        color: tokens.brandOnDarkMuted,
-                        fontSize: 13.sp,
-                      ),
-                    ),
-                    SizedBox(height: 20.h),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.verified_rounded,
-                          color: tokens.brandOnDark,
-                          size: 17,
-                        ),
-                        SizedBox(width: 6.w),
-                        Flexible(
-                          child: Text(
-                            '${unit.ownership} · Parking ${unit.parkingSlot}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: tokens.brandOnDarkMuted,
-                              fontSize: 12.sp,
-                            ),
+                      6.w.widthBox(),
+                      Flexible(
+                        child: Text(
+                          '${unit.ownership} Â· Parking ${unit.parkingSlot}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: tokens.brandOnDarkMuted,
+                            fontSize: 12.sp,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -396,20 +416,18 @@ class _BalanceCard extends StatelessWidget {
               StatusBadge(label: 'Due ${balance.dueDate}'),
             ],
           ),
-          SizedBox(height: 8.h),
+          8.h.heightBox(),
           Text(
             '\$${balance.outstanding.toStringAsFixed(2)}',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: tokens.ink,
-              fontWeight: FontWeight.w800,
-            ),
+            style: Theme.of(context).textTheme.headlineMedium
+                ?.copyWith(color: tokens.ink, fontWeight: FontWeight.w800),
           ),
           Text(
             'Across all open invoices',
             style: Theme.of(context).textTheme.bodySmall
                 ?.copyWith(color: tokens.muted),
           ),
-          SizedBox(height: 16.h),
+          16.h.heightBox(),
           Row(
             children: [
               Expanded(
@@ -420,9 +438,9 @@ class _BalanceCard extends StatelessWidget {
                       'Last payment',
                       style: TextStyle(fontSize: 12.sp, color: tokens.muted),
                     ),
-                    SizedBox(height: 3.h),
+                    3.h.heightBox(),
                     Text(
-                      '\$${balance.lastPayment.toStringAsFixed(2)} · ${balance.lastPaymentDate}',
+                      '\$${balance.lastPayment.toStringAsFixed(2)} Â· ${balance.lastPaymentDate}',
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 12.sp,
@@ -438,10 +456,7 @@ class _BalanceCard extends StatelessWidget {
                 style: FilledButton.styleFrom(
                   backgroundColor: tokens.brand,
                   foregroundColor: tokens.onBrand,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 13,
-                    vertical: 11,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 13, vertical: 11),
                 ),
               ),
             ],
@@ -474,7 +489,7 @@ class _QuickActions extends StatelessWidget {
                 onTap: () => onSelectTab(1),
               ),
             ),
-            SizedBox(width: 10.w),
+            10.w.widthBox(),
             Expanded(
               child: _QuickAction(
                 icon: Icons.handyman_outlined,
@@ -485,7 +500,7 @@ class _QuickActions extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 10.h),
+        10.h.heightBox(),
         Row(
           children: [
             Expanded(
@@ -496,7 +511,7 @@ class _QuickActions extends StatelessWidget {
                 onTap: () => Get.toNamed(AppRoutes.visitors),
               ),
             ),
-            SizedBox(width: 10.w),
+            10.w.widthBox(),
             Expanded(
               child: _QuickAction(
                 icon: Icons.event_available_outlined,
@@ -507,7 +522,7 @@ class _QuickActions extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 10.h),
+        10.h.heightBox(),
         Row(
           children: [
             Expanded(
@@ -518,7 +533,7 @@ class _QuickActions extends StatelessWidget {
                 onTap: () => Get.toNamed(AppRoutes.store),
               ),
             ),
-            SizedBox(width: 10.w),
+            10.w.widthBox(),
             Expanded(
               child: _QuickAction(
                 icon: Icons.room_service_outlined,
@@ -533,7 +548,6 @@ class _QuickActions extends StatelessWidget {
     );
   }
 }
-
 
 class _QuickAction extends StatelessWidget {
   _QuickAction({
@@ -572,14 +586,11 @@ class _QuickAction extends StatelessWidget {
               ),
               child: Icon(icon, color: tokens.ink, size: 20),
             ),
-            SizedBox(width: 9.w),
+            9.w.widthBox(),
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w700),
               ),
             ),
           ],
@@ -616,11 +627,8 @@ class _MaintenanceCard extends StatelessWidget {
               padding: EdgeInsets.fromLTRB(16, 15, 16, 15),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.build_circle_outlined,
-                    color: tokens.brand,
-                  ),
-                  SizedBox(width: 12.w),
+                  Icon(Icons.build_circle_outlined, color: tokens.brand),
+                  12.w.widthBox(),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -629,9 +637,9 @@ class _MaintenanceCard extends StatelessWidget {
                           request.title,
                           style: TextStyle(fontWeight: FontWeight.w700),
                         ),
-                        SizedBox(height: 3.h),
+                        3.h.heightBox(),
                         Text(
-                          '${request.category} · ${request.priority}',
+                          '${request.category} Â· ${request.priority}',
                           style: TextStyle(
                             fontSize: 12.sp,
                             color: tokens.muted,
@@ -650,10 +658,12 @@ class _MaintenanceCard extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: tokens.surfaceMuted,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(19.r)),
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(19.r),
+              ),
             ),
             child: Text(
-              '$inProgress in progress  ·  $completed completed',
+              '$inProgress in progress  Â·  $completed completed',
               style: TextStyle(
                 fontSize: 12.sp,
                 color: tokens.mutedStrong,
@@ -700,7 +710,7 @@ class _ReservationsCard extends StatelessWidget {
                   reservation.facility,
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
-                subtitle: Text('${reservation.date} · ${reservation.time}'),
+                subtitle: Text('${reservation.date} Â· ${reservation.time}'),
                 trailing: StatusBadge(label: reservation.status),
               ),
             )
@@ -739,13 +749,11 @@ class _AnnouncementCard extends StatelessWidget {
               announcement.isUrgent
                   ? Icons.warning_amber_rounded
                   : Icons.campaign_outlined,
-              color: announcement.isUrgent
-                  ? Color(0xFFC2410C)
-                  : tokens.brand,
+              color: announcement.isUrgent ? Color(0xFFC2410C) : tokens.brand,
               size: 20,
             ),
           ),
-          SizedBox(width: 12.w),
+          12.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -760,14 +768,11 @@ class _AnnouncementCard extends StatelessWidget {
                     ),
                     Text(
                       announcement.date,
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                        color: tokens.muted,
-                      ),
+                      style: TextStyle(fontSize: 10.sp, color: tokens.muted),
                     ),
                   ],
                 ),
-                SizedBox(height: 5.h),
+                5.h.heightBox(),
                 Text(
                   announcement.description,
                   style: TextStyle(
@@ -776,7 +781,7 @@ class _AnnouncementCard extends StatelessWidget {
                     color: tokens.muted,
                   ),
                 ),
-                SizedBox(height: 8.h),
+                8.h.heightBox(),
                 StatusBadge(label: announcement.category),
               ],
             ),

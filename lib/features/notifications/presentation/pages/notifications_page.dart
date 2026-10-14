@@ -1,13 +1,27 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../domain/entities/notification_item.dart';
+
+
 import '../controllers/notification_controller.dart';
+
+
 import '../widgets/notification_item_card.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class NotificationsPage extends GetView<NotificationController> {
@@ -55,13 +69,18 @@ class NotificationsPage extends GetView<NotificationController> {
           onRefresh: controller.loadNotifications,
           child: ListView(
             physics: AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.fromLTRB(AppSpacing.gutter, AppSpacing.pageTop, AppSpacing.gutter, 32),
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.gutter,
+              AppSpacing.pageTop,
+              AppSpacing.gutter,
+              32,
+            ),
             children: [
               _NotificationSummary(
                 unreadCount: controller.unreadCount,
                 totalCount: controller.notifications.length,
               ),
-              SizedBox(height: 22.h),
+              22.h.heightBox(),
               for (final period in NotificationPeriod.values) ...[
                 if (controller.notificationsFor(period).isNotEmpty) ...[
                   Text(
@@ -71,7 +90,7 @@ class NotificationsPage extends GetView<NotificationController> {
                       fontSize: 16.sp,
                     ),
                   ),
-                  SizedBox(height: 10.h),
+                  10.h.heightBox(),
                   ...controller
                       .notificationsFor(period)
                       .map(
@@ -83,7 +102,7 @@ class NotificationsPage extends GetView<NotificationController> {
                           ),
                         ),
                       ),
-                  SizedBox(height: 12.h),
+                  12.h.heightBox(),
                 ],
               ],
             ],
@@ -95,10 +114,7 @@ class NotificationsPage extends GetView<NotificationController> {
 }
 
 class _NotificationSummary extends StatelessWidget {
-  _NotificationSummary({
-    required this.unreadCount,
-    required this.totalCount,
-  });
+  _NotificationSummary({required this.unreadCount, required this.totalCount});
 
   final int unreadCount;
   final int totalCount;
@@ -128,7 +144,7 @@ class _NotificationSummary extends StatelessWidget {
               size: 27,
             ),
           ),
-          SizedBox(width: 14.w),
+          14.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -141,7 +157,7 @@ class _NotificationSummary extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 6.h),
+                6.h.heightBox(),
                 Text(
                   unreadCount == 0
                       ? 'You are all caught up'

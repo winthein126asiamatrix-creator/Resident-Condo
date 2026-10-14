@@ -83,8 +83,14 @@ abstract final class AppPages {
       binding: AuthBinding(),
     ),
     GetPage<dynamic>(name: AppRoutes.more, page: () => MoreServicesPage()),
-    GetPage<dynamic>(name: AppRoutes.notifications, page: () => NotificationsPage()),
-    GetPage<dynamic>(name: AppRoutes.announcements, page: () => AnnouncementsPage()),
+    GetPage<dynamic>(
+      name: AppRoutes.notifications,
+      page: () => NotificationsPage(),
+    ),
+    GetPage<dynamic>(
+      name: AppRoutes.announcements,
+      page: () => AnnouncementsPage(),
+    ),
     GetPage<dynamic>(
       name: AppRoutes.unit,
       page: () => UnitPage(),
@@ -94,8 +100,14 @@ abstract final class AppPages {
       name: AppRoutes.paymentDetail,
       page: () => InvoiceDetailPage(invoice: Get.arguments as Invoice),
     ),
-    GetPage<dynamic>(name: AppRoutes.paymentSummary, page: () => PaymentSummaryPage()),
-    GetPage<dynamic>(name: AppRoutes.paymentMethod, page: () => PaymentMethodPage()),
+    GetPage<dynamic>(
+      name: AppRoutes.paymentSummary,
+      page: () => PaymentSummaryPage(),
+    ),
+    GetPage<dynamic>(
+      name: AppRoutes.paymentMethod,
+      page: () => PaymentMethodPage(),
+    ),
     GetPage<dynamic>(
       name: AppRoutes.paymentSuccess,
       page: () => PaymentSuccessPage(payment: Get.arguments as Payment),
@@ -108,7 +120,10 @@ abstract final class AppPages {
       name: AppRoutes.paymentReceipt,
       page: () => PaymentReceiptPage(payment: Get.arguments as Payment),
     ),
-    GetPage<dynamic>(name: AppRoutes.paymentHistory, page: () => PaymentHistoryPage()),
+    GetPage<dynamic>(
+      name: AppRoutes.paymentHistory,
+      page: () => PaymentHistoryPage(),
+    ),
     GetPage<dynamic>(
       name: AppRoutes.maintenanceDetail,
       page: () =>
@@ -128,7 +143,9 @@ abstract final class AppPages {
     ),
     GetPage<dynamic>(
       name: AppRoutes.bookingConfirmed,
-      page: () => BookingConfirmedPage(reservation: Get.arguments as FacilityReservation),
+      page: () => BookingConfirmedPage(
+        reservation: Get.arguments as FacilityReservation,
+      ),
     ),
     GetPage<dynamic>(
       name: AppRoutes.myReservations,
@@ -136,30 +153,48 @@ abstract final class AppPages {
     ),
     GetPage<dynamic>(
       name: AppRoutes.reservationDetail,
-      page: () => ReservationDetailPage(reservation: Get.arguments as FacilityReservation),
+      page: () => ReservationDetailPage(
+        reservation: Get.arguments as FacilityReservation,
+      ),
     ),
     GetPage<dynamic>(name: AppRoutes.lease, page: () => LeasePage()),
-    GetPage<dynamic>(name: AppRoutes.leaseRenewal, page: () => LeaseRenewalPage()),
+    GetPage<dynamic>(
+      name: AppRoutes.leaseRenewal,
+      page: () => LeaseRenewalPage(),
+    ),
     GetPage<dynamic>(
       name: AppRoutes.leaseRenewalSent,
       page: () => LeaseRenewalSentPage(renewal: Get.arguments as LeaseRenewal),
     ),
     GetPage<dynamic>(name: AppRoutes.visitors, page: () => VisitorsPage()),
-    GetPage<dynamic>(name: AppRoutes.visitorRegister, page: () => RegisterVisitorPage()),
+    GetPage<dynamic>(
+      name: AppRoutes.visitorRegister,
+      page: () => RegisterVisitorPage(),
+    ),
     GetPage<dynamic>(
       name: AppRoutes.visitorPass,
       page: () => VisitorPassPage(visitor: Get.arguments as Visitor),
     ),
-    GetPage<dynamic>(name: AppRoutes.visitorVerify, page: () => VisitorVerifyPage()),
+    GetPage<dynamic>(
+      name: AppRoutes.visitorVerify,
+      page: () => VisitorVerifyPage(),
+    ),
     GetPage<dynamic>(name: AppRoutes.services, page: () => ServicesPage()),
-    GetPage<dynamic>(name: AppRoutes.serviceRequest, page: () => ServiceRequestPage()),
+    GetPage<dynamic>(
+      name: AppRoutes.serviceRequest,
+      page: () => ServiceRequestPage(),
+    ),
     GetPage<dynamic>(
       name: AppRoutes.serviceRequestDetail,
-      page: () => ServiceRequestDetailPage(request: Get.arguments as ServiceRequest),
+      page: () =>
+          ServiceRequestDetailPage(request: Get.arguments as ServiceRequest),
     ),
     GetPage<dynamic>(name: AppRoutes.parking, page: () => ParkingPage()),
     GetPage<dynamic>(name: AppRoutes.complaints, page: () => ComplaintsPage()),
-    GetPage<dynamic>(name: AppRoutes.complaintCreate, page: () => CreateComplaintPage()),
+    GetPage<dynamic>(
+      name: AppRoutes.complaintCreate,
+      page: () => CreateComplaintPage(),
+    ),
     GetPage<dynamic>(
       name: AppRoutes.complaintDetail,
       page: () => ComplaintDetailPage(complaint: Get.arguments as Complaint),
@@ -173,7 +208,10 @@ abstract final class AppPages {
       name: AppRoutes.violationDetail,
       page: () => ViolationDetailPage(violation: Get.arguments as Violation),
     ),
-    GetPage<dynamic>(name: AppRoutes.violationAppeal, page: () => AppealViolationPage()),
+    GetPage<dynamic>(
+      name: AppRoutes.violationAppeal,
+      page: () => AppealViolationPage(),
+    ),
     GetPage<dynamic>(
       name: AppRoutes.store,
       page: () => StorePage(),

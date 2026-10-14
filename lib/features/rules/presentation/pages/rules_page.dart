@@ -1,17 +1,39 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../controllers/rules_controller.dart';
+
+
 import '../widgets/rules_widgets.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_segmented_tabs.dart';
 
 class RulesPage extends GetView<RulesController> {
@@ -54,7 +76,7 @@ class RulesPage extends GetView<RulesController> {
                 icon: Icons.gavel_rounded,
                 title: 'Community rules',
                 subtitle:
-                    '${controller.rules.length} rules · '
+                    '${controller.rules.length} rules Â· '
                     '${controller.openViolationCount} open violations',
                 footnote:
                     'Fines are billed as a separate Violation Fine item, '
@@ -68,9 +90,9 @@ class RulesPage extends GetView<RulesController> {
                       )
                     : null,
               ),
-              SizedBox(height: 18.h),
+              18.h.heightBox(),
               _TabRow(controller: controller),
-              SizedBox(height: 18.h),
+              18.h.heightBox(),
               // The pill slides into the next tab, so the panel that follows it
               // across rather than swapping the instant the tap lands.
               AnimatedSwitcher(
@@ -159,7 +181,7 @@ class _Rules extends StatelessWidget {
                     icon: ruleCategoryIcon(rule.category),
                     color: AppPalette.brand,
                   ),
-                  SizedBox(width: 12.w),
+                  12.w.widthBox(),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,9 +191,7 @@ class _Rules extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 rule.title,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                ),
+                                style: TextStyle(fontWeight: FontWeight.w800),
                               ),
                             ),
                             Text(
@@ -184,7 +204,7 @@ class _Rules extends StatelessWidget {
                             ),
                           ],
                         ),
-                        SizedBox(height: 5.h),
+                        5.h.heightBox(),
                         Text(
                           rule.summary,
                           style: TextStyle(
@@ -193,7 +213,7 @@ class _Rules extends StatelessWidget {
                             height: 1.35,
                           ),
                         ),
-                        SizedBox(height: 8.h),
+                        8.h.heightBox(),
                         Text(
                           'Fine up to ${AppFormatters.currency(rule.fineAmount)}',
                           style: TextStyle(
@@ -234,7 +254,7 @@ class _Violations extends StatelessWidget {
           title: 'Issued to your unit',
           count: controller.violations.length,
         ),
-        SizedBox(height: 10.h),
+        10.h.heightBox(),
         for (final violation in controller.violations)
           Padding(
             padding: EdgeInsets.only(bottom: 10),
@@ -250,7 +270,7 @@ class _Violations extends StatelessWidget {
                     icon: Icons.report_rounded,
                     color: violationStatusColor(violation.status),
                   ),
-                  SizedBox(width: 12.w),
+                  12.w.widthBox(),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,19 +279,19 @@ class _Violations extends StatelessWidget {
                           violation.ruleTitle,
                           style: TextStyle(fontWeight: FontWeight.w800),
                         ),
-                        SizedBox(height: 4.h),
+                        4.h.heightBox(),
                         Text(
-                          '${violation.reference} · issued ${violation.issuedOn}',
+                          '${violation.reference} Â· issued ${violation.issuedOn}',
                           style: TextStyle(
                             color: AppPalette.muted,
                             fontSize: 11.sp,
                           ),
                         ),
-                        SizedBox(height: 8.h),
+                        8.h.heightBox(),
                         Row(
                           children: [
                             ViolationStatusPill(status: violation.status),
-                            SizedBox(width: 8.w),
+                            8.w.widthBox(),
                             if (controller.appealFor(violation) != null)
                               AppStatusPill(
                                 label: 'Appeal open',
@@ -295,7 +315,7 @@ class _Violations extends StatelessWidget {
                               : AppPalette.success,
                         ),
                       ),
-                      SizedBox(height: 4.h),
+                      4.h.heightBox(),
                       Icon(
                         Icons.chevron_right_rounded,
                         color: AppPalette.faint,

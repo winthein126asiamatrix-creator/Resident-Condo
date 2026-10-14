@@ -1,19 +1,45 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../../domain/entities/condo_service.dart';
+
+
 import '../controllers/condo_service_controller.dart';
+
+
 import '../widgets/service_widgets.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_segmented_tabs.dart';
 
 class ServicesPage extends GetView<CondoServiceController> {
@@ -54,9 +80,9 @@ class ServicesPage extends GetView<CondoServiceController> {
             padding: EdgeInsets.fromLTRB(20, 8, 20, 32),
             children: [
               _ServicesHero(controller: controller),
-              SizedBox(height: 18.h),
+              18.h.heightBox(),
               _TabRow(controller: controller),
-              SizedBox(height: 18.h),
+              18.h.heightBox(),
               // The pill slides into the next tab, so the panel that follows it
               // across rather than swapping the instant the tap lands.
               AnimatedSwitcher(
@@ -99,7 +125,7 @@ class _ServicesHero extends StatelessWidget {
       icon: Icons.room_service_rounded,
       title: 'Book a service',
       subtitle:
-          '${controller.services.length} services · ${controller.openRequestCount} open requests',
+          '${controller.services.length} services Â· ${controller.openRequestCount} open requests',
       footnote: 'Services are handled by the concierge team, separately from maintenance repairs.',
       trailing: IconButton(
         tooltip: 'Refresh services',
@@ -179,7 +205,7 @@ class _ServiceCard extends StatelessWidget {
                 icon: serviceIcon(service.category),
                 color: tokens.brand,
               ),
-              SizedBox(width: 12.w),
+              12.w.widthBox(),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,9 +217,9 @@ class _ServiceCard extends StatelessWidget {
                         fontSize: 16.sp,
                       ),
                     ),
-                    SizedBox(height: 3.h),
+                    3.h.heightBox(),
                     Text(
-                      '${service.category.label} · ${service.provider}',
+                      '${service.category.label} Â· ${service.provider}',
                       style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                     ),
                   ],
@@ -217,7 +243,7 @@ class _ServiceCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 12.h),
+          12.h.heightBox(),
           Text(
             service.description,
             style: TextStyle(
@@ -226,11 +252,11 @@ class _ServiceCard extends StatelessWidget {
               height: 1.4,
             ),
           ),
-          SizedBox(height: 12.h),
+          12.h.heightBox(),
           Row(
             children: [
               Icon(Icons.schedule_rounded, size: 15, color: tokens.faint),
-              SizedBox(width: 5.w),
+              5.w.widthBox(),
               Text(
                 'Needs ${service.leadTimeDays} day notice',
                 style: TextStyle(color: tokens.faint, fontSize: 11.sp),
@@ -274,7 +300,7 @@ class _Requests extends StatelessWidget {
           title: 'Active',
           count: controller.activeRequests.length,
         ),
-        SizedBox(height: 10.h),
+        10.h.heightBox(),
         if (controller.activeRequests.isEmpty)
           Text(
             'Nothing active right now.',
@@ -286,12 +312,12 @@ class _Requests extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 10),
               child: _RequestCard(controller: controller, request: request),
             ),
-        SizedBox(height: 16.h),
+        16.h.heightBox(),
         AppSectionHeader(
           title: 'History',
           count: controller.pastRequests.length,
         ),
-        SizedBox(height: 10.h),
+        10.h.heightBox(),
         for (final request in controller.pastRequests)
           Padding(
             padding: EdgeInsets.only(bottom: 10),
@@ -322,7 +348,7 @@ class _RequestCard extends StatelessWidget {
             color: serviceStatusColor(request.status, tokens),
             size: 42,
           ),
-          SizedBox(width: 12.w),
+          12.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -331,12 +357,12 @@ class _RequestCard extends StatelessWidget {
                   request.serviceName,
                   style: TextStyle(fontWeight: FontWeight.w800),
                 ),
-                SizedBox(height: 4.h),
+                4.h.heightBox(),
                 Text(
-                  '${request.scheduledDate} · ${request.scheduledSlot}',
+                  '${request.scheduledDate} Â· ${request.scheduledSlot}',
                   style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                 ),
-                SizedBox(height: 6.h),
+                6.h.heightBox(),
                 ServiceStatusPill(status: request.status),
               ],
             ),
@@ -348,7 +374,7 @@ class _RequestCard extends StatelessWidget {
                 AppFormatters.currency(request.price),
                 style: TextStyle(fontWeight: FontWeight.w800),
               ),
-              SizedBox(height: 4.h),
+              4.h.heightBox(),
               if (request.rating != null)
                 Row(
                   children: [

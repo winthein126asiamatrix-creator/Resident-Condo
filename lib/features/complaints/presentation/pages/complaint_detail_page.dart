@@ -1,17 +1,39 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../../../core/widgets/app_status_pill.dart';
+
+
 import '../../domain/entities/complaint.dart';
+
+
 import '../controllers/complaint_controller.dart';
+
+
 import '../widgets/complaint_widgets.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/widgets/app_form_field.dart';
 
 class ComplaintDetailPage extends GetView<ComplaintController> {
@@ -39,10 +61,10 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
               title: current.reference,
               subtitle: current.subject,
               footnote:
-                  'Filed ${current.createdOn} · ${current.category.label}',
+                  'Filed ${current.createdOn} Â· ${current.category.label}',
               trailing: ComplaintStatusPill(status: current.status),
             ),
-            SizedBox(height: 18.h),
+            18.h.heightBox(),
             AppSectionCard(
               title: 'Details',
               child: Column(
@@ -63,7 +85,7 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
                 ],
               ),
             ),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             AppSectionCard(
               title: 'What you reported',
               child: Text(
@@ -72,7 +94,7 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
               ),
             ),
             if (current.resolution != null) ...[
-              SizedBox(height: 16.h),
+              16.h.heightBox(),
               AppSectionCard(
                 title: 'Resolution',
                 child: Text(
@@ -85,12 +107,12 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
                 ),
               ),
             ],
-            SizedBox(height: 18.h),
+            18.h.heightBox(),
             AppSectionHeader(
               title: 'Conversation',
               count: current.comments.length,
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             if (current.comments.isEmpty)
               Text(
                 'No messages yet. The community team will reply here.',
@@ -103,11 +125,11 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
                   child: _CommentTile(comment: comment),
                 ),
             if (current.isOpen) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               _MessageBox(controller: controller, complaint: current),
             ],
             if (current.canWithdraw) ...[
-              SizedBox(height: 16.h),
+              16.h.heightBox(),
               OutlinedButton.icon(
                 onPressed: controller.isSubmitting.value
                     ? null
@@ -122,7 +144,7 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
               ),
             ],
             if (controller.errorMessage.value != null) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(
                 controller.errorMessage.value!,
                 style: TextStyle(color: AppPalette.danger),
@@ -203,12 +225,12 @@ class _CommentTile extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 3.h),
+          3.h.heightBox(),
           Text(
             comment.authorRole,
             style: TextStyle(color: tokens.muted, fontSize: 10.sp),
           ),
-          SizedBox(height: 8.h),
+          8.h.heightBox(),
           Text(
             comment.message,
             style: TextStyle(
@@ -251,9 +273,9 @@ class _MessageBoxState extends State<_MessageBox> {
           controller: _message,
           maxLines: 3,
           textCapitalization: TextCapitalization.sentences,
-          hint: 'Reply to the community team…',
+          hint: 'Reply to the community teamâ€¦',
         ),
-        SizedBox(height: 10.h),
+        10.h.heightBox(),
         SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
@@ -261,9 +283,7 @@ class _MessageBoxState extends State<_MessageBox> {
             onPressed: widget.controller.isSubmitting.value ? null : _send,
             icon: Icon(Icons.send_rounded, size: 18),
             label: Text('Send message'),
-            style: FilledButton.styleFrom(
-              minimumSize: Size.fromHeight(48),
-            ),
+            style: FilledButton.styleFrom(minimumSize: Size.fromHeight(48)),
           ),
         ),
       ],

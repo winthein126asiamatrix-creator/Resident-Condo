@@ -33,10 +33,8 @@ class PaymentController extends GetxController {
 
   // ---------------------------------------------------------------- balances
 
-  double get outstandingBalance => invoices.fold(
-    0,
-    (total, invoice) => total + invoice.amountDue,
-  );
+  double get outstandingBalance =>
+      invoices.fold(0, (total, invoice) => total + invoice.amountDue);
 
   /// Monthly rent is always reported on its own line, never merged with the
   /// monthly condo fee.
@@ -64,24 +62,17 @@ class PaymentController extends GetxController {
       .where((invoice) => invoice.billingPeriod == currentBillingPeriod)
       .fold(0, (total, invoice) => total + invoice.amountDue);
 
-  double get currentCondoFeeDue => _dueFor(
-    InvoiceItemType.condoFee,
-    period: currentBillingPeriod,
-  );
+  double get currentCondoFeeDue =>
+      _dueFor(InvoiceItemType.condoFee, period: currentBillingPeriod);
 
-  double get currentRentDue => _dueFor(
-    InvoiceItemType.rent,
-    period: currentBillingPeriod,
-  );
+  double get currentRentDue =>
+      _dueFor(InvoiceItemType.rent, period: currentBillingPeriod);
 
   int get openInvoiceCount =>
       invoices.where((invoice) => invoice.isPayable).length;
 
   double get totalPaidThisYear => paymentHistory
-      .where(
-        (payment) =>
-            payment.isSuccessful && payment.date.endsWith('2026'),
-      )
+      .where((payment) => payment.isSuccessful && payment.date.endsWith('2026'))
       .fold(0, (total, payment) => total + payment.amount);
 
   double get lastPaymentAmount {

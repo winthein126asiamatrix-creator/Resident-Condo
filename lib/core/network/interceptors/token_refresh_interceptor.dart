@@ -13,11 +13,7 @@ import 'api_auth_interceptor.dart';
 /// structurally impossible: a refresh that itself returns 401 cannot re-enter
 /// this code and start a second refresh.
 class TokenRefreshInterceptor extends Interceptor {
-  TokenRefreshInterceptor(
-    this._storage,
-    this._dio,
-    this._refresher,
-  );
+  TokenRefreshInterceptor(this._storage, this._dio, this._refresher);
 
   final TokenStorage _storage;
 
@@ -68,14 +64,11 @@ class TokenRefreshInterceptor extends Interceptor {
       return;
     }
 
-    superPrint(
-      {'path': options.path, 'status': err.response?.statusCode},
-      title: 'Token Refresh: 401 Detected',
-    );
-    superPrint(
-      {'path': options.path},
-      title: 'Token Refresh: Started',
-    );
+    superPrint({
+      'path': options.path,
+      'status': err.response?.statusCode,
+    }, title: 'Token Refresh: 401 Detected');
+    superPrint({'path': options.path}, title: 'Token Refresh: Started');
 
     final tokens = await _refreshOnce();
 
@@ -95,15 +88,15 @@ class TokenRefreshInterceptor extends Interceptor {
       options.extra[retriedExtra] = true;
       options.headers[ApiConfig.authorizationHeader] =
           '${ApiConfig.authScheme} ${tokens.accessToken}';
-      superPrint(
-        {'method': options.method, 'path': options.path},
-        title: 'Token Refresh: Retrying',
-      );
+      superPrint({
+        'method': options.method,
+        'path': options.path,
+      }, title: 'Token Refresh: Retrying');
       final response = await _dio.fetch<dynamic>(options);
-      superPrint(
-        {'path': options.path, 'status': response.statusCode},
-        title: 'Token Refresh: Retry Result',
-      );
+      superPrint({
+        'path': options.path,
+        'status': response.statusCode,
+      }, title: 'Token Refresh: Retry Result');
       handler.resolve(response);
     } on DioException catch (retryError) {
       // A 401 here means the new token was rejected too; surface it rather
@@ -127,10 +120,9 @@ class TokenRefreshInterceptor extends Interceptor {
 
     if (refreshToken == null || refreshToken.isEmpty) {
       // Nothing to refresh with, so the session is over.
-      superPrint(
-        {'reason': 'no refresh token in storage'},
-        title: 'Token Refresh: Failed',
-      );
+      superPrint({
+        'reason': 'no refresh token in storage',
+      }, title: 'Token Refresh: Failed');
       await _storage.clearTokens();
       return null;
     }
@@ -138,29 +130,23 @@ class TokenRefreshInterceptor extends Interceptor {
     try {
       final tokens = await _refresher.refresh(refreshToken);
       if (tokens == null) {
-        superPrint(
-          {'reason': 'refresh request returned no tokens'},
-          title: 'Token Refresh: Failed',
-        );
+        superPrint({
+          'reason': 'refresh request returned no tokens',
+        }, title: 'Token Refresh: Failed');
         await _storage.clearTokens();
         return null;
       }
       // Both tokens are replaced together; keeping the old refresh token would
       // guarantee a second failure at the next expiry.
       await _storage.writeTokens(tokens);
-      superPrint(
-        {'tokensExist': true},
-        title: 'Token Refresh: Tokens Saved',
-      );
+      superPrint({'tokensExist': true}, title: 'Token Refresh: Tokens Saved');
       return tokens;
     } catch (_) {
-      superPrint(
-        {'reason': 'exception during refresh'},
-        title: 'Token Refresh: Failed',
-      );
+      superPrint({
+        'reason': 'exception during refresh',
+      }, title: 'Token Refresh: Failed');
       await _storage.clearTokens();
       return null;
     }
   }
-
 }

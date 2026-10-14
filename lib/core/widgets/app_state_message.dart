@@ -1,3 +1,4 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -26,16 +27,16 @@ class AppStateMessage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 56, color: Theme.of(context).colorScheme.primary),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             Text(
               title,
               style: Theme.of(context).textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 8.h),
+            8.h.heightBox(),
             Text(message, textAlign: TextAlign.center),
             if (actionLabel != null && onAction != null) ...[
-              SizedBox(height: 16.h),
+              16.h.heightBox(),
               FilledButton(onPressed: onAction, child: Text(actionLabel!)),
             ],
           ],

@@ -17,7 +17,6 @@ class CachedApiEntry {
   final String? accountKey;
   final String payloadJson;
   final DateTime updatedAt;
-
 }
 
 /// Reusable key/value cache backed by Drift. Caching is opt-in per endpoint:
@@ -28,16 +27,16 @@ class ApiCacheStore {
   final AppCacheDatabase _database;
 
   Future<CachedApiEntry?> read(String key) async {
-    final row = await (_database.select(_database.cacheEntries)
-          ..where((t) => t.cacheKey.equals(key)))
-        .getSingleOrNull();
+    final row = await (_database.select(
+      _database.cacheEntries,
+    )..where((t) => t.cacheKey.equals(key))).getSingleOrNull();
     if (row == null) return null;
-  return CachedApiEntry(
-    key: row.cacheKey,
-    accountKey: row.accountKey,
-    payloadJson: row.payloadJson,
-    updatedAt: row.updatedAt,
-  );
+    return CachedApiEntry(
+      key: row.cacheKey,
+      accountKey: row.accountKey,
+      payloadJson: row.payloadJson,
+      updatedAt: row.updatedAt,
+    );
   }
 
   Future<void> save({
@@ -45,7 +44,9 @@ class ApiCacheStore {
     String? accountKey,
     required Object payload,
   }) async {
-    await _database.into(_database.cacheEntries).insertOnConflictUpdate(
+    await _database
+        .into(_database.cacheEntries)
+        .insertOnConflictUpdate(
           CacheEntriesCompanion(
             cacheKey: Value(key),
             accountKey: Value(accountKey),
@@ -56,15 +57,15 @@ class ApiCacheStore {
   }
 
   Future<void> invalidate(String key) async {
-    await (_database.delete(_database.cacheEntries)
-          ..where((t) => t.cacheKey.equals(key)))
-        .go();
+    await (_database.delete(
+      _database.cacheEntries,
+    )..where((t) => t.cacheKey.equals(key))).go();
   }
 
   Future<void> invalidatePrefix(String prefix) async {
-    await (_database.delete(_database.cacheEntries)
-          ..where((t) => t.cacheKey.like('$prefix%')))
-        .go();
+    await (_database.delete(
+      _database.cacheEntries,
+    )..where((t) => t.cacheKey.like('$prefix%'))).go();
   }
 
   Future<void> clearAll() async {

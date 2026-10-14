@@ -1,14 +1,30 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../domain/entities/lease.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
 
 class LeaseRenewalSentPage extends StatelessWidget {
@@ -29,7 +45,7 @@ class LeaseRenewalSentPage extends StatelessWidget {
           32,
         ),
         children: [
-          SizedBox(height: 22.h),
+          22.h.heightBox(),
           Center(
             child: Container(
               width: 88,
@@ -45,7 +61,7 @@ class LeaseRenewalSentPage extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 20.h),
+          20.h.heightBox(),
           Text(
             'Renewal request sent',
             textAlign: TextAlign.center,
@@ -55,14 +71,14 @@ class LeaseRenewalSentPage extends StatelessWidget {
               color: tokens.ink,
             ),
           ),
-          SizedBox(height: 8.h),
+          8.h.heightBox(),
           Text(
             'Both parties will be notified and the request stays pending until '
             'it is approved or declined.',
             textAlign: TextAlign.center,
             style: TextStyle(color: tokens.muted, height: 1.4),
           ),
-          SizedBox(height: 24.h),
+          24.h.heightBox(),
           AppCard(
             child: Column(
               children: [
@@ -78,14 +94,12 @@ class LeaseRenewalSentPage extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(height: 20.h),
+          20.h.heightBox(),
           FilledButton.icon(
             onPressed: () => Get.offAllNamed(AppRoutes.lease),
             icon: Icon(Icons.home_rounded),
             label: Text('Back to lease'),
-            style: FilledButton.styleFrom(
-              minimumSize: Size.fromHeight(52),
-            ),
+            style: FilledButton.styleFrom(minimumSize: Size.fromHeight(52)),
           ),
         ],
       ),

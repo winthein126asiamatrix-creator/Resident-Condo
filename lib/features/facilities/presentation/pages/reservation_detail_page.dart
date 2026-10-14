@@ -1,16 +1,36 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/utils/app_dates.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../domain/entities/facility.dart';
+
+
 import '../controllers/facility_controller.dart';
+
+
 import '../widgets/facility_labels.dart';
+
+
 import '../widgets/reservation_status_badge.dart';
 
 /// Read only view of a single reservation.
@@ -44,7 +64,7 @@ class ReservationDetailPage extends StatelessWidget {
         ),
         children: [
           _FacilityHero(facility: facility, reservation: reservation),
-          SizedBox(height: 18.h),
+          18.h.heightBox(),
           AppCard(
             key: Key('reservation-detail-summary'),
             child: Column(
@@ -80,7 +100,7 @@ class ReservationDetailPage extends StatelessWidget {
             ),
           ),
           if (facility != null) ...[
-            SizedBox(height: 18.h),
+            18.h.heightBox(),
             AppSectionCard(
               title: 'Good to know',
               child: Column(
@@ -168,7 +188,7 @@ class _FacilityHero extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(width: 10.w),
+                10.w.widthBox(),
                 ReservationStatusBadge(reservation: reservation),
               ],
             ),

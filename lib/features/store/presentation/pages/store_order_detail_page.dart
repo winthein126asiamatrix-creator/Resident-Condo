@@ -1,19 +1,45 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/utils/app_formatters.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../../../core/widgets/app_primary_action.dart';
+
+
 import '../../../../core/widgets/app_buttons.dart';
+
+
 import '../../domain/entities/store_product.dart';
+
+
 import '../controllers/store_controller.dart';
+
+
 import '../widgets/store_cards.dart';
+
+
 import '../widgets/store_widgets.dart';
 
 /// Everything about one store order: what was bought, where it is going and
@@ -41,9 +67,9 @@ class StoreOrderDetailPage extends GetView<StoreController> {
           ),
           children: [
             _OrderHeader(order: current),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             StoreOrderTrackerCard(order: current),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             AppCard(
               key: Key('store-order-items'),
               child: Column(
@@ -57,13 +83,13 @@ class StoreOrderDetailPage extends GetView<StoreController> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  SizedBox(height: 8.h),
+                  8.h.heightBox(),
                   for (final line in current.items)
                     StoreOrderLineRow(line: line),
                 ],
               ),
             ),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             AppCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,7 +102,7 @@ class StoreOrderDetailPage extends GetView<StoreController> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  SizedBox(height: 10.h),
+                  10.h.heightBox(),
                   _InfoLine(
                     label: 'Method',
                     value: current.deliveryMethod.label,
@@ -92,7 +118,7 @@ class StoreOrderDetailPage extends GetView<StoreController> {
                 ],
               ),
             ),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             StoreCheckoutSummaryCard(
               keyName: 'store-order-total',
               subtotal: current.subtotal,
@@ -100,14 +126,14 @@ class StoreOrderDetailPage extends GetView<StoreController> {
               total: current.total,
               itemCount: current.itemCount,
             ),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             StoreFeeNotice(),
             // A resident settles an outstanding Store Fee and can call off their
             // own order. Moving an order along the pipeline is the store's job,
             // so the order here is read-only apart from those two.
             if (current.paymentStatus == StorePaymentStatus.pending &&
                 !current.status.isFinished) ...[
-              SizedBox(height: 20.h),
+              20.h.heightBox(),
               AppPrimaryAction(
                 key: Key('store-order-pay-now'),
                 onPressed: controller.isSubmitting.value
@@ -120,7 +146,7 @@ class StoreOrderDetailPage extends GetView<StoreController> {
               ),
             ],
             if (current.status.canCancel) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               AppOutlinedButton(
                 key: Key('store-order-cancel'),
                 onPressed: controller.isSubmitting.value
@@ -152,7 +178,8 @@ class StoreOrderDetailPage extends GetView<StoreController> {
     final confirmed = await showAppConfirmDialog(
       context,
       title: 'Cancel ${order.id}?',
-      message: 'This calls the order off. It can only be done before the '
+      message:
+          'This calls the order off. It can only be done before the '
           'store hands it over for delivery.',
       confirmLabel: 'Cancel order',
       destructive: true,
@@ -198,7 +225,7 @@ class _OrderHeader extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 12.h),
+          12.h.heightBox(),
           Row(
             children: [
               Expanded(
@@ -221,11 +248,11 @@ class _OrderHeader extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 14.h),
+          14.h.heightBox(),
           Row(
             children: [
               StoreOrderStatusPill(status: order.status, dense: false),
-              SizedBox(width: 8.w),
+              8.w.widthBox(),
               StorePaymentPill(payment: order.paymentStatus),
               Spacer(),
               Text(
@@ -265,7 +292,7 @@ class _InfoLine extends StatelessWidget {
               style: TextStyle(color: tokens.muted, fontSize: 12.5.sp),
             ),
           ),
-          SizedBox(width: 10.w),
+          10.w.widthBox(),
           Expanded(
             child: Text(
               value,

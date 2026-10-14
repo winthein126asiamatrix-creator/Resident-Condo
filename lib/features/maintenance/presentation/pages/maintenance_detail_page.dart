@@ -1,14 +1,30 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../domain/entities/maintenance_request.dart';
+
+
 import '../controllers/maintenance_controller.dart';
+
+
 import '../widgets/maintenance_status_badge.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_image_preview.dart';
+
+
 import '../../../../core/widgets/app_step_progress.dart';
 
 class MaintenanceDetailPage extends GetView<MaintenanceController> {
@@ -33,7 +49,7 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
           ),
           children: [
             _DetailHero(request: current),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             _Section(
               title: 'Request information',
               child: Column(
@@ -45,7 +61,7 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
                   _Line(
                     label: 'Preferred time',
                     value:
-                        '${current.preferredDate} · ${current.preferredTime}',
+                        '${current.preferredDate} Â· ${current.preferredTime}',
                   ),
                   _Line(
                     label: 'Assigned technician',
@@ -54,7 +70,7 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
                 ],
               ),
             ),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             _Section(
               title: 'Description',
               child: Text(
@@ -62,7 +78,7 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
                 style: TextStyle(color: tokens.mutedStrong, height: 1.4),
               ),
             ),
-            SizedBox(height: 16.h),
+            16.h.heightBox(),
             _Section(
               title: current.photoPaths.isEmpty ? 'Attachments' : 'Attachment',
               child: current.photoPaths.isEmpty
@@ -93,10 +109,10 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
                       ],
                     ),
             ),
-            SizedBox(height: 20.h),
+            20.h.heightBox(),
             _StatusProgress(request: current),
             // if (current.status.next != null) ...[
-            //   SizedBox(height: 20.h),
+            //   20.h.heightBox(),
             //   AppPrimaryAction(
             //     key: Key('advance-maintenance-request'),
             //     onPressed: () => controller.advanceRequest(current),
@@ -162,7 +178,7 @@ class _DetailHero extends StatelessWidget {
               MaintenanceStatusBadge(status: request.status),
             ],
           ),
-          SizedBox(height: 16.h),
+          16.h.heightBox(),
           Text(
             request.title,
             style: TextStyle(
@@ -171,9 +187,9 @@ class _DetailHero extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
-          SizedBox(height: 6.h),
+          6.h.heightBox(),
           Text(
-            '${request.category.label} · ${request.priority.label}',
+            '${request.category.label} Â· ${request.priority.label}',
             style: TextStyle(color: tokens.brandOnDarkMuted, fontSize: 13.sp),
           ),
         ],
@@ -205,7 +221,7 @@ class _Section extends StatelessWidget {
             title,
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
           ),
-          SizedBox(height: 8.h),
+          8.h.heightBox(),
           child,
         ],
       ),
@@ -228,12 +244,9 @@ class _Line extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: Text(
-              label,
-              style: TextStyle(color: tokens.muted),
-            ),
+            child: Text(label, style: TextStyle(color: tokens.muted)),
           ),
-          SizedBox(width: 12.w),
+          12.w.widthBox(),
           Flexible(
             child: Text(
               value,
@@ -286,7 +299,7 @@ class _StatusProgress extends StatelessWidget {
             'Request progress',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
           ),
-          SizedBox(height: 16.h),
+          16.h.heightBox(),
           AppStepProgress(steps: steps, currentIndex: status.index),
         ],
       ),

@@ -8,8 +8,9 @@ class AppearanceUseCases {
 
   Future<AppearancePreference> getPreference() => repository.getPreference();
 
-  Future<AppearancePreference> savePreference(AppearancePreference preference) =>
-      repository.savePreference(preference);
+  Future<AppearancePreference> savePreference(
+    AppearancePreference preference,
+  ) => repository.savePreference(preference);
 
   Future<AppearancePreference> resetPreference() =>
       repository.resetPreference();

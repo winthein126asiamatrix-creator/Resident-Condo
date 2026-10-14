@@ -162,9 +162,11 @@ class RulesLocalDataSource {
 
   Future<List<CommunityRule>> getRules() async => List.unmodifiable(_rules);
 
-  Future<List<Violation>> getViolations() async => List.unmodifiable(_violations);
+  Future<List<Violation>> getViolations() async =>
+      List.unmodifiable(_violations);
 
-  Future<List<ViolationAppeal>> getAppeals() async => List.unmodifiable(_appeals);
+  Future<List<ViolationAppeal>> getAppeals() async =>
+      List.unmodifiable(_appeals);
 
   Future<ViolationAppeal> submitAppeal(ViolationAppeal appeal) async {
     final violation = _findViolation(appeal.violationId);

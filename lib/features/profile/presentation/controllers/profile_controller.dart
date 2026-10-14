@@ -90,29 +90,29 @@ class ProfileController extends GetxController {
     );
   }
 
- 
-
   /// Keeps the profile role label in sync with the active session role.
   Future<Profile?> syncRole(ResidentRole role) async {
     final current = profile.value;
     if (current == null || current.role == role.label) {
       return current;
     }
-    return useCases.updateProfile(
-      Profile(
-        name: current.name,
-        email: current.email,
-        phone: current.phone,
-        unit: current.unit,
-        role: role.label,
-        initials: current.initials,
-        language: current.language,
-        notificationsEnabled: current.notificationsEnabled,
-      ),
-    ).then((updated) {
-      profile.value = updated;
-      return updated;
-    }).catchError((_) => current);
+    return useCases
+        .updateProfile(
+          Profile(
+            name: current.name,
+            email: current.email,
+            phone: current.phone,
+            unit: current.unit,
+            role: role.label,
+            initials: current.initials,
+            language: current.language,
+            notificationsEnabled: current.notificationsEnabled,
+          ),
+        )
+        .then((updated) {
+          profile.value = updated;
+          return updated;
+        })
+        .catchError((_) => current);
   }
-
 }

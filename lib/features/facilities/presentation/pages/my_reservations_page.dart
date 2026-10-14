@@ -1,18 +1,42 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
+
+
 import '../../../../core/utils/app_dates.dart';
+
+
 import '../../../../core/widgets/app_card.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_section.dart';
+
+
 import '../../../../core/widgets/app_state_message.dart';
+
+
 import '../../domain/entities/facility.dart';
+
+
 import '../controllers/facility_controller.dart';
+
+
 import '../widgets/facility_labels.dart';
+
+
 import '../widgets/reservation_status_badge.dart';
 
 /// Every reservation the resident has made, split into what is still ahead and
@@ -95,7 +119,7 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
             children: [
               if (upcoming.isNotEmpty) ...[
                 AppSectionHeader(title: 'Upcoming', count: upcoming.length),
-                SizedBox(height: 10.h),
+                10.h.heightBox(),
                 for (final reservation in upcoming)
                   Padding(
                     padding: EdgeInsets.only(bottom: 10),
@@ -106,9 +130,9 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
                   ),
               ],
               if (past.isNotEmpty) ...[
-                SizedBox(height: upcoming.isEmpty ? 0 : 16),
+                (upcoming.isEmpty ? 0 : 16.h).heightBox(),
                 AppSectionHeader(title: 'Past', count: past.length),
-                SizedBox(height: 10.h),
+                10.h.heightBox(),
                 for (final reservation in past)
                   Padding(
                     padding: EdgeInsets.only(bottom: 10),
@@ -147,7 +171,7 @@ class _ReservationCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _FacilityThumb(facility: facility),
-          SizedBox(width: 13.w),
+          13.w.widthBox(),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,25 +191,25 @@ class _ReservationCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(width: 8.w),
+                    8.w.widthBox(),
                     ReservationStatusBadge(
                       reservation: reservation,
                       dense: true,
                     ),
                   ],
                 ),
-                SizedBox(height: 8.h),
+                8.h.heightBox(),
                 _MetaLine(
                   icon: Icons.calendar_today_rounded,
                   label: AppDates.formatLong(AppDates.parse(reservation.date)),
                 ),
-                SizedBox(height: 4.h),
+                4.h.heightBox(),
                 _MetaLine(
                   icon: Icons.schedule_rounded,
                   label: reservation.time,
                 ),
                 if (reservation.id.isNotEmpty) ...[
-                  SizedBox(height: 8.h),
+                  8.h.heightBox(),
                   Text(
                     '#${reservation.id}',
                     maxLines: 1,
@@ -218,7 +242,7 @@ class _MetaLine extends StatelessWidget {
     return Row(
       children: [
         Icon(icon, size: 13, color: tokens.muted),
-        SizedBox(width: 6.w),
+        6.w.widthBox(),
         Flexible(
           child: Text(
             label,

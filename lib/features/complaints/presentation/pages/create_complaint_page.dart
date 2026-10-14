@@ -1,16 +1,36 @@
+import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+
 import '../../../../app/routes/app_routes.dart';
+
+
 import '../../../../core/theme/app_palette.dart';
+
+
 import '../../../../core/theme/app_theme_tokens.dart';
+
+
 import '../../../../core/widgets/app_dialogs.dart';
+
+
 import '../../domain/entities/complaint.dart';
+
+
 import '../controllers/complaint_controller.dart';
+
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
+
+
 import '../../../../core/widgets/app_form_field.dart';
+
+
 import '../../../../core/widgets/app_segmented_control.dart';
+
+
 import '../../../../core/theme/app_spacing.dart';
 
 class CreateComplaintPage extends StatefulWidget {
@@ -57,19 +77,19 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
               'What happened?',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: AppSpacing.fieldLabelGap),
+            AppSpacing.fieldLabelGap.heightBox(),
             AppTextField(
               label: 'Subject',
               fieldKey: Key('complaint-subject-field'),
               controller: _subjectController,
               hint: 'Short summary of the issue',
             ),
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             Text(
               'Details',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: AppSpacing.fieldLabelGap),
+            AppSpacing.fieldLabelGap.heightBox(),
             AppTextField(
               label: 'Description',
               fieldKey: Key('complaint-description-field'),
@@ -77,12 +97,12 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
               hint: 'Describe what happened, when, and how often.',
               maxLines: 5,
             ),
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             Text(
               'Category',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -97,23 +117,23 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
                   )
                   .toList(),
             ),
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             Text(
               'Where did it happen?',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: AppSpacing.fieldLabelGap),
+            AppSpacing.fieldLabelGap.heightBox(),
             AppTextField(
               label: 'Location',
               controller: _locationController,
-              hint: 'Tower A � Level 12 � Corridor',
+              hint: 'Tower A ï¿½ Level 12 ï¿½ Corridor',
             ),
-            SizedBox(height: AppSpacing.fieldGap),
+            AppSpacing.fieldGap.heightBox(),
             Text(
               'Priority',
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             AppSegmentedControl<ComplaintPriority>(
               label: null,
               segments: {
@@ -124,7 +144,7 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
               value: _priority,
               onChanged: (value) => setState(() => _priority = value),
             ),
-            SizedBox(height: 10.h),
+            10.h.heightBox(),
             SwitchListTile.adaptive(
               key: Key('complaint-anonymous-switch'),
               value: _isAnonymous,
@@ -139,7 +159,7 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
               ),
               contentPadding: EdgeInsets.zero,
             ),
-            SizedBox(height: 18.h),
+            18.h.heightBox(),
             FilledButton.icon(
               key: Key('submit-complaint'),
               onPressed: controller.isSubmitting.value ? null : _submit,
@@ -158,16 +178,14 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
                     ? 'Submitting...'
                     : 'Submit complaint',
               ),
-              style: FilledButton.styleFrom(
-                minimumSize: Size.fromHeight(52),
-              ),
+              style: FilledButton.styleFrom(minimumSize: Size.fromHeight(52)),
             ),
             if (_error.isNotEmpty) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(_error, style: TextStyle(color: AppPalette.danger)),
             ],
             if (controller.errorMessage.value != null) ...[
-              SizedBox(height: 10.h),
+              10.h.heightBox(),
               Text(
                 controller.errorMessage.value!,
                 style: TextStyle(color: AppPalette.danger),
@@ -205,7 +223,7 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
       subject: _subjectController.text,
       description: _descriptionController.text,
       location: _locationController.text.trim().isEmpty
-          ? 'Tower A · 1205'
+          ? 'Tower A Â· 1205'
           : _locationController.text,
       priority: _priority,
       isAnonymous: _isAnonymous,
