@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"dart":{"lib/firebase_options.dart":{"projectId":"matrix-condo","configurations":{"android":"1:377174439242:android:338713da42512ca9673db3","ios":"1:377174439242:ios:7e1479a83b8e34cf673db3"}}},"android":{"default":{"projectId":"matrix-condo","appId":"1:377174439242:android:338713da42512ca9673db3","fileOutput":"android/app/google-services.json"}}}}}

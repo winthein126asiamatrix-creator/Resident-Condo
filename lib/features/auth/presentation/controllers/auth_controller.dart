@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/app/routes/app_routes.dart';
 
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/services/firebase_service.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../data/models/auth_user.dart';
 import '../../domain/entities/auth_session.dart';
@@ -195,6 +198,7 @@ class AuthController extends GetxController {
   /// about auth on its own, so a sign-in (or a restored session) only takes
   /// effect once it is handed over here.
   void adoptIntoSession(AuthSession session) {
+    _prepareNotifications();
     if (!Get.isRegistered<SessionController>()) {
       return;
     }
@@ -207,6 +211,22 @@ class AuthController extends GetxController {
     } else {
       controller.signInAs(session.displayName);
     }
+  }
+
+  /// Asks for notification permission and fetches the FCM token, once there is
+  /// a resident to notify.
+  ///
+  /// This is the single point every sign-in path goes through — a restored
+  /// session from the splash, a fresh sign-in, and a session revalidated on
+  /// reconnect — so the prompt appears behind an authenticated resident and
+  /// never over the splash. Fire and forget: the permission and the token are
+  /// not needed for anything the resident is doing right now, so nothing here
+  /// is allowed to hold up (or break) the route change that follows.
+  void _prepareNotifications() {
+    if (!Get.isRegistered<FirebaseService>()) {
+      return;
+    }
+    unawaited(Get.find<FirebaseService>().onResidentSignedIn());
   }
 
   /// Validates the form, returning the first problem or null when it is valid.

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "377174439242",
+    "project_id": "matrix-condo",
+    "storage_bucket": "matrix-condo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:377174439242:android:338713da42512ca9673db3",
+        "android_client_info": {
+          "package_name": "com.asiamatrix.matrixcondo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBiUSoejKaU7wADswN3OF7ASwThCD0lG3E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
