@@ -72,4 +72,20 @@ class AppLocaleController extends GetxController {
         return 'English';
     }
   }
+
+  /// The English name of a supported code.
+  ///
+  /// Used as the secondary line under [displayName] in the language picker, and
+  /// persisted on the profile so the stored value stays readable regardless of
+  /// which language the resident is currently viewing the app in.
+  String englishName(String code) {
+    switch (code) {
+      case 'my':
+        return 'Myanmar';
+      case 'zh':
+        return 'Chinese';
+      default:
+        return 'English';
+    }
+  }
 }

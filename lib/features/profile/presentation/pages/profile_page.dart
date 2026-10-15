@@ -1,57 +1,84 @@
 import 'package:test/core/utils/sized_box_extensions.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-import 'package:test/features/dashboard/presentation/controllers/dashboard_controller.dart';
 
+import 'package:flutter/material.dart';
+
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 
+import '../../../../core/localization/app_locale_controller.dart';
 
-import '../../../../core/models/resident_role.dart';
-
-
-import '../../../../core/theme/app_theme_tokens.dart';
-
-
-import '../../../../core/widgets/app_dialogs.dart';
-
-
-import '../../../../core/widgets/app_state_message.dart';
-
-
-import '../../../payments/presentation/controllers/payment_controller.dart';
-
-
-import '../../../session/presentation/controllers/session_controller.dart';
-
-
-import '../../../auth/presentation/controllers/auth_controller.dart';
-
-
-import '../../domain/entities/profile.dart';
-
-
-import '../controllers/profile_controller.dart';
-
+import '../../../../core/theme/app_radius.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 
+import '../../../../core/theme/app_theme_tokens.dart';
+
+import '../../../../core/widgets/app_dialogs.dart';
 
 import '../../../../core/widgets/app_form_field.dart';
 
-
-import '../../../../core/localization/app_locale_controller.dart';
-
-
 import '../../../../core/widgets/app_primary_action.dart';
 
-class ProfilePage extends GetView<ProfileController> {
-  ProfilePage({super.key});
+import '../../../../core/widgets/app_state_message.dart';
+
+import '../../../auth/presentation/controllers/auth_controller.dart';
+
+import '../../../dashboard/presentation/controllers/dashboard_controller.dart';
+
+import '../../../session/presentation/controllers/session_controller.dart';
+
+import '../../domain/entities/profile.dart';
+
+import '../controllers/profile_controller.dart';
+
+import '../widgets/language_picker_sheet.dart';
+
+/// The greeting line at the top of the profile page.
+class _PageHeader extends StatelessWidget {
+  const _PageHeader({required this.profile});
+
+  final Profile profile;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Profile',
+                style: TextStyle(
+                  fontSize: 26.sp,
+                  fontWeight: FontWeight.w800,
+                  color: tokens.ink,
+                  letterSpacing: -0.4,
+                ),
+              ),
+              4.h.heightBox(),
+              Text(
+                'Manage your resident details and preferences',
+                style: TextStyle(color: tokens.muted, fontSize: 13.sp),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class ProfilePage extends GetView<ProfileController> {
+  const ProfilePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     final localeController = Get.find<AppLocaleController>();
     return Scaffold(
       body: SafeArea(
@@ -81,33 +108,24 @@ class ProfilePage extends GetView<ProfileController> {
           return RefreshIndicator(
             onRefresh: controller.loadProfile,
             child: ListView(
-              key: Key('profile-scroll'),
-              physics: AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(20, 18, 20, 32),
+              key: const Key('profile-scroll'),
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.gutter,
+                AppSpacing.pageTop,
+                AppSpacing.gutter,
+                AppSpacing.pageBottom,
+              ),
               children: [
-                Text(
-                  'Profile',
-                  style: TextStyle(
-                    fontSize: 25.sp,
-                    fontWeight: FontWeight.w800,
-                    color: tokens.ink,
-                  ),
+                _PageHeader(profile: profile),
+                AppSpacing.sectionGap.heightBox(),
+                _ProfileHero(
+                  profile: profile,
+                  onEdit: () => _editProfile(context, profile),
                 ),
-                18.h.heightBox(),
-                _ProfileHero(profile: profile),
-                22.h.heightBox(),
-                // _SectionCard(
-                //   title: 'Role-based view',
-                //   subtitle: 'Demo switch: the app adapts to each role.',
-                //   children: [
-                //     _RoleSelector(
-                //       selected: role,
-                //       onChanged: (next) => _applyRole(next),
-                //     ),
-                //   ],
-                // ),
-                // 14.h.heightBox(),
+                AppSpacing.sectionGap.heightBox(),
                 _SectionCard(
+                  icon: Icons.badge_outlined,
                   title: 'Personal information',
                   children: [
                     _InfoRow(
@@ -115,30 +133,29 @@ class ProfilePage extends GetView<ProfileController> {
                       label: 'Full name',
                       value: profile.name,
                     ),
+                    const _RowDivider(),
                     _InfoRow(
                       icon: Icons.mail_outline_rounded,
                       label: 'Email',
                       value: profile.email,
                     ),
+                    const _RowDivider(),
                     _InfoRow(
                       icon: Icons.phone_outlined,
                       label: 'Phone',
                       value: profile.phone,
                     ),
+                    const _RowDivider(),
                     _InfoRow(
                       icon: Icons.apartment_rounded,
                       label: 'Unit',
                       value: profile.unit,
                     ),
-                    // _InfoRow(
-                    //   icon: Icons.badge_outlined,
-                    //   label: 'Role',
-                    //   value: profile.role,
-                    // ),
                   ],
                 ),
-                14.h.heightBox(),
+                AppSpacing.sectionGap.heightBox(),
                 _SectionCard(
+                  icon: Icons.tune_rounded,
                   title: 'Preferences',
                   children: [
                     _PreferenceRow(
@@ -147,18 +164,21 @@ class ProfilePage extends GetView<ProfileController> {
                       value: profile.notificationsEnabled
                           ? 'Enabled'
                           : 'Disabled',
+                      onTap: () => controller.toggleNotifications(!profile.notificationsEnabled),
                       trailing: Switch.adaptive(
                         value: profile.notificationsEnabled,
                         onChanged: controller.toggleNotifications,
                       ),
                     ),
+                    const _RowDivider(),
                     _ActionRow(
                       icon: Icons.palette_outlined,
                       label: 'App appearance',
                       onTap: () => Get.toNamed(AppRoutes.appearance),
                     ),
+                    const _RowDivider(),
                     _ActionRow(
-                      icon: Icons.language_rounded,
+                      icon: Icons.translate_rounded,
                       label: 'Language',
                       value: localeController.displayName(
                         localeController.locale.languageCode,
@@ -167,8 +187,9 @@ class ProfilePage extends GetView<ProfileController> {
                     ),
                   ],
                 ),
-                14.h.heightBox(),
+                AppSpacing.sectionGap.heightBox(),
                 _SectionCard(
+                  icon: Icons.grid_view_rounded,
                   title: 'Resident services',
                   children: [
                     _ActionRow(
@@ -176,36 +197,43 @@ class ProfilePage extends GetView<ProfileController> {
                       label: 'All resident services',
                       onTap: () => Get.toNamed(AppRoutes.more),
                     ),
+                    const _RowDivider(),
                     _ActionRow(
                       icon: Icons.description_outlined,
                       label: 'Rental & lease',
                       onTap: () => Get.toNamed(AppRoutes.lease),
                     ),
+                    const _RowDivider(),
                     _ActionRow(
                       icon: Icons.people_alt_outlined,
                       label: 'Visitors',
                       onTap: () => Get.toNamed(AppRoutes.visitors),
                     ),
+                    const _RowDivider(),
                     _ActionRow(
                       icon: Icons.room_service_outlined,
                       label: 'Condo services',
                       onTap: () => Get.toNamed(AppRoutes.services),
                     ),
+                    const _RowDivider(),
                     _ActionRow(
                       icon: Icons.storefront_outlined,
                       label: 'Convenience Store',
                       onTap: () => Get.toNamed(AppRoutes.store),
                     ),
+                    const _RowDivider(),
                     _ActionRow(
                       icon: Icons.directions_car_outlined,
                       label: 'Parking',
                       onTap: () => Get.toNamed(AppRoutes.parking),
                     ),
+                    const _RowDivider(),
                     _ActionRow(
                       icon: Icons.support_agent_outlined,
                       label: 'Complaints',
                       onTap: () => Get.toNamed(AppRoutes.complaints),
                     ),
+                    const _RowDivider(),
                     _ActionRow(
                       icon: Icons.gavel_outlined,
                       label: 'Rules & violations',
@@ -213,36 +241,34 @@ class ProfilePage extends GetView<ProfileController> {
                     ),
                   ],
                 ),
-                14.h.heightBox(),
+                AppSpacing.sectionGap.heightBox(),
                 _SectionCard(
+                  icon: Icons.lock_outline_rounded,
                   title: 'Account',
                   children: [
-                    // _ActionRow(
-                    //   icon: Icons.badge_outlined,
-                    //   label: 'Account type',
-                    //   value: role.label,
-                    //   onTap: () => _switchRole(context, role),
-                    // ),
                     _ActionRow(
                       icon: Icons.edit_outlined,
                       label: 'Edit profile',
                       onTap: () => _editProfile(context, profile),
                     ),
+                    const _RowDivider(),
                     _ActionRow(
                       icon: Icons.lock_outline_rounded,
                       label: 'Change password',
                       onTap: () => _changePassword(context),
                     ),
+                    const _RowDivider(),
                     _ActionRow(
                       icon: Icons.credit_card_outlined,
                       label: 'Payment methods',
-                      value: 'â€¢â€¢â€¢â€¢ 4821',
+                      value: '•••• 4821',
                       onTap: () => _showMessage(
                         context,
                         'Payment methods',
                         'Payment method management will be available soon.',
                       ),
                     ),
+                    const _RowDivider(),
                     _ActionRow(
                       icon: Icons.help_outline_rounded,
                       label: 'Help & support',
@@ -254,15 +280,18 @@ class ProfilePage extends GetView<ProfileController> {
                     ),
                   ],
                 ),
-                18.h.heightBox(),
+                AppSpacing.sectionGap.heightBox(),
                 OutlinedButton.icon(
                   onPressed: () => _confirmLogout(context),
-                  icon: Icon(Icons.logout_rounded, size: 18),
-                  label: Text('Logout'),
+                  icon: const Icon(Icons.logout_rounded, size: 18),
+                  label: const Text('Logout'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Color(0xFFC2410C),
-                    minimumSize: Size.fromHeight(50),
-                    side: BorderSide(color: Color(0xFFF0C6C0)),
+                    foregroundColor: const Color(0xFFC2410C),
+                    minimumSize: const Size.fromHeight(52),
+                    side: const BorderSide(color: Color(0xFFF0C6C0)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                    ),
                   ),
                 ),
               ],
@@ -299,52 +328,21 @@ class ProfilePage extends GetView<ProfileController> {
   }
 
   Future<void> _chooseLanguage(BuildContext context, Profile profile) async {
-    final tokens = AppThemeTokens.of(context);
     final localeController = Get.find<AppLocaleController>();
-    final chosen = await showModalBottomSheet<String>(
-      context: context,
-      showDragHandle: false,
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(20, 10, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Language',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20.sp),
-              ),
-              10.h.heightBox(),
-              for (final code in AppLocaleController.supportedCodes)
-                ListTile(
-                  title: Text(localeController.displayName(code)),
-                  trailing: code == localeController.locale.languageCode
-                      ? Icon(Icons.check_rounded, color: tokens.brand)
-                      : null,
-                  onTap: () => Navigator.pop(context, code),
-                ),
-            ],
-          ),
-        ),
-      ),
+    final chosen = await showLanguagePickerSheet(
+      context,
+      localeController: localeController,
     );
-    if (chosen == null || chosen == localeController.locale.languageCode)
+    if (chosen == null || chosen == localeController.locale.languageCode) {
       return;
-    final displayName = chosen == 'my'
-        ? 'Myanmar'
-        : chosen == 'zh'
-        ? 'Chinese'
-        : 'English';
-    await localeController.setLanguageCode(chosen);
-    if (profile != null) {
-      await controller.updateProfile(
-        name: profile.name,
-        email: profile.email,
-        phone: profile.phone,
-        language: displayName,
-      );
     }
+    await localeController.setLanguageCode(chosen);
+    await controller.updateProfile(
+      name: profile.name,
+      email: profile.email,
+      phone: profile.phone,
+      language: localeController.englishName(chosen),
+    );
   }
 
   Future<void> _changePassword(BuildContext context) async {
@@ -425,70 +423,116 @@ class ProfilePage extends GetView<ProfileController> {
 }
 
 class _ProfileHero extends StatelessWidget {
-  _ProfileHero({required this.profile});
+  const _ProfileHero({required this.profile, required this.onEdit});
+
   final Profile profile;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: tokens.brand,
-        borderRadius: BorderRadius.circular(22.r),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x1A0F766E),
-            blurRadius: 18,
-            offset: Offset(0, 8),
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [tokens.brand, tokens.brandDark],
+        ),
+        boxShadow: tokens.heroShadow,
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: tokens.brandOnDark.withValues(alpha: 0.45),
+                    width: 2,
+                  ),
+                ),
+                child: CircleAvatar(
+                  radius: 31,
+                  backgroundColor: tokens.brandOnDark,
+                  child: Text(
+                    profile.initials,
+                    style: TextStyle(
+                      color: tokens.brandDark,
+                      fontSize: 21.sp,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+              15.w.widthBox(),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      profile.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: tokens.brandOnDark,
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    6.h.heightBox(),
+                    _UnitBadge(unit: profile.unit),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The unit number rendered as a translucent pill on the hero panel.
+class _UnitBadge extends StatelessWidget {
+  const _UnitBadge({required this.unit});
+
+  final String unit;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+      decoration: BoxDecoration(
+        color: tokens.brandOnDark.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(
+          color: tokens.brandOnDark.withValues(alpha: 0.3),
+        ),
+      ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          CircleAvatar(
-            radius: 31,
-            backgroundColor: tokens.brandSoft,
+          Icon(
+            Icons.apartment_rounded,
+            size: 13,
+            color: tokens.brandOnDarkMuted,
+          ),
+          5.w.widthBox(),
+          Flexible(
             child: Text(
-              profile.initials,
+              unit,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: tokens.brand,
-                fontSize: 21.sp,
-                fontWeight: FontWeight.w800,
+                color: tokens.brandOnDark,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w700,
               ),
-            ),
-          ),
-          15.w.widthBox(),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  profile.name,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 21.sp,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                5.h.heightBox(),
-                Text(
-                  profile.unit,
-                  style: TextStyle(
-                    color: tokens.brandOnDarkMuted,
-                    fontSize: 13.sp,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            tooltip: 'Change profile photo',
-            icon: Icon(
-              Icons.camera_alt_outlined,
-              color: Colors.white,
-              size: 20,
             ),
           ),
         ],
@@ -498,36 +542,57 @@ class _ProfileHero extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
-  _SectionCard({required this.title, required this.children, this.subtitle});
+  const _SectionCard({
+    required this.title,
+    required this.children,
+    this.icon,
+  });
+
   final String title;
-  final String? subtitle;
+  final IconData? icon;
   final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 6),
       decoration: BoxDecoration(
         color: tokens.surface,
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: tokens.border),
+        boxShadow: tokens.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
+          Row(
+            children: [
+              if (icon != null) ...[
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: tokens.brandTint,
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: Icon(icon, size: 17, color: tokens.brand),
+                ),
+                10.w.widthBox(),
+              ],
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15.sp,
+                    color: tokens.ink,
+                  ),
+                ),
+              ),
+            ],
           ),
-          if (subtitle != null) ...[
-            4.h.heightBox(),
-            Text(
-              subtitle!,
-              style: TextStyle(color: tokens.muted, fontSize: 11.sp),
-            ),
-          ],
-          5.h.heightBox(),
+          AppSpacing.cardGap.heightBox(),
           ...children,
         ],
       ),
@@ -535,8 +600,48 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
+/// A hairline between the rows of a card, inset so it starts after the icon.
+class _RowDivider extends StatelessWidget {
+  const _RowDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(left: 34),
+      child: Divider(height: 1, thickness: 1, color: tokens.border),
+    );
+  }
+}
+
+/// The rounded square icon that leads a row.
+class _RowIcon extends StatelessWidget {
+  const _RowIcon({required this.icon});
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        color: tokens.brandTint,
+        borderRadius: BorderRadius.circular(AppRadius.sm - 2),
+      ),
+      child: Icon(icon, size: 15, color: tokens.brand),
+    );
+  }
+}
+
 class _InfoRow extends StatelessWidget {
-  _InfoRow({required this.icon, required this.label, required this.value});
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
   final IconData icon;
   final String label;
   final String value;
@@ -545,22 +650,29 @@ class _InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 9),
+      padding: EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: tokens.brand),
+          _RowIcon(icon: icon),
           12.w.widthBox(),
           Expanded(
             child: Text(
               label,
-              style: TextStyle(color: tokens.muted, fontSize: 12.sp),
+              style: TextStyle(color: tokens.muted, fontSize: 13.sp),
             ),
           ),
+          10.w.widthBox(),
           Flexible(
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.sp),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 13.sp,
+                color: tokens.ink,
+              ),
             ),
           ),
         ],
@@ -570,25 +682,28 @@ class _InfoRow extends StatelessWidget {
 }
 
 class _PreferenceRow extends StatelessWidget {
-  _PreferenceRow({
+  const _PreferenceRow({
     required this.icon,
     required this.label,
     required this.value,
     required this.trailing,
+    this.onTap,
   });
+
   final IconData icon;
   final String label;
   final String value;
   final Widget trailing;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8),
+    final content = Padding(
+      padding: EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: tokens.brand),
+          _RowIcon(icon: icon),
           12.w.widthBox(),
           Expanded(
             child: Column(
@@ -598,7 +713,8 @@ class _PreferenceRow extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    fontSize: 12.sp,
+                    fontSize: 13.sp,
+                    color: tokens.ink,
                   ),
                 ),
                 3.h.heightBox(),
@@ -613,16 +729,24 @@ class _PreferenceRow extends StatelessWidget {
         ],
       ),
     );
+
+    if (onTap == null) return content;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      child: content,
+    );
   }
 }
 
 class _ActionRow extends StatelessWidget {
-  _ActionRow({
+  const _ActionRow({
     required this.icon,
     required this.label,
     this.value,
     required this.onTap,
   });
+
   final IconData icon;
   final String label;
   final String? value;
@@ -631,28 +755,37 @@ class _ActionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 11),
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: tokens.brand),
-            12.w.widthBox(),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.sp),
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            children: [
+              _RowIcon(icon: icon),
+              12.w.widthBox(),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13.sp,
+                    color: tokens.ink,
+                  ),
+                ),
               ),
-            ),
-            if (value != null)
-              Text(
-                value!,
-                style: TextStyle(color: tokens.muted, fontSize: 11.sp),
-              ),
-            5.w.widthBox(),
-            Icon(Icons.chevron_right_rounded, color: tokens.faint, size: 20),
-          ],
+              if (value != null)
+                Text(
+                  value!,
+                  style: TextStyle(color: tokens.muted, fontSize: 12.sp),
+                ),
+              4.w.widthBox(),
+              Icon(Icons.chevron_right_rounded, color: tokens.faint, size: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -660,7 +793,7 @@ class _ActionRow extends StatelessWidget {
 }
 
 class _EditProfileSheet extends StatefulWidget {
-  _EditProfileSheet({required this.profile});
+  const _EditProfileSheet({required this.profile});
   final Profile profile;
 
   @override
