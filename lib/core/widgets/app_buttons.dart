@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -52,7 +53,10 @@ class AppOutlinedButton extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: enabled ? onPressed : null,
+        onTap: enabled ? () {
+          vibrateNow();
+          onPressed!();
+        } : null,
         child: SizedBox(
           height: AppSpacing.buttonHeight,
           width: expand ? double.infinity : null,
@@ -119,7 +123,12 @@ class AppTextButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return TextButton.icon(
-      onPressed: onPressed,
+      onPressed: onPressed == null
+        ? null
+        : () {
+            vibrateNow();
+            onPressed!();
+          },
       icon: icon == null ? SizedBox.shrink() : Icon(icon, size: 18),
       label: Text(label),
       style: TextButton.styleFrom(

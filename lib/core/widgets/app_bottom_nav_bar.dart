@@ -1,3 +1,5 @@
+import 'package:test/core/utils/haptics.dart';
+
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -62,7 +64,10 @@ class AppBottomNavBar extends StatelessWidget {
             return Expanded(
               child: InkWell(
                 borderRadius: BorderRadius.circular(16.r),
-                onTap: () => onTap(index),
+                onTap: () {
+                          vibrateNow();
+                          onTap(index);
+                        },
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 4.h),
                   child: Column(

@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -58,7 +59,10 @@ class AppPickerField extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: enabled ? onPressed : null,
+          onTap: enabled ? () {
+            vibrateNow();
+            onPressed();
+          } : null,
           child: Container(
             height: AppSpacing.pickerHeight,
             padding: EdgeInsets.symmetric(horizontal: 14),

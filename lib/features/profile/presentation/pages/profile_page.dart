@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 
 import 'package:flutter/material.dart';
@@ -164,7 +165,9 @@ class ProfilePage extends GetView<ProfileController> {
                       value: profile.notificationsEnabled
                           ? 'Enabled'
                           : 'Disabled',
-                      onTap: () => controller.toggleNotifications(!profile.notificationsEnabled),
+                      onTap: () => controller.toggleNotifications(
+                        !profile.notificationsEnabled,
+                      ),
                       trailing: Switch.adaptive(
                         value: profile.notificationsEnabled,
                         onChanged: controller.toggleNotifications,
@@ -183,7 +186,10 @@ class ProfilePage extends GetView<ProfileController> {
                       value: localeController.displayName(
                         localeController.locale.languageCode,
                       ),
-                      onTap: () => _chooseLanguage(context, profile),
+                      onTap: () {
+                        vibrateNow();
+                        _chooseLanguage(context, profile);
+                      },
                     ),
                   ],
                 ),
@@ -195,49 +201,79 @@ class ProfilePage extends GetView<ProfileController> {
                     _ActionRow(
                       icon: Icons.grid_view_rounded,
                       label: 'All resident services',
-                      onTap: () => Get.toNamed(AppRoutes.more),
+                      onTap: () {
+                        vibrateNow();
+                        Get.toNamed(AppRoutes.more);
+                      },
                     ),
                     const _RowDivider(),
                     _ActionRow(
                       icon: Icons.description_outlined,
                       label: 'Rental & lease',
-                      onTap: () => Get.toNamed(AppRoutes.lease),
+
+                      onTap: () {
+                        vibrateNow();
+                        Get.toNamed(AppRoutes.lease);
+                      },
                     ),
                     const _RowDivider(),
                     _ActionRow(
                       icon: Icons.people_alt_outlined,
                       label: 'Visitors',
-                      onTap: () => Get.toNamed(AppRoutes.visitors),
+
+                      onTap: () {
+                        vibrateNow();
+                        Get.toNamed(AppRoutes.visitors);
+                      },
                     ),
                     const _RowDivider(),
                     _ActionRow(
                       icon: Icons.room_service_outlined,
                       label: 'Condo services',
-                      onTap: () => Get.toNamed(AppRoutes.services),
+
+                      onTap: () {
+                        vibrateNow();
+                        Get.toNamed(AppRoutes.services);
+                      },
                     ),
                     const _RowDivider(),
                     _ActionRow(
                       icon: Icons.storefront_outlined,
                       label: 'Convenience Store',
-                      onTap: () => Get.toNamed(AppRoutes.store),
+
+                      onTap: () {
+                        vibrateNow();
+                        Get.toNamed(AppRoutes.store);
+                      },
                     ),
                     const _RowDivider(),
                     _ActionRow(
                       icon: Icons.directions_car_outlined,
                       label: 'Parking',
-                      onTap: () => Get.toNamed(AppRoutes.parking),
+
+                      onTap: () {
+                        vibrateNow();
+                        Get.toNamed(AppRoutes.parking);
+                      },
                     ),
                     const _RowDivider(),
                     _ActionRow(
                       icon: Icons.support_agent_outlined,
                       label: 'Complaints',
-                      onTap: () => Get.toNamed(AppRoutes.complaints),
+                      onTap: () {
+                        vibrateNow();
+                        Get.toNamed(AppRoutes.complaints);
+                      },
                     ),
                     const _RowDivider(),
                     _ActionRow(
                       icon: Icons.gavel_outlined,
                       label: 'Rules & violations',
-                      onTap: () => Get.toNamed(AppRoutes.rules),
+
+                      onTap: () {
+                        vibrateNow();
+                        Get.toNamed(AppRoutes.rules);
+                      },
                     ),
                   ],
                 ),
@@ -249,13 +285,19 @@ class ProfilePage extends GetView<ProfileController> {
                     _ActionRow(
                       icon: Icons.edit_outlined,
                       label: 'Edit profile',
-                      onTap: () => _editProfile(context, profile),
+                      onTap: () {
+                        vibrateNow();
+                        _editProfile(context, profile);
+                      },
                     ),
                     const _RowDivider(),
                     _ActionRow(
                       icon: Icons.lock_outline_rounded,
                       label: 'Change password',
-                      onTap: () => _changePassword(context),
+                      onTap: () {
+                        vibrateNow();
+                        _changePassword(context);
+                      },
                     ),
                     const _RowDivider(),
                     _ActionRow(
@@ -510,9 +552,7 @@ class _UnitBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: tokens.brandOnDark.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(
-          color: tokens.brandOnDark.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: tokens.brandOnDark.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -542,11 +582,7 @@ class _UnitBadge extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.children,
-    this.icon,
-  });
+  const _SectionCard({required this.title, required this.children, this.icon});
 
   final String title;
   final IconData? icon;

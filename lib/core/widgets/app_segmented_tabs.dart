@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -209,7 +210,10 @@ class _SegmentButtonState extends State<_SegmentButton> {
     final tokens = AppThemeTokens.of(context);
     final color = widget.selected ? tokens.brand : tokens.mutedStrong;
     return GestureDetector(
-      onTap: widget.onTap,
+      onTap: () {
+                      vibrateNow();
+                      widget.onTap();
+                    },
       // Opaque so the whole segment is tappable, not just the glyph the text
       // happens to cover.
       behavior: HitTestBehavior.opaque,

@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -68,7 +69,10 @@ class AppSegmentedControl<T> extends StatelessWidget {
               icon: icons?[entry.key],
               activeColor: colors?[entry.key] ?? tokens.brand,
               selected: entry.key == value,
-              onTap: () => onChanged(entry.key),
+              onTap: () {
+                      vibrateNow();
+                      onChanged(entry.key);
+                    },
             ),
           ),
           if (entry.key != options.last.key) 10.w.widthBox(),
@@ -123,7 +127,10 @@ class _SegmentOption extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+              vibrateNow();
+              onTap();
+            },
         child: Semantics(
           selected: selected,
           button: true,

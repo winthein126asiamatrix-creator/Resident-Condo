@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -59,14 +60,20 @@ Future<bool> showAppConfirmDialog(
       content: Text(message),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(dialogContext, false),
+          onPressed: () {
+            vibrateNow();
+            Navigator.pop(dialogContext, false);
+          },
           child: Text(cancelLabel),
         ),
         FilledButton(
           style: destructive
               ? FilledButton.styleFrom(backgroundColor: Color(0xFFC2410C))
               : null,
-          onPressed: () => Navigator.pop(dialogContext, true),
+          onPressed: () {
+            vibrateNow();
+            Navigator.pop(dialogContext, true);
+          },
           child: Text(confirmLabel),
         ),
       ],
@@ -328,7 +335,10 @@ class _AppConfirmSummaryDialogState extends State<_AppConfirmSummaryDialog> {
                 child: OutlinedButton(
                   onPressed: _isSubmitting
                       ? null
-                      : () => Navigator.of(context).pop(false),
+                      : () {
+                          vibrateNow();
+                          Navigator.of(context).pop(false);
+                        },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: tokens.mutedStrong,
                     side: BorderSide(color: tokens.border),
@@ -429,7 +439,10 @@ Future<bool> showAppFormDialog(
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                    onPressed: () {
+                      vibrateNow();
+                      Navigator.of(dialogContext).pop(false);
+                    },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: tokens.mutedStrong,
                       side: BorderSide(color: tokens.border),

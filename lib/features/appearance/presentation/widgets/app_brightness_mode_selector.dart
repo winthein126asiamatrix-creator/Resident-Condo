@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -44,7 +45,10 @@ class AppBrightnessModeSelector extends StatelessWidget {
                 key: Key('appearance-mode-${mode.id}'),
                 mode: mode,
                 selected: mode == value,
-                onTap: () => onChanged(mode),
+                onTap: () {
+                  vibrateNow();
+                  onChanged(mode);
+                },
               ),
             ),
             if (mode != AppBrightnessMode.values.last) 10.w.widthBox(),
@@ -88,7 +92,10 @@ class _ModeOption extends StatelessWidget {
           ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
-            onTap: onTap,
+            onTap: () {
+              vibrateNow();
+              onTap();
+            },
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
               child: Column(

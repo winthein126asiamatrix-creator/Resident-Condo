@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme_tokens.dart';
@@ -38,7 +39,10 @@ class AppCard extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     final shape = BorderRadius.circular(borderRadius);
     return InkWell(
-      onTap: onTap,
+      onTap: onTap == null ? null : () {
+        vibrateNow();
+        onTap!();
+      },
       borderRadius: shape,
       child: Container(
         padding: padding,

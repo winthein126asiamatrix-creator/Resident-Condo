@@ -10,10 +10,6 @@ import '../../core/constants/app_constants.dart';
 
 import '../../core/theme/app_theme_tokens.dart';
 
-
-import '../../core/widgets/offline_banner.dart';
-
-
 import '../../features/auth/domain/entities/auth_session.dart';
 
 
@@ -23,7 +19,7 @@ import '../../features/auth/presentation/controllers/auth_controller.dart';
 import '../routes/app_routes.dart';
 
 class SplashPage extends StatefulWidget {
-  SplashPage({super.key});
+  const SplashPage({super.key});
 
   @override
   State<SplashPage> createState() => _SplashPageState();
@@ -35,7 +31,7 @@ class _SplashPageState extends State<SplashPage>
   late final Animation<double> _fadeAnimation;
 
   /// How long the brand is shown regardless of how fast the session check is.
-  static Duration _minimumDisplay = Duration(milliseconds: 1600);
+  static final Duration _minimumDisplay = Duration(milliseconds: 1600);
 
   /// The session check, started as soon as the splash appears.
   ///
@@ -109,10 +105,6 @@ class _SplashPageState extends State<SplashPage>
     final tokens = AppThemeTokens.of(context);
     return Scaffold(
       body: SafeArea(
-        // No app bar on the splash either, and this is the screen that has to
-        // report an unreachable server while it is still trying to validate the
-        // session, so the banner goes at the top of the body as it does
-        // everywhere else.
         child: Center(
           child: FadeTransition(
             opacity: _fadeAnimation,

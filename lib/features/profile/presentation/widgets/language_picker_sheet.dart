@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'package:test/core/utils/haptics.dart';
 import '../../../../core/localization/app_locale_controller.dart';
 
 import '../../../../core/theme/app_radius.dart';
@@ -45,7 +46,7 @@ class _LanguagePickerSheet extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.fromLTRB(
           AppSpacing.gutter,
-          0,
+          10,
           AppSpacing.gutter,
           AppSpacing.pageBottom,
         ),
@@ -152,7 +153,10 @@ class _LanguageOption extends StatelessWidget {
       color: isSelected ? tokens.brandTint : tokens.surface,
       borderRadius: BorderRadius.circular(AppRadius.lg),
       child: InkWell(
-        onTap: onTap,
+        onTap:  () {
+                        vibrateNow();
+                        onTap();
+                      },
         borderRadius: BorderRadius.circular(AppRadius.lg),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
