@@ -1,5 +1,6 @@
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
@@ -7,6 +8,9 @@ import 'package:get/get.dart';
 import '../../../../app/routes/app_routes.dart';
 
 
+import '../../../../core/services/firebase_service.dart';
+import '../../../../core/utils/super_print.dart';
+import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_state_message.dart';
 
 
@@ -205,6 +209,53 @@ class _GreetingHeader extends StatelessWidget {
     return trimmed.split(RegExp(r'\s+')).first;
   }
 
+  /// Copies this device's FCM token to the clipboard.
+  ///
+  /// A developer affordance, so a real token can be pasted into the Firebase
+  /// console without reading it out of the debug log. The token comes from the
+  /// one [FirebaseService] the app already keeps, so this never asks FCM for a
+  /// second one and never triggers another request.
+  ///
+  /// Reports the three states that actually happen: no Firebase, no token yet,
+  /// or a token copied. A token is only ever read after the resident has granted
+  /// the notification permission, so "no token yet" here normally means the
+  /// permission was declined rather than a fault.
+  static Future<void> _copyDeviceToken(BuildContext context) async {
+    if (!Get.isRegistered<FirebaseService>()) {
+      showAppFeedback(
+        context,
+        title: 'No token yet',
+        message: 'Firebase is not available on this build.',
+        isError: true,
+      );
+      return;
+    }
+    final firebase = Get.find<FirebaseService>();
+    final token = firebase.deviceToken.value;
+    if (token == null || token.isEmpty) {
+      showAppFeedback(
+        context,
+        title: 'No token yet',
+        message: firebase.permissionStatus.value?.name == 'denied'
+            ? 'Allow notifications for this app to get a token.'
+            : 'Firebase has not issued one yet.',
+        isError: false,
+      );
+      return;
+    }
+    await Clipboard.setData(ClipboardData(text: token));
+    if (!context.mounted) {
+      return;
+    }
+    superPrint('FCM token copied to the clipboard.', title: 'Firebase Service');
+    showAppFeedback(
+      context,
+      title: 'Token copied',
+      message: 'Paste it into the Firebase console to send a test message.',
+      isError: false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
@@ -214,10 +265,13 @@ class _GreetingHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Good morning, ${_firstName(resident?.name)}',
-                style: Theme.of(context).textTheme.headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.w800, color: tokens.ink),
+              GestureDetector(
+                onTap: () => _copyDeviceToken(context),
+                child: Text(
+                  'Good morning, ${_firstName(resident?.name)}',
+                  style: Theme.of(context).textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w800, color: tokens.ink),
+                ),
               ),
               4.h.heightBox(),
               Text(

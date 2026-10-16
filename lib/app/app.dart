@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
@@ -9,10 +12,13 @@ import '../core/localization/app_translations.dart';
 import '../core/network/api_binding.dart';
 import '../core/network/connectivity_service.dart';
 import '../core/network/refresh_registry.dart';
+import '../core/services/firebase_service.dart';
+import '../core/utils/super_print.dart';
 import '../features/appearance/presentation/bindings/appearance_binding.dart';
 import '../features/appearance/presentation/controllers/appearance_controller.dart';
 import '../features/auth/presentation/controllers/auth_controller.dart';
 import '../features/dashboard/presentation/controllers/dashboard_controller.dart';
+import '../features/session/presentation/controllers/session_controller.dart';
 import 'routes/app_pages.dart';
 import 'routes/app_routes.dart';
 
@@ -43,6 +49,13 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
   /// Watches [ConnectivityService.isOnline] for the transition back to online.
   Worker? _connectivityWorker;
 
+  /// Watches for a notification the resident tapped.
+  Worker? _notificationTapWorker;
+
+  /// Firebase, registered by `FirebaseBinding` in `main` before this widget
+  /// exists, so it is looked up rather than created here.
+  FirebaseService? _firebase;
+
   @override
   void initState() {
     super.initState();
@@ -72,11 +85,61 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
       _refreshActiveScreen();
       _revalidateSession();
     });
+
+    if (Get.isRegistered<FirebaseService>()) {
+      _firebase = Get.find<FirebaseService>();
+      // A tap that launched the app is captured before this widget exists, so the
+      // first call is made directly as well; the worker covers every later tap.
+      _notificationTapWorker = ever<RemoteMessage?>(
+        _firebase!.pendingNotificationTap,
+        (_) => unawaited(_openNotificationsFromTap()),
+      );
+      unawaited(_openNotificationsFromTap());
+    }
+  }
+
+  /// Opens the notifications page for a notification the resident tapped.
+  ///
+  /// Two things have to be true before the page can open, and neither is the
+  /// service's business: there must be a route to change, and a resident to show
+  /// it to. A tap that launched a terminated app is therefore held while the
+  /// splash is still deciding whether anyone is signed in — the route change the
+  /// splash makes a moment later would otherwise undo the navigation — and a tap
+  /// with no signed-in resident is dropped rather than sent to a login screen.
+  Future<void> _openNotificationsFromTap() async {
+    final firebase = _firebase;
+    if (firebase == null) return;
+    final deadline = DateTime.now().add(const Duration(seconds: 5));
+    while (firebase.pendingNotificationTap.value != null &&
+        Get.currentRoute == AppRoutes.splash &&
+        DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    }
+    final message = firebase.pendingNotificationTap.value;
+    if (message == null) return;
+    firebase.consumePendingNotificationTap();
+    if (!Get.isRegistered<SessionController>() ||
+        Get.find<SessionController>().session.value == null) {
+      superPrint(
+        'Notification tap dropped: no signed-in resident.',
+        title: 'Firebase Message',
+      );
+      return;
+    }
+    if (Get.currentRoute == AppRoutes.notifications) {
+      return;
+    }
+    superPrint(
+      {'messageId': message.messageId},
+      title: 'Firebase notification opened',
+    );
+    await Get.offNamed<void>(AppRoutes.notifications);
   }
 
   @override
   void dispose() {
     _connectivityWorker?.dispose();
+    _notificationTapWorker?.dispose();
     super.dispose();
   }
 

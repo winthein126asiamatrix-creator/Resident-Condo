@@ -26,6 +26,18 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Channel the Firebase Android SDK posts a notification to when the
+             FCM payload does not name one. Without this, every background
+             message lands on the system default channel ("Miscellaneous"),
+             which is what made background notifications behave differently from
+             the ones this app shows in the foreground.
+
+             This is only a fallback. Announcements are routed to
+             `announcement_notifications` by the payload's own
+             android.notification.channel_id, not by anything set here. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="condo_notifications" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -24,6 +24,7 @@ dependencies:
   path: ^1.9.1
   firebase_core: ^4.15.0
   firebase_messaging: ^16.7.0
+  flutter_local_notifications: ^22.3.2
 
 dev_dependencies:
   build_runner: ^2.16.2

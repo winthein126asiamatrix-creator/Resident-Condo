@@ -20,7 +20,7 @@ import 'offline_banner.dart';
 /// with a hairline. Living in `core/widgets` means the screens cannot drift
 /// apart.
 class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
-  AppDetailAppBar({
+ const AppDetailAppBar({
     required this.title,
     this.subtitle,
     this.onBack,
@@ -113,10 +113,7 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Row(
                 children: [
                   if (showBackButton)
-                    leading ?? _AppBarBackButton(onBack: () {
-                      vibrateNow();
-                      onBack;
-                    })
+                    leading ?? _AppBarBackButton(onBack: onBack)
                   else
                     ?leading,
                   12.w.widthBox(),
@@ -189,7 +186,13 @@ class _AppBarBackButton extends StatelessWidget {
       child: Tooltip(
         message: 'Back',
         child: InkWell(
-          onTap: onBack ?? () => Navigator.of(context).maybePop(),
+          onTap: onBack!=null ?(){
+            vibrateNow();
+            onBack!();
+          } : () {
+            vibrateNow();
+            Navigator.of(context).maybePop();
+          },
           child: SizedBox(
             width: 42,
             height: 42,
