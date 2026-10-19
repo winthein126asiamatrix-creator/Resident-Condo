@@ -43,33 +43,21 @@ class FirebaseService extends GetxService {
   /// first instead of starting a competing `Firebase.initializeApp`.
   Future<void>? _initialising;
 
-  /// Whether the system prompt has already been shown this run.
-  ///
-  /// The permission is only ever requested while iOS/Android report
-  /// "not determined", but this is kept as well so a resident who was sent to
-  /// sign-in cannot be prompted a second time by the session being adopted
-  /// again on a reconnect.
   bool _permissionRequested = false;
 
-  /// Whether `POST_NOTIFICATIONS` has been asked for through the local
-  /// notifications plugin. See [_requestAndroidNotificationPermission].
   bool _androidPermissionRequested = false;
 
-  /// Whether the streaming message handlers are attached, so a second call
-  /// cannot end up with two subscriptions for the same event.
   bool _handlersAttached = false;
 
-  StreamSubscription<String>? _tokenRefreshSubscription;
+  StreamSubscription<String>? _tokenRegistrationSubscription;
 
-  /// Null until [initialize] succeeds, so a service that never started shows
-  /// nothing even if a message somehow arrives.
+  Completer<String?>? _registrationCompleter;
+
   FlutterLocalNotificationsPlugin? _localNotifications;
 
   final _shownMessages = <String>{};
   final _handledTaps = <String>{};
 
-  /// The message behind each notification id this app posted, so a tap on a
-  /// local notification can be reported as the FCM message it came from.
   final _messageByNotificationId = <int, RemoteMessage>{};
 
   Future<void> initialize() {
@@ -97,23 +85,6 @@ class FirebaseService extends GetxService {
     await logInstallationId();
   }
 
-  /// Logs this app's Firebase Installation ID, for In-App Messaging testing.
-  ///
-  /// Firebase's *In-App Messaging → Test on Device* form asks for the
-  /// **Installation ID** (FIS), which is a different identifier from the FCM
-  /// registration token in [deviceToken]. Substituting one for the other is the
-  /// usual reason a test silently does nothing, so both are made visible in
-  /// development — under clearly different titles, because only this one belongs
-  /// in that form.
-  ///
-  /// Debug-only by construction: [superPrint] prints nothing in a release build,
-  /// so this cannot leak into a production log. The Installation ID is a
-  /// per-install random identifier rather than a credential, but it is still
-  /// device-identifying, so it is not written anywhere persistent and not sent
-  /// anywhere.
-  ///
-  /// Purely additive: it reads an id, requests nothing that changes app
-  /// behaviour, and touches neither the notification flow nor the token.
   Future<String?> logInstallationId() async {
     if (!isReady.value) {
       return null;
@@ -136,28 +107,15 @@ class FirebaseService extends GetxService {
 
   @override
   void onClose() {
-    _tokenRefreshSubscription?.cancel();
-    _tokenRefreshSubscription = null;
+    _tokenRegistrationSubscription?.cancel();
+    _tokenRegistrationSubscription = null;
+    _registrationCompleter = null;
     _messageByNotificationId.clear();
     _shownMessages.clear();
     _handledTaps.clear();
     super.onClose();
   }
 
-  // ---------------------------------------------------------------------------
-  // Permission and token
-  // ---------------------------------------------------------------------------
-
-  /// Asks for notification permission if the resident has never been asked, then
-  /// fetches the FCM token.
-  ///
-  /// Called from the one point where the app knows a resident is signed in, so
-  /// the prompt appears in front of someone who is actually using the app rather
-  /// than over the splash, and never before a sign-in.
-  ///
-  /// A denied permission is a final answer, not an error: nothing is shown again
-  /// and no token is fetched, but the app is untouched. Neither branch can throw
-  /// back into the caller, so this is safe to fire and forget.
   Future<void> onResidentSignedIn() async {
     if (!isReady.value) {
       return;
@@ -179,13 +137,6 @@ class FirebaseService extends GetxService {
     await refreshDeviceToken();
   }   
 
-  /// The current permission, asking for it the first time only.
-  ///
-  /// `requestPermission` is a no-op below Android 13, and iOS returns the stored
-  /// answer without prompting once the resident has decided, so asking here is
-  /// what keeps the prompt to a single appearance. Provisional is left off: it
-  /// would deliver notifications quietly, which is a product decision rather
-  /// than a technical one.
   Future<NotificationSettings?> _resolvePermission() async {
     final messaging = FirebaseMessaging.instance;
     try {
@@ -212,12 +163,7 @@ class FirebaseService extends GetxService {
     }
   }
 
-  /// Asks for `POST_NOTIFICATIONS` on Android 13 and above, once.
-  ///
-  /// The FCM request already covers it on current Android versions, so this only
-  /// runs when FCM reported no permission and the resident has not been asked
-  /// here yet. Android shows a system dialog per app at most, so a second call
-  /// returns the stored answer rather than prompting again.
+ 
   Future<void> _requestAndroidNotificationPermission() async {
     if (defaultTargetPlatform != TargetPlatform.android ||
         _androidPermissionRequested) {
@@ -251,31 +197,33 @@ class FirebaseService extends GetxService {
         status == AuthorizationStatus.provisional;
   }
 
-  /// Fetches the FCM registration token and holds it in [deviceToken].
-  ///
-  /// Returns null when Firebase is not ready, when FCM has not issued a token,
-  /// or when the request fails. None of those is fatal — on iOS the first launch
-  /// after install routinely has no APNs token yet, so `getToken` can return
-  /// null; the token arrives later on [FirebaseMessaging.onTokenRefresh], which
-  /// [_watchForRefresh] listens to so no retry has to be written by hand.
   Future<String?> refreshDeviceToken() async {
     if (!isReady.value) {
       return null;
     }
     try {
       await _noteMissingApnsToken();
-      final token = await FirebaseMessaging.instance.getToken();
+      // The installed firebase_messaging version registers the app instance
+      // and delivers its registration id through [onRegistered].
+      _watchForRegistration();
+      final completer = Completer<String?>();
+      _registrationCompleter = completer;
+      await FirebaseMessaging.instance.register();
+      final token = await completer.future.timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => null,
+      );
+      _registrationCompleter = null;
       if (token == null || token.isEmpty) {
         deviceToken.value = null;
         superPrint(
-          'FCM issued no token yet; waiting for a token refresh.',
+          'FCM issued no registration id yet; waiting for registration.',
           title: 'FCM Device Token',
         );
         return null;
       }
       deviceToken.value = token;
       superPrint({'token': token}, title: 'FCM Device Token');
-      _watchForRefresh();
       return token;
     } catch (error) {
       superPrint(
@@ -286,11 +234,6 @@ class FirebaseService extends GetxService {
     }
   }
 
-  /// Records that APNs has not issued a token yet, which is expected on iOS.
-  ///
-  /// Only worth a log line: FCM still returns its own token, and where it does
-  /// not the refresh stream covers it. Nothing here waits, because blocking on
-  /// APNs would hold up the signed-in resident for a platform detail.
   Future<void> _noteMissingApnsToken() async {
     if (defaultTargetPlatform != TargetPlatform.iOS) {
       return;
@@ -311,25 +254,23 @@ class FirebaseService extends GetxService {
     }
   }
 
-  /// Keeps [deviceToken] current after a rotation or a reinstall.
-  ///
-  /// Subscribed once, lazily, and only while the app is running: this is token
-  /// bookkeeping, not message handling — no notification is shown and no
-  /// navigation happens. A refreshed token is logged for the same reason the
-  /// first one is, so a backend that is wired up later can watch for it here.
-  void _watchForRefresh() {
-    if (_tokenRefreshSubscription != null) {
+  void _watchForRegistration() {
+    if (_tokenRegistrationSubscription != null) {
       return;
     }
     try {
-      _tokenRefreshSubscription = FirebaseMessaging.instance.onTokenRefresh
+      _tokenRegistrationSubscription = FirebaseMessaging.instance.onRegistered
           .listen(
             (token) {
               deviceToken.value = token.isEmpty ? null : token;
               superPrint({
                 'token': token,
-                'source': 'onTokenRefresh',
+                'source': 'onRegistered',
               }, title: 'FCM Device Token');
+              final completer = _registrationCompleter;
+              if (completer != null && !completer.isCompleted) {
+                completer.complete(token);
+              }
             },
             onError: (Object error) {
               superPrint(
@@ -346,16 +287,6 @@ class FirebaseService extends GetxService {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // Messages
-  // ---------------------------------------------------------------------------
-
-  /// Attaches the streaming handlers and looks for the tap that launched the app.
-  ///
-  /// Attached here rather than lazily, because a tap on a notification that
-  /// launched a terminated app is delivered through `getInitialMessage` before
-  /// the first frame — after `main` has awaited [initialize] but before
-  /// anything is listening.
   Future<void> _attachMessageHandlers() async {
     if (_handlersAttached) {
       return;
@@ -375,16 +306,11 @@ class FirebaseService extends GetxService {
         },
       );
 
-      // A tap on a tray notification while the app was in the background. The
-      // process was still alive, so the session is still in memory.
       FirebaseMessaging.onMessageOpenedApp.listen(
         (message) {
           _logChannelDecision(
             message,
             state: 'background tap (onMessageOpenedApp)',
-            // For diagnosis only: the notification was already drawn by the
-            // Android SDK, on the channel the payload named. Dart sees the tap
-            // afterwards and cannot move a notification that is already up.
             selectedChannel: _channelIdFor(message),
           );
           _captureTap(message);
@@ -419,11 +345,6 @@ class FirebaseService extends GetxService {
     }
   }
 
-  /// A message that arrived while the app was open.
-  ///
-  /// Shown as a local notification, because FCM deliberately stays silent in the
-  /// foreground: the system has already drawn the tray for a backgrounded app,
-  /// and doing it again here is what produces a duplicate.
   void _handleForegroundMessage(RemoteMessage message) {
     superPrint({
       'messageId': message.messageId,
@@ -439,10 +360,6 @@ class FirebaseService extends GetxService {
     unawaited(_showForegroundNotification(message));
   }
 
-  /// Raises a local notification for a message received in the foreground.
-  ///
-  /// Data-only messages are skipped: they carry no title or body, so there is
-  /// nothing to show and a blank tray entry would be worse than none.
   Future<void> _showForegroundNotification(RemoteMessage message) async {
     final plugin = _localNotifications;
     final notification = message.notification;
@@ -487,26 +404,6 @@ class FirebaseService extends GetxService {
     }
   }
 
-  /// Which Android channel a message belongs on.
-  ///
-  /// Read in this order:
-  ///
-  /// 1. **The channel the sender configured.** The Firebase console's *Android
-  ///    Notification Channel* field, and `android.notification.channel_id` in
-  ///    the HTTP v1 payload, arrive as `notification.android.channelId` — never
-  ///    as a `data` entry. This is the authoritative answer, and it is what the
-  ///    Android SDK itself uses when it draws a background notification, so
-  ///    honouring it here is what keeps the foreground and the background on one
-  ///    channel. Only the two channels this app actually creates are accepted;
-  ///    any other value is ignored rather than posted to a channel that does not
-  ///    exist, which Android would silently redirect anyway.
-  /// 2. **The `data` type**, as a fallback for a sender that sets a type but no
-  ///    channel.
-  /// 3. **[androidChannelId]**, for everything else — including a plain console
-  ///    test message with neither field.
-  ///
-  /// Only announcements are separated out; payments, visitors, maintenance and
-  /// gate notices stay on [androidChannelId], where they have always appeared.
   String _channelIdFor(RemoteMessage message) {
     final configured = message.notification?.android?.channelId?.trim();
     if (configured == androidAnnouncementChannelId ||
@@ -520,12 +417,6 @@ class FirebaseService extends GetxService {
     return androidChannelId;
   }
 
-  /// The facts needed to see why a notification landed on one channel.
-  ///
-  /// `superPrint` prints in debug builds only, so this costs nothing in release
-  /// and cannot leak into a production log. Deliberately omits the FCM token and
-  /// any Firebase credentials — only what was received, what was decided, and
-  /// where the message was handled.
   void _logChannelDecision(
     RemoteMessage message, {
     required String state,
@@ -566,8 +457,6 @@ class FirebaseService extends GetxService {
     final id = response.id;
     final message = id == null ? null : _messageByNotificationId[id];
     if (message == null) {
-      // A notification the app cannot attribute to a message: logged rather than
-      // navigated, because there is nothing to open.
       superPrint(
         'Tapped a notification with no FCM message behind it.',
         title: 'Firebase Message',
@@ -582,12 +471,6 @@ class FirebaseService extends GetxService {
     _captureTap(message);
   }
 
-  /// Records a tap so the app root can act on it.
-  ///
-  /// De-duplicated against [_handledTaps] rather than against what has been
-  /// *shown*, because the notification a resident is tapping is usually one this
-  /// app posted a moment ago: sharing a set would reject every foreground tap as
-  /// a duplicate of its own display, and the notification page would never open.
   void _captureTap(RemoteMessage message) {
     if (!_remember(_handledTaps, _keyOf(message))) {
       return;
@@ -604,25 +487,11 @@ class FirebaseService extends GetxService {
     pendingNotificationTap.value = null;
   }
 
-  /// A stable key for a message, used to show and act on each one only once.
-  ///
-  /// `messageId` is the only stable identifier FCM gives, but a locally built
-  /// message can arrive without one, so the send time and contents stand in.
   static String _keyOf(RemoteMessage message) {
     return message.messageId ??
         '${message.sentTime?.millisecondsSinceEpoch}:${message.hashCode}';
   }
 
-  /// Whether the key is new to [seen], remembering it either way.
-  ///
-  /// Takes the set as an argument so the two de-duplication purposes stay
-  /// independent: [_shownMessages] guards the tray, [_handledTaps] guards
-  /// navigation. Returns true only for a key that was not there before, which is
-  /// what every call site checks with `!`.
-  ///
-  /// Evicts the oldest key past [_rememberedMessageLimit], so a long-lived
-  /// session cannot grow either set without bound. Eviction can only make a very
-  /// old key look new again, which costs one extra notification at worst.
   bool _remember(Set<String> seen, String key) {
     if (!seen.add(key)) {
       return false;
@@ -633,16 +502,6 @@ class FirebaseService extends GetxService {
     return true;
   }
 
-  // ---------------------------------------------------------------------------
-  // Local notifications
-  // ---------------------------------------------------------------------------
-
-  /// Prepares local notifications: plugin, channel, and tap callback.
-  ///
-  /// Permission is not requested here. The local plugin's own prompts are turned
-  /// off in its initialisation settings because [onResidentSignedIn] asks once,
-  /// through FCM, at the point where a resident is signed in — two plugins
-  /// asking would mean two dialogs and an answer that does not stick.
   Future<void> _prepareLocalNotifications() async {
     try {
       final plugin = FlutterLocalNotificationsPlugin();
@@ -668,8 +527,6 @@ class FirebaseService extends GetxService {
       _localNotifications = plugin;
       await _ensureAndroidChannels();
     } catch (error) {
-      // A device without notification support is not a reason to lose push
-      // entirely: messages are still received and logged.
       superPrint(
         'Local notifications unavailable: $error',
         title: 'Firebase Service',
@@ -677,19 +534,6 @@ class FirebaseService extends GetxService {
     }
   }
 
-  /// Creates the Android channels the app posts to.
-  ///
-  /// Both are created together, at startup, so the first message never has to
-  /// fall back to a system channel. This matters for announcements in
-  /// particular: Android silently redirects a notification to the default
-  /// channel when the channel named in the payload does not exist yet, and a
-  /// background message can be drawn by the system before any Dart code runs.
-  ///
-  /// Re-creating a channel is safe and is what happens on every launch.
-  /// `createNotificationChannel` only fills in settings that Android has not
-  /// already stored, so a resident who has muted a channel, changed its sound
-  /// or turned its vibration off keeps those choices — which is the whole reason
-  /// the announcement channel is separate from the condo one.
   Future<void> _ensureAndroidChannels() async {
     if (defaultTargetPlatform != TargetPlatform.android) {
       return;

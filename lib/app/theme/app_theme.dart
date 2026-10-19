@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_theme_tokens.dart';
 
