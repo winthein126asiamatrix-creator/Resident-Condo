@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -119,6 +120,7 @@ class InvoiceDetailPage extends GetView<PaymentController> {
           FilledButton.icon(
             key: Key('invoice-pay-selected'),
             onPressed: () {
+              vibrateNow();
               controller.selectInvoice(currentInvoice);
               Get.toNamed(AppRoutes.paymentSummary);
             },

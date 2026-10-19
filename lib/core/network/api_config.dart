@@ -1,28 +1,20 @@
-import 'package:flutter/foundation.dart';
+import '../config/app_environment.dart';
 
 /// Build-time configuration for the backend connection.
 ///
-/// Values come from `--dart-define`, so a release build points at production
-/// without editing source:
-///
-/// ```
-/// flutter run --dart-define=API_BASE_URL=https://condo.example.com
-/// flutter build apk --dart-define=API_BASE_URL=https://condo.example.com
-/// ```
+/// The backend is selected from the active Flutter flavor through
+/// [AppEnvironment]; the dev and prod URLs are defined in
+/// `lib/core/config/app_environment.dart`.
 abstract final class ApiConfig {
-  /// Root of the backend.
+  /// Root of the backend for the environment this build was made for.
   ///
-  /// Defaults to DummyJSON, the public mock backend the app is developed
-  /// against. A release build points at the real Matrix Condo backend with:
+  /// `--flavor dev` talks to the development backend and `--flavor prod` to the
+  /// production one; see [AppEnvironment] for the values and for the
+  /// `--dart-define` overrides.
   ///
-  /// ```
-  /// flutter run --dart-define=API_BASE_URL=https://condo.example.com
-  /// flutter build apk --dart-define=API_BASE_URL=https://condo.example.com
-  /// ```
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://dummyjson.com',
-  );
+  /// Resolved once per build rather than declared as a `const`, because it
+  /// depends on the flavor the binary was compiled with.
+  static String get baseUrl => AppEnvironment.current.apiBaseUrl;
 
   /// Lifetime requested for both the access token and the refresh token, in
   /// minutes.
@@ -72,7 +64,17 @@ abstract final class ApiConfig {
 
   /// Whether requests and responses are logged.
   ///
-  /// Debug builds only, and the log itself redacts the token and any field that
+  /// Dev debug builds only. The log itself redacts the token and any field that
   /// looks like a credential, so a device log is never a credential leak.
-  static bool get enableLogging => kDebugMode;
+  ///
+  /// Reading the environment is guarded, unlike [baseUrl]: a logging switch must
+  /// never be the thing that breaks a context that has no flavor, such as a unit
+  /// test that injects its own client. Unresolvable means nothing is logged.
+  static bool get enableLogging {
+    try {
+      return AppEnvironment.current.enableVerboseLogging;
+    } on StateError {
+      return false;
+    }
+  }
 }

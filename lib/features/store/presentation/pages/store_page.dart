@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -132,7 +133,10 @@ class _StorePageState extends State<StorePage> {
           Obx(
             () => StoreCartBadge(
               count: controller.cartCount,
-              onTap: () => _selectTab(StoreTab.basket),
+              onTap: () {
+                vibrateNow();
+                _selectTab(StoreTab.basket);
+              },
             ),
           ),
           8.w.widthBox(),
@@ -228,12 +232,19 @@ class _StorePageState extends State<StorePage> {
             child: StoreProductCard(
               product: product,
               inCartQuantity: controller.quantityInCart(product.id),
-              onAdd: () => _addToBasket(context, product),
-              onRemove: () => controller.setCartQuantity(
+              onAdd: () {
+                vibrateNow();
+                _addToBasket(context, product);
+              },
+              onRemove: () {
+                vibrateNow();
+                controller.setCartQuantity(
                 product.id,
                 controller.quantityInCart(product.id) - 1,
-              ),
+              );
+              },
               onOpen: () {
+                vibrateNow();
                 controller.selectProduct(product);
                 showStoreProductDetail(context, controller: controller);
               },
@@ -332,6 +343,7 @@ class _StorePageState extends State<StorePage> {
           child: StoreOrderTrackerListCard(
             order: order,
             onTap: () {
+              vibrateNow();
               controller.selectOrder(order);
               Get.toNamed(AppRoutes.storeOrderDetail, arguments: order);
             },
@@ -347,6 +359,7 @@ class _StorePageState extends State<StorePage> {
             child: StoreOrderTrackerListCard(
               order: order,
               onTap: () {
+                vibrateNow();
                 controller.selectOrder(order);
                 Get.toNamed(AppRoutes.storeOrderDetail, arguments: order);
               },
@@ -530,14 +543,20 @@ class _CategoryRow extends StatelessWidget {
             key: Key('store-category-all'),
             label: 'All',
             selected: controller.selectedCategory.value == null,
-            onTap: () => controller.selectCategory(null),
+            onTap: () {
+              vibrateNow();
+              controller.selectCategory(null);
+            },
           ),
           for (final category in StoreCategory.values)
             _CategoryPill(
               key: Key('store-category-${category.name}'),
               label: category.shortLabel,
               selected: controller.selectedCategory.value == category,
-              onTap: () => controller.selectCategory(category),
+              onTap: () {
+                vibrateNow();
+                controller.selectCategory(category);
+              },
             ),
         ],
       ),

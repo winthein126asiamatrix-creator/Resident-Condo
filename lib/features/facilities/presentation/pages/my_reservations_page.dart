@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -165,8 +166,10 @@ class _ReservationCard extends StatelessWidget {
     return AppCard(
       key: Key('reservation-card-${reservation.id}'),
       padding: EdgeInsets.all(14),
-      onTap: () =>
-          Get.toNamed(AppRoutes.reservationDetail, arguments: reservation),
+      onTap: () {
+        vibrateNow();
+        Get.toNamed(AppRoutes.reservationDetail, arguments: reservation);
+      },
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

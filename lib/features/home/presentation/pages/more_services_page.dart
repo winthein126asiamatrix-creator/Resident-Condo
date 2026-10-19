@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -254,7 +255,10 @@ class _ModuleTile extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: 10),
       child: AppCard(
-        onTap: () => Get.toNamed(route),
+        onTap: () {
+          vibrateNow();
+          Get.toNamed(route);
+        },
         padding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
         child: Row(
           children: [

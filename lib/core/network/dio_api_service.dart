@@ -29,13 +29,16 @@ class DioApiService {
   DioApiService({
     required TokenStorage tokenStorage,
     Dio? dio,
-    String baseUrl = ApiConfig.baseUrl,
+    String? baseUrl,
     TokenRefresher? tokenRefresher,
   }) : _dio = dio ?? Dio(),
        _tokenStorage = tokenStorage,
        _authInterceptor = ApiAuthInterceptor(tokenStorage) {
+    // Null in the app, where the environment's backend is used; a test injects
+    // both the client and the URL it should talk to.
+    final resolvedBaseUrl = baseUrl ?? ApiConfig.baseUrl;
     _dio.options = BaseOptions(
-      baseUrl: baseUrl,
+      baseUrl: resolvedBaseUrl,
       connectTimeout: ApiConfig.connectTimeout,
       sendTimeout: ApiConfig.sendTimeout,
       receiveTimeout: ApiConfig.receiveTimeout,
@@ -49,7 +52,7 @@ class DioApiService {
     _refreshInterceptor = TokenRefreshInterceptor(
       tokenStorage,
       _dio,
-      tokenRefresher ?? TokenRefresher.bare(baseUrl),
+      tokenRefresher ?? TokenRefresher.bare(resolvedBaseUrl),
     );
     _dio.interceptors.addAll(<Interceptor>[
       // Order matters: the bearer has to be attached before the log interceptor

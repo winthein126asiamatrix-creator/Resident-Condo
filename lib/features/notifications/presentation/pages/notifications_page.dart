@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -96,7 +97,10 @@ class NotificationsPage extends GetView<NotificationController> {
                           padding: EdgeInsets.only(bottom: 10),
                           child: NotificationItemCard(
                             item: item,
-                            onTap: () => controller.markAsRead(item),
+                            onTap: () {
+                              vibrateNow();
+                              controller.markAsRead(item);
+                            },
                           ),
                         ),
                       ),

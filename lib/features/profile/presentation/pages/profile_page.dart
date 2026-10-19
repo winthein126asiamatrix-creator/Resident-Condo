@@ -165,9 +165,12 @@ class ProfilePage extends GetView<ProfileController> {
                       value: profile.notificationsEnabled
                           ? 'Enabled'
                           : 'Disabled',
-                      onTap: () => controller.toggleNotifications(
+                      onTap: () {
+                        vibrateNow();
+                        controller.toggleNotifications(
                         !profile.notificationsEnabled,
-                      ),
+                      );
+                      },
                       trailing: Switch.adaptive(
                         value: profile.notificationsEnabled,
                         onChanged: controller.toggleNotifications,
@@ -177,7 +180,10 @@ class ProfilePage extends GetView<ProfileController> {
                     _ActionRow(
                       icon: Icons.palette_outlined,
                       label: 'App appearance',
-                      onTap: () => Get.toNamed(AppRoutes.appearance),
+                      onTap: () {
+                        vibrateNow();
+                        Get.toNamed(AppRoutes.appearance);
+                      },
                     ),
                     const _RowDivider(),
                     _ActionRow(
@@ -304,21 +310,27 @@ class ProfilePage extends GetView<ProfileController> {
                       icon: Icons.credit_card_outlined,
                       label: 'Payment methods',
                       value: '•••• 4821',
-                      onTap: () => _showMessage(
+                      onTap: () {
+                        vibrateNow();
+                        _showMessage(
                         context,
                         'Payment methods',
                         'Payment method management will be available soon.',
-                      ),
+                      );
+                      },
                     ),
                     const _RowDivider(),
                     _ActionRow(
                       icon: Icons.help_outline_rounded,
                       label: 'Help & support',
-                      onTap: () => _showMessage(
+                      onTap: () {
+                        vibrateNow();
+                        _showMessage(
                         context,
                         'Help & support',
                         'Our resident support team is here to help.',
-                      ),
+                      );
+                      },
                     ),
                   ],
                 ),

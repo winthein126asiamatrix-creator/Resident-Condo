@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -251,7 +252,10 @@ class _BalanceSummary extends StatelessWidget {
               key: Key('payments-pay-now'),
               onPressed: outstanding <= 0
                   ? null
-                  : () => _openOldestInvoice(context),
+                  : () {
+                    vibrateNow();
+                    _openOldestInvoice(context);
+                  },
               icon: Icon(Icons.arrow_forward_rounded, size: 18),
               label: Text('Pay Now'),
               style: FilledButton.styleFrom(
@@ -471,7 +475,10 @@ class _InvoiceCard extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     final openItems = invoice.unpaidItems;
     return InkWell(
-      onTap: () => Get.toNamed(AppRoutes.paymentDetail, arguments: invoice),
+      onTap: () {
+        vibrateNow();
+        Get.toNamed(AppRoutes.paymentDetail, arguments: invoice);
+      },
       borderRadius: BorderRadius.circular(18.r),
       child: Container(
         padding: EdgeInsets.all(15),

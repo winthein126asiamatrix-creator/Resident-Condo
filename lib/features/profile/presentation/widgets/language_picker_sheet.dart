@@ -115,7 +115,10 @@ class _LanguagePickerSheet extends StatelessWidget {
                   nativeName: localeController.displayName(code),
                   englishName: localeController.englishName(code),
                   isSelected: code == selectedCode,
-                  onTap: () => Navigator.of(context).pop(code),
+                  onTap: () {
+                    vibrateNow();
+                    Navigator.of(context).pop(code);
+                  },
                 ),
               ),
           ],

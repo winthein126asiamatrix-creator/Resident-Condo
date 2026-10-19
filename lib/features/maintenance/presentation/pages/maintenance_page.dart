@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -159,7 +160,10 @@ class _RequestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return AppCard(
-      onTap: () => Get.toNamed(AppRoutes.maintenanceDetail, arguments: request),
+      onTap: () {
+        vibrateNow();
+        Get.toNamed(AppRoutes.maintenanceDetail, arguments: request);
+      },
       borderRadius: 18,
       child: Row(
         children: [

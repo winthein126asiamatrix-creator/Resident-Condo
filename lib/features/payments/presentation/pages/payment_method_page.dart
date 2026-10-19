@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -114,7 +115,10 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               key: Key('confirm-payment'),
               onPressed: controller.isPaymentProcessing.value
                   ? null
-                  : () => _confirm(context),
+                  : () {
+                    vibrateNow();
+                    _confirm(context);
+                  },
               icon: controller.isPaymentProcessing.value
                   ? SizedBox(
                       width: 18,

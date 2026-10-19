@@ -88,7 +88,13 @@ AuthRepositoryImpl _buildRepository(_FakeDurableStore durable) {
   final storage = SessionTokenStorage(durable);
   return AuthRepositoryImpl(
     remoteDataSource: AuthRemoteDataSource(
-      DioApiService(tokenStorage: storage, dio: _mockApiDio()),
+      DioApiService(
+        tokenStorage: storage,
+        dio: _mockApiDio(),
+        // Injected rather than resolved from the build's flavor, which a test
+        // run has none of.
+        baseUrl: 'https://dummyjson.com',
+      ),
     ),
     localDataSource: AuthLocalDataSource(),
     tokenStorage: storage,

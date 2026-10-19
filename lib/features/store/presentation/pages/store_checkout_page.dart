@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -98,7 +99,10 @@ class StoreCheckoutPage extends GetView<StoreController> {
                       key: Key('store-delivery-${method.name}'),
                       method: method,
                       selected: controller.deliveryMethod.value == method,
-                      onTap: () => controller.selectDeliveryMethod(method),
+                      onTap: () {
+                        vibrateNow();
+                        controller.selectDeliveryMethod(method);
+                      },
                     ),
                 ],
               ),
@@ -159,7 +163,10 @@ class StoreCheckoutPage extends GetView<StoreController> {
                           ? 'The store fee is settled straight away.'
                           : 'The store fee appears on your statement, next to '
                                 'your other charges.',
-                      onTap: () => controller.selectPaymentChoice(choice),
+                      onTap: () {
+                        vibrateNow();
+                        controller.selectPaymentChoice(choice);
+                      },
                     ),
                 ],
               ),
@@ -411,7 +418,10 @@ class _PaymentMethodPicker extends StatelessWidget {
               title: saved.title,
               description: saved.subtitle,
               selected: controller.selectedSavedMethod.value?.id == saved.id,
-              onTap: () => controller.selectMethod(saved.method, saved: saved),
+              onTap: () {
+                vibrateNow();
+                controller.selectMethod(saved.method, saved: saved);
+              },
             ),
           14.h.heightBox(),
         ],
@@ -438,7 +448,10 @@ class _PaymentMethodPicker extends StatelessWidget {
             selected:
                 controller.selectedSavedMethod.value == null &&
                 controller.selectedMethod.value == method,
-            onTap: () => controller.selectMethod(method),
+            onTap: () {
+              vibrateNow();
+              controller.selectMethod(method);
+            },
           ),
       ],
     );

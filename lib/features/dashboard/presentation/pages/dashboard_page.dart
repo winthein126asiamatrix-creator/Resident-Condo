@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -121,7 +122,10 @@ class DashboardPage extends GetView<DashboardController> {
                     22.h.heightBox(),
                     _BalanceCard(
                       balance: data.balance,
-                      onPayNow: () => onSelectTab(1),
+                      onPayNow: () {
+                        vibrateNow();
+                        onSelectTab(1);
+                      },
                     ),
                     26.h.heightBox(),
                     SectionHeader(title: 'Quick actions'),
@@ -130,7 +134,10 @@ class DashboardPage extends GetView<DashboardController> {
                     10.h.heightBox(),
                     OutlinedButton.icon(
                       key: Key('dashboard-all-services'),
-                      onPressed: () => Get.toNamed(AppRoutes.more),
+                      onPressed: () {
+                        vibrateNow();
+                        Get.toNamed(AppRoutes.more);
+                      },
                       icon: Icon(Icons.grid_view_rounded, size: 18),
                       label: Text('All resident services'),
                       style: OutlinedButton.styleFrom(
@@ -141,7 +148,10 @@ class DashboardPage extends GetView<DashboardController> {
                     SectionHeader(
                       title: 'Maintenance',
                       actionLabel: 'View all',
-                      onAction: () => onSelectTab(2),
+                      onAction: () {
+                        vibrateNow();
+                        onSelectTab(2);
+                      },
                     ),
                     10.h.heightBox(),
                     _MaintenanceCard(
@@ -153,7 +163,10 @@ class DashboardPage extends GetView<DashboardController> {
                     SectionHeader(
                       title: 'Reservations',
                       actionLabel: 'Book',
-                      onAction: () => onSelectTab(3),
+                      onAction: () {
+                        vibrateNow();
+                        onSelectTab(3);
+                      },
                     ),
                     10.h.heightBox(),
                     _ReservationsCard(reservations: data.reservations),
@@ -161,7 +174,10 @@ class DashboardPage extends GetView<DashboardController> {
                     SectionHeader(
                       title: 'Latest announcements',
                       actionLabel: 'View all',
-                      onAction: () => Get.toNamed(AppRoutes.announcements),
+                      onAction: () {
+                        vibrateNow();
+                        Get.toNamed(AppRoutes.announcements);
+                      },
                     ),
                     10.h.heightBox(),
                     ...data.announcements.map(
@@ -540,7 +556,10 @@ class _QuickActions extends StatelessWidget {
                 icon: Icons.payments_outlined,
                 label: 'Pay fees',
                 color: tokens.brandTint,
-                onTap: () => onSelectTab(1),
+                onTap: () {
+                  vibrateNow();
+                  onSelectTab(1);
+                },
               ),
             ),
             10.w.widthBox(),
@@ -549,7 +568,10 @@ class _QuickActions extends StatelessWidget {
                 icon: Icons.handyman_outlined,
                 label: 'Maintenance',
                 color: tokens.brandTint,
-                onTap: () => onSelectTab(2),
+                onTap: () {
+                  vibrateNow();
+                  onSelectTab(2);
+                },
               ),
             ),
           ],
@@ -562,7 +584,10 @@ class _QuickActions extends StatelessWidget {
                 icon: Icons.person_add_alt_1_outlined,
                 label: 'Register visitor',
                 color: Color(0xFFFFF1D6),
-                onTap: () => Get.toNamed(AppRoutes.visitors),
+                onTap: () {
+                  vibrateNow();
+                  Get.toNamed(AppRoutes.visitors);
+                },
               ),
             ),
             10.w.widthBox(),
@@ -571,7 +596,10 @@ class _QuickActions extends StatelessWidget {
                 icon: Icons.event_available_outlined,
                 label: 'Reserve',
                 color: Color(0xFFEAE8FA),
-                onTap: () => onSelectTab(3),
+                onTap: () {
+                  vibrateNow();
+                  onSelectTab(3);
+                },
               ),
             ),
           ],
@@ -584,7 +612,10 @@ class _QuickActions extends StatelessWidget {
                 icon: Icons.storefront_outlined,
                 label: 'Convenience Store',
                 color: tokens.brandTint,
-                onTap: () => Get.toNamed(AppRoutes.store),
+                onTap: () {
+                  vibrateNow();
+                  Get.toNamed(AppRoutes.store);
+                },
               ),
             ),
             10.w.widthBox(),
@@ -593,7 +624,10 @@ class _QuickActions extends StatelessWidget {
                 icon: Icons.room_service_outlined,
                 label: 'Services',
                 color: Color(0xFFEAE8FA),
-                onTap: () => Get.toNamed(AppRoutes.services),
+                onTap: () {
+                   vibrateNow();
+                  Get.toNamed(AppRoutes.services);
+                },
               ),
             ),
           ],

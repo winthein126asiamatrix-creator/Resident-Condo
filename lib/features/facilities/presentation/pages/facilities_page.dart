@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -300,7 +301,10 @@ class _FacilityCard extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     final available = facility.availableSlots.isNotEmpty;
     return InkWell(
-      onTap: () => Get.toNamed(AppRoutes.facilityDetail, arguments: facility),
+      onTap: () {
+        vibrateNow();
+        Get.toNamed(AppRoutes.facilityDetail, arguments: facility);
+      },
       borderRadius: BorderRadius.circular(20.r),
       child: Container(
         decoration: BoxDecoration(
@@ -455,7 +459,10 @@ class _FacilityCard extends StatelessWidget {
                     width: double.infinity,
                     child: FilledButton.icon(
                       key: Key('reserve-facility-${facility.id}'),
-                      onPressed: () => onReserve(facility),
+                      onPressed: () {
+                        vibrateNow();
+                        onReserve(facility);
+                      },
                       icon: Icon(Icons.event_available_rounded, size: 18),
                       label: Text('Reserve'),
                       style: FilledButton.styleFrom(

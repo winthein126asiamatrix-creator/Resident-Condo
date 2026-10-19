@@ -1,24 +1,17 @@
-
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/services.dart' show appFlavor;
 
 import '../../firebase_options.dart' as prod;
 import '../../firebase_options_dev.dart' as dev;
+import '../config/app_environment.dart';
 
 abstract final class FirebaseOptionsSelector {
   static FirebaseOptions get currentPlatform {
-    switch (appFlavor) {
-      case 'dev':
+    switch (AppEnvironment.current) {
+      case AppEnvironment.dev:
         return dev.DefaultFirebaseOptions.currentPlatform;
 
-      case 'prod':
+      case AppEnvironment.prod:
         return prod.DefaultFirebaseOptions.currentPlatform;
-
-      default:
-        throw StateError(
-          'Unknown app flavor: $appFlavor. '
-          'Run with --flavor dev or --flavor prod.',
-        );
     }
   }
 }

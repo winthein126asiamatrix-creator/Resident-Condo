@@ -341,7 +341,9 @@ class _CreateMaintenanceRequestPageState
                 'Use the device camera',
                 style: TextStyle(color: tokens.muted, fontSize: 12.5.sp),
               ),
-              onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
+              onTap: () {
+                Navigator.pop(sheetContext, ImageSource.camera);
+              },
             ),
             8.h.heightBox(),
           ],

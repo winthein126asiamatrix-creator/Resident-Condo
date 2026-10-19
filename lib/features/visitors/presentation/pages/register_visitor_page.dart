@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -511,7 +512,10 @@ class _VisitDatePicker extends StatelessWidget {
               key: Key('visit-date-${dates[index].value}'),
               date: dates[index],
               selected: dates[index].value == selected,
-              onTap: () => onSelected(dates[index].value),
+              onTap: () {
+                vibrateNow();
+                onSelected(dates[index].value);
+              },
             ),
           ),
           if (index < dates.length - 1) 8.w.widthBox(),

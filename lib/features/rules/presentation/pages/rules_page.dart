@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -171,6 +172,7 @@ class _Rules extends StatelessWidget {
             padding: EdgeInsets.only(bottom: 10),
             child: AppCard(
               onTap: () {
+                vibrateNow();
                 controller.selectRule(rule);
                 Get.toNamed(AppRoutes.ruleDetail, arguments: rule);
               },
@@ -260,6 +262,7 @@ class _Violations extends StatelessWidget {
             padding: EdgeInsets.only(bottom: 10),
             child: AppCard(
               onTap: () {
+                vibrateNow();
                 controller.selectViolation(violation);
                 Get.toNamed(AppRoutes.violationDetail, arguments: violation);
               },
