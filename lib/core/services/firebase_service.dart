@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 
-import '../../firebase_options.dart';
+import 'firebase_options_selector.dart';
 import '../utils/super_print.dart';
 
 class FirebaseService extends GetxService {
@@ -79,7 +79,7 @@ class FirebaseService extends GetxService {
   Future<void> _initialize() async {
     try {
       await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
+        options: FirebaseOptionsSelector.currentPlatform,
       );
       isReady.value = true;
       superPrint('Firebase initialised', title: 'Firebase Service');
