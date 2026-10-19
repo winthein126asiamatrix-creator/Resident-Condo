@@ -18,6 +18,7 @@ import '../features/appearance/presentation/bindings/appearance_binding.dart';
 import '../features/appearance/presentation/controllers/appearance_controller.dart';
 import '../features/auth/presentation/controllers/auth_controller.dart';
 import '../features/dashboard/presentation/controllers/dashboard_controller.dart';
+import '../features/notifications/domain/entities/notification_item.dart';
 import '../features/session/presentation/controllers/session_controller.dart';
 import 'routes/app_pages.dart';
 import 'routes/app_routes.dart';
@@ -129,11 +130,41 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
     if (Get.currentRoute == AppRoutes.notifications) {
       return;
     }
-    superPrint(
-      {'messageId': message.messageId},
-      title: 'Firebase notification opened',
-    );
-    await Get.offNamed<void>(AppRoutes.notifications);
+    superPrint({
+      'messageId': message.messageId,
+      'type': message.data[FirebaseService.typeDataKey],
+    }, title: 'Firebase notification opened');
+    await Get.offNamed<void>(_destinationFor(message.data[FirebaseService.typeDataKey]));
+  }
+
+  /// Where a tapped notification should open.
+  ///
+  /// The type travels in the FCM `data` payload, so the destination is decided by
+  /// the same [NotificationType] vocabulary the list uses, and only through
+  /// routes the app already has.
+  ///
+  /// Anything unrecognised, or missing, falls back to the notifications list:
+  /// that page exists to explain an update the app cannot place, so it is the one
+  /// destination that is always correct. A type with no route of its own lands
+  /// there too rather than guessing.
+  String _destinationFor(String? rawType) {
+    final type = NotificationTypeWire.fromWire(rawType);
+    final route = switch (type) {
+      NotificationType.newAnnouncement => AppRoutes.announcements,
+      NotificationType.paymentDue ||
+      NotificationType.paymentSuccessful => AppRoutes.paymentHistory,
+      NotificationType.facilityBookingConfirmed => AppRoutes.myReservations,
+      NotificationType.visitorArrival => AppRoutes.visitors,
+      NotificationType.leaseRenewal => AppRoutes.lease,
+      NotificationType.violationIssued => AppRoutes.rules,
+      NotificationType.complaintUpdated => AppRoutes.complaints,
+      // Detail pages need an id this payload may not carry, so these two stay on
+      // the list rather than opening something guessed.
+      NotificationType.maintenanceUpdated ||
+      NotificationType.unknown ||
+      null => AppRoutes.notifications,
+    };
+    return route;
   }
 
   @override

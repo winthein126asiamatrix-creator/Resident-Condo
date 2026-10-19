@@ -106,13 +106,35 @@ abstract final class ApiEndPoints {
   static String complaintPhotos(int id) => '/api/complaints/$id/photos';
 
   // --- Announcements and notifications -------------------------------------
+  //
+  // PROVISIONAL. The backend has no notification API yet, so these paths and
+  // the payload around them are a proposal, not a description of something that
+  // exists. They are gathered here rather than inlined in the data source so
+  // that confirming them with the backend team is a change to one file.
 
   static const String announcements = '/api/announcements';
   static const String notifications = '/api/notifications';
 
   static String announcement(int id) => '/api/announcements/$id';
 
-  static String notificationRead(int id) => '/api/notifications/$id/read';
+  static String notificationRead(String id) => '/api/notifications/$id/read';
+
+  /// How many notifications the resident has not read.
+  ///
+  /// Separate from the list so the bell can be correct without downloading the
+  /// whole history on every app resume.
+  static const String notificationUnreadCount =
+      '/api/notifications/unread-count';
+
+  /// Marks every unread notification as read in one call.
+  static const String notificationReadAll = '/api/notifications/read-all';
+
+  /// Registers this device's FCM token against the signed-in resident, so the
+  /// backend can target it. Paired with [notificationDevice] on sign-out.
+  static const String notificationDevices = '/api/notifications/devices';
+
+  static String notificationDevice(String token) =>
+      '/api/notifications/devices/${Uri.encodeComponent(token)}';
 
   // --- Lease ---------------------------------------------------------------
 

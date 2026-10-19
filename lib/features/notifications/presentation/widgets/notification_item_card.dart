@@ -2,9 +2,7 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../../domain/entities/notification_item.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
@@ -113,6 +111,8 @@ class NotificationItemCard extends StatelessWidget {
         return Color(0xFF5B4CC4);
       case NotificationType.violationIssued:
         return Color(0xFFC2410C);
+      case NotificationType.unknown:
+        return tokens.muted;
     }
   }
 
@@ -136,6 +136,8 @@ class NotificationItemCard extends StatelessWidget {
         return Icons.autorenew_rounded;
       case NotificationType.violationIssued:
         return Icons.gavel_rounded;
+      case NotificationType.unknown:
+        return Icons.notifications_none_rounded;
     }
   }
 }

@@ -3,24 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../core/widgets/app_state_message.dart';
-
 
 import '../../domain/entities/notification_item.dart';
 
-
 import '../controllers/notification_controller.dart';
-
 
 import '../widgets/notification_item_card.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
@@ -76,6 +69,11 @@ class NotificationsPage extends GetView<NotificationController> {
               32,
             ),
             children: [
+              Obx(
+                () => controller.isShowingCachedData.value
+                    ? const _OfflineNotice()
+                    : const SizedBox.shrink(),
+              ),
               _NotificationSummary(
                 unreadCount: controller.unreadCount,
                 totalCount: controller.notifications.length,
@@ -109,6 +107,43 @@ class NotificationsPage extends GetView<NotificationController> {
           ),
         );
       }),
+    );
+  }
+}
+
+/// Says the list on screen came from this device rather than the backend.
+///
+/// Without it a resident who is offline sees their notifications and cannot tell
+/// them apart from current ones. Uses the same tokens as the rest of the screen
+/// so it reads as part of the page rather than an alert bolted on.
+class _OfflineNotice extends StatelessWidget {
+  const _OfflineNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Padding(
+      padding: EdgeInsets.only(bottom: 12),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: tokens.surface,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: tokens.border),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.cloud_off_rounded, size: 18.r, color: tokens.muted),
+            10.w.widthBox(),
+            Expanded(
+              child: Text(
+                'Showing your saved notifications. Pull down to try again.',
+                style: TextStyle(color: tokens.muted, fontSize: 12.sp),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

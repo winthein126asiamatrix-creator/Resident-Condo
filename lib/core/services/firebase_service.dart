@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_app_installations/firebase_app_installations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -93,6 +94,44 @@ class FirebaseService extends GetxService {
     }
     await _prepareLocalNotifications();
     await _attachMessageHandlers();
+    await logInstallationId();
+  }
+
+  /// Logs this app's Firebase Installation ID, for In-App Messaging testing.
+  ///
+  /// Firebase's *In-App Messaging → Test on Device* form asks for the
+  /// **Installation ID** (FIS), which is a different identifier from the FCM
+  /// registration token in [deviceToken]. Substituting one for the other is the
+  /// usual reason a test silently does nothing, so both are made visible in
+  /// development — under clearly different titles, because only this one belongs
+  /// in that form.
+  ///
+  /// Debug-only by construction: [superPrint] prints nothing in a release build,
+  /// so this cannot leak into a production log. The Installation ID is a
+  /// per-install random identifier rather than a credential, but it is still
+  /// device-identifying, so it is not written anywhere persistent and not sent
+  /// anywhere.
+  ///
+  /// Purely additive: it reads an id, requests nothing that changes app
+  /// behaviour, and touches neither the notification flow nor the token.
+  Future<String?> logInstallationId() async {
+    if (!isReady.value) {
+      return null;
+    }
+    try {
+      final installationId = await FirebaseInstallations.instance.getId();
+      superPrint(
+        installationId,
+        title: 'Firebase Installation ID (paste into In-App Messaging test)',
+      );
+      return installationId;
+    } catch (error) {
+      superPrint(
+        'Could not read the Firebase Installation ID: $error',
+        title: 'Firebase Service',
+      );
+      return null;
+    }
   }
 
   @override
@@ -138,7 +177,7 @@ class FirebaseService extends GetxService {
       return;
     }
     await refreshDeviceToken();
-  }
+  }   
 
   /// The current permission, asking for it the first time only.
   ///

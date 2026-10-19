@@ -1,11 +1,15 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:test/app/routes/app_routes.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/services/firebase_service.dart';
+import '../../../../core/utils/super_print.dart';
+import '../../../notifications/data/datasources/notification_remote_data_source.dart';
+import '../../../notifications/presentation/controllers/notification_controller.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../data/models/auth_user.dart';
 import '../../domain/entities/auth_session.dart';
@@ -138,7 +142,43 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<void> signOut() => useCases.signOut();
+  /// Ends the session, after telling the backend to stop pushing to this device.
+  ///
+  /// Unregistering first is the order that matters: it needs the access token,
+  /// which [AuthUseCases.signOut] is about to discard. A device left registered
+  /// after sign-out would keep receiving the previous resident's push
+  /// notifications.
+  ///
+  /// The cached notifications go at the same time, so the next resident to sign
+  /// in on this device does not see this one's history.
+  Future<void> signOut() async {
+    await _releaseDevice();
+    await useCases.signOut();
+  }
+
+  /// Removes this device's token and its cached notifications.
+  ///
+  /// Never throws: a sign-out has to succeed even when the backend is
+  /// unreachable, so the token is left to expire server-side instead.
+  Future<void> _releaseDevice() async {
+    try {
+      if (Get.isRegistered<FirebaseService>()) {
+        final token = Get.find<FirebaseService>().deviceToken.value;
+        if (token != null &&
+            token.isNotEmpty &&
+            Get.isRegistered<NotificationRemoteDataSource>()) {
+          await Get.find<NotificationRemoteDataSource>().unregisterDeviceToken(
+            token,
+          );
+        }
+      }
+      if (Get.isRegistered<NotificationController>()) {
+        await Get.find<NotificationController>().clearDeviceHistory();
+      }
+    } catch (error) {
+      superPrint('Device cleanup did not complete: $error', title: 'Auth');
+    }
+  }
 
   /// True while the session is known only locally, because the server could not
   /// be reached when it was last checked.
@@ -226,8 +266,43 @@ class AuthController extends GetxController {
     if (!Get.isRegistered<FirebaseService>()) {
       return;
     }
-    unawaited(Get.find<FirebaseService>().onResidentSignedIn());
+    final firebase = Get.find<FirebaseService>();
+    unawaited(_registerDeviceToken(firebase));
   }
+
+  /// Hands this device's FCM token to the backend for the signed-in resident.
+  ///
+  /// Runs after [FirebaseService.onResidentSignedIn] has had its chance at the
+  /// token, so the token this registers is the one that was actually issued.
+  /// Fire and forget and swallowed: push not being registered is not a reason for
+  /// a sign-in to fail, and the resident is never shown this.
+  ///
+  /// The token itself is never logged.
+  Future<void> _registerDeviceToken(FirebaseService firebase) async {
+    try {
+      await firebase.onResidentSignedIn();
+      final token = firebase.deviceToken.value;
+      if (token == null || token.isEmpty) {
+        return;
+      }
+      final remote = Get.isRegistered<NotificationRemoteDataSource>()
+          ? Get.find<NotificationRemoteDataSource>()
+          : null;
+      if (remote == null) {
+        return;
+      }
+      await remote.registerDeviceToken(token, platform: _devicePlatform());
+    } catch (error) {
+      superPrint(
+        'Device token registration did not complete: $error',
+        title: 'Auth',
+      );
+    }
+  }
+
+  /// `android` or `ios`, the two platforms this app ships to.
+  static String _devicePlatform() =>
+      defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
 
   /// Validates the form, returning the first problem or null when it is valid.
   ///

@@ -55,6 +55,17 @@ dependencies {
     // Paired with isCoreLibraryDesugaringEnabled above: the version the
     // flutter_local_notifications documentation asks for.
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+
+    constraints {
+        // firebase_in_app_messaging 0.10.0 exports firebase-inappmessaging and
+        // firebase-inappmessaging-display as `api` dependencies without a
+        // version, and it only applies the Firebase BoM to its own
+        // implementation configuration. That leaves the versionless modules
+        // unresolvable on the app compile classpath, so pin them here to the
+        // versions the BoM (FirebaseSDKVersion=35.0.0) provides.
+        implementation("com.google.firebase:firebase-inappmessaging:23.0.0")
+        implementation("com.google.firebase:firebase-inappmessaging-display:23.0.0")
+    }
 }
 
 flutter {
