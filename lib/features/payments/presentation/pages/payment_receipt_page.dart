@@ -3,35 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
-
 import '../../../../core/utils/app_formatters.dart';
-
 
 import '../../domain/entities/invoice.dart';
 
-
 import '../../domain/entities/payment.dart';
 
-
 import '../widgets/payment_record_badge.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
 class PaymentReceiptPage extends StatelessWidget {
-  PaymentReceiptPage({required this.payment, super.key});
+  const PaymentReceiptPage({required this.payment, super.key});
 
   final Payment payment;
 
@@ -144,7 +135,7 @@ class PaymentReceiptPage extends StatelessWidget {
 }
 
 class _ReceiptLine extends StatelessWidget {
-  _ReceiptLine({
+  const _ReceiptLine({
     required this.label,
     required this.value,
     this.detail,

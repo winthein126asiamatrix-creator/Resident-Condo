@@ -2,12 +2,11 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../theme/app_theme_tokens.dart';
 
 /// Coloured pill used for statuses across the new modules.
 class AppStatusPill extends StatelessWidget {
-  AppStatusPill({
+  const AppStatusPill({
     required this.label,
     required this.color,
     this.icon,
@@ -51,7 +50,7 @@ class AppStatusPill extends StatelessWidget {
 
 /// Small tinted icon container used at the start of list rows.
 class AppIconTile extends StatelessWidget {
-  AppIconTile({
+  const AppIconTile({
     required this.icon,
     required this.color,
     this.size = 42,
@@ -78,7 +77,7 @@ class AppIconTile extends StatelessWidget {
 
 /// Primary green hero panel used at the top of the new feature pages.
 class AppHeroPanel extends StatelessWidget {
-  AppHeroPanel({
+  const AppHeroPanel({
     required this.title,
     required this.subtitle,
     this.icon,

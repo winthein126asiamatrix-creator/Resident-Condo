@@ -3,44 +3,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/utils/app_formatters.dart';
 
-
 import '../../../../core/widgets/app_dialogs.dart';
-
 
 import '../../../../core/widgets/app_section.dart';
 
-
 import '../../../../core/widgets/app_status_pill.dart';
-
 
 import '../../domain/entities/rules.dart';
 
-
 import '../controllers/rules_controller.dart';
-
 
 import '../widgets/rules_widgets.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class ViolationDetailPage extends GetView<RulesController> {
-  ViolationDetailPage({required this.violation, super.key});
+  const ViolationDetailPage({required this.violation, super.key});
 
   final Violation violation;
 
@@ -225,7 +213,7 @@ class ViolationDetailPage extends GetView<RulesController> {
 }
 
 class _AppealCard extends StatelessWidget {
-  _AppealCard({required this.controller, required this.appeal});
+  const _AppealCard({required this.controller, required this.appeal});
   final RulesController controller;
   final ViolationAppeal appeal;
 

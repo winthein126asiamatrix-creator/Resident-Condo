@@ -4,46 +4,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
-
 
 import '../../../../core/utils/app_dates.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
-
 import '../../../../core/widgets/app_section.dart';
-
 
 import '../../../../core/widgets/app_state_message.dart';
 
-
 import '../../domain/entities/facility.dart';
-
 
 import '../controllers/facility_controller.dart';
 
-
 import '../widgets/facility_labels.dart';
-
 
 import '../widgets/reservation_status_badge.dart';
 
 /// Every reservation the resident has made, split into what is still ahead and
 /// what has already happened.
 class MyReservationsPage extends StatefulWidget {
-  MyReservationsPage({super.key});
+  const MyReservationsPage({super.key});
 
   @override
   State<MyReservationsPage> createState() => _MyReservationsPageState();
@@ -152,7 +140,7 @@ class _MyReservationsPageState extends State<MyReservationsPage> {
 }
 
 class _ReservationCard extends StatelessWidget {
-  _ReservationCard({required this.reservation, this.facility});
+  const _ReservationCard({required this.reservation, this.facility});
 
   final FacilityReservation reservation;
 
@@ -234,7 +222,7 @@ class _ReservationCard extends StatelessWidget {
 }
 
 class _MetaLine extends StatelessWidget {
-  _MetaLine({required this.icon, required this.label});
+  const _MetaLine({required this.icon, required this.label});
 
   final IconData icon;
   final String label;
@@ -261,7 +249,7 @@ class _MetaLine extends StatelessWidget {
 
 /// Small square facility photo with the same fallback the amenities grid uses.
 class _FacilityThumb extends StatelessWidget {
-  _FacilityThumb({this.facility});
+  const _FacilityThumb({this.facility});
 
   final Facility? facility;
 

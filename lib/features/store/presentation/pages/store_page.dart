@@ -4,51 +4,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/theme/app_radius.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
-
 
 import '../../../../core/utils/app_formatters.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
-
 import '../../../../core/widgets/app_section.dart';
-
 
 import '../../../../core/widgets/app_segmented_tabs.dart';
 
-
 import '../../../../core/widgets/app_state_message.dart';
-
 
 import '../../domain/entities/store_product.dart';
 
-
 import '../controllers/store_controller.dart';
-
 
 import '../widgets/store_cards.dart';
 
-
 import '../widgets/store_product_card.dart';
-
 
 import '../widgets/store_widgets.dart';
 
@@ -72,7 +56,7 @@ final _storeTabs = <AppSegmentedTab>[
 /// tab keeps its own scroll position, instead of one list being torn down and
 /// rebuilt under the resident's thumb.
 class StorePage extends StatefulWidget {
-  StorePage({super.key});
+  const StorePage({super.key});
 
   @override
   State<StorePage> createState() => _StorePageState();
@@ -239,9 +223,9 @@ class _StorePageState extends State<StorePage> {
               onRemove: () {
                 vibrateNow();
                 controller.setCartQuantity(
-                product.id,
-                controller.quantityInCart(product.id) - 1,
-              );
+                  product.id,
+                  controller.quantityInCart(product.id) - 1,
+                );
               },
               onOpen: () {
                 vibrateNow();
@@ -375,7 +359,7 @@ class _StorePageState extends State<StorePage> {
 /// Matching is live, so typing narrows the shelf as the resident goes, and
 /// clearing the field puts everything back.
 class _StoreSearch extends StatelessWidget {
-  _StoreSearch({required this.controller});
+  const _StoreSearch({required this.controller});
 
   final StoreController controller;
 
@@ -437,7 +421,7 @@ class _StoreSearch extends StatelessWidget {
 /// addressable, and gives the page a stable identity across rebuilds so a basket
 /// change does not reset the reader's place.
 class _StoreTabPage extends StatelessWidget {
-  _StoreTabPage({
+  const _StoreTabPage({
     required this.scrollKey,
     required this.onRefresh,
     required this.child,
@@ -467,7 +451,7 @@ class _StoreTabPage extends StatelessWidget {
 }
 
 class _StoreHero extends StatelessWidget {
-  _StoreHero({required this.controller});
+  const _StoreHero({required this.controller});
 
   final StoreController controller;
 
@@ -525,7 +509,7 @@ class _StoreHero extends StatelessWidget {
 }
 
 class _CategoryRow extends StatelessWidget {
-  _CategoryRow({required this.controller});
+  const _CategoryRow({required this.controller});
 
   final StoreController controller;
 
@@ -571,7 +555,7 @@ class _CategoryRow extends StatelessWidget {
 /// pale surface with no border at all, which keeps the row calm and stops it
 /// looking like a row of boxes.
 class _CategoryPill extends StatelessWidget {
-  _CategoryPill({
+  const _CategoryPill({
     required this.label,
     required this.selected,
     required this.onTap,
@@ -631,7 +615,7 @@ class _CategoryPill extends StatelessWidget {
 }
 
 class _BasketLines extends StatelessWidget {
-  _BasketLines({required this.controller});
+  const _BasketLines({required this.controller});
 
   final StoreController controller;
 
@@ -669,7 +653,7 @@ class _BasketLines extends StatelessWidget {
 }
 
 class _BasketLine extends StatelessWidget {
-  _BasketLine({required this.controller, required this.line});
+  const _BasketLine({required this.controller, required this.line});
 
   final StoreController controller;
   final StoreCartLine line;
@@ -758,7 +742,7 @@ class _BasketLine extends StatelessWidget {
 }
 
 class _QuantityButton extends StatelessWidget {
-  _QuantityButton({required this.icon, required this.onTap, super.key});
+  const _QuantityButton({required this.icon, required this.onTap, super.key});
 
   final IconData icon;
   final VoidCallback onTap;

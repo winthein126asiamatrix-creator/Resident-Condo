@@ -67,7 +67,9 @@ void main() {
   });
 
   group('Dashboard greeting', () {
-    testWidgets('shows the authenticated resident, not the old sample name', (tester) async {
+    testWidgets('shows the authenticated resident, not the old sample name', (
+      tester,
+    ) async {
       Get.put<SessionController>(SessionController());
       // Written by AuthController.adoptIntoSession from /auth/me.
       Get.find<SessionController>().signInAs(

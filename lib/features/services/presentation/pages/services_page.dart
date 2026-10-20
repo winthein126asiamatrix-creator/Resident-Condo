@@ -4,47 +4,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/utils/app_formatters.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../../../core/widgets/app_section.dart';
 
-
 import '../../../../core/widgets/app_state_message.dart';
-
 
 import '../../../../core/widgets/app_status_pill.dart';
 
-
 import '../../domain/entities/condo_service.dart';
-
 
 import '../controllers/condo_service_controller.dart';
 
-
 import '../widgets/service_widgets.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/widgets/app_segmented_tabs.dart';
 
 class ServicesPage extends GetView<CondoServiceController> {
-  ServicesPage({super.key});
+  const ServicesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +103,7 @@ class ServicesPage extends GetView<CondoServiceController> {
 }
 
 class _ServicesHero extends StatelessWidget {
-  _ServicesHero({required this.controller});
+  const _ServicesHero({required this.controller});
   final CondoServiceController controller;
 
   @override
@@ -138,7 +125,7 @@ class _ServicesHero extends StatelessWidget {
 }
 
 class _TabRow extends StatelessWidget {
-  _TabRow({required this.controller});
+  const _TabRow({required this.controller});
   final CondoServiceController controller;
 
   @override
@@ -164,7 +151,7 @@ class _TabRow extends StatelessWidget {
 }
 
 class _Catalogue extends StatelessWidget {
-  _Catalogue({required this.controller});
+  const _Catalogue({required this.controller});
   final CondoServiceController controller;
 
   @override
@@ -189,7 +176,7 @@ class _Catalogue extends StatelessWidget {
 }
 
 class _ServiceCard extends StatelessWidget {
-  _ServiceCard({required this.controller, required this.service});
+  const _ServiceCard({required this.controller, required this.service});
   final CondoServiceController controller;
   final CondoService service;
 
@@ -281,7 +268,7 @@ class _ServiceCard extends StatelessWidget {
 }
 
 class _Requests extends StatelessWidget {
-  _Requests({required this.controller});
+  const _Requests({required this.controller});
   final CondoServiceController controller;
 
   @override
@@ -330,7 +317,7 @@ class _Requests extends StatelessWidget {
 }
 
 class _RequestCard extends StatelessWidget {
-  _RequestCard({required this.controller, required this.request});
+  const _RequestCard({required this.controller, required this.request});
   final CondoServiceController controller;
   final ServiceRequest request;
 

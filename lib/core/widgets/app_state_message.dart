@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppStateMessage extends StatelessWidget {
-  AppStateMessage({
+  const AppStateMessage({
     required this.title,
     required this.message,
     required this.icon,

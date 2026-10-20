@@ -134,7 +134,9 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
       'messageId': message.messageId,
       'type': message.data[FirebaseService.typeDataKey],
     }, title: 'Firebase notification opened');
-    await Get.offNamed<void>(_destinationFor(message.data[FirebaseService.typeDataKey]));
+    await Get.offNamed<void>(
+      _destinationFor(message.data[FirebaseService.typeDataKey]),
+    );
   }
 
   /// Where a tapped notification should open.

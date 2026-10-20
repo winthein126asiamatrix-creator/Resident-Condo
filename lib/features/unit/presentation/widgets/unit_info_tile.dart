@@ -2,11 +2,10 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class UnitInfoTile extends StatelessWidget {
-  UnitInfoTile({
+  const UnitInfoTile({
     required this.label,
     required this.value,
     required this.icon,

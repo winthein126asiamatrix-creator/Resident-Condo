@@ -3,53 +3,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../core/theme/app_palette.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/utils/app_formatters.dart';
-
 
 import '../../../../core/widgets/app_card.dart';
 
-
 import '../../../../core/widgets/app_dialogs.dart';
-
 
 import '../../../../core/widgets/app_section.dart';
 
-
 import '../../../../core/widgets/app_state_message.dart';
-
 
 import '../../../../core/widgets/app_status_pill.dart';
 
-
 import '../../domain/entities/parking.dart';
-
 
 import '../controllers/parking_controller.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
-
 import '../../../../core/widgets/app_buttons.dart';
 
-
 import '../../../../core/widgets/app_form_field.dart';
-
 
 import '../../../../core/widgets/app_primary_action.dart';
 
 class ParkingPage extends GetView<ParkingController> {
-  ParkingPage({super.key});
+  const ParkingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -197,7 +182,7 @@ class ParkingPage extends GetView<ParkingController> {
 }
 
 class _MySpaceCard extends StatelessWidget {
-  _MySpaceCard({required this.controller, required this.space});
+  const _MySpaceCard({required this.controller, required this.space});
   final ParkingController controller;
   final ParkingSpace space;
 
@@ -294,7 +279,7 @@ class _MySpaceCard extends StatelessWidget {
 }
 
 class _QuickActions extends StatelessWidget {
-  _QuickActions({required this.controller});
+  const _QuickActions({required this.controller});
   final ParkingController controller;
 
   @override
@@ -353,7 +338,7 @@ class _QuickActions extends StatelessWidget {
 }
 
 class _GuestParkingDialog extends StatefulWidget {
-  _GuestParkingDialog();
+  const _GuestParkingDialog();
 
   @override
   State<_GuestParkingDialog> createState() => _GuestParkingDialogState();
@@ -434,7 +419,7 @@ class _GuestParkingDialogState extends State<_GuestParkingDialog> {
 }
 
 class _SpaceTile extends StatelessWidget {
-  _SpaceTile({required this.space, required this.isMine});
+  const _SpaceTile({required this.space, required this.isMine});
   final ParkingSpace space;
   final bool isMine;
 
@@ -502,7 +487,7 @@ class _SpaceTile extends StatelessWidget {
 }
 
 class _GuestRequestCard extends StatelessWidget {
-  _GuestRequestCard({required this.controller, required this.request});
+  const _GuestRequestCard({required this.controller, required this.request});
   final ParkingController controller;
   final GuestParkingRequest request;
 
@@ -586,7 +571,7 @@ class _GuestRequestCard extends StatelessWidget {
 }
 
 class _VehicleSheet extends StatefulWidget {
-  _VehicleSheet({required this.space});
+  const _VehicleSheet({required this.space});
   final ParkingSpace space;
 
   @override

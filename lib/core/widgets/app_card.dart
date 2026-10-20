@@ -39,10 +39,12 @@ class AppCard extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     final shape = BorderRadius.circular(borderRadius);
     return InkWell(
-      onTap: onTap == null ? null : () {
-        vibrateNow();
-        onTap!();
-      },
+      onTap: onTap == null
+          ? null
+          : () {
+              vibrateNow();
+              onTap!();
+            },
       borderRadius: shape,
       child: Container(
         padding: padding,

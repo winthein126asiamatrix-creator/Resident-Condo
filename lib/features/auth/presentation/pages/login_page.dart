@@ -3,33 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/constants/app_constants.dart';
 
-
 import '../../../../core/theme/app_palette.dart';
-
 
 import '../../../../core/theme/app_radius.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/widgets/app_dialogs.dart';
-
 
 import '../../../../core/widgets/app_form_field.dart';
 
-
 import '../../../../core/widgets/app_primary_action.dart';
-
 
 import '../controllers/auth_controller.dart';
 
@@ -40,7 +30,7 @@ import '../controllers/auth_controller.dart';
 /// deliberate on a tall phone. Nothing here is a gradient or a heavy animation:
 /// a login screen should feel like the app is simply asking you for your key.
 class LoginPage extends StatefulWidget {
-  LoginPage({this.onSignedIn, super.key});
+  const LoginPage({this.onSignedIn, super.key});
 
   final void Function()? onSignedIn;
 
@@ -162,7 +152,7 @@ class _LoginPageState extends State<LoginPage> {
 
 /// The app icon, the greeting and the supporting line.
 class _LoginHeader extends StatelessWidget {
-  _LoginHeader();
+  const _LoginHeader();
 
   @override
   Widget build(BuildContext context) {
@@ -216,7 +206,7 @@ class _LoginHeader extends StatelessWidget {
 /// The form itself, kept separate so a rebuild of the surrounding page does not
 /// restart the fields.
 class _LoginForm extends StatelessWidget {
-  _LoginForm({
+  const _LoginForm({
     required this.formKey,
     required this.auth,
     required this.username,
@@ -334,7 +324,7 @@ class _LoginForm extends StatelessWidget {
 
 /// The eye button inside the password field.
 class _PasswordToggle extends StatelessWidget {
-  _PasswordToggle({required this.visible, required this.onToggle});
+  const _PasswordToggle({required this.visible, required this.onToggle});
 
   final bool visible;
   final VoidCallback onToggle;
@@ -359,7 +349,7 @@ class _PasswordToggle extends StatelessWidget {
 
 /// Remember me on the left, Forgot password on the right.
 class _RememberMeAndForgot extends StatelessWidget {
-  _RememberMeAndForgot({required this.auth});
+  const _RememberMeAndForgot({required this.auth});
 
   final AuthController auth;
 
@@ -462,7 +452,7 @@ class _RememberMeAndForgot extends StatelessWidget {
 
 /// A single, quiet error line above the form.
 class _ErrorBanner extends StatelessWidget {
-  _ErrorBanner({required this.message});
+  const _ErrorBanner({required this.message});
 
   final String message;
 
@@ -507,7 +497,7 @@ class _ErrorBanner extends StatelessWidget {
 
 /// The closing reassurance line.
 class _LoginFooter extends StatelessWidget {
-  _LoginFooter();
+  const _LoginFooter();
 
   @override
   Widget build(BuildContext context) {

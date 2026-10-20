@@ -113,46 +113,55 @@ void main() {
   });
 
   group('Remember Me', () {
-    test('on: the pair reaches the keychain, so a restart restores it', () async {
-      final durable = _FakeDurableStore();
-      final repository = _buildRepository(durable);
+    test(
+      'on: the pair reaches the keychain, so a restart restores it',
+      () async {
+        final durable = _FakeDurableStore();
+        final repository = _buildRepository(durable);
 
-      final session = await repository.signIn(_signIn);
-      expect(session.rememberMe, isTrue);
-      expect(durable.hasPair, isTrue);
+        final session = await repository.signIn(_signIn);
+        expect(session.rememberMe, isTrue);
+        expect(durable.hasPair, isTrue);
 
-      // A restart is a new process: a fresh container over the same keychain.
-      final restarted = _buildRepository(durable);
-      final restored = await restarted.restoreSession();
+        // A restart is a new process: a fresh container over the same keychain.
+        final restarted = _buildRepository(durable);
+        final restored = await restarted.restoreSession();
 
-      expect(restored, isNotNull);
-      expect(restored!.displayName, 'Emily Johnson');
-    });
+        expect(restored, isNotNull);
+        expect(restored!.displayName, 'Emily Johnson');
+      },
+    );
 
-    test('off: the pair never reaches the keychain, so a restart cannot restore',
-        () async {
-      final durable = _FakeDurableStore();
-      final repository = _buildRepository(durable);
+    test(
+      'off: the pair never reaches the keychain, so a restart cannot restore',
+      () async {
+        final durable = _FakeDurableStore();
+        final repository = _buildRepository(durable);
 
-      final session = await repository.signIn(
-        const SignInRequest(username: 'emilys', password: 'emilyspass', rememberMe: false),
-      );
-      expect(session.rememberMe, isFalse);
-      expect(
-        durable.hasPair,
-        isFalse,
-        reason: 'an unremembered pair must not be readable after a restart',
-      );
+        final session = await repository.signIn(
+          const SignInRequest(
+            username: 'emilys',
+            password: 'emilyspass',
+            rememberMe: false,
+          ),
+        );
+        expect(session.rememberMe, isFalse);
+        expect(
+          durable.hasPair,
+          isFalse,
+          reason: 'an unremembered pair must not be readable after a restart',
+        );
 
-      // While this process lives the session is fully usable: the pair is
-      // readable and /auth/me validates it.
-      final live = await repository.restoreSession();
-      expect(live, isNotNull);
+        // While this process lives the session is fully usable: the pair is
+        // readable and /auth/me validates it.
+        final live = await repository.restoreSession();
+        expect(live, isNotNull);
 
-      // A restart is a new process: nothing durable, nothing to restore.
-      final restarted = _buildRepository(durable);
-      expect(await restarted.restoreSession(), isNull);
-    });
+        // A restart is a new process: nothing durable, nothing to restore.
+        final restarted = _buildRepository(durable);
+        expect(await restarted.restoreSession(), isNull);
+      },
+    );
 
     test('off after on: the previously remembered pair is dropped', () async {
       final durable = _FakeDurableStore();
@@ -161,7 +170,13 @@ void main() {
       await repository.signIn(_signIn);
       expect(durable.hasPair, isTrue);
 
-      await repository.signIn(const SignInRequest(username: 'emilys', password: 'emilyspass', rememberMe: false));
+      await repository.signIn(
+        const SignInRequest(
+          username: 'emilys',
+          password: 'emilyspass',
+          rememberMe: false,
+        ),
+      );
       expect(durable.hasPair, isFalse);
     });
 

@@ -3,12 +3,9 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../../../../core/theme/app_radius.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../domain/entities/app_color_seed.dart';
 
@@ -21,7 +18,7 @@ import '../../domain/entities/app_color_seed.dart';
 /// Each option carries a small illustration of the palette it selects rather
 /// than only an icon, which is what makes the choice obvious at a glance.
 class AppBrightnessModeSelector extends StatelessWidget {
-  AppBrightnessModeSelector({
+  const AppBrightnessModeSelector({
     required this.value,
     required this.onChanged,
     super.key,
@@ -60,7 +57,7 @@ class AppBrightnessModeSelector extends StatelessWidget {
 }
 
 class _ModeOption extends StatelessWidget {
-  _ModeOption({
+  const _ModeOption({
     required this.mode,
     required this.selected,
     required this.onTap,
@@ -157,7 +154,7 @@ class _ModeOption extends StatelessWidget {
 /// Two swatches on a light ground for Light, the inverse for Dark, and both for
 /// System, which is exactly the distinction the label is describing.
 class _ModeIllustration extends StatelessWidget {
-  _ModeIllustration({required this.mode, required this.selected});
+  const _ModeIllustration({required this.mode, required this.selected});
 
   final AppBrightnessMode mode;
   final bool selected;
@@ -200,7 +197,7 @@ class _ModeIllustration extends StatelessWidget {
 }
 
 class _Half extends StatelessWidget {
-  _Half({
+  const _Half({
     required this.background,
     required this.foreground,
     required this.radius,

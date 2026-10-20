@@ -5,44 +5,33 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/services/firebase_service.dart';
 import '../../../../core/utils/super_print.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_state_message.dart';
 
-
 import '../../../../core/widgets/branded_loading_view.dart';
-
 
 import '../../../notifications/presentation/controllers/notification_controller.dart';
 
-
 import '../../../session/domain/entities/resident_session.dart';
-
 
 import '../../../session/presentation/controllers/session_controller.dart';
 
-
 import '../../domain/entities/dashboard.dart';
-
 
 import '../controllers/dashboard_controller.dart';
 
-
 import '../widgets/section_header.dart';
 
-
 import '../widgets/status_badge.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class DashboardPage extends GetView<DashboardController> {
-  DashboardPage({required this.onSelectTab, super.key});
+  const DashboardPage({required this.onSelectTab, super.key});
 
   final ValueChanged<int> onSelectTab;
 
@@ -198,7 +187,7 @@ class DashboardPage extends GetView<DashboardController> {
 }
 
 class _GreetingHeader extends StatelessWidget {
-  _GreetingHeader({
+  const _GreetingHeader({
     required this.resident,
     required this.unreadCount,
     required this.onNotifications,
@@ -285,8 +274,10 @@ class _GreetingHeader extends StatelessWidget {
                 onTap: () => _copyDeviceToken(context),
                 child: Text(
                   'Good morning, ${_firstName(resident?.name)}',
-                  style: Theme.of(context).textTheme.headlineSmall
-                      ?.copyWith(fontWeight: FontWeight.w800, color: tokens.ink),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: tokens.ink,
+                  ),
                 ),
               ),
               4.h.heightBox(),
@@ -356,7 +347,7 @@ class _GreetingHeader extends StatelessWidget {
 }
 
 class _HomeCard extends StatelessWidget {
-  _HomeCard({required this.unit, required this.onViewDetails});
+  const _HomeCard({required this.unit, required this.onViewDetails});
 
   final UnitSummary unit;
   final VoidCallback onViewDetails;
@@ -456,7 +447,7 @@ class _HomeCard extends StatelessWidget {
 }
 
 class _BalanceCard extends StatelessWidget {
-  _BalanceCard({required this.balance, required this.onPayNow});
+  const _BalanceCard({required this.balance, required this.onPayNow});
 
   final BalanceSummary balance;
   final VoidCallback onPayNow;
@@ -538,7 +529,7 @@ class _BalanceCard extends StatelessWidget {
 }
 
 class _QuickActions extends StatelessWidget {
-  _QuickActions({required this.onSelectTab});
+  const _QuickActions({required this.onSelectTab});
 
   final ValueChanged<int> onSelectTab;
 
@@ -625,7 +616,7 @@ class _QuickActions extends StatelessWidget {
                 label: 'Services',
                 color: Color(0xFFEAE8FA),
                 onTap: () {
-                   vibrateNow();
+                  vibrateNow();
                   Get.toNamed(AppRoutes.services);
                 },
               ),
@@ -638,7 +629,7 @@ class _QuickActions extends StatelessWidget {
 }
 
 class _QuickAction extends StatelessWidget {
-  _QuickAction({
+  const _QuickAction({
     required this.icon,
     required this.label,
     required this.color,
@@ -689,7 +680,7 @@ class _QuickAction extends StatelessWidget {
 }
 
 class _MaintenanceCard extends StatelessWidget {
-  _MaintenanceCard({
+  const _MaintenanceCard({
     required this.requests,
     required this.inProgress,
     required this.completed,
@@ -766,7 +757,7 @@ class _MaintenanceCard extends StatelessWidget {
 }
 
 class _ReservationsCard extends StatelessWidget {
-  _ReservationsCard({required this.reservations});
+  const _ReservationsCard({required this.reservations});
 
   final List<ReservationSummary> reservations;
 
@@ -809,7 +800,7 @@ class _ReservationsCard extends StatelessWidget {
 }
 
 class _AnnouncementCard extends StatelessWidget {
-  _AnnouncementCard({required this.announcement});
+  const _AnnouncementCard({required this.announcement});
 
   final AnnouncementSummary announcement;
 

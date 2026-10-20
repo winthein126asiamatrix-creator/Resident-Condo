@@ -16,12 +16,9 @@ import '../models/notification_item_model.dart';
 /// The in-memory [_notifications] list stays the working copy the UI renders, so
 /// the rest of the app keeps treating this as a plain list source.
 class NotificationLocalDataSource {
-  NotificationLocalDataSource({
-    ApiCacheStore? cache,
-    String? Function()? accountKey,
-  }) : _cache = cache,
-       _accountKey = accountKey ?? (() => null),
-       _notifications = List<NotificationItemModel>.of(_initialNotifications);
+  NotificationLocalDataSource({this._cache, String? Function()? accountKey})
+    : _accountKey = accountKey ?? (() => null),
+      _notifications = List<NotificationItemModel>.of(_initialNotifications);
 
   /// Cache key for the history. Prefix, so [ApiCacheStore.invalidatePrefix] can
   /// drop every notification entry for this account on sign-out.

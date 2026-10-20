@@ -2,18 +2,13 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../../../../core/theme/app_palette.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/utils/app_formatters.dart';
 
-
 import '../../../../core/widgets/app_status_pill.dart';
-
 
 import '../../domain/entities/store_product.dart';
 
@@ -110,7 +105,11 @@ IconData storeOrderStatusIcon(StoreOrderStatus status) {
 
 /// Order status badge: an icon and a word as well as a colour.
 class StoreOrderStatusPill extends StatelessWidget {
-  StoreOrderStatusPill({required this.status, this.dense = true, super.key});
+  const StoreOrderStatusPill({
+    required this.status,
+    this.dense = true,
+    super.key,
+  });
 
   final StoreOrderStatus status;
   final bool dense;
@@ -128,7 +127,7 @@ class StoreOrderStatusPill extends StatelessWidget {
 
 /// Stock badge for a product.
 class StoreStockPill extends StatelessWidget {
-  StoreStockPill({required this.status, this.dense = true, super.key});
+  const StoreStockPill({required this.status, this.dense = true, super.key});
 
   final StoreStockStatus status;
   final bool dense;
@@ -150,7 +149,7 @@ class StoreStockPill extends StatelessWidget {
 
 /// Payment state for a store fee.
 class StorePaymentPill extends StatelessWidget {
-  StorePaymentPill({required this.payment, super.key});
+  const StorePaymentPill({required this.payment, super.key});
 
   final StorePaymentStatus payment;
 
@@ -183,7 +182,7 @@ class StorePaymentPill extends StatelessWidget {
 /// shelf that scrolls smoothly and one that stutters, because a catalogue photo
 /// is small on screen but expensive to decode at its original size.
 class StoreProductImage extends StatelessWidget {
-  StoreProductImage({required this.product, this.size = 64, super.key});
+  const StoreProductImage({required this.product, this.size = 64, super.key});
 
   final StoreProduct product;
   final double size;
@@ -285,7 +284,7 @@ class StoreProductImage extends StatelessWidget {
 
 /// Tinted stand-in shown while a photo loads or if it cannot be fetched.
 class _Placeholder extends StatelessWidget {
-  _Placeholder({required this.size, this.icon, super.key});
+  const _Placeholder({required this.size, this.icon, super.key});
 
   final double size;
   final IconData? icon;
@@ -306,7 +305,7 @@ class _Placeholder extends StatelessWidget {
 
 /// One line in a receipt style list: quantity, name and unit price.
 class StoreOrderLineRow extends StatelessWidget {
-  StoreOrderLineRow({required this.line, super.key});
+  const StoreOrderLineRow({required this.line, super.key});
 
   final StoreCartLine line;
 

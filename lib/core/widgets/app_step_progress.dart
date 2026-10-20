@@ -2,7 +2,6 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../theme/app_theme_tokens.dart';
 
 /// One step of an [AppStepProgress] row.
@@ -23,7 +22,7 @@ class AppProgressStep {
 /// size with its number centred, and the connector is aligned to the centre line
 /// of the circles, so nothing drifts on a narrow phone.
 class AppStepProgress extends StatelessWidget {
-  AppStepProgress({
+  const AppStepProgress({
     required this.steps,
     required this.currentIndex,
     this.circleSize = 30,
@@ -41,6 +40,9 @@ class AppStepProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // A value past the last step means every step is finished, which is what a
+    // completed request needs to render a fully filled ring of ticks.
+    final resolvedIndex = currentIndex.clamp(0, steps.length);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -49,7 +51,7 @@ class AppStepProgress extends StatelessWidget {
             child: _StepColumn(
               step: steps[index],
               position: index,
-              state: _stateFor(index),
+              state: _stateFor(index, resolvedIndex),
               circleSize: circleSize,
             ),
           ),
@@ -57,7 +59,7 @@ class AppStepProgress extends StatelessWidget {
             Expanded(
               child: _Connector(
                 // The rail is drawn once the following step is reached.
-                complete: index + 1 <= currentIndex,
+                complete: index + 1 <= resolvedIndex,
                 // Centres the line on the circles rather than on the label.
                 offset: (circleSize - 2) / 2,
               ),
@@ -67,11 +69,11 @@ class AppStepProgress extends StatelessWidget {
     );
   }
 
-  ProgressState _stateFor(int index) {
-    if (index < currentIndex) {
+  ProgressState _stateFor(int index, int resolvedIndex) {
+    if (index < resolvedIndex) {
       return ProgressState.completed;
     }
-    if (index == currentIndex) {
+    if (index == resolvedIndex) {
       return ProgressState.current;
     }
     return ProgressState.upcoming;
@@ -81,7 +83,7 @@ class AppStepProgress extends StatelessWidget {
 enum ProgressState { completed, current, upcoming }
 
 class _StepColumn extends StatelessWidget {
-  _StepColumn({
+  const _StepColumn({
     required this.step,
     required this.position,
     required this.state,
@@ -136,7 +138,7 @@ class _StepColumn extends StatelessWidget {
 }
 
 class _Connector extends StatelessWidget {
-  _Connector({required this.complete, required this.offset});
+  const _Connector({required this.complete, required this.offset});
 
   final bool complete;
 
@@ -161,7 +163,7 @@ class _Connector extends StatelessWidget {
 }
 
 class _StepCircle extends StatelessWidget {
-  _StepCircle({
+  const _StepCircle({
     required this.position,
     required this.state,
     required this.size,

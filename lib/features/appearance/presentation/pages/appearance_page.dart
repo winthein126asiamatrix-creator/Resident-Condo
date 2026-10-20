@@ -3,45 +3,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../core/theme/app_radius.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
-
 import '../../../../core/widgets/app_dialogs.dart';
-
 
 import '../../../../core/widgets/app_primary_action.dart';
 
-
 import '../../../../core/widgets/app_section.dart';
-
 
 import '../../../../core/widgets/app_state_message.dart';
 
-
 import '../../domain/entities/appearance_preference.dart';
-
 
 import '../controllers/appearance_controller.dart';
 
-
 import '../widgets/app_appearance_preview_card.dart';
-
 
 import '../widgets/app_brightness_mode_selector.dart';
 
-
 import '../widgets/app_color_picker_sheet.dart';
-
 
 import '../widgets/app_color_seed_grid.dart';
 
@@ -54,7 +40,7 @@ import '../widgets/app_color_seed_grid.dart';
 /// The preview follows the draft, never the applied theme, so trying a colour
 /// changes nothing outside this screen until "Apply Theme" is tapped.
 class AppearancePage extends StatefulWidget {
-  AppearancePage({super.key});
+  const AppearancePage({super.key});
 
   @override
   State<AppearancePage> createState() => _AppearancePageState();
@@ -114,7 +100,7 @@ class _AppearancePageState extends State<AppearancePage> {
 }
 
 class _Body extends StatelessWidget {
-  _Body({required this.controller});
+  const _Body({required this.controller});
 
   final AppearanceController controller;
 
@@ -272,7 +258,7 @@ class _Body extends StatelessWidget {
 /// Wraps the preview in a [Theme] built from the draft tokens, and paints a
 /// hairline frame around it so it reads as a device screen on the page.
 class _PreviewSurface extends StatelessWidget {
-  _PreviewSurface({required this.controller, required this.child});
+  const _PreviewSurface({required this.controller, required this.child});
 
   final AppearanceController controller;
   final Widget child;
@@ -297,7 +283,7 @@ class _PreviewSurface extends StatelessWidget {
 /// The sticky footer: the commit action, plus the currently applied colour named
 /// back to the resident so they always know what the app is using right now.
 class _AppearanceActionBar extends StatelessWidget {
-  _AppearanceActionBar();
+  const _AppearanceActionBar();
 
   @override
   Widget build(BuildContext context) {
@@ -400,7 +386,7 @@ class _AppearanceActionBar extends StatelessWidget {
 }
 
 class _CurrentSwatch extends StatelessWidget {
- const _CurrentSwatch({required this.color});
+  const _CurrentSwatch({required this.color});
 
   final Color color;
 

@@ -7,50 +7,36 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
-
 import '../../../../core/services/photo_picker.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/utils/app_dates.dart';
-
 
 import '../../../../core/utils/app_validators.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/widgets/app_dialogs.dart';
 
-
 import '../../../../core/widgets/app_form_field.dart';
-
 
 import '../../../../core/widgets/app_picker_field.dart';
 
-
 import '../../../../core/widgets/app_primary_action.dart';
-
 
 import '../../domain/entities/maintenance_request.dart';
 
-
 import '../controllers/maintenance_controller.dart';
-
 
 import '../../../../core/widgets/app_segmented_control.dart';
 
 class CreateMaintenanceRequestPage extends StatefulWidget {
-  CreateMaintenanceRequestPage({this.photoPicker, super.key});
+  const CreateMaintenanceRequestPage({this.photoPicker, super.key});
 
   /// Overridden in tests; the app uses the device gallery and camera.
   final PhotoPicker? photoPicker;
@@ -403,7 +389,7 @@ class _CreateMaintenanceRequestPageState
 
 /// Titled group header that keeps the form scannable on a phone.
 class _FormSection extends StatelessWidget {
-  _FormSection({
+  const _FormSection({
     required this.title,
     required this.subtitle,
     required this.icon,
@@ -459,7 +445,7 @@ class _FormSection extends StatelessWidget {
 /// A picked photo shown as a thumbnail, with a remove affordance in the corner
 /// so the resident can drop a photo they attached by mistake.
 class _PhotoThumbnail extends StatelessWidget {
-  _PhotoThumbnail({
+  const _PhotoThumbnail({
     required this.photo,
     required this.position,
     required this.onRemove,
@@ -544,7 +530,7 @@ class _PhotoThumbnail extends StatelessWidget {
 
 /// Three way priority choice: a segmented control is far easier to hit on a
 class _DateTimeRow extends StatelessWidget {
-  _DateTimeRow({
+  const _DateTimeRow({
     required this.date,
     required this.time,
     required this.onPickDate,
@@ -587,7 +573,7 @@ class _DateTimeRow extends StatelessWidget {
 }
 
 class _AttachPhotoButton extends StatelessWidget {
-  _AttachPhotoButton({required this.onPressed});
+  const _AttachPhotoButton({required this.onPressed});
   final VoidCallback onPressed;
 
   @override
@@ -627,7 +613,7 @@ class _AttachPhotoButton extends StatelessWidget {
 }
 
 class _ErrorBanner extends StatelessWidget {
-  _ErrorBanner({required this.message});
+  const _ErrorBanner({required this.message});
   final String message;
 
   @override

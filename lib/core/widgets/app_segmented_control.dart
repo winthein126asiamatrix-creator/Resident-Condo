@@ -3,15 +3,11 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../theme/app_radius.dart';
-
 
 import '../theme/app_spacing.dart';
 
-
 import '../theme/app_text_styles.dart';
-
 
 import '../theme/app_theme_tokens.dart';
 
@@ -22,7 +18,7 @@ import '../theme/app_theme_tokens.dart';
 /// it keeps every option visible at once. Each option carries a check when it is
 /// active, so the selection does not rely on colour alone.
 class AppSegmentedControl<T> extends StatelessWidget {
-  AppSegmentedControl({
+  const AppSegmentedControl({
     required this.segments,
     required this.value,
     required this.onChanged,
@@ -70,9 +66,9 @@ class AppSegmentedControl<T> extends StatelessWidget {
               activeColor: colors?[entry.key] ?? tokens.brand,
               selected: entry.key == value,
               onTap: () {
-                      vibrateNow();
-                      onChanged(entry.key);
-                    },
+                vibrateNow();
+                onChanged(entry.key);
+              },
             ),
           ),
           if (entry.key != options.last.key) 10.w.widthBox(),
@@ -95,7 +91,7 @@ class AppSegmentedControl<T> extends StatelessWidget {
 }
 
 class _SegmentOption extends StatelessWidget {
-  _SegmentOption({
+  const _SegmentOption({
     required this.label,
     required this.selected,
     required this.onTap,
@@ -128,9 +124,9 @@ class _SegmentOption extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-              vibrateNow();
-              onTap();
-            },
+          vibrateNow();
+          onTap();
+        },
         child: Semantics(
           selected: selected,
           button: true,

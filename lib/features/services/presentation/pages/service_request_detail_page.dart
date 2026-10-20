@@ -3,44 +3,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../core/theme/app_palette.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/utils/app_formatters.dart';
-
 
 import '../../../../core/widgets/app_dialogs.dart';
 
-
 import '../../../../core/widgets/app_section.dart';
-
 
 import '../../../../core/widgets/app_status_pill.dart';
 
-
 import '../../domain/entities/condo_service.dart';
-
 
 import '../controllers/condo_service_controller.dart';
 
-
 import '../widgets/service_widgets.dart';
-
 
 import '../../../../core/widgets/app_card.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/widgets/app_form_field.dart';
 
 class ServiceRequestDetailPage extends GetView<CondoServiceController> {
-  ServiceRequestDetailPage({required this.request, super.key});
+  const ServiceRequestDetailPage({required this.request, super.key});
 
   final ServiceRequest request;
 
@@ -231,7 +219,7 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
 }
 
 class _Timeline extends StatelessWidget {
-  _Timeline({required this.status});
+  const _Timeline({required this.status});
   final ServiceRequestStatus status;
 
   static const _steps = [
@@ -327,7 +315,7 @@ class _Timeline extends StatelessWidget {
 }
 
 class _RatingDialog extends StatefulWidget {
-  _RatingDialog({required this.serviceName});
+  const _RatingDialog({required this.serviceName});
   final String serviceName;
 
   @override

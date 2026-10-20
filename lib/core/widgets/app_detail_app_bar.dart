@@ -3,12 +3,9 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../theme/app_spacing.dart';
 
-
 import '../theme/app_theme_tokens.dart';
-
 
 import 'offline_banner.dart';
 
@@ -20,7 +17,7 @@ import 'offline_banner.dart';
 /// with a hairline. Living in `core/widgets` means the screens cannot drift
 /// apart.
 class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
- const AppDetailAppBar({
+  const AppDetailAppBar({
     required this.title,
     this.subtitle,
     this.onBack,
@@ -169,7 +166,7 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
 }
 
 class _AppBarBackButton extends StatelessWidget {
-  _AppBarBackButton({this.onBack});
+  const _AppBarBackButton({this.onBack});
 
   final VoidCallback? onBack;
 
@@ -186,13 +183,15 @@ class _AppBarBackButton extends StatelessWidget {
       child: Tooltip(
         message: 'Back',
         child: InkWell(
-          onTap: onBack!=null ?(){
-            vibrateNow();
-            onBack!();
-          } : () {
-            vibrateNow();
-            Navigator.of(context).maybePop();
-          },
+          onTap: onBack != null
+              ? () {
+                  vibrateNow();
+                  onBack!();
+                }
+              : () {
+                  vibrateNow();
+                  Navigator.of(context).maybePop();
+                },
           child: SizedBox(
             width: 42,
             height: 42,

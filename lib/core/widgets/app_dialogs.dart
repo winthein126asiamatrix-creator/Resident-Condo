@@ -3,15 +3,11 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../theme/app_palette.dart';
-
 
 import '../theme/app_radius.dart';
 
-
 import '../theme/app_theme_tokens.dart';
-
 
 import 'app_primary_action.dart';
 
@@ -147,7 +143,7 @@ Future<bool> showAppConfirmSummaryDialog(
 }
 
 class _AppConfirmSummaryDialog extends StatefulWidget {
-  _AppConfirmSummaryDialog({
+  const _AppConfirmSummaryDialog({
     required this.title,
     required this.message,
     required this.icon,

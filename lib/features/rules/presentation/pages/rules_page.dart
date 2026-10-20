@@ -4,41 +4,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/utils/app_formatters.dart';
-
 
 import '../../../../core/widgets/app_card.dart';
 
-
 import '../../../../core/widgets/app_section.dart';
-
 
 import '../../../../core/widgets/app_state_message.dart';
 
-
 import '../controllers/rules_controller.dart';
-
 
 import '../widgets/rules_widgets.dart';
 
-
 import '../../../../core/widgets/app_status_pill.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/widgets/app_segmented_tabs.dart';
 
 class RulesPage extends GetView<RulesController> {
-  RulesPage({super.key});
+  const RulesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +115,7 @@ class RulesPage extends GetView<RulesController> {
 }
 
 class _TabRow extends StatelessWidget {
-  _TabRow({required this.controller});
+  const _TabRow({required this.controller});
   final RulesController controller;
 
   @override
@@ -153,7 +142,7 @@ class _TabRow extends StatelessWidget {
 }
 
 class _Rules extends StatelessWidget {
-  _Rules({required this.controller});
+  const _Rules({required this.controller});
   final RulesController controller;
 
   @override
@@ -237,7 +226,7 @@ class _Rules extends StatelessWidget {
 }
 
 class _Violations extends StatelessWidget {
-  _Violations({required this.controller});
+  const _Violations({required this.controller});
   final RulesController controller;
 
   @override

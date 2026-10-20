@@ -3,35 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/utils/app_formatters.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../domain/entities/invoice.dart';
 
-
 import '../../domain/entities/payment.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
 class PaymentSuccessPage extends StatelessWidget {
-  PaymentSuccessPage({required this.payment, super.key});
+  const PaymentSuccessPage({required this.payment, super.key});
 
   final Payment payment;
 
@@ -104,7 +95,7 @@ class PaymentSuccessPage extends StatelessWidget {
 }
 
 class _SuccessCard extends StatelessWidget {
-  _SuccessCard({required this.payment});
+  const _SuccessCard({required this.payment});
   final Payment payment;
 
   @override
@@ -171,7 +162,7 @@ class _SuccessCard extends StatelessWidget {
 }
 
 class _SuccessLine extends StatelessWidget {
-  _SuccessLine({required this.label, required this.value});
+  const _SuccessLine({required this.label, required this.value});
   final String label;
   final String value;
 

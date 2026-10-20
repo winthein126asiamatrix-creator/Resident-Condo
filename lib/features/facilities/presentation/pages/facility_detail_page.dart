@@ -4,29 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../domain/entities/facility.dart';
 
-
 import '../controllers/facility_controller.dart';
-
 
 import '../widgets/facility_labels.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class FacilityDetailPage extends GetView<FacilityController> {
-  FacilityDetailPage({required this.facility, super.key});
+  const FacilityDetailPage({required this.facility, super.key});
 
   final Facility facility;
 
@@ -118,7 +111,7 @@ class FacilityDetailPage extends GetView<FacilityController> {
 }
 
 class _FacilityHero extends StatelessWidget {
-  _FacilityHero({required this.facility});
+  const _FacilityHero({required this.facility});
 
   final Facility facility;
 
@@ -204,7 +197,7 @@ class _FacilityHero extends StatelessWidget {
 }
 
 class _Section extends StatelessWidget {
-  _Section({required this.title, required this.child});
+  const _Section({required this.title, required this.child});
   final String title;
   final Widget child;
 
@@ -234,7 +227,7 @@ class _Section extends StatelessWidget {
 }
 
 class _Line extends StatelessWidget {
-  _Line({required this.label, required this.value});
+  const _Line({required this.label, required this.value});
   final String label;
   final String value;
 

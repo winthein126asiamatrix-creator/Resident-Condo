@@ -3,18 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 
-
 import '../theme/app_palette.dart';
-
 
 import '../theme/app_radius.dart';
 
-
 import '../theme/app_spacing.dart';
 
-
 import '../theme/app_text_styles.dart';
-
 
 import '../theme/app_theme_tokens.dart';
 
@@ -25,7 +20,7 @@ import '../theme/app_theme_tokens.dart';
 /// multi line ones. Focus and error states are handled by the decoration
 /// itself, which keeps the native validation behaviour untouched.
 class AppTextField extends StatelessWidget {
-  AppTextField({
+  const AppTextField({
     required this.label,
     this.fieldKey,
     this.controller,
@@ -138,7 +133,7 @@ class AppTextField extends StatelessWidget {
 
 /// Rounded dropdown that matches [AppTextField] down to the border radius.
 class AppSelectField<T> extends StatelessWidget {
-  AppSelectField({
+  const AppSelectField({
     required this.label,
     required this.value,
     required this.items,
@@ -280,7 +275,7 @@ InputDecoration appFormFieldDecoration({
 }
 
 class _FieldLabel extends StatelessWidget {
-  _FieldLabel({required this.label, this.icon});
+  const _FieldLabel({required this.label, this.icon});
 
   final String label;
   final IconData? icon;

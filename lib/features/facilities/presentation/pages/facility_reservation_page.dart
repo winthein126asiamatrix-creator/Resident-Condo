@@ -3,44 +3,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/widgets/app_dialogs.dart';
 
-
 import '../../../../core/widgets/app_primary_action.dart';
-
 
 import '../../../../core/widgets/app_state_message.dart';
 
-
 import '../../domain/entities/facility.dart';
-
 
 import '../controllers/facility_controller.dart';
 
-
 import '../widgets/facility_labels.dart';
-
 
 import '../../../../core/utils/app_times.dart';
 
 class FacilityReservationPage extends GetView<FacilityController> {
-  FacilityReservationPage({super.key});
+  const FacilityReservationPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -224,7 +212,7 @@ class FacilityReservationPage extends GetView<FacilityController> {
 }
 
 class _FacilityReservationIntro extends StatelessWidget {
-  _FacilityReservationIntro({required this.facility});
+  const _FacilityReservationIntro({required this.facility});
 
   final Facility facility;
 
@@ -271,7 +259,7 @@ class _FacilityReservationIntro extends StatelessWidget {
 }
 
 class _DateSelector extends StatelessWidget {
-  _DateSelector({
+  const _DateSelector({
     required this.dates,
     required this.selected,
     required this.onSelected,
@@ -312,7 +300,7 @@ class _DateSelector extends StatelessWidget {
 }
 
 class _DurationSelector extends StatelessWidget {
-  _DurationSelector({required this.selected, required this.onSelected});
+  const _DurationSelector({required this.selected, required this.onSelected});
 
   final int selected;
   final ValueChanged<int> onSelected;
@@ -344,7 +332,7 @@ class _DurationSelector extends StatelessWidget {
 /// Shows the interval the resident has ended up with, so the end time is never
 /// something they have to work out themselves.
 class _ReservationInterval extends StatelessWidget {
-  _ReservationInterval({required this.range, required this.error});
+  const _ReservationInterval({required this.range, required this.error});
 
   final AppTimeRange? range;
   final String? error;
@@ -404,7 +392,7 @@ class _ReservationInterval extends StatelessWidget {
 }
 
 class _SlotSelector extends StatelessWidget {
-  _SlotSelector({
+  const _SlotSelector({
     required this.facility,
     required this.selected,
     required this.customTimeSelected,

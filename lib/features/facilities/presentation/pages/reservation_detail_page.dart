@@ -3,33 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
-
 import '../../../../core/utils/app_dates.dart';
-
 
 import '../../../../core/widgets/app_card.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/widgets/app_section.dart';
 
-
 import '../../domain/entities/facility.dart';
-
 
 import '../controllers/facility_controller.dart';
 
-
 import '../widgets/facility_labels.dart';
-
 
 import '../widgets/reservation_status_badge.dart';
 
@@ -38,7 +28,7 @@ import '../widgets/reservation_status_badge.dart';
 /// Cancellation is deliberately absent: the repository has no cancel operation,
 /// so offering the action would be a button that cannot work.
 class ReservationDetailPage extends StatelessWidget {
-  ReservationDetailPage({required this.reservation, super.key});
+  const ReservationDetailPage({required this.reservation, super.key});
 
   final FacilityReservation reservation;
 
@@ -126,7 +116,7 @@ class ReservationDetailPage extends StatelessWidget {
 }
 
 class _FacilityHero extends StatelessWidget {
-  _FacilityHero({required this.reservation, this.facility});
+  const _FacilityHero({required this.reservation, this.facility});
 
   final FacilityReservation reservation;
   final Facility? facility;

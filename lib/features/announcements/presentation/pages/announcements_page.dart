@@ -4,29 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../core/widgets/app_state_message.dart';
-
 
 import '../../domain/entities/announcement.dart';
 
-
 import '../controllers/announcement_controller.dart';
-
 
 import '../widgets/announcement_card.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class AnnouncementsPage extends GetView<AnnouncementController> {
-  AnnouncementsPage({super.key});
+  const AnnouncementsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +104,10 @@ class AnnouncementsPage extends GetView<AnnouncementController> {
 }
 
 class _AnnouncementSummary extends StatelessWidget {
- const _AnnouncementSummary({required this.unreadCount, required this.totalCount});
+  const _AnnouncementSummary({
+    required this.unreadCount,
+    required this.totalCount,
+  });
 
   final int unreadCount;
   final int totalCount;
@@ -179,7 +175,7 @@ class _AnnouncementSummary extends StatelessWidget {
 }
 
 class _CategoryFilters extends StatelessWidget {
-  _CategoryFilters({required this.controller});
+  const _CategoryFilters({required this.controller});
 
   final AnnouncementController controller;
 

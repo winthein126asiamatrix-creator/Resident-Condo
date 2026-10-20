@@ -4,35 +4,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/utils/app_formatters.dart';
 
-
 import '../../../../core/widgets/app_state_message.dart';
-
 
 import '../../domain/entities/invoice.dart';
 
-
 import '../controllers/payment_controller.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
 class PaymentSummaryPage extends GetView<PaymentController> {
-  PaymentSummaryPage({super.key});
+  const PaymentSummaryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +133,7 @@ class PaymentSummaryPage extends GetView<PaymentController> {
 }
 
 class _SummaryIntro extends StatelessWidget {
-  _SummaryIntro({required this.invoice});
+  const _SummaryIntro({required this.invoice});
   final Invoice invoice;
 
   @override
@@ -188,7 +179,7 @@ class _SummaryIntro extends StatelessWidget {
 }
 
 class _SelectableItem extends StatelessWidget {
-  _SelectableItem({
+  const _SelectableItem({
     required this.item,
     required this.selected,
     required this.onChanged,
@@ -284,7 +275,7 @@ class _SelectableItem extends StatelessWidget {
 }
 
 class _MandatoryBadge extends StatelessWidget {
-  _MandatoryBadge();
+  const _MandatoryBadge();
 
   @override
   Widget build(BuildContext context) {
@@ -309,7 +300,7 @@ class _MandatoryBadge extends StatelessWidget {
 }
 
 class _MandatoryWarning extends StatelessWidget {
-  _MandatoryWarning({required this.message});
+  const _MandatoryWarning({required this.message});
   final String message;
 
   @override
@@ -344,7 +335,7 @@ class _MandatoryWarning extends StatelessWidget {
 }
 
 class _TotalCard extends StatelessWidget {
-  _TotalCard({required this.total, required this.count});
+  const _TotalCard({required this.total, required this.count});
   final double total;
   final int count;
 

@@ -4,44 +4,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/theme/app_radius.dart';
-
 
 import '../../../../core/widgets/app_card.dart';
 
-
 import '../../../../core/widgets/app_section.dart';
-
 
 import '../../../../core/widgets/app_state_message.dart';
 
-
 import '../../../../core/widgets/app_status_pill.dart';
-
 
 import '../../domain/entities/complaint.dart';
 
-
 import '../controllers/complaint_controller.dart';
-
 
 import '../widgets/complaint_widgets.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
 class ComplaintsPage extends StatefulWidget {
-  ComplaintsPage({super.key});
+  const ComplaintsPage({super.key});
 
   @override
   State<ComplaintsPage> createState() => _ComplaintsPageState();
@@ -185,7 +173,7 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
 /// underneath is still a [FloatingActionButton], so the tap target, ripple and
 /// accessibility stay exactly as the platform defines them.
 class _FileComplaintFab extends StatefulWidget {
-  _FileComplaintFab({required this.onPressed, required this.expanded});
+  const _FileComplaintFab({required this.onPressed, required this.expanded});
 
   final VoidCallback onPressed;
 
@@ -330,7 +318,7 @@ class _FileComplaintFabState extends State<_FileComplaintFab>
 /// into it. Deep teal on near white is well clear of the body text contrast
 /// threshold, where white on a pale disc would not have been.
 class _BadgeGlyph extends StatelessWidget {
-  _BadgeGlyph();
+  const _BadgeGlyph();
 
   @override
   Widget build(BuildContext context) {
@@ -356,7 +344,7 @@ class _BadgeGlyph extends StatelessWidget {
 }
 
 class _ComplaintCard extends StatelessWidget {
-  _ComplaintCard({required this.controller, required this.complaint});
+  const _ComplaintCard({required this.controller, required this.complaint});
   final ComplaintController controller;
   final Complaint complaint;
 

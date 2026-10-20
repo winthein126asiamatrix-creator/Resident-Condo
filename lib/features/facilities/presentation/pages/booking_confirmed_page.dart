@@ -3,45 +3,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
-
 import '../../../../core/utils/app_dates.dart';
-
 
 import '../../../../core/widgets/app_card.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/widgets/app_primary_action.dart';
 
-
 import '../../../../core/widgets/app_section.dart';
-
 
 import '../../domain/entities/facility.dart';
 
-
 import '../widgets/facility_labels.dart';
-
 
 import '../widgets/reservation_status_badge.dart';
 
 /// Success state shown once a reservation has actually been created.
 class BookingConfirmedPage extends StatelessWidget {
-  BookingConfirmedPage({required this.reservation, super.key});
+  const BookingConfirmedPage({required this.reservation, super.key});
 
   final FacilityReservation reservation;
 

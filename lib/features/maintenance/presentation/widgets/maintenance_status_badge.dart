@@ -5,7 +5,7 @@ import '../../../../core/theme/app_theme_tokens.dart';
 import '../../domain/entities/maintenance_request.dart';
 
 class MaintenanceStatusBadge extends StatelessWidget {
-  MaintenanceStatusBadge({required this.status, super.key});
+  const MaintenanceStatusBadge({required this.status, super.key});
 
   final MaintenanceStatus status;
 

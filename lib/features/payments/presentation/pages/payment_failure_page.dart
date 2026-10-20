@@ -3,30 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/utils/app_formatters.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../domain/entities/invoice.dart';
 
-
 import '../../domain/entities/payment.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
@@ -35,7 +26,7 @@ import '../../../../core/theme/app_spacing.dart';
 /// Nothing is settled: the invoice keeps the same open items so the resident
 /// can retry with another method.
 class PaymentFailurePage extends StatelessWidget {
-  PaymentFailurePage({required this.payment, super.key});
+  const PaymentFailurePage({required this.payment, super.key});
 
   final Payment payment;
 
@@ -171,7 +162,7 @@ class PaymentFailurePage extends StatelessWidget {
 }
 
 class _Line extends StatelessWidget {
-  _Line({required this.label, required this.value});
+  const _Line({required this.label, required this.value});
   final String label;
   final String value;
 

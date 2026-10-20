@@ -4,38 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../../../core/widgets/app_primary_action.dart';
 
-
 import '../../../../core/widgets/app_section.dart';
-
 
 import '../../../../core/widgets/app_state_message.dart';
 
-
 import '../../../../core/widgets/app_status_pill.dart';
-
 
 import '../../domain/entities/maintenance_request.dart';
 
-
 import '../controllers/maintenance_controller.dart';
-
 
 import '../widgets/maintenance_status_badge.dart';
 
 class MaintenancePage extends GetView<MaintenanceController> {
-  MaintenancePage({super.key});
+  const MaintenancePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +104,7 @@ class MaintenancePage extends GetView<MaintenanceController> {
 }
 
 class _MaintenanceHeader extends StatelessWidget {
-  _MaintenanceHeader({required this.onRefresh});
+  const _MaintenanceHeader({required this.onRefresh});
   final Future<void> Function() onRefresh;
 
   @override
@@ -153,7 +143,7 @@ class _MaintenanceHeader extends StatelessWidget {
 }
 
 class _RequestCard extends StatelessWidget {
-  _RequestCard({required this.request});
+  const _RequestCard({required this.request});
   final MaintenanceRequest request;
 
   @override

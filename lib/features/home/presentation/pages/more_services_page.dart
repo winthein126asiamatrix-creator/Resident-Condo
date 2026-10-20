@@ -4,57 +4,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/models/resident_role.dart';
 
-
 import '../../../../core/theme/app_palette.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../../../core/widgets/app_section.dart';
 
-
 import '../../../../core/widgets/app_status_pill.dart';
-
 
 import '../../../complaints/presentation/controllers/complaint_controller.dart';
 
-
 import '../../../lease/domain/entities/lease.dart';
-
 
 import '../../../lease/presentation/controllers/lease_controller.dart';
 
-
 import '../../../parking/presentation/controllers/parking_controller.dart';
-
 
 import '../../../rules/presentation/controllers/rules_controller.dart';
 
-
 import '../../../services/presentation/controllers/condo_service_controller.dart';
-
 
 import '../../../session/presentation/controllers/session_controller.dart';
 
-
 import '../../../visitors/presentation/controllers/visitor_controller.dart';
-
 
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 /// Hub for every resident module that is not part of the bottom navigation.
 class MoreServicesPage extends StatelessWidget {
-  MoreServicesPage({super.key});
+  const MoreServicesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -233,7 +217,7 @@ class MoreServicesPage extends StatelessWidget {
 }
 
 class _ModuleTile extends StatelessWidget {
-  _ModuleTile({
+  const _ModuleTile({
     required this.route,
     required this.icon,
     required this.color,

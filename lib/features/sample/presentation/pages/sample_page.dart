@@ -3,23 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../core/utils/app_validators.dart';
-
 
 import '../../../../core/widgets/app_state_message.dart';
 
-
 import '../../domain/entities/sample.dart';
 
-
 import '../controllers/sample_controller.dart';
-
 
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class SamplePage extends GetView<SampleController> {
-  SamplePage({super.key});
+  const SamplePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +136,7 @@ class SamplePage extends GetView<SampleController> {
 }
 
 class _SampleCard extends StatelessWidget {
-  _SampleCard({
+  const _SampleCard({
     required this.sample,
     required this.onEdit,
     required this.onDelete,
@@ -193,7 +188,7 @@ class _SampleCard extends StatelessWidget {
 }
 
 class _SampleEditorDialog extends StatefulWidget {
-  _SampleEditorDialog({this.sample});
+  const _SampleEditorDialog({this.sample});
 
   final Sample? sample;
 

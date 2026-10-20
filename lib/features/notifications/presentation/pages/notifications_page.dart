@@ -19,7 +19,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class NotificationsPage extends GetView<NotificationController> {
-  NotificationsPage({super.key});
+  const NotificationsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -153,7 +153,10 @@ class _OfflineNotice extends StatelessWidget {
 }
 
 class _NotificationSummary extends StatelessWidget {
-  _NotificationSummary({required this.unreadCount, required this.totalCount});
+  const _NotificationSummary({
+    required this.unreadCount,
+    required this.totalCount,
+  });
 
   final int unreadCount;
   final int totalCount;

@@ -5,53 +5,38 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/utils/text_input_formatters.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../../../core/widgets/app_dialogs.dart';
 
-
 import '../../domain/entities/visitor.dart';
-
 
 import '../controllers/visitor_controller.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
-
 import '../../../../core/widgets/app_form_field.dart';
-
 
 import '../../../../core/widgets/app_primary_action.dart';
 
-
 import '../../../../core/theme/app_radius.dart';
 
-
 import '../../../../core/utils/app_dates.dart';
-
 
 import '../../../../core/utils/app_times.dart';
 
 class RegisterVisitorPage extends StatefulWidget {
-  RegisterVisitorPage({super.key});
+  const RegisterVisitorPage({super.key});
 
   @override
   State<RegisterVisitorPage> createState() => _RegisterVisitorPageState();
@@ -492,7 +477,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
 /// Day cards for the visit date: the relative label, the day number and the
 /// month, with the selected day clearly filled in.
 class _VisitDatePicker extends StatelessWidget {
-  _VisitDatePicker({
+  const _VisitDatePicker({
     required this.dates,
     required this.selected,
     required this.onSelected,
@@ -526,7 +511,7 @@ class _VisitDatePicker extends StatelessWidget {
 }
 
 class _VisitDateCard extends StatelessWidget {
-  _VisitDateCard({
+  const _VisitDateCard({
     required this.date,
     required this.selected,
     required this.onTap,
@@ -605,7 +590,7 @@ class _VisitDateCard extends StatelessWidget {
 /// the evening there is no full hour left today, and rather than offer a time
 /// that has already gone the resident is told to pick another date.
 class _NoSlotsToday extends StatelessWidget {
-  _NoSlotsToday();
+  const _NoSlotsToday();
 
   @override
   Widget build(BuildContext context) {
@@ -637,7 +622,7 @@ class _NoSlotsToday extends StatelessWidget {
 }
 
 class _VisitWindow extends StatelessWidget {
-  _VisitWindow({required this.range});
+  const _VisitWindow({required this.range});
 
   final AppTimeRange range;
 
@@ -694,7 +679,7 @@ class _VisitWindow extends StatelessWidget {
 }
 
 class _Label extends StatelessWidget {
-  _Label(this.text);
+  const _Label(this.text);
   final String text;
 
   @override

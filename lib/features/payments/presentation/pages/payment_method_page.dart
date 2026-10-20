@@ -5,41 +5,30 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/utils/app_formatters.dart';
 
-
 import '../../../../core/widgets/app_state_message.dart';
-
 
 import '../../domain/entities/invoice.dart';
 
-
 import '../../domain/entities/payment.dart';
-
 
 import '../controllers/payment_controller.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
-
 
 import '../../../../core/widgets/app_form_field.dart';
 
 class PaymentMethodPage extends StatefulWidget {
-  PaymentMethodPage({super.key});
+  const PaymentMethodPage({super.key});
 
   @override
   State<PaymentMethodPage> createState() => _PaymentMethodPageState();
@@ -116,9 +105,9 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               onPressed: controller.isPaymentProcessing.value
                   ? null
                   : () {
-                    vibrateNow();
-                    _confirm(context);
-                  },
+                      vibrateNow();
+                      _confirm(context);
+                    },
               icon: controller.isPaymentProcessing.value
                   ? SizedBox(
                       width: 18,
@@ -264,7 +253,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
 }
 
 class _ReviewCard extends StatelessWidget {
-  _ReviewCard({required this.controller});
+  const _ReviewCard({required this.controller});
   final PaymentController controller;
 
   @override
@@ -310,7 +299,7 @@ class _ReviewCard extends StatelessWidget {
 }
 
 class _MethodSelector extends StatelessWidget {
-  _MethodSelector({required this.selected, required this.onChanged});
+  const _MethodSelector({required this.selected, required this.onChanged});
   final PaymentMethod selected;
   final ValueChanged<PaymentMethod> onChanged;
 
@@ -365,7 +354,7 @@ class _MethodSelector extends StatelessWidget {
 }
 
 class _CardForm extends StatelessWidget {
-  _CardForm({required this.controller});
+  const _CardForm({required this.controller});
   final TextEditingController controller;
 
   @override
@@ -447,7 +436,7 @@ class _DemoGatewayHint extends StatelessWidget {
 }
 
 class _BankTransferInfo extends StatelessWidget {
-  _BankTransferInfo();
+  const _BankTransferInfo();
 
   @override
   Widget build(BuildContext context) {
@@ -477,7 +466,7 @@ class _BankTransferInfo extends StatelessWidget {
 }
 
 class _WalletInfo extends StatelessWidget {
-  _WalletInfo();
+  const _WalletInfo();
 
   @override
   Widget build(BuildContext context) {
@@ -507,7 +496,7 @@ class _WalletInfo extends StatelessWidget {
 }
 
 class _FormCard extends StatelessWidget {
-  _FormCard({required this.children});
+  const _FormCard({required this.children});
   final List<Widget> children;
 
   @override

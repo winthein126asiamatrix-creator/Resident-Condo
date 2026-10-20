@@ -3,41 +3,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../core/theme/app_palette.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/widgets/app_dialogs.dart';
-
 
 import '../../../../core/widgets/app_section.dart';
 
-
 import '../../../../core/widgets/app_status_pill.dart';
-
 
 import '../../domain/entities/complaint.dart';
 
-
 import '../controllers/complaint_controller.dart';
-
 
 import '../widgets/complaint_widgets.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
-
 
 import '../../../../core/widgets/app_form_field.dart';
 
 class ComplaintDetailPage extends GetView<ComplaintController> {
-  ComplaintDetailPage({required this.complaint, super.key});
+  const ComplaintDetailPage({required this.complaint, super.key});
 
   final Complaint complaint;
 
@@ -191,7 +180,7 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
 }
 
 class _CommentTile extends StatelessWidget {
-  _CommentTile({required this.comment});
+  const _CommentTile({required this.comment});
   final ComplaintComment comment;
 
   @override
@@ -246,7 +235,7 @@ class _CommentTile extends StatelessWidget {
 }
 
 class _MessageBox extends StatefulWidget {
-  _MessageBox({required this.controller, required this.complaint});
+  const _MessageBox({required this.controller, required this.complaint});
   final ComplaintController controller;
   final Complaint complaint;
 

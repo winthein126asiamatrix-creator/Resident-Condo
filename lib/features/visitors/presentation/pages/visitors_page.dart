@@ -4,47 +4,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../../../core/widgets/app_dialogs.dart';
 
-
 import '../../../../core/widgets/app_state_message.dart';
-
 
 import '../../../../core/widgets/app_status_pill.dart';
 
-
 import '../../domain/entities/visitor.dart';
-
 
 import '../controllers/visitor_controller.dart';
 
-
 import '../widgets/visitor_status_badge.dart';
-
 
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
 
-
 import '../../../../core/widgets/app_buttons.dart';
-
 
 import '../../../../core/widgets/app_primary_action.dart';
 
 class VisitorsPage extends GetView<VisitorController> {
-  VisitorsPage({super.key});
+  const VisitorsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +133,7 @@ class VisitorsPage extends GetView<VisitorController> {
 }
 
 class _VisitorHero extends StatelessWidget {
-  _VisitorHero({required this.controller});
+  const _VisitorHero({required this.controller});
   final VisitorController controller;
 
   @override
@@ -168,7 +155,7 @@ class _VisitorHero extends StatelessWidget {
 }
 
 class _FilterRow extends StatelessWidget {
-  _FilterRow({required this.controller});
+  const _FilterRow({required this.controller});
   final VisitorController controller;
 
   @override
@@ -201,7 +188,7 @@ class _FilterRow extends StatelessWidget {
 }
 
 class _VisitorCard extends StatelessWidget {
-  _VisitorCard({required this.controller, required this.visitor});
+  const _VisitorCard({required this.controller, required this.visitor});
   final VisitorController controller;
   final Visitor visitor;
 

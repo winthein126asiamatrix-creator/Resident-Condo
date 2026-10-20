@@ -5,7 +5,7 @@ import '../../domain/entities/payment.dart';
 
 /// Status pill for a settled payment record (used in history and receipts).
 class PaymentRecordBadge extends StatelessWidget {
-  PaymentRecordBadge({required this.status, super.key});
+  const PaymentRecordBadge({required this.status, super.key});
 
   final PaymentStatus status;
 

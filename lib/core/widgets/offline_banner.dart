@@ -3,14 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../core/theme/app_palette.dart';
-
 
 import '../network/connectivity_service.dart';
 
 class OfflineBanner extends StatelessWidget {
-  OfflineBanner({super.key});
+  const OfflineBanner({super.key});
 
   /// Height the banner occupies once rendered.
   ///
@@ -47,7 +45,7 @@ class OfflineBanner extends StatelessWidget {
 }
 
 class OfflineBannerSlot extends StatelessWidget {
-  OfflineBannerSlot({super.key, this.applyStatusBarInset = false});
+  const OfflineBannerSlot({super.key, this.applyStatusBarInset = false});
 
   final bool applyStatusBarInset;
 
@@ -71,7 +69,7 @@ class OfflineBannerSlot extends StatelessWidget {
 }
 
 class _OfflineBannerHost extends StatelessWidget {
-  _OfflineBannerHost({required this.applyStatusBarInset});
+  const _OfflineBannerHost({required this.applyStatusBarInset});
 
   final bool applyStatusBarInset;
 

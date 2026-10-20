@@ -4,52 +4,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
-
 
 import '../../../../core/utils/app_formatters.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
-
 import '../../../../core/widgets/app_dialogs.dart';
-
 
 import '../../../../features/session/presentation/controllers/session_controller.dart';
 
-
 import '../../../../core/widgets/app_primary_action.dart';
-
 
 import '../../../../core/widgets/app_state_message.dart';
 
-
 import '../../domain/entities/store_product.dart';
-
 
 import '../controllers/store_controller.dart';
 
-
 import '../widgets/store_cards.dart';
-
 
 import '../widgets/store_widgets.dart';
 
 /// Delivery method, delivery slot, how to settle the Store Fee, then review and
 /// place the order. Nothing is created until the resident confirms here.
 class StoreCheckoutPage extends GetView<StoreController> {
-  StoreCheckoutPage({super.key});
+  const StoreCheckoutPage({super.key});
 
   /// The windows a resident can choose from for either delivery method.
   static const _slots = <String, List<String>>{
@@ -388,7 +374,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
 /// resident who has paid before is one tap from done and a resident who has not
 /// is never blocked.
 class _PaymentMethodPicker extends StatelessWidget {
-  _PaymentMethodPicker({required this.controller});
+  const _PaymentMethodPicker({required this.controller});
 
   final StoreController controller;
 
@@ -459,7 +445,7 @@ class _PaymentMethodPicker extends StatelessWidget {
 }
 
 class _MethodRow extends StatelessWidget {
-  _MethodRow({
+  const _MethodRow({
     required this.icon,
     required this.title,
     required this.description,
@@ -550,7 +536,7 @@ class _MethodRow extends StatelessWidget {
 }
 
 class _Section extends StatelessWidget {
-  _Section({required this.title, required this.child});
+  const _Section({required this.title, required this.child});
 
   final String title;
   final Widget child;
@@ -579,7 +565,7 @@ class _Section extends StatelessWidget {
 }
 
 class _DeliveryOption extends StatelessWidget {
-  _DeliveryOption({
+  const _DeliveryOption({
     required this.method,
     required this.selected,
     required this.onTap,

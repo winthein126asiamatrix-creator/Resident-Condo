@@ -2,21 +2,15 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/theme/app_radius.dart';
 
-
 import '../../../../core/utils/app_formatters.dart';
-
 
 import '../../../../core/widgets/app_card.dart';
 
-
 import '../../domain/entities/store_product.dart';
-
 
 import 'store_widgets.dart';
 
@@ -28,7 +22,7 @@ import 'store_widgets.dart';
 /// look somewhere else to change a quantity. The basket count and the total on
 /// the page both react to the same state, so the two can never disagree.
 class StoreProductCard extends StatelessWidget {
-  StoreProductCard({
+  const StoreProductCard({
     required this.product,
     required this.onAdd,
     required this.onRemove,
@@ -143,7 +137,7 @@ class StoreProductCard extends StatelessWidget {
 /// The add / stepper control. Same footprint in both states so the card does
 /// not jump when an item goes into the basket.
 class _BasketControl extends StatelessWidget {
-  _BasketControl({
+  const _BasketControl({
     required this.product,
     required this.quantity,
     required this.enabled,
@@ -180,7 +174,7 @@ class _BasketControl extends StatelessWidget {
 }
 
 class _AddButton extends StatelessWidget {
-  _AddButton({
+  const _AddButton({
     required this.product,
     required this.height,
     required this.onPressed,
@@ -226,7 +220,7 @@ class _AddButton extends StatelessWidget {
 
 /// `- qty +`, plus a one-tap shortcut to the checkout.
 class _QuantityStepper extends StatelessWidget {
-  _QuantityStepper({
+  const _QuantityStepper({
     required this.product,
     required this.quantity,
     required this.height,
@@ -303,7 +297,7 @@ class _QuantityStepper extends StatelessWidget {
 }
 
 class _StepButton extends StatelessWidget {
-  _StepButton({
+  const _StepButton({
     required this.icon,
     required this.onTap,
     required this.height,
@@ -346,7 +340,7 @@ class _StepButton extends StatelessWidget {
 /// Running total for this line, so the effect of the stepper is visible
 /// without going back to the basket.
 class _LineTotal extends StatelessWidget {
-  _LineTotal({required this.height, required this.text});
+  const _LineTotal({required this.height, required this.text});
 
   final double height;
   final String text;
@@ -374,7 +368,7 @@ class _LineTotal extends StatelessWidget {
 }
 
 class _OutOfStockLabel extends StatelessWidget {
-  _OutOfStockLabel({required this.height});
+  const _OutOfStockLabel({required this.height});
 
   final double height;
 

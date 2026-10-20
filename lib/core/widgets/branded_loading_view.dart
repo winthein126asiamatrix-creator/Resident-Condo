@@ -2,14 +2,12 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../constants/app_constants.dart';
-
 
 import '../theme/app_theme_tokens.dart';
 
 class BrandedLoadingView extends StatelessWidget {
-  BrandedLoadingView({this.message = 'Loading...', super.key});
+  const BrandedLoadingView({this.message = 'Loading...', super.key});
 
   final String message;
 

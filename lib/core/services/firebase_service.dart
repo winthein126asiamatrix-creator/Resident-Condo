@@ -135,7 +135,7 @@ class FirebaseService extends GetxService {
       return;
     }
     await refreshDeviceToken();
-  }   
+  }
 
   Future<NotificationSettings?> _resolvePermission() async {
     final messaging = FirebaseMessaging.instance;
@@ -163,7 +163,6 @@ class FirebaseService extends GetxService {
     }
   }
 
- 
   Future<void> _requestAndroidNotificationPermission() async {
     if (defaultTargetPlatform != TargetPlatform.android ||
         _androidPermissionRequested) {

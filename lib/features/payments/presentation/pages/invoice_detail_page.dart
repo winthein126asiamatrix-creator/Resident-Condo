@@ -4,41 +4,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/utils/app_formatters.dart';
 
-
 import '../../../../core/widgets/app_section.dart';
-
 
 import '../../domain/entities/invoice.dart';
 
-
 import '../../domain/entities/payment.dart';
-
 
 import '../controllers/payment_controller.dart';
 
-
 import '../widgets/payment_status_badge.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
 class InvoiceDetailPage extends GetView<PaymentController> {
-  InvoiceDetailPage({required this.invoice, super.key});
+  const InvoiceDetailPage({required this.invoice, super.key});
 
   final Invoice invoice;
 
@@ -173,7 +162,7 @@ class InvoiceDetailPage extends GetView<PaymentController> {
 }
 
 class _InvoiceHero extends StatelessWidget {
-  _InvoiceHero({required this.invoice});
+  const _InvoiceHero({required this.invoice});
   final Invoice invoice;
 
   @override
@@ -226,7 +215,7 @@ class _InvoiceHero extends StatelessWidget {
 }
 
 class _ItemLine extends StatelessWidget {
-  _ItemLine({required this.item});
+  const _ItemLine({required this.item});
   final InvoiceItem item;
 
   @override
@@ -290,7 +279,7 @@ class _ItemLine extends StatelessWidget {
 }
 
 class _PaidCard extends StatelessWidget {
-  _PaidCard({required this.invoice, required this.payment});
+  const _PaidCard({required this.invoice, required this.payment});
   final Invoice invoice;
   final Payment? payment;
 

@@ -3,36 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/theme/app_radius.dart';
 
-
 import '../../../../core/utils/app_formatters.dart';
-
 
 import '../../../../core/widgets/app_card.dart';
 
-
 import '../../../../core/widgets/app_primary_action.dart';
-
 
 import '../../../../core/widgets/app_step_progress.dart';
 
-
 import '../../domain/entities/store_product.dart';
 
-
 import '../controllers/store_controller.dart';
-
 
 import 'store_widgets.dart';
 
@@ -41,7 +30,7 @@ import 'store_widgets.dart';
 /// The store fee is called out on its own so it is never mistaken for part of
 /// the monthly condo fee.
 class StoreCheckoutSummaryCard extends StatelessWidget {
-  StoreCheckoutSummaryCard({
+  const StoreCheckoutSummaryCard({
     required this.subtotal,
     required this.deliveryFee,
     required this.total,
@@ -130,7 +119,11 @@ class StoreCheckoutSummaryCard extends StatelessWidget {
 }
 
 class _TotalRow extends StatelessWidget {
-  _TotalRow({required this.label, required this.value, this.muted = false});
+  const _TotalRow({
+    required this.label,
+    required this.value,
+    this.muted = false,
+  });
 
   final String label;
   final String value;
@@ -169,7 +162,7 @@ class _TotalRow extends StatelessWidget {
 
 /// Order progress, driven by the order's real status.
 class StoreOrderTrackerCard extends StatelessWidget {
-  StoreOrderTrackerCard({required this.order, super.key});
+  const StoreOrderTrackerCard({required this.order, super.key});
 
   final StoreOrder order;
 
@@ -248,17 +241,17 @@ class StoreOrderTrackerCard extends StatelessWidget {
       // Out for delivery and ready for pick-up are the handover step.
       StoreOrderStatus.outForDelivery => 3,
       StoreOrderStatus.readyForPickup => 3,
-      // Completed means the last step is the one that happened.
-      StoreOrderStatus.completed => steps.length - 1,
+      // Completed means every step is finished.
+      StoreOrderStatus.completed => steps.length,
       StoreOrderStatus.cancelled => 0,
     };
-    return done.clamp(0, steps.length - 1);
+    return done.clamp(0, steps.length);
   }
 }
 
 /// A single order in the resident's list, ready to open.
 class StoreOrderTrackerListCard extends StatelessWidget {
-  StoreOrderTrackerListCard({
+  const StoreOrderTrackerListCard({
     required this.order,
     required this.onTap,
     super.key,
@@ -351,7 +344,7 @@ class StoreOrderTrackerListCard extends StatelessWidget {
 
 /// Explains that a store fee is its own charge, kept away from the condo fee.
 class StoreFeeNotice extends StatelessWidget {
-  StoreFeeNotice({super.key});
+  const StoreFeeNotice({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -454,7 +447,7 @@ void showStoreAddedToBasket(
 /// One button so the affordance is identical from the basket and from the
 /// product sheet.
 class StoreCheckoutButton extends StatelessWidget {
-  StoreCheckoutButton({
+  const StoreCheckoutButton({
     required this.controller,
     this.addFirst = false,
     this.label,
@@ -498,7 +491,7 @@ class StoreCheckoutButton extends StatelessWidget {
 
 /// Keeps the catalogue honest about what is on the shelf.
 class StoreCartBadge extends StatelessWidget {
-  StoreCartBadge({required this.count, required this.onTap, super.key});
+  const StoreCartBadge({required this.count, required this.onTap, super.key});
 
   final int count;
   final VoidCallback onTap;

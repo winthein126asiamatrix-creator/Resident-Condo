@@ -3,7 +3,6 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../theme/app_theme_tokens.dart';
 
 /// The resident facing primary call to action.
@@ -16,7 +15,7 @@ import '../theme/app_theme_tokens.dart';
 /// app follows the resident's choice. Pass [backgroundColor] only to override it
 /// for a genuinely different action.
 class AppPrimaryAction extends StatelessWidget {
-  AppPrimaryAction({
+  const AppPrimaryAction({
     required this.label,
     required this.onPressed,
     this.icon,
@@ -172,10 +171,12 @@ class AppPrimaryAction extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: enabled ? () {
-          vibrateNow();
-          onPressed!();
-        } : null,
+          onTap: enabled
+              ? () {
+                  vibrateNow();
+                  onPressed!();
+                }
+              : null,
           child: Padding(
             padding: padding ?? EdgeInsets.symmetric(horizontal: 20),
             child: content,

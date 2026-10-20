@@ -4,32 +4,24 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../core/theme/app_palette.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/widgets/app_dialogs.dart';
-
 
 import '../../../../core/widgets/app_section.dart';
 
-
 import '../../domain/entities/visitor.dart';
-
 
 import '../controllers/visitor_controller.dart';
 
-
 import '../widgets/visitor_status_badge.dart';
-
 
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class VisitorPassPage extends GetView<VisitorController> {
-  VisitorPassPage({required this.visitor, super.key});
+  const VisitorPassPage({required this.visitor, super.key});
 
   final Visitor visitor;
 
@@ -254,7 +246,7 @@ class VisitorPassPage extends GetView<VisitorController> {
 }
 
 class _CodeCard extends StatelessWidget {
-  _CodeCard({required this.visitor, required this.color});
+  const _CodeCard({required this.visitor, required this.color});
   final Visitor visitor;
   final Color color;
 

@@ -5,50 +5,36 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_radius.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/utils/app_dates.dart';
-
 
 import '../../../../core/utils/app_formatters.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../../../core/widgets/app_dialogs.dart';
 
-
 import '../../../../core/widgets/app_state_message.dart';
-
 
 import '../../../../core/widgets/app_status_pill.dart';
 
-
 import '../../domain/entities/lease.dart';
-
 
 import '../controllers/lease_controller.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/widgets/app_form_field.dart';
 
 class LeaseRenewalPage extends StatefulWidget {
-  LeaseRenewalPage({super.key});
+  const LeaseRenewalPage({super.key});
 
   @override
   State<LeaseRenewalPage> createState() => _LeaseRenewalPageState();
@@ -384,7 +370,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
 /// to ask for it.
 @immutable
 class _DatePreset {
-  _DatePreset(this.value, this.label);
+  const _DatePreset(this.value, this.label);
 
   final DateTime value;
   final String label;
@@ -397,7 +383,7 @@ class _DatePreset {
 /// below them cover the terms people actually ask for. The duration strip sits
 /// between the two dates so it always reflects the pair above it.
 class _TermPicker extends StatelessWidget {
-  _TermPicker({
+  const _TermPicker({
     required this.lease,
     required this.start,
     required this.end,
@@ -482,7 +468,7 @@ class _TermPicker extends StatelessWidget {
 
 /// One end of the term. Tapping it opens the calendar for any date at all.
 class _DateTile extends StatelessWidget {
-  _DateTile({
+  const _DateTile({
     required this.fieldKey,
     required this.caption,
     required this.value,
@@ -572,7 +558,7 @@ class _DateTile extends StatelessWidget {
 /// The running total for the pair above it: how long the term is, and how its
 /// start lines up with the term it replaces.
 class _DurationStrip extends StatelessWidget {
-  _DurationStrip({
+  const _DurationStrip({
     required this.lease,
     required this.start,
     required this.label,
@@ -650,7 +636,7 @@ class _DurationStrip extends StatelessWidget {
 
 /// The quick lengths for the term, each showing the day it lands on.
 class _QuickDateRow extends StatelessWidget {
-  _QuickDateRow({
+  const _QuickDateRow({
     required this.presets,
     required this.selected,
     required this.onSelected,
@@ -682,7 +668,7 @@ class _QuickDateRow extends StatelessWidget {
 }
 
 class _QuickDateChip extends StatelessWidget {
-  _QuickDateChip({
+  const _QuickDateChip({
     required this.preset,
     required this.selected,
     required this.onTap,

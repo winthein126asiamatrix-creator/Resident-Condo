@@ -5,45 +5,33 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/utils/text_input_formatters.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../../../core/widgets/app_dialogs.dart';
 
-
 import '../../../../core/widgets/app_status_pill.dart';
-
 
 import '../../domain/entities/visitor.dart';
 
-
 import '../controllers/visitor_controller.dart';
-
 
 import '../widgets/visitor_status_badge.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/widgets/app_form_field.dart';
 
 /// Lobby desk screen: type the code the visitor reads out and confirm entry.
 class VisitorVerifyPage extends GetView<VisitorController> {
-  VisitorVerifyPage({super.key});
+  const VisitorVerifyPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -201,7 +189,7 @@ class VisitorVerifyPage extends GetView<VisitorController> {
 }
 
 class _VerificationResult extends StatelessWidget {
-  _VerificationResult({required this.controller});
+  const _VerificationResult({required this.controller});
   final VisitorController controller;
 
   @override
@@ -366,7 +354,7 @@ class _VerificationResult extends StatelessWidget {
 }
 
 class _ExpectedTile extends StatelessWidget {
-  _ExpectedTile({required this.controller, required this.visitor});
+  const _ExpectedTile({required this.controller, required this.visitor});
   final VisitorController controller;
   final Visitor visitor;
 

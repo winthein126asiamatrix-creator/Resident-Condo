@@ -4,26 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/widgets/app_state_message.dart';
-
 
 import '../../domain/entities/facility.dart';
 
-
 import '../controllers/facility_controller.dart';
-
 
 import '../widgets/facility_labels.dart';
 
 class FacilitiesPage extends GetView<FacilityController> {
-  FacilitiesPage({super.key});
+  const FacilitiesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +104,7 @@ class FacilitiesPage extends GetView<FacilityController> {
 }
 
 class _FacilitiesHeader extends StatelessWidget {
-  _FacilitiesHeader({required this.onRefresh});
+  const _FacilitiesHeader({required this.onRefresh});
 
   final Future<void> Function() onRefresh;
 
@@ -150,7 +144,7 @@ class _FacilitiesHeader extends StatelessWidget {
 }
 
 class _FacilitySummary extends StatelessWidget {
-  _FacilitySummary({
+  const _FacilitySummary({
     required this.facilityCount,
     required this.reservationCount,
   });
@@ -216,7 +210,7 @@ class _FacilitySummary extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  _SectionHeader({required this.title, required this.count});
+  const _SectionHeader({required this.title, required this.count});
 
   final String title;
   final int count;
@@ -253,7 +247,10 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _ResponsiveFacilityGrid extends StatelessWidget {
-  _ResponsiveFacilityGrid({required this.facilities, required this.onReserve});
+  const _ResponsiveFacilityGrid({
+    required this.facilities,
+    required this.onReserve,
+  });
 
   final List<Facility> facilities;
   final ValueChanged<Facility> onReserve;
@@ -291,7 +288,7 @@ class _ResponsiveFacilityGrid extends StatelessWidget {
 }
 
 class _FacilityCard extends StatelessWidget {
-  _FacilityCard({required this.facility, required this.onReserve});
+  const _FacilityCard({required this.facility, required this.onReserve});
 
   final Facility facility;
   final ValueChanged<Facility> onReserve;
@@ -486,7 +483,7 @@ class _FacilityCard extends StatelessWidget {
 }
 
 class _AvailabilityBadge extends StatelessWidget {
-  _AvailabilityBadge({required this.available});
+  const _AvailabilityBadge({required this.available});
 
   final bool available;
 

@@ -3,35 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../core/theme/app_palette.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/utils/app_formatters.dart';
-
 
 import '../../../../core/widgets/app_state_message.dart';
 
-
 import '../../domain/entities/invoice.dart';
-
 
 import '../../domain/entities/payment.dart';
 
-
 import '../controllers/payment_controller.dart';
 
-
 import '../widgets/payment_record_badge.dart';
-
 
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 class PaymentHistoryPage extends GetView<PaymentController> {
-  PaymentHistoryPage({super.key});
+  const PaymentHistoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +62,7 @@ class PaymentHistoryPage extends GetView<PaymentController> {
 }
 
 class _HistoryCard extends StatelessWidget {
-  _HistoryCard({required this.payment});
+  const _HistoryCard({required this.payment});
   final Payment payment;
 
   @override

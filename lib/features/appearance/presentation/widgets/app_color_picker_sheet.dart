@@ -3,18 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/services.dart';
 
-
 import '../../../../core/theme/app_palette.dart';
-
 
 import '../../../../core/theme/app_radius.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/widgets/app_primary_action.dart';
 
@@ -41,7 +36,7 @@ Future<Color?> showAppColorPickerSheet(
 }
 
 class _AppColorPickerSheet extends StatefulWidget {
-  _AppColorPickerSheet({required this.initial, required this.onChanged});
+  const _AppColorPickerSheet({required this.initial, required this.onChanged});
 
   final Color initial;
   final ValueChanged<Color> onChanged;
@@ -234,7 +229,7 @@ class _AppColorPickerSheetState extends State<_AppColorPickerSheet> {
 }
 
 class _SheetGrabber extends StatelessWidget {
-  _SheetGrabber();
+  const _SheetGrabber();
 
   @override
   Widget build(BuildContext context) {
@@ -253,7 +248,7 @@ class _SheetGrabber extends StatelessWidget {
 
 /// The filled circle beside the title, echoing the selected swatch in the grid.
 class _SelectedSwatch extends StatelessWidget {
-  _SelectedSwatch({required this.color, required this.tokens});
+  const _SelectedSwatch({required this.color, required this.tokens});
 
   final Color color;
   final AppThemeTokens tokens;
@@ -288,7 +283,7 @@ class _SelectedSwatch extends StatelessWidget {
 /// to black down. That is the standard construction and it stays accurate for
 /// every hue without a shader.
 class _SaturationValueField extends StatelessWidget {
-  _SaturationValueField({
+  const _SaturationValueField({
     required this.hue,
     required this.saturation,
     required this.value,
@@ -365,7 +360,7 @@ class _SaturationValueField extends StatelessWidget {
 }
 
 class _FieldThumb extends StatelessWidget {
-  _FieldThumb();
+  const _FieldThumb();
 
   @override
   Widget build(BuildContext context) {
@@ -391,7 +386,7 @@ class _FieldThumb extends StatelessWidget {
 
 /// The horizontal hue strip.
 class _HueStrip extends StatelessWidget {
-  _HueStrip({required this.hue, required this.onChanged});
+  const _HueStrip({required this.hue, required this.onChanged});
 
   final double hue;
   final ValueChanged<double> onChanged;
@@ -470,7 +465,7 @@ class _HueStrip extends StatelessWidget {
 }
 
 class _RecentSwatches extends StatelessWidget {
-  _RecentSwatches({required this.colors, required this.onSelected});
+  const _RecentSwatches({required this.colors, required this.onSelected});
 
   final List<Color> colors;
   final ValueChanged<Color> onSelected;
@@ -509,7 +504,7 @@ class _RecentSwatches extends StatelessWidget {
 
 /// Hex entry, for a resident who already knows the value they want.
 class _HexField extends StatelessWidget {
-  _HexField({
+  const _HexField({
     required this.controller,
     required this.tokens,
     required this.onChanged,

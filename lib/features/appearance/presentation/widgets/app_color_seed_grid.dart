@@ -3,15 +3,11 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../../../../core/theme/app_palette.dart';
-
 
 import '../../../../core/theme/app_radius.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
-
 
 import '../../domain/entities/app_color_seed.dart';
 
@@ -28,7 +24,7 @@ import '../../domain/entities/app_color_seed.dart';
 /// 48px platform minimum, and the grid reflows to four columns whatever the
 /// screen width.
 class AppColorSeedGrid extends StatelessWidget {
-  AppColorSeedGrid({
+  const AppColorSeedGrid({
     required this.selected,
     required this.onSelected,
     required this.customColor,
@@ -102,7 +98,7 @@ class AppColorSeedGrid extends StatelessWidget {
 
 /// One palette entry: the circle, its name, and the tick.
 class _SeedCell extends StatelessWidget {
-  _SeedCell({
+  const _SeedCell({
     required this.label,
     required this.color,
     required this.selected,
@@ -138,7 +134,7 @@ class _SeedCell extends StatelessWidget {
 
 /// The trailing tile that opens the picker.
 class _CustomSeedCell extends StatelessWidget {
-  _CustomSeedCell({
+  const _CustomSeedCell({
     required this.color,
     required this.selected,
     required this.selectionColor,
@@ -171,7 +167,7 @@ class _CustomSeedCell extends StatelessWidget {
 /// Shared pressable wrapper: the ring, the circle and the caption all scale and
 /// fade together, so selecting a colour reads as one motion.
 class _SeedButton extends StatelessWidget {
-  _SeedButton({
+  const _SeedButton({
     required this.selected,
     required this.selectionColor,
     required this.onTap,
@@ -201,7 +197,7 @@ class _SeedButton extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: radius),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
-onTap: () {
+            onTap: () {
               vibrateNow();
               onTap();
             },
@@ -244,13 +240,13 @@ onTap: () {
 /// The ring sits outside a transparent gap rather than directly on the fill, so
 /// the swatch keeps its full size and the selection reads as a separate mark.
 class _SwatchCircle extends StatelessWidget {
-  _SwatchCircle({
+  const _SwatchCircle({
     required this.color,
     required this.selected,
     required this.selectionColor,
   }) : custom = false;
 
-  _SwatchCircle.custom({
+  const _SwatchCircle.custom({
     required this.color,
     required this.selected,
     required this.selectionColor,

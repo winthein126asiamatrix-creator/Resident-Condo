@@ -4,7 +4,6 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../theme/app_theme_tokens.dart';
 
 /// A single entry in [AppBottomNavBar].
@@ -65,9 +64,9 @@ class AppBottomNavBar extends StatelessWidget {
               child: InkWell(
                 borderRadius: BorderRadius.circular(16.r),
                 onTap: () {
-                          vibrateNow();
-                          onTap(index);
-                        },
+                  vibrateNow();
+                  onTap(index);
+                },
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 4.h),
                   child: Column(

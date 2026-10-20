@@ -3,15 +3,11 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../theme/app_radius.dart';
-
 
 import '../theme/app_spacing.dart';
 
-
 import '../theme/app_text_styles.dart';
-
 
 import '../theme/app_theme_tokens.dart';
 
@@ -21,7 +17,7 @@ import '../theme/app_theme_tokens.dart';
 /// facility, a category. It matches [AppTextField] in height, radius and border
 /// so a form mixing typed and picked fields still reads as one component.
 class AppPickerField extends StatelessWidget {
-  AppPickerField({
+  const AppPickerField({
     required this.label,
     required this.value,
     required this.icon,
@@ -59,10 +55,12 @@ class AppPickerField extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: enabled ? () {
-            vibrateNow();
-            onPressed();
-          } : null,
+          onTap: enabled
+              ? () {
+                  vibrateNow();
+                  onPressed();
+                }
+              : null,
           child: Container(
             height: AppSpacing.pickerHeight,
             padding: EdgeInsets.symmetric(horizontal: 14),

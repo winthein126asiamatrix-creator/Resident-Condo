@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class StatusBadge extends StatelessWidget {
-  StatusBadge({required this.label, super.key});
+  const StatusBadge({required this.label, super.key});
 
   final String label;
 

@@ -4,44 +4,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_text_styles.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/utils/app_formatters.dart';
-
 
 import '../../../../core/widgets/app_dialogs.dart';
 
-
 import '../../../../core/widgets/app_state_message.dart';
-
 
 import '../../../../core/widgets/app_status_pill.dart';
 
-
 import '../../domain/entities/invoice.dart';
-
 
 import '../../domain/entities/payment.dart';
 
-
 import '../controllers/payment_controller.dart';
-
 
 import '../widgets/payment_status_badge.dart';
 
 class PaymentsPage extends GetView<PaymentController> {
-  PaymentsPage({super.key});
+  const PaymentsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +111,7 @@ class PaymentsPage extends GetView<PaymentController> {
 }
 
 class _PaymentsHeader extends StatelessWidget {
-  _PaymentsHeader({required this.onRefresh});
+  const _PaymentsHeader({required this.onRefresh});
   final Future<void> Function() onRefresh;
 
   @override
@@ -160,7 +148,7 @@ class _PaymentsHeader extends StatelessWidget {
 }
 
 class _BalanceSummary extends StatelessWidget {
-  _BalanceSummary({required this.controller});
+  const _BalanceSummary({required this.controller});
   final PaymentController controller;
 
   @override
@@ -253,9 +241,9 @@ class _BalanceSummary extends StatelessWidget {
               onPressed: outstanding <= 0
                   ? null
                   : () {
-                    vibrateNow();
-                    _openOldestInvoice(context);
-                  },
+                      vibrateNow();
+                      _openOldestInvoice(context);
+                    },
               icon: Icon(Icons.arrow_forward_rounded, size: 18),
               label: Text('Pay Now'),
               style: FilledButton.styleFrom(
@@ -296,7 +284,7 @@ class _BalanceSummary extends StatelessWidget {
 }
 
 class _FeeBreakdown extends StatelessWidget {
-  _FeeBreakdown({required this.controller});
+  const _FeeBreakdown({required this.controller});
   final PaymentController controller;
 
   @override
@@ -380,7 +368,7 @@ class _FeeBreakdown extends StatelessWidget {
 }
 
 class _SummaryMetric extends StatelessWidget {
-  _SummaryMetric({
+  const _SummaryMetric({
     required this.label,
     required this.value,
     required this.detail,
@@ -421,7 +409,7 @@ class _SummaryMetric extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  _SectionHeader({
+  const _SectionHeader({
     required this.title,
     required this.count,
     this.actionLabel,
@@ -467,7 +455,7 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _InvoiceCard extends StatelessWidget {
-  _InvoiceCard({required this.invoice});
+  const _InvoiceCard({required this.invoice});
   final Invoice invoice;
 
   @override
@@ -512,7 +500,9 @@ class _InvoiceCard extends StatelessWidget {
                   6.h.heightBox(),
                   if (openItems.isNotEmpty)
                     Text(
-                      openItems.map((item) => item.type.shortLabel).join(' Â· '),
+                      openItems
+                          .map((item) => item.type.shortLabel)
+                          .join(' Â· '),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -548,7 +538,7 @@ class _InvoiceCard extends StatelessWidget {
 }
 
 class _PaymentPreview extends StatelessWidget {
-  _PaymentPreview({required this.payment});
+  const _PaymentPreview({required this.payment});
   final Payment payment;
 
   @override

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:test/core/utils/haptics.dart';
+
 import '../../../../core/localization/app_locale_controller.dart';
 
 import '../../../../core/theme/app_radius.dart';
@@ -96,10 +97,7 @@ class _LanguagePickerSheet extends StatelessWidget {
                       3.h.heightBox(),
                       Text(
                         'Choose the language the app is shown in',
-                        style: TextStyle(
-                          color: tokens.muted,
-                          fontSize: 13.sp,
-                        ),
+                        style: TextStyle(color: tokens.muted, fontSize: 13.sp),
                       ),
                     ],
                   ),
@@ -156,10 +154,10 @@ class _LanguageOption extends StatelessWidget {
       color: isSelected ? tokens.brandTint : tokens.surface,
       borderRadius: BorderRadius.circular(AppRadius.lg),
       child: InkWell(
-        onTap:  () {
-                        vibrateNow();
-                        onTap();
-                      },
+        onTap: () {
+          vibrateNow();
+          onTap();
+        },
         borderRadius: BorderRadius.circular(AppRadius.lg),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
@@ -189,10 +187,7 @@ class _LanguageOption extends StatelessWidget {
                     2.h.heightBox(),
                     Text(
                       englishName,
-                      style: TextStyle(
-                        color: tokens.muted,
-                        fontSize: 12.sp,
-                      ),
+                      style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                     ),
                   ],
                 ),

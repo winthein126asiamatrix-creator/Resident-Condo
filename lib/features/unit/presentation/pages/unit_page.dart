@@ -3,32 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/widgets/app_state_message.dart';
 
-
 import '../../domain/entities/unit.dart';
-
 
 import '../controllers/unit_controller.dart';
 
-
 import '../widgets/unit_info_tile.dart';
-
 
 import '../widgets/unit_person_tile.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
 class UnitPage extends GetView<UnitController> {
-  UnitPage({super.key});
+  const UnitPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +96,7 @@ class UnitPage extends GetView<UnitController> {
 }
 
 class _UnitHero extends StatelessWidget {
-  _UnitHero({required this.unit});
+  const _UnitHero({required this.unit});
 
   final Unit unit;
 
@@ -198,7 +190,7 @@ class _UnitHero extends StatelessWidget {
 }
 
 class _UnitInformationCard extends StatelessWidget {
-  _UnitInformationCard({required this.unit});
+  const _UnitInformationCard({required this.unit});
 
   final Unit unit;
 
@@ -260,7 +252,7 @@ class _UnitInformationCard extends StatelessWidget {
 }
 
 class _PeopleCard extends StatelessWidget {
-  _PeopleCard({required this.unit});
+  const _PeopleCard({required this.unit});
 
   final Unit unit;
 
@@ -311,7 +303,7 @@ class _PeopleCard extends StatelessWidget {
 }
 
 class _ParkingCard extends StatelessWidget {
-  _ParkingCard({required this.parking});
+  const _ParkingCard({required this.parking});
 
   final ParkingInfo parking;
 
@@ -373,7 +365,7 @@ class _ParkingCard extends StatelessWidget {
 }
 
 class _ParkingValue extends StatelessWidget {
-  _ParkingValue({required this.label, required this.value});
+  const _ParkingValue({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -396,7 +388,7 @@ class _ParkingValue extends StatelessWidget {
 }
 
 class _UnitCard extends StatelessWidget {
-  _UnitCard({required this.child});
+  const _UnitCard({required this.child});
 
   final Widget child;
 
@@ -417,7 +409,7 @@ class _UnitCard extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  _SectionTitle({required this.title});
+  const _SectionTitle({required this.title});
 
   final String title;
 
@@ -433,7 +425,7 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _StatusBadge extends StatelessWidget {
-  _StatusBadge({required this.label, required this.color});
+  const _StatusBadge({required this.label, required this.color});
 
   final String label;
   final Color color;

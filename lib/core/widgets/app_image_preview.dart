@@ -5,9 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../theme/app_radius.dart';
-
 
 import '../theme/app_theme_tokens.dart';
 
@@ -17,7 +15,7 @@ import '../theme/app_theme_tokens.dart';
 /// resident can still look at the photo properly. Uses the same surface,
 /// radius and border as the rest of the app's cards.
 class AppImagePreview extends StatelessWidget {
-  AppImagePreview({
+  const AppImagePreview({
     required this.path,
     required this.caption,
     this.height = 180,
@@ -116,7 +114,7 @@ Future<void> showAppImageViewer({
 }
 
 class _AppImageViewer extends StatelessWidget {
-  _AppImageViewer({required this.path, required this.caption});
+  const _AppImageViewer({required this.path, required this.caption});
 
   final String path;
   final String caption;
@@ -184,7 +182,7 @@ class _AppImageViewer extends StatelessWidget {
 /// A local file rendered with a graceful fallback, so a missing or unreadable
 /// file never breaks the page.
 class _LocalImage extends StatelessWidget {
-  _LocalImage({required this.path, this.fit = BoxFit.cover});
+  const _LocalImage({required this.path, this.fit = BoxFit.cover});
 
   final String path;
   final BoxFit fit;
@@ -209,7 +207,7 @@ class _LocalImage extends StatelessWidget {
 }
 
 class _ImageFallback extends StatelessWidget {
-  _ImageFallback({this.loading = false});
+  const _ImageFallback({this.loading = false});
 
   final bool loading;
 

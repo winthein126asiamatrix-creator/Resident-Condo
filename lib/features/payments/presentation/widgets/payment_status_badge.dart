@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/invoice.dart';
 
 class PaymentStatusBadge extends StatelessWidget {
-  PaymentStatusBadge({required this.status, super.key});
+  const PaymentStatusBadge({required this.status, super.key});
 
   final InvoiceStatus status;
 

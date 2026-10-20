@@ -2,9 +2,7 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../../../../core/theme/app_radius.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
@@ -20,7 +18,7 @@ import '../../../../core/theme/app_theme_tokens.dart';
 /// It is inert by design: the tiles do not respond to taps, because a preview
 /// that navigated would take the resident off the screen they are configuring.
 class AppAppearancePreviewCard extends StatelessWidget {
-  AppAppearancePreviewCard({
+  const AppAppearancePreviewCard({
     required this.tokens,
     required this.greeting,
     required this.unitLabel,
@@ -99,7 +97,7 @@ class AppAppearancePreviewCard extends StatelessWidget {
 }
 
 class _PreviewStatusBar extends StatelessWidget {
-  _PreviewStatusBar({required this.tokens});
+  const _PreviewStatusBar({required this.tokens});
 
   final AppThemeTokens tokens;
 
@@ -131,7 +129,7 @@ class _PreviewStatusBar extends StatelessWidget {
 }
 
 class _PreviewGreeting extends StatelessWidget {
-  _PreviewGreeting({
+  const _PreviewGreeting({
     required this.tokens,
     required this.greeting,
     required this.unitLabel,
@@ -183,7 +181,7 @@ class _PreviewGreeting extends StatelessWidget {
 }
 
 class _PreviewAvatar extends StatelessWidget {
-  _PreviewAvatar({required this.tokens});
+  const _PreviewAvatar({required this.tokens});
 
   final AppThemeTokens tokens;
 
@@ -213,7 +211,7 @@ class _PreviewAvatar extends StatelessWidget {
 /// The balance card: the single place where the brand colour is used as a fill,
 /// because it is the one element the resident acts on most often.
 class _PreviewBalanceCard extends StatelessWidget {
-  _PreviewBalanceCard({
+  const _PreviewBalanceCard({
     required this.tokens,
     required this.amount,
     required this.due,
@@ -331,7 +329,7 @@ class _PreviewBalanceCard extends StatelessWidget {
 
 /// Maintenance and Facilities, the two shortcuts residents reach for most.
 class _PreviewShortcuts extends StatelessWidget {
-  _PreviewShortcuts({required this.tokens});
+  const _PreviewShortcuts({required this.tokens});
 
   final AppThemeTokens tokens;
 
@@ -408,7 +406,7 @@ class _PreviewShortcuts extends StatelessWidget {
 }
 
 class _PreviewAnnouncement extends StatelessWidget {
-  _PreviewAnnouncement({required this.tokens});
+  const _PreviewAnnouncement({required this.tokens});
 
   final AppThemeTokens tokens;
 
@@ -478,7 +476,7 @@ class _PreviewAnnouncement extends StatelessWidget {
 /// The bottom navigation, showing the selected item in the brand colour with the
 /// Material indicator pill behind it.
 class _PreviewNavigationBar extends StatelessWidget {
-  _PreviewNavigationBar({required this.tokens});
+  const _PreviewNavigationBar({required this.tokens});
 
   final AppThemeTokens tokens;
 
@@ -536,7 +534,7 @@ class _PreviewNavigationBar extends StatelessWidget {
 }
 
 class _PreviewNavItem extends StatelessWidget {
-  _PreviewNavItem({
+  const _PreviewNavItem({
     required this.destination,
     required this.selected,
     required this.tokens,

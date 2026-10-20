@@ -7,7 +7,11 @@ import '../../domain/entities/notification_item.dart';
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class NotificationItemCard extends StatelessWidget {
-  NotificationItemCard({required this.item, required this.onTap, super.key});
+  const NotificationItemCard({
+    required this.item,
+    required this.onTap,
+    super.key,
+  });
 
   final NotificationItem item;
   final VoidCallback onTap;

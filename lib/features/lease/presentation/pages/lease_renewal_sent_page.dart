@@ -3,32 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/utils/app_formatters.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../domain/entities/lease.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
 class LeaseRenewalSentPage extends StatelessWidget {
-  LeaseRenewalSentPage({required this.renewal, super.key});
+  const LeaseRenewalSentPage({required this.renewal, super.key});
 
   final LeaseRenewal renewal;
 
@@ -108,7 +100,7 @@ class LeaseRenewalSentPage extends StatelessWidget {
 }
 
 class _Line extends StatelessWidget {
-  _Line({required this.label, required this.value});
+  const _Line({required this.label, required this.value});
   final String label;
   final String value;
 

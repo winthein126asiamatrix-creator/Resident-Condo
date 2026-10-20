@@ -3,16 +3,14 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../theme/app_radius.dart';
-
 
 import '../theme/app_theme_tokens.dart';
 
 /// One segment of a [AppSegmentedTabs] strip.
 @immutable
 class AppSegmentedTab {
-  AppSegmentedTab({
+  const AppSegmentedTab({
     required this.name,
     required this.label,
     required this.icon,
@@ -36,7 +34,7 @@ class AppSegmentedTab {
 /// This navigates between sections. To pick one option inside a form, use
 /// [AppSegmentedControl] instead, which shows every option at once.
 class AppSegmentedTabs extends StatefulWidget {
-  AppSegmentedTabs({
+  const AppSegmentedTabs({
     required this.tabs,
     required this.selectedIndex,
     required this.onSelect,
@@ -180,7 +178,7 @@ class _AppSegmentedTabsState extends State<AppSegmentedTabs>
 /// One tappable segment. It dips slightly under the finger so a tap is answered
 /// before the content has finished sliding.
 class _SegmentButton extends StatefulWidget {
-  _SegmentButton({
+  const _SegmentButton({
     required this.tab,
     required this.selected,
     required this.onTap,
@@ -211,9 +209,9 @@ class _SegmentButtonState extends State<_SegmentButton> {
     final color = widget.selected ? tokens.brand : tokens.mutedStrong;
     return GestureDetector(
       onTap: () {
-                      vibrateNow();
-                      widget.onTap();
-                    },
+        vibrateNow();
+        widget.onTap();
+      },
       // Opaque so the whole segment is tappable, not just the glyph the text
       // happens to cover.
       behavior: HitTestBehavior.opaque,

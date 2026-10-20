@@ -3,49 +3,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../core/theme/app_palette.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-
 import '../../../../core/theme/app_spacing.dart';
-
 
 import '../../../../core/utils/app_formatters.dart';
 
-
 import '../../../../core/widgets/app_card.dart';
-
 
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
-
 import '../../../../core/widgets/app_dialogs.dart';
-
 
 import '../../../../core/widgets/app_primary_action.dart';
 
-
 import '../../../../core/widgets/app_buttons.dart';
-
 
 import '../../domain/entities/store_product.dart';
 
-
 import '../controllers/store_controller.dart';
 
-
 import '../widgets/store_cards.dart';
-
 
 import '../widgets/store_widgets.dart';
 
 /// Everything about one store order: what was bought, where it is going and
 /// where it has got to.
 class StoreOrderDetailPage extends GetView<StoreController> {
-  StoreOrderDetailPage({required this.order, super.key});
+  const StoreOrderDetailPage({required this.order, super.key});
 
   final StoreOrder order;
 
@@ -191,7 +178,7 @@ class StoreOrderDetailPage extends GetView<StoreController> {
 }
 
 class _OrderHeader extends StatelessWidget {
-  _OrderHeader({required this.order});
+  const _OrderHeader({required this.order});
 
   final StoreOrder order;
 
@@ -272,7 +259,7 @@ class _OrderHeader extends StatelessWidget {
 }
 
 class _InfoLine extends StatelessWidget {
-  _InfoLine({required this.label, required this.value});
+  const _InfoLine({required this.label, required this.value});
 
   final String label;
   final String value;

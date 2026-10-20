@@ -2,14 +2,12 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../../domain/entities/announcement.dart';
-
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class AnnouncementCard extends StatelessWidget {
-  AnnouncementCard({
+  const AnnouncementCard({
     required this.announcement,
     required this.onTap,
     super.key,
@@ -152,7 +150,7 @@ class AnnouncementCard extends StatelessWidget {
 }
 
 class _Badge extends StatelessWidget {
-  _Badge({required this.label, required this.color});
+  const _Badge({required this.label, required this.color});
 
   final String label;
   final Color color;

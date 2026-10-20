@@ -3,12 +3,9 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../theme/app_radius.dart';
 
-
 import '../theme/app_spacing.dart';
-
 
 import '../theme/app_theme_tokens.dart';
 
@@ -18,7 +15,7 @@ import '../theme/app_theme_tokens.dart';
 /// Used wherever a screen needs a second, less important action next to its
 /// primary one, or for an action that should read as reversible.
 class AppOutlinedButton extends StatelessWidget {
-  AppOutlinedButton({
+  const AppOutlinedButton({
     required this.label,
     required this.onPressed,
     this.icon,
@@ -53,10 +50,12 @@ class AppOutlinedButton extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: enabled ? () {
-          vibrateNow();
-          onPressed!();
-        } : null,
+        onTap: enabled
+            ? () {
+                vibrateNow();
+                onPressed!();
+              }
+            : null,
         child: SizedBox(
           height: AppSpacing.buttonHeight,
           width: expand ? double.infinity : null,
@@ -104,7 +103,7 @@ class AppOutlinedButton extends StatelessWidget {
 /// Low emphasis text action, used for "Back to Facilities" style links and
 /// third actions in a dialog.
 class AppTextButton extends StatelessWidget {
-  AppTextButton({
+  const AppTextButton({
     required this.label,
     required this.onPressed,
     this.icon,
@@ -124,11 +123,11 @@ class AppTextButton extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     return TextButton.icon(
       onPressed: onPressed == null
-        ? null
-        : () {
-            vibrateNow();
-            onPressed!();
-          },
+          ? null
+          : () {
+              vibrateNow();
+              onPressed!();
+            },
       icon: icon == null ? SizedBox.shrink() : Icon(icon, size: 18),
       label: Text(label),
       style: TextButton.styleFrom(

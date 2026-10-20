@@ -15,7 +15,6 @@ enum AppEnvironment {
 
   bool get isDev => this == AppEnvironment.dev;
 
- 
   static const String _devBaseUrl = 'https://dummyjson.com';
 
   static const String _prodBaseUrl = 'https://dummyjsonprod.com';
@@ -38,7 +37,6 @@ enum AppEnvironment {
     ),
   };
 
- 
   String get apiBaseUrl {
     final override = _overrideBaseUrl;
     if (override.isNotEmpty) {

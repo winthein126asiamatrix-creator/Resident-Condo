@@ -3,38 +3,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/widgets/app_dialogs.dart';
 
-
 import '../../domain/entities/complaint.dart';
-
 
 import '../controllers/complaint_controller.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/widgets/app_form_field.dart';
 
-
 import '../../../../core/widgets/app_segmented_control.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
 class CreateComplaintPage extends StatefulWidget {
-  CreateComplaintPage({super.key});
+  const CreateComplaintPage({super.key});
 
   @override
   State<CreateComplaintPage> createState() => _CreateComplaintPageState();

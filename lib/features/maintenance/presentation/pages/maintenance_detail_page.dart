@@ -3,32 +3,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../domain/entities/maintenance_request.dart';
-
 
 import '../controllers/maintenance_controller.dart';
 
-
 import '../widgets/maintenance_status_badge.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
-
 import '../../../../core/widgets/app_image_preview.dart';
-
 
 import '../../../../core/widgets/app_step_progress.dart';
 
 class MaintenanceDetailPage extends GetView<MaintenanceController> {
-  MaintenanceDetailPage({required this.request, super.key});
+  const MaintenanceDetailPage({required this.request, super.key});
 
   final MaintenanceRequest request;
 
@@ -145,7 +137,7 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
 }
 
 class _DetailHero extends StatelessWidget {
-  _DetailHero({required this.request});
+  const _DetailHero({required this.request});
 
   final MaintenanceRequest request;
 
@@ -199,7 +191,7 @@ class _DetailHero extends StatelessWidget {
 }
 
 class _Section extends StatelessWidget {
-  _Section({required this.title, required this.child});
+  const _Section({required this.title, required this.child});
 
   final String title;
   final Widget child;
@@ -230,7 +222,7 @@ class _Section extends StatelessWidget {
 }
 
 class _Line extends StatelessWidget {
-  _Line({required this.label, required this.value});
+  const _Line({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -265,7 +257,7 @@ class _Line extends StatelessWidget {
 /// The step the request has reached comes from [MaintenanceRequest.status], so
 /// nothing here is hardcoded: moving the request forward moves the timeline.
 class _StatusProgress extends StatelessWidget {
-  _StatusProgress({required this.request});
+  const _StatusProgress({required this.request});
 
   final MaintenanceRequest request;
 
@@ -300,7 +292,14 @@ class _StatusProgress extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
           ),
           16.h.heightBox(),
-          AppStepProgress(steps: steps, currentIndex: status.index),
+          AppStepProgress(
+            steps: steps,
+            // A completed request has finished every step, so push the index
+            // past the last one to render them all as completed.
+            currentIndex: status == MaintenanceStatus.completed
+                ? steps.length
+                : status.index,
+          ),
         ],
       ),
     );

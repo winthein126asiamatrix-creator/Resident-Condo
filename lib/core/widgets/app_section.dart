@@ -2,15 +2,13 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-
 import '../theme/app_theme_tokens.dart';
-
 
 import 'app_card.dart';
 
 /// Section title with optional count chip and trailing action.
 class AppSectionHeader extends StatelessWidget {
-  AppSectionHeader({
+  const AppSectionHeader({
     required this.title,
     this.count,
     this.actionLabel,
@@ -66,7 +64,7 @@ class AppSectionHeader extends StatelessWidget {
 
 /// Two column label / value row reused by the detail pages.
 class AppLabelValueRow extends StatelessWidget {
-  AppLabelValueRow({
+  const AppLabelValueRow({
     required this.label,
     this.value,
     this.valueWidget,
@@ -116,7 +114,7 @@ class AppLabelValueRow extends StatelessWidget {
 
 /// Titled card wrapper: `AppSectionCard(title: ..., child: ...)`.
 class AppSectionCard extends StatelessWidget {
-  AppSectionCard({
+  const AppSectionCard({
     required this.title,
     required this.child,
     this.subtitle,

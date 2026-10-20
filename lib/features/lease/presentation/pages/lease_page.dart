@@ -4,50 +4,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
-
 import '../../../../app/routes/app_routes.dart';
-
 
 import '../../../../core/theme/app_palette.dart';
 
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 
 import '../../../../core/utils/app_dates.dart';
 
-
 import '../../../../core/utils/app_formatters.dart';
-
 
 import '../../../../core/widgets/app_card.dart';
 
-
 import '../../../../core/widgets/app_dialogs.dart';
-
 
 import '../../../../core/widgets/app_section.dart';
 
-
 import '../../../../core/widgets/app_state_message.dart';
-
 
 import '../../../../core/widgets/app_status_pill.dart';
 
-
 import '../../domain/entities/lease.dart';
-
 
 import '../controllers/lease_controller.dart';
 
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 
 import '../../../../core/theme/app_spacing.dart';
 
 class LeasePage extends GetView<LeaseController> {
-  LeasePage({super.key});
+  const LeasePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -195,7 +181,7 @@ class LeasePage extends GetView<LeaseController> {
 }
 
 class _LeaseProgressCard extends StatelessWidget {
-  _LeaseProgressCard({required this.lease, required this.perspective});
+  const _LeaseProgressCard({required this.lease, required this.perspective});
   final Lease lease;
   final String perspective;
 
@@ -278,7 +264,7 @@ class _LeaseProgressCard extends StatelessWidget {
 }
 
 class _PartyTile extends StatelessWidget {
-  _PartyTile({required this.party});
+  const _PartyTile({required this.party});
   final LeaseParty party;
 
   @override
@@ -324,7 +310,7 @@ class _PartyTile extends StatelessWidget {
 }
 
 class _RenewalList extends StatelessWidget {
-  _RenewalList({required this.controller, required this.lease});
+  const _RenewalList({required this.controller, required this.lease});
   final LeaseController controller;
   final Lease lease;
 
@@ -354,7 +340,7 @@ class _RenewalList extends StatelessWidget {
 }
 
 class _RenewalCard extends StatelessWidget {
-  _RenewalCard({required this.controller, required this.renewal});
+  const _RenewalCard({required this.controller, required this.renewal});
   final LeaseController controller;
   final LeaseRenewal renewal;
 

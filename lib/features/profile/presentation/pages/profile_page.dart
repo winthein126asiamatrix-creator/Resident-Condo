@@ -168,8 +168,8 @@ class ProfilePage extends GetView<ProfileController> {
                       onTap: () {
                         vibrateNow();
                         controller.toggleNotifications(
-                        !profile.notificationsEnabled,
-                      );
+                          !profile.notificationsEnabled,
+                        );
                       },
                       trailing: Switch.adaptive(
                         value: profile.notificationsEnabled,
@@ -313,10 +313,10 @@ class ProfilePage extends GetView<ProfileController> {
                       onTap: () {
                         vibrateNow();
                         _showMessage(
-                        context,
-                        'Payment methods',
-                        'Payment method management will be available soon.',
-                      );
+                          context,
+                          'Payment methods',
+                          'Payment method management will be available soon.',
+                        );
                       },
                     ),
                     const _RowDivider(),
@@ -326,10 +326,10 @@ class ProfilePage extends GetView<ProfileController> {
                       onTap: () {
                         vibrateNow();
                         _showMessage(
-                        context,
-                        'Help & support',
-                        'Our resident support team is here to help.',
-                      );
+                          context,
+                          'Help & support',
+                          'Our resident support team is here to help.',
+                        );
                       },
                     ),
                   ],
