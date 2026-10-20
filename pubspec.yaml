@@ -43,6 +43,7 @@ flutter:
     - assets/images/app_icon.png
     - assets/images/condo-phone-app-icon-hexagon.png
     - assets/images/amenities/
+    - shorebird.yaml
   fonts:
     - family: DM Sans
       fonts:

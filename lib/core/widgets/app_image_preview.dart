@@ -9,11 +9,6 @@ import '../theme/app_radius.dart';
 
 import '../theme/app_theme_tokens.dart';
 
-/// A photo attached to a request, shown as a tappable card.
-///
-/// Tapping opens the full screen viewer, so the details page stays short and the
-/// resident can still look at the photo properly. Uses the same surface,
-/// radius and border as the rest of the app's cards.
 class AppImagePreview extends StatelessWidget {
   const AppImagePreview({
     required this.path,
@@ -192,14 +187,11 @@ class _LocalImage extends StatelessWidget {
     return Image.file(
       File(path),
       fit: fit,
-      // A missing or unreadable file must not break the page.
       errorBuilder: (context, error, stackTrace) => _ImageFallback(),
       frameBuilder: (context, child, frame, wasSyncLoaded) {
         if (wasSyncLoaded || frame != null) {
           return child;
         }
-        // A still placeholder rather than a spinner: a local file appears in a
-        // frame or two, so an animation here would only add noise.
         return _ImageFallback(loading: true);
       },
     );

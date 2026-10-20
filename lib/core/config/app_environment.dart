@@ -42,7 +42,6 @@ enum AppEnvironment {
     if (override.isNotEmpty) {
       return _normalize(override);
     }
-    superPrint(_prodBaseUrl);
     return switch (this) {
       AppEnvironment.dev => _normalize(_devBaseUrl),
       AppEnvironment.prod when _prodBaseUrl.isEmpty => throw StateError(
