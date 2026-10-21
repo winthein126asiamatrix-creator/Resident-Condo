@@ -182,26 +182,50 @@ class _CategoryFilters extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    Widget buildChip({
+      required String label,
+      required bool selected,
+      required VoidCallback onSelected,
+    }) {
+      return Padding(
+        padding: EdgeInsets.only(right: 8),
+        child: ChoiceChip(
+          label: Text(label),
+          selected: selected,
+          showCheckmark: false,
+          onSelected: (_) => onSelected(),
+          backgroundColor: tokens.surface,
+          selectedColor: tokens.brandTint,
+          side: BorderSide(
+            color: selected ? tokens.brand : tokens.border,
+            width: selected ? 1.4 : 1,
+          ),
+          shape: const StadiumBorder(),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          labelStyle: TextStyle(
+            color: selected ? tokens.brand : tokens.mutedStrong,
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
       child: Row(
         children: [
-          ChoiceChip(
-            label: Text('All'),
+          buildChip(
+            label: 'All',
             selected: controller.selectedCategory.value == null,
-            onSelected: (_) => controller.selectCategory(null),
-            selectedColor: tokens.brandOnDark,
+            onSelected: () => controller.selectCategory(null),
           ),
-          8.w.widthBox(),
           ...AnnouncementCategory.values.map(
-            (category) => Padding(
-              padding: EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text(category.label),
-                selected: controller.selectedCategory.value == category,
-                onSelected: (_) => controller.selectCategory(category),
-                selectedColor: tokens.brandOnDark,
-              ),
+            (category) => buildChip(
+              label: category.label,
+              selected: controller.selectedCategory.value == category,
+              onSelected: () => controller.selectCategory(category),
             ),
           ),
         ],

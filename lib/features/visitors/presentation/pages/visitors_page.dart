@@ -163,6 +163,7 @@ class _FilterRow extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
       child: Row(
         children: [
           for (final filter in VisitorFilter.values)
@@ -171,12 +172,23 @@ class _FilterRow extends StatelessWidget {
               child: ChoiceChip(
                 label: Text('${filter.label} (${controller.countFor(filter)})'),
                 selected: controller.filter.value == filter,
+                showCheckmark: false,
                 onSelected: (_) => controller.selectFilter(filter),
-                selectedColor: tokens.brandSoft,
+                backgroundColor: tokens.surface,
+                selectedColor: tokens.brandTint,
+                side: BorderSide(
+                  color: controller.filter.value == filter
+                      ? tokens.brand
+                      : tokens.border,
+                  width: controller.filter.value == filter ? 1.4 : 1,
+                ),
+                shape: const StadiumBorder(),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 labelStyle: TextStyle(
                   color: controller.filter.value == filter
                       ? tokens.brand
                       : tokens.mutedStrong,
+                  fontSize: 13.sp,
                   fontWeight: FontWeight.w700,
                 ),
               ),

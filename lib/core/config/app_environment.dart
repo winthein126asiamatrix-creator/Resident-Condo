@@ -1,7 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show appFlavor;
-import 'package:test/core/utils/super_print.dart';
-
 enum AppEnvironment {
   dev(name: 'dev', isProduction: false),
   prod(name: 'prod', isProduction: true);

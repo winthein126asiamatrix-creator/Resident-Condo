@@ -165,7 +165,10 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     return Scaffold(
-      appBar: AppDetailAppBar(title: 'Register visitor'),
+      appBar: AppDetailAppBar(
+        title: 'Register visitor',
+        subtitle: 'Create a visitor access code',
+      ),
       body: Obx(
         () => ListView(
           key: Key('register-visitor-scroll'),
@@ -187,7 +190,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                   Expanded(
                     child: Text(
                       'An alphanumeric access code is generated automatically '
-                      'when you register. Share the code with your visitor â€” no '
+                      'when you register. Share the code with your visitor - no '
                       'QR pass is used.',
                       style: TextStyle(
                         color: tokens.mutedStrong,
@@ -199,127 +202,159 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                 ],
               ),
             ),
-            AppSpacing.fieldGap.heightBox(),
-            AppTextField(
-              fieldKey: Key('visitor-name-field'),
-              label: 'Full name',
-              controller: _nameController,
-              textCapitalization: TextCapitalization.words,
-              hint: 'Jamie Johnson',
+            20.h.heightBox(),
+            _SectionTitle(
               icon: Icons.person_outline_rounded,
+              title: 'Visitor details',
             ),
-            AppSpacing.fieldGap.heightBox(),
-            AppTextField(
-              fieldKey: Key('visitor-phone-field'),
-              label: 'Contact number',
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]')),
-              ],
-              hint: '+959772611100',
-              icon: Icons.phone_outlined,
-            ),
-            AppSpacing.fieldGap.heightBox(),
-            _Label('Relation'),
-            8.h.heightBox(),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: VisitorRelation.values
-                  .map(
-                    (relation) => ChoiceChip(
-                      label: Text(relation.label),
-                      selected: _relation == relation,
-                      onSelected: (_) => setState(() => _relation = relation),
-                      selectedColor: tokens.brandSoft,
-                      labelStyle: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: _relation == relation
-                            ? tokens.brand
-                            : tokens.mutedStrong,
-                      ),
-                    ),
-                  )
-                  .toList(),
-            ),
-            AppSpacing.fieldGap.heightBox(),
-            AppTextField(
-              label: 'Purpose of visit',
-              controller: _notesController,
-              hint: 'Dinner, delivery, maintenance visitâ€¦',
-              icon: Icons.notes_rounded,
-            ),
-            AppSpacing.fieldGap.heightBox(),
-            _Label('Visit date'),
-            8.h.heightBox(),
-            _VisitDatePicker(
-              dates: _visitDates,
-              selected: _date,
-              onSelected: _selectDate,
-            ),
-            AppSpacing.fieldGap.heightBox(),
-            _Label('Arrival time'),
-            8.h.heightBox(),
-            if (_arrivalSlots.isEmpty)
-              _NoSlotsToday()
-            else ...[
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+            10.h.heightBox(),
+            AppCard(
+              showShadow: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (final slot in _arrivalSlots)
-                    ChoiceChip(
-                      key: Key('arrival-slot-$slot'),
-                      label: Text(slot),
-                      selected: slot == _arrival && !_arrivalIsCustom,
-                      onSelected: (_) => setState(() {
-                        _arrival = slot;
-                        _arrivalIsCustom = false;
-                      }),
-                      selectedColor: tokens.brandSoft,
-                      labelStyle: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: slot == _arrival && !_arrivalIsCustom
-                            ? tokens.brand
-                            : tokens.mutedStrong,
-                      ),
-                    ),
-                  // Uses the platform time picker already in the project, so no
-                  // new package is needed for a custom arrival time.
-                  ChoiceChip(
-                    key: Key('arrival-slot-custom'),
-                    avatar: Icon(
-                      Icons.schedule_rounded,
-                      size: 17,
-                      color: _arrivalIsCustom
-                          ? tokens.brand
-                          : tokens.mutedStrong,
-                    ),
-                    label: Text(_arrivalIsCustom ? _arrival : 'Custom time'),
-                    selected: _arrivalIsCustom,
-                    onSelected: (_) => _pickCustomArrival(context),
-                    selectedColor: tokens.brandSoft,
-                    labelStyle: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: _arrivalIsCustom
-                          ? tokens.brand
-                          : tokens.mutedStrong,
-                    ),
+                  AppTextField(
+                    fieldKey: Key('visitor-name-field'),
+                    label: 'Full name',
+                    controller: _nameController,
+                    textCapitalization: TextCapitalization.words,
+                    hint: 'Jamie Johnson',
+                    icon: Icons.person_outline_rounded,
+                  ),
+                  AppSpacing.fieldGap.heightBox(),
+                  AppTextField(
+                    fieldKey: Key('visitor-phone-field'),
+                    label: 'Contact number',
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]')),
+                    ],
+                    hint: '+959772611100',
+                    icon: Icons.phone_outlined,
+                  ),
+                  AppSpacing.fieldGap.heightBox(),
+                  _Label('Relation'),
+                  8.h.heightBox(),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: VisitorRelation.values
+                        .map(
+                          (relation) => ChoiceChip(
+                            label: Text(relation.label),
+                            selected: _relation == relation,
+                            onSelected: (_) =>
+                                setState(() => _relation = relation),
+                            selectedColor: tokens.brandSoft,
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: _relation == relation
+                                  ? tokens.brand
+                                  : tokens.mutedStrong,
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  AppSpacing.fieldGap.heightBox(),
+                  AppTextField(
+                    label: 'Purpose of visit',
+                    controller: _notesController,
+                    hint: 'Dinner, delivery, maintenance visit...',
+                    icon: Icons.notes_rounded,
                   ),
                 ],
               ),
-              10.h.heightBox(),
-              _VisitWindow(range: _visitWindow),
-            ],
-            AppSpacing.fieldGap.heightBox(),
-            AppTextField(
-              label: 'Vehicle plate (optional)',
-              controller: _plateController,
-              textCapitalization: TextCapitalization.characters,
-              inputFormatters: [UpperCaseTextFormatter()],
-              hint: 'ABC-1234',
+            ),
+            20.h.heightBox(),
+            _SectionTitle(icon: Icons.event_rounded, title: 'Visit schedule'),
+            10.h.heightBox(),
+            AppCard(
+              showShadow: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _Label('Visit date'),
+                  8.h.heightBox(),
+                  _VisitDatePicker(
+                    dates: _visitDates,
+                    selected: _date,
+                    onSelected: _selectDate,
+                  ),
+                  AppSpacing.fieldGap.heightBox(),
+                  _Label('Arrival time'),
+                  8.h.heightBox(),
+                  if (_arrivalSlots.isEmpty)
+                    _NoSlotsToday()
+                  else ...[
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final slot in _arrivalSlots)
+                          ChoiceChip(
+                            key: Key('arrival-slot-$slot'),
+                            label: Text(slot),
+                            selected: slot == _arrival && !_arrivalIsCustom,
+                            onSelected: (_) => setState(() {
+                              _arrival = slot;
+                              _arrivalIsCustom = false;
+                            }),
+                            selectedColor: tokens.brandSoft,
+                            labelStyle: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: slot == _arrival && !_arrivalIsCustom
+                                  ? tokens.brand
+                                  : tokens.mutedStrong,
+                            ),
+                          ),
+                        ChoiceChip(
+                          key: Key('arrival-slot-custom'),
+                          avatar: Icon(
+                            Icons.schedule_rounded,
+                            size: 17,
+                            color: _arrivalIsCustom
+                                ? tokens.brand
+                                : tokens.mutedStrong,
+                          ),
+                          label: Text(
+                            _arrivalIsCustom ? _arrival : 'Custom time',
+                          ),
+                          selected: _arrivalIsCustom,
+                          onSelected: (_) => _pickCustomArrival(context),
+                          selectedColor: tokens.brandSoft,
+                          labelStyle: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: _arrivalIsCustom
+                                ? tokens.brand
+                                : tokens.mutedStrong,
+                          ),
+                        ),
+                      ],
+                    ),
+                    10.h.heightBox(),
+                    _VisitWindow(range: _visitWindow),
+                  ],
+                ],
+              ),
+            ),
+            20.h.heightBox(),
+            _SectionTitle(
               icon: Icons.directions_car_outlined,
+              title: 'Additional details',
+            ),
+            10.h.heightBox(),
+            AppCard(
+              showShadow: true,
+              child: AppTextField(
+                label: 'Vehicle plate (optional)',
+                controller: _plateController,
+                textCapitalization: TextCapitalization.characters,
+                inputFormatters: [UpperCaseTextFormatter()],
+                hint: 'ABC-1234',
+                icon: Icons.directions_car_outlined,
+              ),
             ),
             24.h.heightBox(),
             AppPrimaryAction(
@@ -674,6 +709,32 @@ class _VisitWindow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.icon, required this.title});
+
+  final IconData icon;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: tokens.brand),
+        8.w.widthBox(),
+        Text(
+          title,
+          style: TextStyle(
+            color: tokens.ink,
+            fontSize: 15.sp,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
     );
   }
 }
