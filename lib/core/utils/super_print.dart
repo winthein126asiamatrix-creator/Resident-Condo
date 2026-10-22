@@ -28,7 +28,6 @@ void superPrint(dynamic content, {dynamic title = 'Super Print'}) {
   if (!kDebugMode) {
     return;
   }
-
   debugPrint(
     '- $title\n'
     '${_caller()}\n'

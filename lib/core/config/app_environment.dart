@@ -1,10 +1,16 @@
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show appFlavor;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 enum AppEnvironment {
   dev(name: 'dev', isProduction: false),
   prod(name: 'prod', isProduction: true);
 
-  const AppEnvironment({required this.name, required this.isProduction});
+  const AppEnvironment({
+    required this.name,
+    required this.isProduction,
+  });
 
   /// The Flutter flavor name this environment is built from.
   final String name;
@@ -13,48 +19,50 @@ enum AppEnvironment {
 
   bool get isDev => this == AppEnvironment.dev;
 
-  static const String _devBaseUrl = 'https://dummyjson.com';
-
-  static const String _prodBaseUrl = 'https://dummyjsonprod.com';
-
-  /// Escapes both of the above for a one-off build.
-  static const String _overrideBaseUrl = String.fromEnvironment('API_BASE_URL');
+  /// Optional one-off override:
+  /// --dart-define=API_BASE_URL=https://example.com
+  static const String _overrideBaseUrl =
+      String.fromEnvironment('API_BASE_URL');
 
   /// The environment of this build.
   ///
-  /// Throws when the flavor is missing or unknown, because a build without one
-  /// has no environment to talk to and guessing would hide that.
+  /// Throws when the flavor is missing or unknown.
   static AppEnvironment get current => _fromFlavor(appFlavor);
 
   static AppEnvironment _fromFlavor(String? flavor) => switch (flavor) {
-    'dev' => AppEnvironment.dev,
-    'prod' => AppEnvironment.prod,
-    _ => throw StateError(
-      'Unknown app flavor: ${flavor == null ? 'none' : '"$flavor"'}. '
-      'Run with --flavor dev or --flavor prod.',
-    ),
-  };
+        'dev' => AppEnvironment.dev,
+        'prod' => AppEnvironment.prod,
+        _ => throw StateError(
+            'Unknown app flavor: '
+            '${flavor == null ? 'none' : '"$flavor"'}. '
+            'Run with --flavor dev or --flavor prod.',
+          ),
+      };
 
+  /// Reads API_BASE_URL from --dart-define first,
+  /// then from the flavor-specific .env file.
   String get apiBaseUrl {
-    final override = _overrideBaseUrl;
+    final override = _overrideBaseUrl.trim();
+
     if (override.isNotEmpty) {
       return _normalize(override);
     }
-    return switch (this) {
-      AppEnvironment.dev => _normalize(_devBaseUrl),
-      AppEnvironment.prod when _prodBaseUrl.isEmpty => throw StateError(
-        'No production API base URL is configured. Set _prodBaseUrl in '
-        'lib/core/config/app_environment.dart, or set API_BASE_URL to '
-        'override both environments.',
-      ),
-      AppEnvironment.prod => _normalize(_prodBaseUrl),
-    };
+
+    final baseUrl = dotenv.env['API_BASE_URL']?.trim() ?? '';
+
+    if (baseUrl.isEmpty) {
+      throw StateError(
+        'API_BASE_URL is missing from the environment configuration '
+        'for "$name". Check the corresponding .env file.',
+      );
+    }
+
+    return _normalize(baseUrl);
   }
 
   bool get enableVerboseLogging => isDev && kDebugMode;
 
-  /// Drops a trailing slash, so a configured origin cannot turn every path into
-  /// a double slash.
+  /// Removes a trailing slash to avoid double slashes in API paths.
   static String _normalize(String url) =>
       url.endsWith('/') ? url.substring(0, url.length - 1) : url;
 }

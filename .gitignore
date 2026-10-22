@@ -49,3 +49,5 @@ app.*.map.json
 
 # Documentation folder to ignore
 docs/
+.env.*
+!.env.development
