@@ -569,7 +569,7 @@ class _HexField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.lg),
-              borderSide: BorderSide(color: tokens.brand, width: 1.6),
+              borderSide: BorderSide(color: tokens.border, width: 1.6),
             ),
           ),
         ),

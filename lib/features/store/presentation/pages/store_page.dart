@@ -408,7 +408,7 @@ class _StoreSearch extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          borderSide: BorderSide(color: tokens.brand, width: 1.4),
+          borderSide: BorderSide(color: tokens.border, width: 1.4),
         ),
       ),
     );

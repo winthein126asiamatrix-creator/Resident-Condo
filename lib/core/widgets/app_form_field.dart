@@ -38,6 +38,7 @@ class AppTextField extends StatelessWidget {
     this.onSubmitted,
     this.focusNode,
     this.enabled = true,
+    this.focusedBorder,
     this.obscureText = false,
     this.suffixIconLabel,
     this.onSuffixTap,
@@ -68,6 +69,10 @@ class AppTextField extends StatelessWidget {
 
   /// Hides the entered text, for a password or a code.
   final bool obscureText;
+
+  /// Optional override for the focus ring. When null the field keeps the
+  /// shared brand focus colour from [appFormFieldDecoration].
+  final OutlineInputBorder? focusedBorder;
 
   /// Adds a clear button on the trailing edge, e.g. to empty a search field.
   final String? suffixIconLabel;
@@ -124,6 +129,7 @@ class AppTextField extends StatelessWidget {
             onSuffixTap: onSuffixTap,
             suffixIcon: suffixIcon,
             enabled: enabled,
+            focusedBorder: focusedBorder,
           ),
         ),
       ],
@@ -143,6 +149,7 @@ class AppSelectField<T> extends StatelessWidget {
     this.icon,
     this.helperText,
     this.itemBuilder,
+    this.focusedBorder,
     super.key,
   });
 
@@ -155,6 +162,10 @@ class AppSelectField<T> extends StatelessWidget {
   final IconData? icon;
   final String? helperText;
   final String Function(T value)? itemBuilder;
+
+  /// Optional override for the focus ring. When null the field keeps the
+  /// shared brand focus colour from [appFormFieldDecoration].
+  final OutlineInputBorder? focusedBorder;
 
   @override
   Widget build(BuildContext context) {
@@ -190,6 +201,7 @@ class AppSelectField<T> extends StatelessWidget {
             icon: null,
             helperText: helperText,
             isSelect: true,
+            focusedBorder: focusedBorder,
           ),
         ),
       ],
@@ -211,6 +223,7 @@ InputDecoration appFormFieldDecoration({
   Widget? suffixIcon,
   bool isSelect = false,
   bool enabled = true,
+  OutlineInputBorder? focusedBorder,
 }) {
   final tokens = context == null
       ? AppThemeTokens.fallback()
@@ -247,7 +260,7 @@ InputDecoration appFormFieldDecoration({
     enabledBorder: border(tokens.border),
     // The focus ring is the only emphasis a field gets, which is enough to
     // show it is active without shouting.
-    focusedBorder: border(tokens.brand, 1.6),
+    focusedBorder: focusedBorder ?? border(tokens.border),
     errorBorder: border(AppPalette.danger, 1.2),
     focusedErrorBorder: border(AppPalette.danger, 1.6),
     disabledBorder: border(tokens.border),

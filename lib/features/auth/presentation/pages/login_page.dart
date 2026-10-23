@@ -226,6 +226,7 @@ class _LoginForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Form(
       key: formKey,
       child: Column(
@@ -252,6 +253,10 @@ class _LoginForm extends StatelessWidget {
             enabled: !auth.isSubmitting.value,
             onChanged: (_) => auth.onFieldChanged(''),
             onSubmitted: (_) => passwordFocus.requestFocus(),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              borderSide: BorderSide(color: tokens.border),
+            ),
             validator: (_) =>
                 auth
                         .validate(
@@ -286,6 +291,10 @@ class _LoginForm extends StatelessWidget {
               suffixIcon: _PasswordToggle(
                 visible: auth.isPasswordVisible.value,
                 onToggle: auth.togglePasswordVisibility,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                borderSide: BorderSide(color: tokens.border),
               ),
               validator: (_) =>
                   auth
