@@ -8,6 +8,8 @@ import '../../../../app/routes/app_routes.dart';
 
 import '../../../../core/theme/app_palette.dart';
 
+import '../../../../core/theme/app_text_styles.dart';
+
 import '../../../../core/theme/app_theme_tokens.dart';
 
 import '../../../../core/utils/app_formatters.dart';
@@ -180,18 +182,27 @@ class _ServiceCard extends StatelessWidget {
   final CondoServiceController controller;
   final CondoService service;
 
+  void _openBooking() {
+    controller.selectService(service);
+    Get.toNamed(AppRoutes.serviceRequest);
+  }
+
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    final styles = AppTextStyles.of(context);
     return AppCard(
+      onTap: _openBooking,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppIconTile(
                 icon: serviceIcon(service.category),
                 color: tokens.brand,
+                size: 46,
               ),
               12.w.widthBox(),
               Expanded(
@@ -200,43 +211,49 @@ class _ServiceCard extends StatelessWidget {
                   children: [
                     Text(
                       service.name,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16.sp,
-                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: styles.cardTitle,
                     ),
                     3.h.heightBox(),
                     Text(
-                      '${service.category.label} Â· ${service.provider}',
-                      style: TextStyle(color: tokens.muted, fontSize: 11.sp),
+                      '${service.category.label} \u00B7 ${service.provider}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: tokens.muted, fontSize: 11.5.sp),
                     ),
                   ],
                 ),
               ),
+              10.w.widthBox(),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
                     AppFormatters.currency(service.price),
                     style: TextStyle(
+                      color: tokens.brand,
                       fontWeight: FontWeight.w800,
                       fontSize: 16.sp,
                     ),
                   ),
+                  2.h.heightBox(),
                   Text(
                     service.unit,
-                    style: TextStyle(color: tokens.faint, fontSize: 10.sp),
+                    style: TextStyle(color: tokens.faint, fontSize: 10.5.sp),
                   ),
                 ],
               ),
             ],
           ),
-          12.h.heightBox(),
+          10.h.heightBox(),
           Text(
             service.description,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: tokens.mutedStrong,
-              fontSize: 12.sp,
+              fontSize: 12.5.sp,
               height: 1.4,
             ),
           ),
@@ -245,19 +262,28 @@ class _ServiceCard extends StatelessWidget {
             children: [
               Icon(Icons.schedule_rounded, size: 15, color: tokens.faint),
               5.w.widthBox(),
-              Text(
-                'Needs ${service.leadTimeDays} day notice',
-                style: TextStyle(color: tokens.faint, fontSize: 11.sp),
+              Expanded(
+                child: Text(
+                  'Needs ${service.leadTimeDays} day notice',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: tokens.faint, fontSize: 11.sp),
+                ),
               ),
-              Spacer(),
-              TextButton.icon(
+              8.w.widthBox(),
+              FilledButton.icon(
                 key: Key('book-service-${service.id}'),
-                onPressed: () {
-                  controller.selectService(service);
-                  Get.toNamed(AppRoutes.serviceRequest);
-                },
-                icon: Icon(Icons.add_rounded, size: 18),
+                onPressed: _openBooking,
+                icon: Icon(Icons.add_rounded, size: 17),
                 label: Text('Book'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(0, 40),
+                  padding: EdgeInsets.symmetric(horizontal: 14),
+                  textStyle: TextStyle(
+                    fontSize: 12.5.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),

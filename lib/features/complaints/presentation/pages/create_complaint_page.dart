@@ -15,6 +15,8 @@ import '../../domain/entities/complaint.dart';
 
 import '../controllers/complaint_controller.dart';
 
+import '../widgets/complaint_widgets.dart';
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 import '../../../../core/widgets/app_form_field.dart';
@@ -93,19 +95,9 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
             10.h.heightBox(),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: ComplaintCategory.values
-                  .map(
-                    (category) => ChoiceChip(
-                      label: Text(category.label),
-                      selected: _category == category,
-                      onSelected: (_) => setState(() => _category = category),
-                      selectedColor: tokens.brandSoft,
-                    ),
-                  )
-                  .toList(),
+            ComplaintCategoryGrid(
+              selected: _category,
+              onSelected: (category) => setState(() => _category = category),
             ),
             AppSpacing.fieldGap.heightBox(),
             Text(

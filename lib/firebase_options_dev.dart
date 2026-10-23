@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyCI9aVNy_LJXMZRGKnSDUPLyp7ZWgbQP18',
-    appId: '1:362409084948:android:d2e92d76f3a6ef197e7f01',
+    appId: '1:362409084948:android:0ee2092647b7f0437e7f01',
     messagingSenderId: '362409084948',
     projectId: 'matrix-condo-dev',
     storageBucket: 'matrix-condo-dev.firebasestorage.app',
