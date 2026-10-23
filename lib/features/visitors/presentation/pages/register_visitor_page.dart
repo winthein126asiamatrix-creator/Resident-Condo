@@ -54,18 +54,10 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
   String _arrival = '';
   String _error = '';
 
-  /// Today plus the next three days, generated on open so the list never goes
-  /// stale against the real calendar.
   static const _dateWindowDays = 4;
-
-  /// A visit always runs two hours from the arrival time.
   static const _visitHours = 2;
-
-  /// How many hourly slots are offered for a visit today.
   static const _arrivalSlotCount = 6;
 
-  /// The concierge day, offered for any visit that is not today. A future date is
-  /// not held to the clock, so the full set is available.
   static const _futureSlots = <String>[
     '9:00 AM',
     '10:00 AM',
@@ -82,7 +74,6 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
     _arrival = _arrivalSlots.isEmpty ? '' : _arrivalSlots.first;
   }
 
-  /// The selectable visit dates, each with the label a resident would use.
   List<({String value, String relative, String day, String month})>
   get _visitDates {
     final now = DateTime.now();
@@ -92,8 +83,8 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
       return (
         value: AppDates.format(date),
         relative: switch (index) {
-          0 => 'Today',
-          1 => 'Tomorrow',
+          0 => 'today'.tr,
+          1 => 'tomorrow'.tr,
           _ => AppDates.weekday(date),
         },
         day: date.day.toString().padLeft(2, '0'),
@@ -102,19 +93,11 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
     });
   }
 
-  /// True when the visit is for today, where the clock decides what is still
-  /// bookable.
   bool get _isToday {
     final now = DateTime.now();
     return _date == AppDates.format(DateTime(now.year, now.month, now.day));
   }
 
-  /// The arrival slots to offer.
-  ///
-  /// Today offers the next six full hours, so nothing that has already gone can
-  /// be chosen. Any other date offers the concierge day, because the clock says
-  /// nothing about a visit that has not happened yet. An empty list means the day
-  /// is over and the resident needs a later date.
   List<String> get _arrivalSlots {
     if (!_isToday) {
       return _futureSlots;
@@ -131,8 +114,6 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
     ];
   }
 
-  /// True when [label] is still an arrival this visit can take. A future date
-  /// takes any time; today takes only a time strictly later than the clock.
   bool _canArriveAt(String label) {
     if (!_isToday) {
       return true;
@@ -144,7 +125,6 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
     return AppTimes.isAfter(time, TimeOfDay.now());
   }
 
-  /// The visit window, always the arrival time plus two hours.
   AppTimeRange get _visitWindow =>
       AppTimeRange.fromLabel(_arrival, _visitHours) ??
       AppTimeRange(
@@ -166,12 +146,12 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
     final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(
-        title: 'Register visitor',
-        subtitle: 'Create a visitor access code',
+        title: 'registerVisitor'.tr,
+        subtitle: 'createVisitorAccessCode'.tr,
       ),
       body: Obx(
         () => ListView(
-          key: Key('register-visitor-scroll'),
+          key: const Key('register-visitor-scroll'),
           padding: EdgeInsets.fromLTRB(
             20,
             8,
@@ -205,7 +185,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
             20.h.heightBox(),
             _SectionTitle(
               icon: Icons.person_outline_rounded,
-              title: 'Visitor details',
+              title: 'visitorDetails'.tr,
             ),
             10.h.heightBox(),
             AppCard(
@@ -214,68 +194,51 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppTextField(
-                    fieldKey: Key('visitor-name-field'),
-                    label: 'Full name',
+                    fieldKey: const Key('visitor-name-field'),
+                    label: 'visitorName'.tr,
                     controller: _nameController,
                     textCapitalization: TextCapitalization.words,
-                    hint: 'Jamie Johnson',
+                    hint: 'visitorNameHint'.tr,
                     icon: Icons.person_outline_rounded,
                   ),
                   AppSpacing.fieldGap.heightBox(),
                   AppTextField(
-                    fieldKey: Key('visitor-phone-field'),
-                    label: 'Contact number',
+                    fieldKey: const Key('visitor-phone-field'),
+                    label: 'visitorPhone'.tr,
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]')),
                     ],
-                    hint: '+959772611100',
+                    hint: 'visitorPhoneHint'.tr,
                     icon: Icons.phone_outlined,
                   ),
                   AppSpacing.fieldGap.heightBox(),
-                  _Label('Relation'),
-                  8.h.heightBox(),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: VisitorRelation.values
-                        .map(
-                          (relation) => ChoiceChip(
-                            label: Text(relation.label),
-                            selected: _relation == relation,
-                            onSelected: (_) =>
-                                setState(() => _relation = relation),
-                            selectedColor: tokens.brandSoft,
-                            labelStyle: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: _relation == relation
-                                  ? tokens.brand
-                                  : tokens.mutedStrong,
-                            ),
-                          ),
-                        )
-                        .toList(),
+                  _RelationSelector(
+                    relation: _relation,
+                    onChanged: (relation) {
+                      setState(() => _relation = relation);
+                    },
                   ),
                   AppSpacing.fieldGap.heightBox(),
                   AppTextField(
-                    label: 'Purpose of visit',
+                    label: 'visitorPurpose'.tr,
                     controller: _notesController,
-                    hint: 'Dinner, delivery, maintenance visit...',
+                    hint: 'visitorPurposeHint'.tr,
                     icon: Icons.notes_rounded,
                   ),
                 ],
               ),
             ),
             20.h.heightBox(),
-            _SectionTitle(icon: Icons.event_rounded, title: 'Visit schedule'),
+            _SectionTitle(icon: Icons.event_rounded, title: 'visitSchedule'.tr),
             10.h.heightBox(),
             AppCard(
               showShadow: true,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _Label('Visit date'),
+                  _Label('visitDate'.tr),
                   8.h.heightBox(),
                   _VisitDatePicker(
                     dates: _visitDates,
@@ -283,87 +246,51 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
                     onSelected: _selectDate,
                   ),
                   AppSpacing.fieldGap.heightBox(),
-                  _Label('Arrival time'),
-                  8.h.heightBox(),
-                  if (_arrivalSlots.isEmpty)
-                    _NoSlotsToday()
-                  else ...[
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final slot in _arrivalSlots)
-                          ChoiceChip(
-                            key: Key('arrival-slot-$slot'),
-                            label: Text(slot),
-                            selected: slot == _arrival && !_arrivalIsCustom,
-                            onSelected: (_) => setState(() {
-                              _arrival = slot;
-                              _arrivalIsCustom = false;
-                            }),
-                            selectedColor: tokens.brandSoft,
-                            labelStyle: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: slot == _arrival && !_arrivalIsCustom
-                                  ? tokens.brand
-                                  : tokens.mutedStrong,
-                            ),
-                          ),
-                        ChoiceChip(
-                          key: Key('arrival-slot-custom'),
-                          avatar: Icon(
-                            Icons.schedule_rounded,
-                            size: 17,
-                            color: _arrivalIsCustom
-                                ? tokens.brand
-                                : tokens.mutedStrong,
-                          ),
-                          label: Text(
-                            _arrivalIsCustom ? _arrival : 'Custom time',
-                          ),
-                          selected: _arrivalIsCustom,
-                          onSelected: (_) => _pickCustomArrival(context),
-                          selectedColor: tokens.brandSoft,
-                          labelStyle: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: _arrivalIsCustom
-                                ? tokens.brand
-                                : tokens.mutedStrong,
-                          ),
-                        ),
-                      ],
-                    ),
-                    10.h.heightBox(),
-                    _VisitWindow(range: _visitWindow),
-                  ],
+                  _ArrivalTimeSelector(
+                    arrival: _arrival,
+                    slots: _arrivalSlots,
+                    isToday: _isToday,
+                    canArriveAt: _canArriveAt,
+                    onSlotSelected: (slot) {
+                      setState(() {
+                        _arrival = slot;
+                        _arrivalIsCustom = false;
+                        _error = '';
+                      });
+                    },
+                    onCustomPressed: () => _pickCustomArrival(context),
+                    arrivalIsCustom: _arrivalIsCustom,
+                  ),
+                  10.h.heightBox(),
+                  _VisitWindow(range: _visitWindow),
                 ],
               ),
             ),
             20.h.heightBox(),
             _SectionTitle(
               icon: Icons.directions_car_outlined,
-              title: 'Additional details',
+              title: 'additionalDetails'.tr,
             ),
             10.h.heightBox(),
             AppCard(
               showShadow: true,
               child: AppTextField(
-                label: 'Vehicle plate (optional)',
+                label: 'vehiclePlate'.tr,
                 controller: _plateController,
                 textCapitalization: TextCapitalization.characters,
                 inputFormatters: [UpperCaseTextFormatter()],
-                hint: 'ABC-1234',
+                hint: 'vehiclePlateHint'.tr,
                 icon: Icons.directions_car_outlined,
               ),
             ),
             24.h.heightBox(),
             AppPrimaryAction(
-              key: Key('submit-visitor'),
+              key: const Key('submit-visitor'),
               onPressed: controller.isSubmitting.value ? null : _submit,
               isLoading: controller.isSubmitting.value,
               label: controller.isSubmitting.value
-                  ? 'Registering...'
-                  : 'Register visitor',
+                  ? 'registering'.tr
+                  : 'registerVisitorBtn'.tr,
               icon: Icons.person_add_alt_1_rounded,
             ),
             if (_error.isNotEmpty) ...[
@@ -383,15 +310,8 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
     );
   }
 
-  /// True when the arrival time came from the picker rather than a preset chip.
-  /// Tracked explicitly so the chip keeps showing the time the resident chose,
-  /// even when that time happens to match a preset.
   bool _arrivalIsCustom = false;
 
-  /// Changes the visit date and re-checks the arrival time against it. Coming
-  /// back to today with a time that has since gone moves the selection to the
-  /// first slot still on offer, and a custom time stays put whenever the new date
-  /// can still take it.
   void _selectDate(String date) {
     setState(() {
       _date = date;
@@ -404,15 +324,9 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
     });
   }
 
-  /// Opens the platform time picker. Dismissing it leaves the current arrival
-  /// time exactly as it was, and a time that has already gone is refused rather
-  /// than quietly accepted, so the custom picker cannot be used to book a visitor
-  /// into the past.
   Future<void> _pickCustomArrival(BuildContext context) async {
     final now = TimeOfDay.now();
     final current = AppTimes.parse(_arrival);
-    // Today opens on the next full hour rather than on a time that is past,
-    // because that is the earliest thing this date can take.
     final opening = _canArriveAt(_arrival)
         ? current
         : (_isToday
@@ -421,15 +335,14 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
     final picked = await showTimePicker(
       context: context,
       initialTime: opening ?? TimeOfDay(hour: 10, minute: 0),
-      helpText: 'Choose an arrival time',
+      helpText: 'chooseArrivalTime'.tr,
     );
     if (picked == null || !mounted) {
       return;
     }
     if (!_canArriveAt(AppTimes.format(picked))) {
       setState(
-        () => _error =
-            'Choose an arrival time later than the current time for today.',
+        () => _error = 'arrivalTimePastError'.tr,
       );
       return;
     }
@@ -444,25 +357,24 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
     _error = '';
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      setState(() => _error = 'Visitor name is required.');
+      setState(() => _error = 'visitorNameRequired'.tr);
       return;
     }
     if (_phoneController.text.trim().length < 6) {
-      setState(() => _error = 'Enter a contact number for the visitor.');
+      setState(() => _error = 'visitorPhoneRequired'.tr);
       return;
     }
     if (_date.isEmpty) {
-      setState(() => _error = 'Choose a visit date.');
+      setState(() => _error = 'visitDateRequired'.tr);
       return;
     }
     if (_arrival.isEmpty) {
-      setState(() => _error = 'Choose an arrival time.');
+      setState(() => _error = 'arrivalTimeRequired'.tr);
       return;
     }
     if (!_canArriveAt(_arrival)) {
       setState(
-        () => _error =
-            'Choose an arrival time later than the current time for today.',
+        () => _error = 'arrivalTimePastError'.tr,
       );
       return;
     }
@@ -470,11 +382,12 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
 
     final confirmed = await showAppConfirmDialog(
       context,
-      title: 'Register visitor?',
-      message:
-          '$name will receive an alphanumeric access code valid on $_date '
-          'from ${window.label}.',
-      confirmLabel: 'Register',
+      title: 'confirmRegister'.tr,
+      message: 'confirmRegisterMessage'.tr
+          .replaceAll('{name}', name)
+          .replaceAll('{date}', _date)
+          .replaceAll('{window}', window.label),
+      confirmLabel: 'confirmRegisterBtn'.tr,
     );
     if (!confirmed || !mounted) {
       return;
@@ -488,8 +401,6 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
           ? _relation.label
           : _notesController.text.trim(),
       date: _date,
-      // The model already carries a window, so the two hour visit is stored
-      // rather than recalculated by each screen.
       arrivalWindow: window.label,
       vehiclePlate: _plateController.text.trim().isEmpty
           ? null
@@ -501,7 +412,7 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
     }
     if (visitor == null) {
       setState(() {
-        _error = controller.errorMessage.value ?? 'Registration failed.';
+        _error = controller.errorMessage.value ?? 'registrationFailed'.tr;
       });
       return;
     }
@@ -509,8 +420,424 @@ class _RegisterVisitorPageState extends State<RegisterVisitorPage> {
   }
 }
 
-/// Day cards for the visit date: the relative label, the day number and the
-/// month, with the selected day clearly filled in.
+class _RelationSelector extends StatelessWidget {
+  const _RelationSelector({
+    required this.relation,
+    required this.onChanged,
+  });
+
+  final VisitorRelation relation;
+  final ValueChanged<VisitorRelation> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _Label('visitorRelation'.tr),
+        8.h.heightBox(),
+        InkWell(
+          onTap: () => _showRelationBottomSheet(context),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: tokens.surface,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(color: tokens.border),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: tokens.brandTint,
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: Icon(
+                    relation.icon,
+                    size: 20,
+                    color: tokens.brand,
+                  ),
+                ),
+                12.w.widthBox(),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'visitorRelation'.tr,
+                        style: TextStyle(
+                          color: tokens.muted,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      2.h.heightBox(),
+                      Text(
+                        relation.label,
+                        style: TextStyle(
+                          color: tokens.ink,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: tokens.mutedStrong,
+                  size: 22,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showRelationBottomSheet(BuildContext context) async {
+    await showModalBottomSheet<VisitorRelation>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _RelationBottomSheet(
+        currentRelation: relation,
+        onSelected: onChanged,
+      ),
+    );
+  }
+}
+
+class _RelationBottomSheet extends StatelessWidget {
+  const _RelationBottomSheet({
+    required this.currentRelation,
+    required this.onSelected,
+  });
+
+  final VisitorRelation currentRelation;
+  final ValueChanged<VisitorRelation> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: tokens.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 16, 20, MediaQuery.viewInsetsOf(context).bottom + 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: tokens.border,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          16.h.heightBox(),
+          Row(
+            children: [
+              Icon(Icons.family_restroom_rounded, color: tokens.brand, size: 22),
+              10.w.widthBox(),
+              Text(
+                'visitorRelation'.tr,
+                style: TextStyle(
+                  color: tokens.ink,
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          16.h.heightBox(),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.6,
+            children: VisitorRelation.values.map((relation) {
+              final isSelected = relation == currentRelation;
+              return _RelationCard(
+                relation: relation,
+                isSelected: isSelected,
+                onTap: () {
+                  vibrateNow();
+                  onSelected(relation);
+                  Navigator.pop(context);
+                },
+              );
+            }).toList(),
+          ),
+          8.h.heightBox(),
+        ],
+      ),
+    );
+  }
+}
+
+class _RelationCard extends StatelessWidget {
+  const _RelationCard({
+    required this.relation,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final VisitorRelation relation;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: relation.label,
+      child: Material(
+        color: isSelected ? tokens.brandTint : tokens.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          side: BorderSide(
+            color: isSelected ? tokens.brand : tokens.border,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isSelected ? tokens.brand : tokens.brandTint,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    relation.icon,
+                    size: 22,
+                    color: isSelected ? tokens.onBrand : tokens.brand,
+                  ),
+                ),
+                8.h.heightBox(),
+                Flexible(
+                  child: Text(
+                    relation.label,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isSelected ? tokens.brand : tokens.ink,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                      height: 1.2,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ArrivalTimeSelector extends StatelessWidget {
+  const _ArrivalTimeSelector({
+    required this.arrival,
+    required this.slots,
+    required this.isToday,
+    required this.canArriveAt,
+    required this.onSlotSelected,
+    required this.onCustomPressed,
+    required this.arrivalIsCustom,
+  });
+
+  final String arrival;
+  final List<String> slots;
+  final bool isToday;
+  final bool Function(String) canArriveAt;
+  final ValueChanged<String> onSlotSelected;
+  final VoidCallback onCustomPressed;
+  final bool arrivalIsCustom;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+
+    if (slots.isEmpty) {
+      return _NoSlotsToday();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _Label('arrivalTime'.tr),
+        8.h.heightBox(),
+        InkWell(
+          onTap: onCustomPressed,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: tokens.surface,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(color: tokens.border),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: tokens.brandTint,
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: Icon(
+                    Icons.access_time_rounded,
+                    size: 20,
+                    color: tokens.brand,
+                  ),
+                ),
+                12.w.widthBox(),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'arrivalTime'.tr,
+                        style: TextStyle(
+                          color: tokens.muted,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      2.h.heightBox(),
+                      Text(
+                        arrival.isEmpty ? 'arrivalTimeHint'.tr : arrival,
+                        style: TextStyle(
+                          color: arrival.isEmpty ? tokens.mutedStrong : tokens.ink,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: tokens.mutedStrong,
+                  size: 22.sp,
+                ),
+              ],
+            ),
+          ),
+        ),
+        // 10.h.heightBox(),
+        // Wrap(
+        //   spacing: 8,
+        //   runSpacing: 8,
+        //   children: [
+        //     for (final slot in slots)
+        //       _TimeSlotChip(
+        //         label: slot,
+        //         selected: slot == arrival && !arrivalIsCustom,
+        //         enabled: canArriveAt(slot),
+        //         onTap: () => onSlotSelected(slot),
+        //       ),
+        //     _TimeSlotChip(
+        //       label: arrivalIsCustom ? arrival : 'customTime'.tr,
+        //       selected: arrivalIsCustom,
+        //       enabled: true,
+        //       isCustom: true,
+        //       onTap: onCustomPressed,
+        //     ),
+        //   ],
+        // ),
+      ],
+    );
+  }
+}
+
+class _TimeSlotChip extends StatelessWidget {
+  const _TimeSlotChip({
+    required this.label,
+    required this.selected,
+    required this.enabled,
+    required this.onTap,
+    this.isCustom = false,
+  });
+
+  final String label;
+  final bool selected;
+  final bool enabled;
+  final VoidCallback onTap;
+  final bool isCustom;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    final color = selected ? tokens.brand : (enabled ? tokens.mutedStrong : tokens.faint);
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: enabled,
+      label: label,
+      child: Material(
+        color: selected ? tokens.brandSoft : tokens.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          side: BorderSide(
+            color: selected ? tokens.brand : (enabled ? tokens.border : tokens.faint),
+            width: selected ? 1.6 : 1,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: enabled ? onTap : null,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isCustom) ...[
+                  Icon(
+                    Icons.schedule_rounded,
+                    size: 16,
+                    color: selected ? tokens.brand : tokens.mutedStrong,
+                  ),
+                  6.w.widthBox(),
+                ],
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                    fontSize: 12.5.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _VisitDatePicker extends StatelessWidget {
   const _VisitDatePicker({
     required this.dates,
@@ -619,11 +946,6 @@ class _VisitDateCard extends StatelessWidget {
   }
 }
 
-/// Shows the visit window the arrival time produces, so the end time is never
-/// something the resident has to work out.
-/// Stands in for the chips when the day is too far gone to book against. Late in
-/// the evening there is no full hour left today, and rather than offer a time
-/// that has already gone the resident is told to pick another date.
 class _NoSlotsToday extends StatelessWidget {
   const _NoSlotsToday();
 
@@ -642,7 +964,7 @@ class _NoSlotsToday extends StatelessWidget {
           9.w.widthBox(),
           Expanded(
             child: Text(
-              'No arrival times are left today. Choose a later visit date.',
+              'noSlotsToday'.tr,
               style: TextStyle(
                 color: tokens.mutedStrong,
                 fontSize: 12.sp,
@@ -680,7 +1002,7 @@ class _VisitWindow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Visit time',
+                  'visitTime'.tr,
                   style: TextStyle(
                     color: tokens.muted,
                     fontSize: 11.5.sp,
@@ -700,7 +1022,7 @@ class _VisitWindow extends StatelessWidget {
             ),
           ),
           Text(
-            '2 hours',
+            'visitDuration'.tr,
             style: TextStyle(
               color: tokens.mutedStrong,
               fontSize: 12.sp,

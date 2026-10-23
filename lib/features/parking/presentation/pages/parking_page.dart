@@ -9,6 +9,8 @@ import '../../../../core/theme/app_theme_tokens.dart';
 
 import '../../../../core/utils/app_formatters.dart';
 
+import '../../../../core/utils/text_input_formatters.dart';
+
 import '../../../../core/widgets/app_card.dart';
 
 import '../../../../core/widgets/app_dialogs.dart';
@@ -41,12 +43,12 @@ class ParkingPage extends GetView<ParkingController> {
     final tokens = AppThemeTokens.of(context);
     return Scaffold(
       appBar: AppDetailAppBar(
-        title: 'Parking',
+        title: 'parking'.tr,
         actions: [
           IconButton(
             onPressed: controller.loadParking,
-            tooltip: 'Refresh parking',
-            icon: Icon(Icons.refresh_rounded),
+            tooltip: 'refresh'.tr,
+            icon: const Icon(Icons.refresh_rounded),
           ),
         ],
       ),
@@ -362,27 +364,39 @@ class _GuestParkingDialogState extends State<_GuestParkingDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
-      title: Text('Request guest parking'),
+      title: Text('requestGuestParking'.tr),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppTextField(
               fieldKey: Key('guest-name-field'),
-              label: 'Guest name',
+              label: 'guestName'.tr,
               controller: _name,
+              textCapitalization: TextCapitalization.words,
+              hint: 'guestNameHint'.tr,
+              icon: Icons.person_outline_rounded,
             ),
             AppSpacing.fieldGap.heightBox(),
-            AppTextField(label: 'Vehicle model', controller: _vehicle),
+            AppTextField(
+              label: 'guestVehicle'.tr,
+              controller: _vehicle,
+              hint: 'guestVehicleHint'.tr,
+              icon: Icons.directions_car_outlined,
+            ),
             AppSpacing.fieldGap.heightBox(),
             AppTextField(
               fieldKey: Key('guest-plate-field'),
-              label: 'License plate',
+              label: 'guestPlate'.tr,
               controller: _plate,
               textCapitalization: TextCapitalization.characters,
+              inputFormatters: [UpperCaseTextFormatter()],
+              hint: 'guestPlateHint'.tr,
+              icon: Icons.confirmation_number_outlined,
             ),
+            AppSpacing.fieldGap.heightBox(),
             if (_error.isNotEmpty) ...[
-              10.h.heightBox(),
               Text(
                 _error,
                 style: TextStyle(color: AppPalette.danger, fontSize: 12.sp),
@@ -394,20 +408,23 @@ class _GuestParkingDialogState extends State<_GuestParkingDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text('Cancel'),
+          child: Text('cancel'.tr),
         ),
-        FilledButton(onPressed: _submit, child: Text('Request')),
+        FilledButton(
+          onPressed: _submit,
+          child: Text('request'.tr),
+        ),
       ],
     );
   }
 
   void _submit() {
     if (_name.text.trim().isEmpty) {
-      setState(() => _error = 'Guest name is required.');
+      setState(() => _error = 'guestNameRequired'.tr);
       return;
     }
     if (_plate.text.trim().length < 3) {
-      setState(() => _error = 'Enter the guest vehicle plate.');
+      setState(() => _error = 'guestPlateRequired'.tr);
       return;
     }
     Navigator.pop(context, (

@@ -1,16 +1,18 @@
+import 'package:get/get.dart';
+
 enum ParkingSpaceType { allocated, tenant, guest, visitor }
 
 extension ParkingSpaceTypeLabel on ParkingSpaceType {
   String get label {
     switch (this) {
       case ParkingSpaceType.allocated:
-        return 'Allocated';
+        return 'parkingSpaceTypeAllocated'.tr;
       case ParkingSpaceType.tenant:
-        return 'Tenant';
+        return 'parkingSpaceTypeTenant'.tr;
       case ParkingSpaceType.guest:
-        return 'Guest';
+        return 'parkingSpaceTypeGuest'.tr;
       case ParkingSpaceType.visitor:
-        return 'Visitor';
+        return 'parkingSpaceTypeVisitor'.tr;
     }
   }
 }
@@ -21,13 +23,13 @@ extension ParkingStatusLabel on ParkingStatus {
   String get label {
     switch (this) {
       case ParkingStatus.occupied:
-        return 'Occupied';
+        return 'spaceOccupied'.tr;
       case ParkingStatus.available:
-        return 'Available';
+        return 'spaceAvailable'.tr;
       case ParkingStatus.reserved:
-        return 'Reserved';
+        return 'spaceReserved'.tr;
       case ParkingStatus.blocked:
-        return 'Blocked';
+        return 'spaceBlocked'.tr;
     }
   }
 }

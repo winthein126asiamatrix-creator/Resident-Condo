@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
 enum ComplaintCategory {
   noise,
   cleanliness,
@@ -13,21 +16,42 @@ extension ComplaintCategoryLabel on ComplaintCategory {
   String get label {
     switch (this) {
       case ComplaintCategory.noise:
-        return 'Noise';
+        return 'rulesCategoryNoise'.tr;
       case ComplaintCategory.cleanliness:
         return 'Cleanliness';
       case ComplaintCategory.parking:
-        return 'Parking';
+        return 'rulesCategoryParking'.tr;
       case ComplaintCategory.security:
         return 'Security';
       case ComplaintCategory.commonArea:
         return 'Common areas';
       case ComplaintCategory.pets:
-        return 'Pets';
+        return 'rulesCategoryPets'.tr;
       case ComplaintCategory.utilities:
         return 'Utilities';
       case ComplaintCategory.other:
         return 'Other';
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case ComplaintCategory.noise:
+        return Icons.volume_up_rounded;
+      case ComplaintCategory.cleanliness:
+        return Icons.cleaning_services_rounded;
+      case ComplaintCategory.parking:
+        return Icons.local_parking_rounded;
+      case ComplaintCategory.security:
+        return Icons.security_rounded;
+      case ComplaintCategory.commonArea:
+        return Icons.apartment_rounded;
+      case ComplaintCategory.pets:
+        return Icons.pets_rounded;
+      case ComplaintCategory.utilities:
+        return Icons.bolt_rounded;
+      case ComplaintCategory.other:
+        return Icons.more_horiz_rounded;
     }
   }
 }

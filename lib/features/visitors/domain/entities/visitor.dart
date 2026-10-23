@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
 enum VisitorStatus { preRegistered, checkedIn, checkedOut, cancelled, expired }
 
 extension VisitorStatusLabel on VisitorStatus {
@@ -33,17 +36,34 @@ extension VisitorRelationLabel on VisitorRelation {
   String get label {
     switch (this) {
       case VisitorRelation.family:
-        return 'Family';
+        return 'relationFamily'.tr;
       case VisitorRelation.friend:
-        return 'Friend';
+        return 'relationFriend'.tr;
       case VisitorRelation.colleague:
-        return 'Colleague';
+        return 'relationColleague'.tr;
       case VisitorRelation.delivery:
-        return 'Delivery';
+        return 'relationDelivery'.tr;
       case VisitorRelation.serviceProvider:
-        return 'Service provider';
+        return 'relationServiceProvider'.tr;
       case VisitorRelation.other:
-        return 'Other';
+        return 'relationOther'.tr;
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case VisitorRelation.family:
+        return Icons.family_restroom_rounded;
+      case VisitorRelation.friend:
+        return Icons.people_outline_rounded;
+      case VisitorRelation.colleague:
+        return Icons.work_outline_rounded;
+      case VisitorRelation.delivery:
+        return Icons.local_shipping_outlined;
+      case VisitorRelation.serviceProvider:
+        return Icons.build_circle_outlined;
+      case VisitorRelation.other:
+        return Icons.person_outline_rounded;
     }
   }
 }

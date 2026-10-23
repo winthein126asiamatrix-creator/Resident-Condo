@@ -15,15 +15,162 @@ import '../../domain/entities/complaint.dart';
 
 import '../controllers/complaint_controller.dart';
 
-import '../widgets/complaint_widgets.dart';
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 import '../../../../core/widgets/app_form_field.dart';
 
+import '../../../../core/theme/app_radius.dart';
+
 import '../../../../core/widgets/app_segmented_control.dart';
 
 import '../../../../core/theme/app_spacing.dart';
+
+class _CategoryBottomSheet extends StatelessWidget {
+  const _CategoryBottomSheet({
+    required this.currentCategory,
+    required this.onSelected,
+  });
+
+  final ComplaintCategory currentCategory;
+  final ValueChanged<ComplaintCategory> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: tokens.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        16,
+        20,
+        MediaQuery.viewInsetsOf(context).bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: tokens.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          16.h.heightBox(),
+          Row(
+            children: [
+              Icon(Icons.category_rounded, color: tokens.brand, size: 22),
+              10.w.widthBox(),
+              Text(
+                'Select Category',
+                style: TextStyle(
+                  color: tokens.ink,
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          16.h.heightBox(),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.6,
+            children: ComplaintCategory.values.map((category) {
+              final isSelected = category == currentCategory;
+              return _CategoryCard(
+                category: category,
+                isSelected: isSelected,
+                onTap: () => onSelected(category),
+              );
+            }).toList(),
+          ),
+          8.h.heightBox(),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryCard extends StatelessWidget {
+  const _CategoryCard({
+    required this.category,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final ComplaintCategory category;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: category.label,
+      child: Material(
+        color: isSelected ? tokens.brandTint : tokens.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          side: BorderSide(
+            color: isSelected ? tokens.brand : tokens.border,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isSelected ? tokens.brand : tokens.brandTint,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    category.icon,
+                    size: 22,
+                    color: isSelected ? tokens.onBrand : tokens.brand,
+                  ),
+                ),
+                8.h.heightBox(),
+                Flexible(
+                  child: Text(
+                    category.label,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isSelected ? tokens.brand : tokens.ink,
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w700,
+                      height: 1.2,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class CreateComplaintPage extends StatefulWidget {
   const CreateComplaintPage({super.key});
@@ -95,9 +242,49 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
             ),
             10.h.heightBox(),
-            ComplaintCategoryGrid(
-              selected: _category,
-              onSelected: (category) => setState(() => _category = category),
+            InkWell(
+              onTap: () => _showCategoryBottomSheet(context),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: tokens.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(color: tokens.border),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: tokens.brandTint,
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                      ),
+                      child: Icon(
+                        _category.icon,
+                        size: 20,
+                        color: tokens.brand,
+                      ),
+                    ),
+                    12.w.widthBox(),
+                    Expanded(
+                      child: Text(
+                        _category.label,
+                        style: TextStyle(
+                          color: tokens.ink,
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: tokens.mutedStrong,
+                      size: 22,
+                    ),
+                  ],
+                ),
+              ),
             ),
             AppSpacing.fieldGap.heightBox(),
             Text(
@@ -175,6 +362,21 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  void _showCategoryBottomSheet(BuildContext context) {
+    showModalBottomSheet<ComplaintCategory>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _CategoryBottomSheet(
+        currentCategory: _category,
+        onSelected: (category) {
+          setState(() => _category = category);
+          Navigator.pop(context);
+        },
       ),
     );
   }
