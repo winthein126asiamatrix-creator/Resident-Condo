@@ -1,0 +1,182 @@
+Condo Residents app - versioning and release notes
+
+Verified project configuration (source of truth):
+- App display name: Matrix Condo
+- Android namespace/application ID: com.asiamatrix.matrixcondo
+- Android flavors: dev, prod (flavor dimension: environment)
+  - dev: applicationIdSuffix = ".dev", versionNameSuffix = "-dev"
+  - prod: no suffix
+- iOS bundle ID: com.asiamatrix.matrixcondo
+- iOS schemes/configurations verified: shared Runner scheme with Debug, Release, and Profile
+- No iOS dev/prod flavors or schemes were found in the verified project
+- pubspec.yaml version: 1.0.0+1
+- android/app/build.gradle.kts uses:
+  - versionCode = flutter.versionCode
+  - versionName = flutter.versionName
+- ios/Runner/Info.plist uses:
+  - CFBundleShortVersionString = $(FLUTTER_BUILD_NAME)
+  - CFBundleVersion = $(FLUTTER_BUILD_NUMBER)
+- ios/Runner.xcodeproj/project.pbxproj Runner target uses:
+  - CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)"
+  - No MARKETING_VERSION setting was found for the Runner target
+  - RunnerTests target has its own CURRENT_PROJECT_VERSION = 1 and MARKETING_VERSION = 1.0; this is test-target only
+
+Flutter version format:
+- pubspec.yaml currently uses: version: 1.0.0+1
+- 1.0.0 is the build name / marketing version shown to users
+- 1 is the build number / build version used by stores for ordering
+- --build-name and --build-number override those values for one build without changing pubspec.yaml
+- Example: flutter build apk --flavor prod --release --build-name=1.0.1 --build-number=2
+
+Android:
+Verified flavor names: dev, prod
+
+Production APK for device testing:
+flutter build apk --flavor prod --release
+
+Development APK for device testing:
+flutter build apk --flavor dev --release
+
+Production AAB for Google Play release:
+flutter build appbundle --flavor prod --release
+
+Development AAB when needed:
+flutter build appbundle --flavor dev --release
+
+Expected output paths:
+- build/app/outputs/flutter-apk/app-prod-release.apk
+- build/app/outputs/flutter-apk/app-dev-release.apk
+- build/app/outputs/bundle/prodRelease/app-prod-release.aab
+- build/app/outputs/bundle/devRelease/app-dev-release.aab
+
+Google Play requires each uploaded release to use a versionCode higher than previously uploaded versions for that application.
+
+iOS:
+- CFBundleShortVersionString = $(FLUTTER_BUILD_NAME) means the user-facing version comes from Flutter's build name
+- CFBundleVersion = $(FLUTTER_BUILD_NUMBER) means the build number comes from Flutter's build number
+- FLUTTER_BUILD_NAME and FLUTTER_BUILD_NUMBER are provided through Flutter's generated iOS build configuration
+
+Create an IPA with explicit version values:
+flutter build ipa --release --build-name=1.0.1 --build-number=2
+
+Alternative Xcode workflow:
+1. Open ios/Runner.xcworkspace in Xcode
+2. Select the Runner target
+3. Use Product > Archive
+4. Use the Archive Organizer to distribute the app
+
+Verified Xcode configuration:
+- Runner CURRENT_PROJECT_VERSION is "$(FLUTTER_BUILD_NUMBER)"
+- Runner Info.plist uses "$(FLUTTER_BUILD_NAME)" and "$(FLUTTER_BUILD_NUMBER)"
+- The verified Runner target does not define MARKETING_VERSION
+
+Do not assume manually changing Xcode Identity fields or Info.plist will override Flutter's build values. The verified configuration shows Flutter-provided values drive both iOS version fields. For explicit independent versions, prefer Flutter CLI flags.
+
+Independent platform releases:
+- iOS can receive a bug-fix release such as 1.0.1 with build number 2 without requiring a new Android release at the same time
+- Android can remain on its previously released version until a new Android release is needed
+- Each platform must maintain valid, increasing build numbers for its own distribution history
+- Google Play versionCode and App Store build number are separate platform histories
+- Always pass both --build-name and --build-number explicitly for releases
+- Do not rely on pubspec.yaml defaults or Xcode settings for release versioning
+- Do not reuse or decrease build numbers
+
+Recommended simple approach:
+- Keep pubspec.yaml as a baseline only
+- Record the last released Android versionCode and iOS build number in this file or release notes
+- Use explicit Flutter CLI flags for every release
+- If independent version management later needs stronger automation, a future option is platform-specific version files or CI variables; that is not implemented in this project now
+
+Existing useful commands:
+flutter run --flavor prod --release
+flutter run --flavor dev --release
+flutter run --flavor dev --profile
+
+flutter build apk --flavor dev --profile
+
+// For app launcher icons
+flutter pub run flutter_launcher_icons:main -f flutter_launcher_icons*
+
+Shorebird release and OTA patch workflow is documented in the section below.
+Shorebird release and OTA patch workflow:
+Verified Shorebird configuration:
+- shorebird.yaml exists with one app_id: f030e4d2-612d-4d62-9f4e-b7a71640fbee
+- Shorebird flavors configured in shorebird.yaml: dev, prod
+- Shorebird app IDs configured in shorebird.yaml:
+  - dev: 0f0ec3d9-07d0-455e-9b97-d0e2ce247479
+  - prod: 90c14d2f-2b5c-421e-985a-970b8c7c1a52
+- Installed Shorebird CLI version: 1.6.130
+- Android application IDs:
+  - prod: com.asiamatrix.matrixcondo
+  - dev: com.asiamatrix.matrixcondo.dev
+- iOS bundle ID: com.asiamatrix.matrixcondo
+- iOS Xcode project has no verified dev/prod flavors, build configurations, or schemes
+- Android has verified dev and prod flavors
+
+1. Version management:
+- --build-name is the user-facing app version.
+- --build-number is the build number.
+- Google Play requires a new, valid version code for each new store release.
+- Check the existing production release history before choosing version/build numbers.
+- Dev and production flavors may have different application IDs and release histories.
+- Do not reuse example version numbers blindly.
+
+2. Android production release for Google Play:
+Verified command pattern:
+shorebird release android --flavor prod --build-name=<VERSION> --build-number=<BUILD_NUMBER>
+
+The installed Shorebird CLI uses AAB as the default Android artifact type. A fixed local output path was not verified from the CLI help; use the path printed by the successful command.
+
+Workflow:
+1. Choose the correct production version and build number.
+2. Run the Shorebird release command.
+3. Verify that the release completed successfully and locate the generated .aab.
+4. Test the release build.
+5. Upload the .aab to the appropriate Google Play Console track.
+6. Complete Google's review/release process as applicable.
+
+Shorebird does not automatically publish the AAB to Google Play Console.
+
+3. Android OTA patch workflow:
+Verified command pattern for production:
+shorebird patch android --flavor prod --release-version=<VERSION_OR_latest>
+
+Use --release-version to target the intended Shorebird release. Use --release-version=latest only when the latest release is intentionally the target.
+
+Notes:
+- A patch targets an existing Shorebird release; verify the intended release before patching.
+- Patches are intended for compatible Dart/Flutter code changes.
+- Native Android code changes, plugin/native dependency changes, and other unsupported changes require a new store release.
+- Do not assume that every change can be delivered through an OTA patch.
+- Test the patch before relying on it in production.
+- The installed CLI supports --allow-native-diffs, but it is not recommended because native changes cannot be included in a patch.
+
+4. iOS release and patch workflow:
+General release command pattern:
+shorebird release ios --build-name=<VERSION> --build-number=<BUILD_NUMBER>
+
+iOS release builds require macOS and Xcode. The generated IPA must still be submitted through the appropriate Apple distribution workflow; Shorebird does not automatically publish it to App Store Connect.
+
+iOS patch command pattern supported by the installed CLI:
+shorebird patch ios --release-version=<VERSION_OR_latest>
+
+Caution:
+- The project's Shorebird config declares dev and prod app IDs, but the iOS Xcode project has no verified dev/prod flavors, build configurations, or schemes.
+- Verify flavor support before adding --flavor to an iOS Shorebird command.
+- Use --release-version to target the intended iOS release.
+
+5. When to use a store release versus a patch:
+- New production release: create a Shorebird release and upload the generated artifact to the relevant app store.
+- Compatible Dart-only fix: create a Shorebird patch for the intended existing release.
+- Native code, native plugin, permissions, or Flutter SDK changes: determine whether a new store release is required; do not assume an OTA patch supports them.
+- New version that must be reviewed/distributed through the store: create a new release and follow the store submission process.
+
+6. Troubleshooting and safety:
+- Verify the correct flavor and application ID.
+- Verify the version and build number.
+- Verify the correct Shorebird app/release.
+- Verify the release artifact location and successful build output.
+- Check signing and store validation errors.
+- Check whether the change is eligible for a Shorebird patch.
+- Use commands compatible with Shorebird CLI 1.6.130.
+- Do not claim a command, option, artifact path, or project setting was verified unless it was actually inspected.
