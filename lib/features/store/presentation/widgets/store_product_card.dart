@@ -86,34 +86,40 @@ class StoreProductCard extends StatelessWidget {
                     ),
                   ),
                 ],
-                8.h.heightBox(),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      AppFormatters.currency(product.price),
-                      style: TextStyle(
-                        color: tokens.ink,
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                    7.w.widthBox(),
-                    // The unit gives way rather than the price: a narrow phone
-                    // may not fit both, and the price is what matters.
-                    Flexible(
-                      child: Text(
-                        product.unit,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                4.h.heightBox(),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: tokens.brandTint,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        AppFormatters.currency(product.price),
                         style: TextStyle(
-                          color: tokens.faint,
-                          fontSize: 11.5.sp,
+                          color: tokens.brand,
+                          fontSize: 16.5.sp,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.3,
                         ),
                       ),
-                    ),
-                  ],
+                      6.w.widthBox(),
+                      Flexible(
+                        child: Text(
+                          product.unit,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: tokens.mutedStrong,
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 8.h.heightBox(),
                 StoreStockPill(status: product.stockStatus, dense: true),

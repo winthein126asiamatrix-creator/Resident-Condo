@@ -592,6 +592,7 @@ class _CategoryPill extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 18),
               child: Center(
