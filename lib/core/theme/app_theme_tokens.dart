@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_palette.dart';
+
 /// The design system colours that follow the resident's chosen brand colour.
 ///
 /// [AppPalette] holds the fixed light values the app shipped with. This
@@ -177,6 +179,23 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
   final List<BoxShadow> cardShadow;
 
   bool get isDark => brightness == Brightness.dark;
+
+  /// Background wash for an informational icon tile.
+  ///
+  /// Light mode keeps the shipped lavender. Dark mode blends the accent into
+  /// the card surface so the tile stays dark enough for the light [ink] glyph
+  /// to remain legible instead of painting a light glyph on a light pastel.
+  Color get infoTint => isDark
+      ? Color.alphaBlend(AppPalette.info.withValues(alpha: 0.22), surface)
+      : AppPalette.infoSoft;
+
+  /// Background wash for a warning or attention icon tile.
+  ///
+  /// Mirrors [infoTint]: the light amber is preserved in light mode, while
+  /// dark mode uses a dark blend of the accent so [ink] stays readable.
+  Color get warningTint => isDark
+      ? Color.alphaBlend(AppPalette.warning.withValues(alpha: 0.22), surface)
+      : AppPalette.amberSoft;
 
   /// Picks black or white text for a swatch drawn in [background].
   ///

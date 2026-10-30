@@ -574,7 +574,7 @@ class _QuickActions extends StatelessWidget {
               child: _QuickAction(
                 icon: Icons.person_add_alt_1_outlined,
                 label: 'Register visitor',
-                color: Color(0xFFFFF1D6),
+                color: tokens.warningTint,
                 onTap: () {
                   vibrateNow();
                   Get.toNamed(AppRoutes.visitors);
@@ -586,7 +586,7 @@ class _QuickActions extends StatelessWidget {
               child: _QuickAction(
                 icon: Icons.event_available_outlined,
                 label: 'Reserve',
-                color: Color(0xFFEAE8FA),
+                color: tokens.infoTint,
                 onTap: () {
                   vibrateNow();
                   onSelectTab(3);
@@ -614,7 +614,7 @@ class _QuickActions extends StatelessWidget {
               child: _QuickAction(
                 icon: Icons.room_service_outlined,
                 label: 'Services',
-                color: Color(0xFFEAE8FA),
+                color: tokens.infoTint,
                 onTap: () {
                   vibrateNow();
                   Get.toNamed(AppRoutes.services);
