@@ -5,10 +5,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/app.dart';
 import 'core/services/firebase_binding.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter/services.dart' show appFlavor;
+import 'package:flutter/services.dart' show appFlavor, SystemChrome, DeviceOrientation;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+   await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
    final envFile = switch (appFlavor) {
     'dev' => '.env.dev',
     'prod' => '.env.prod',

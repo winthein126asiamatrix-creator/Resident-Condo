@@ -192,10 +192,6 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
     );
   }
 
-  /// Asks the server about a session that was admitted on a network failure.
-  ///
-  /// Skipped for a session the server has already verified, so reconnecting
-  /// costs nothing when the session was never in doubt.
   Future<void> _revalidateSession() async {
     if (!Get.isRegistered<AuthController>()) return;
     if (!Get.find<AuthController>().isUnverified.value) return;

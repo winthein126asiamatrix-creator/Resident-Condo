@@ -1,3 +1,4 @@
+import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -25,6 +26,8 @@ import '../controllers/facility_controller.dart';
 
 import '../widgets/facility_labels.dart';
 
+import '../../../../core/utils/app_dates.dart';
+
 import '../../../../core/utils/app_times.dart';
 
 class FacilityReservationPage extends GetView<FacilityController> {
@@ -33,11 +36,9 @@ class FacilityReservationPage extends GetView<FacilityController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // The same custom bar the maintenance form uses, so the two screens are
-      // indistinguishable at the top of the page.
       appBar: AppDetailAppBar(
         title: 'Reserve facility',
-        subtitle: 'Pick a date and a time that suits you',
+        subtitle: 'Choose your date, time and duration',
         onBack: () => Get.back<void>(),
       ),
       body: Obx(() {
@@ -58,27 +59,21 @@ class FacilityReservationPage extends GetView<FacilityController> {
             AppSpacing.gutter,
             AppSpacing.pageTop,
             AppSpacing.gutter,
-            32,
+            AppSpacing.pageBottom,
           ),
           children: [
-            _FacilityReservationIntro(facility: facility),
-            22.h.heightBox(),
-            Text(
-              'Select a date',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
-            ),
-            10.h.heightBox(),
+            _SelectedFacilityCard(facility: facility),
+            AppSpacing.sectionGap.h.heightBox(),
+            _SectionLabel(label: 'Select a date'),
+            AppSpacing.fieldLabelGap.h.heightBox(),
             _DateSelector(
               dates: controller.reservationDates,
               selected: controller.selectedDate.value,
               onSelected: controller.selectDate,
             ),
-            22.h.heightBox(),
-            Text(
-              'Start time',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
-            ),
-            10.h.heightBox(),
+            AppSpacing.sectionGap.h.heightBox(),
+            _SectionLabel(label: 'Start time'),
+            AppSpacing.fieldLabelGap.h.heightBox(),
             _SlotSelector(
               facility: facility,
               selected: controller.selectedStartTimeLabel,
@@ -86,29 +81,33 @@ class FacilityReservationPage extends GetView<FacilityController> {
               onSelected: controller.selectSlot,
               onPickCustomTime: () => _pickCustomTime(context),
             ),
-            22.h.heightBox(),
-            Text(
-              'Duration',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
-            ),
-            10.h.heightBox(),
+            AppSpacing.sectionGap.h.heightBox(),
+            _SectionLabel(label: 'Duration'),
+            AppSpacing.fieldLabelGap.h.heightBox(),
             _DurationSelector(
               selected: controller.selectedDurationHours.value,
               onSelected: controller.selectDuration,
             ),
-            14.h.heightBox(),
+            12.h.heightBox(),
             _ReservationInterval(
               range: controller.reservationRange,
               error: controller.durationError,
             ),
+            20.h.heightBox(),
+            _BookingSummary(
+              facility: facility,
+              date: controller.selectedDateLong,
+              startTime: controller.selectedStartTimeLabel,
+              durationHours: controller.selectedDurationHours.value,
+              range: controller.reservationRange,
+            ),
             24.h.heightBox(),
-            // The CTA is the only way a reservation is created: picking a date,
-            // a time or a duration never submits anything.
             AppPrimaryAction(
               key: Key('confirm-reservation'),
               onPressed: controller.canConfirmBooking
                   ? () => _confirm(context)
                   : null,
+              isLoading: controller.isBooking.value,
               label: 'Confirm Reservation',
               icon: Icons.event_available_rounded,
             ),
@@ -135,11 +134,6 @@ class FacilityReservationPage extends GetView<FacilityController> {
     );
   }
 
-  /// Opens the platform time picker. Dismissing it returns null, which leaves
-  /// the current selection exactly as it was.
-  ///
-  /// The context is handed in by the builder because [GetView] is not a
-  /// `State`, so it has no `context` of its own.
   Future<void> _pickCustomTime(BuildContext context) async {
     final picked = await showTimePicker(
       context: context,
@@ -153,9 +147,6 @@ class FacilityReservationPage extends GetView<FacilityController> {
     controller.selectCustomTime(picked);
   }
 
-  /// Reviews the reservation in the summary dialog and only then submits it.
-  /// Cancelling changes nothing; a failed submit keeps the dialog open with the
-  /// reason so the resident can retry without losing their date and time.
   Future<void> _confirm(BuildContext context) async {
     final facility = controller.selectedFacility.value;
     final range = controller.reservationRange;
@@ -204,54 +195,156 @@ class FacilityReservationPage extends GetView<FacilityController> {
     }
     final reservation = controller.bookingSuccess.value;
     if (reservation != null) {
-      // Replaces the reservation page so the back button from the success page
-      // does not return to a form that has already been used.
       Get.offNamed(AppRoutes.bookingConfirmed, arguments: reservation);
     }
   }
 }
 
-class _FacilityReservationIntro extends StatelessWidget {
-  const _FacilityReservationIntro({required this.facility});
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Text(
+      label,
+      style: TextStyle(
+        color: tokens.ink,
+        fontSize: 16.sp,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.2,
+      ),
+    );
+  }
+}
+
+class _SelectedFacilityCard extends StatelessWidget {
+  const _SelectedFacilityCard({required this.facility});
 
   final Facility facility;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    final available = facility.availableSlots.isNotEmpty;
     return Container(
-      padding: EdgeInsets.all(17),
       decoration: BoxDecoration(
-        color: tokens.brandTint,
+        color: tokens.surface,
         borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: tokens.brandBorder),
+        boxShadow: tokens.cardShadow,
       ),
+      clipBehavior: Clip.antiAlias,
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: tokens.brandOnDark,
-            child: Icon(Icons.event_available_rounded, color: tokens.brand),
-          ),
-          12.w.widthBox(),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          SizedBox(
+            width: 96,
+            height: 96,
+            child: Stack(
+              fit: StackFit.expand,
               children: [
-                Text(
-                  displayFacilityName(facility.name),
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: tokens.ink,
+                Image.asset(
+                  facility.imagePath,
+                  fit: BoxFit.cover,
+                  filterQuality: FilterQuality.high,
+                  errorBuilder: (_, _, _) => Container(
+                    color: tokens.brand,
+                    child: Icon(
+                      Icons.apartment_rounded,
+                      color: Colors.white70,
+                      size: 34,
+                    ),
                   ),
                 ),
-                4.h.heightBox(),
-                Text(
-                  facility.location,
-                  style: TextStyle(color: tokens.mutedStrong, fontSize: 12.sp),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Color(0x55000000)],
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
+          14.w.widthBox(),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    displayFacilityName(facility.name),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: tokens.ink,
+                      fontSize: 17.sp,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  4.h.heightBox(),
+                  Text(
+                    facility.location,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: tokens.mutedStrong, fontSize: 12.sp),
+                  ),
+                  8.h.heightBox(),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.schedule_rounded,
+                        size: 14,
+                        color: tokens.muted,
+                      ),
+                      4.w.widthBox(),
+                      Expanded(
+                        child: Text(
+                          facility.openingHours,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: tokens.muted,
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  8.h.heightBox(),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: available
+                          ? Color(0xFF087F5B).withValues(alpha: 0.1)
+                          : Color(0xFFC2410C).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Text(
+                      available
+                          ? '${facility.availableSlots.length} slots available'
+                          : 'Fully booked',
+                      style: TextStyle(
+                        color: available
+                            ? Color(0xFF087F5B)
+                            : Color(0xFFC2410C),
+                        fontSize: 10.5.sp,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          12.w.widthBox(),
         ],
       ),
     );
@@ -265,35 +358,129 @@ class _DateSelector extends StatelessWidget {
     required this.onSelected,
   });
 
-  /// The bookable window, generated from the current date by the controller.
   final List<String> dates;
   final String selected;
   final ValueChanged<String> onSelected;
 
+  static const _months = <String>[
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: dates
-            .map(
-              (date) => Padding(
-                padding: EdgeInsets.only(right: 8),
-                child: ChoiceChip(
-                  key: Key('facility-date-$date'),
-                  label: Text(date),
-                  selected: date == selected,
-                  onSelected: (_) => onSelected(date),
-                  selectedColor: tokens.brandOnDark,
-                  labelStyle: TextStyle(
-                    color: date == selected ? tokens.brand : tokens.mutedStrong,
-                    fontWeight: FontWeight.w700,
-                  ),
+    return SizedBox(
+      height: 86,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: dates.length,
+        separatorBuilder: (_, _) => 8.w.widthBox(),
+        itemBuilder: (context, index) {
+          final date = dates[index];
+          final isSelected = date == selected;
+          final parsed = AppDates.parse(date);
+          final weekday = AppDates.weekday(parsed).substring(0, 3);
+          return _DateChip(
+            key: Key('facility-date-$date'),
+            weekday: weekday,
+            day: parsed.day.toString(),
+            month: _months[parsed.month - 1],
+            selected: isSelected,
+            tokens: tokens,
+            onTap: () {
+              vibrateNow();
+              onSelected(date);
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _DateChip extends StatelessWidget {
+  const _DateChip({
+    super.key,
+    required this.weekday,
+    required this.day,
+    required this.month,
+    required this.selected,
+    required this.tokens,
+    required this.onTap,
+  });
+
+  final String weekday;
+  final String day;
+  final String month;
+  final bool selected;
+  final AppThemeTokens tokens;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? tokens.brand : tokens.surface,
+      borderRadius: BorderRadius.circular(18.r),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18.r),
+        child: Container(
+          width: 62,
+          padding: EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(
+              color: selected ? tokens.brand : tokens.border,
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                weekday.toUpperCase(),
+                style: TextStyle(
+                  color: selected ? tokens.onBrand : tokens.muted,
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.6,
                 ),
               ),
-            )
-            .toList(),
+              4.h.heightBox(),
+              Text(
+                day,
+                style: TextStyle(
+                  color: selected ? tokens.onBrand : tokens.ink,
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                ),
+              ),
+              4.h.heightBox(),
+              Text(
+                month,
+                style: TextStyle(
+                  color: selected
+                      ? tokens.onBrand.withValues(alpha: 0.85)
+                      : tokens.muted,
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -313,24 +500,135 @@ class _DurationSelector extends StatelessWidget {
       runSpacing: 8,
       children: [
         for (final hours in FacilityController.reservationDurations)
-          ChoiceChip(
+          _SelectableChip(
             key: Key('facility-duration-$hours'),
-            label: Text(hours == 1 ? '1 hour' : '$hours hours'),
+            label: hours == 1 ? '1 hour' : '$hours hours',
             selected: hours == selected,
-            onSelected: (_) => onSelected(hours),
-            selectedColor: tokens.brandOnDark,
-            labelStyle: TextStyle(
-              color: hours == selected ? tokens.brand : tokens.mutedStrong,
-              fontWeight: FontWeight.w700,
-            ),
+            tokens: tokens,
+            onTap: () {
+              vibrateNow();
+              onSelected(hours);
+            },
           ),
       ],
     );
   }
 }
 
-/// Shows the interval the resident has ended up with, so the end time is never
-/// something they have to work out themselves.
+class _SlotSelector extends StatelessWidget {
+  const _SlotSelector({
+    required this.facility,
+    required this.selected,
+    required this.customTimeSelected,
+    required this.onSelected,
+    required this.onPickCustomTime,
+  });
+
+  final Facility facility;
+  final String? selected;
+  final bool customTimeSelected;
+  final ValueChanged<String> onSelected;
+  final VoidCallback onPickCustomTime;
+
+  static const _customLabel = 'Custom time';
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final slot in facility.availableSlots)
+          _SelectableChip(
+            key: Key('facility-slot-$slot'),
+            label: slot,
+            selected: slot == selected && !customTimeSelected,
+            tokens: tokens,
+            onTap: () {
+              vibrateNow();
+              onSelected(slot);
+            },
+          ),
+        _SelectableChip(
+          key: Key('facility-slot-custom'),
+          label: customTimeSelected && selected != null
+              ? selected!
+              : _customLabel,
+          leading: Icons.schedule_rounded,
+          selected: customTimeSelected,
+          tokens: tokens,
+          onTap: () {
+            vibrateNow();
+            onPickCustomTime();
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _SelectableChip extends StatelessWidget {
+  const _SelectableChip({
+    super.key,
+    required this.label,
+    required this.selected,
+    required this.tokens,
+    required this.onTap,
+    this.leading,
+  });
+
+  final String label;
+  final bool selected;
+  final AppThemeTokens tokens;
+  final VoidCallback onTap;
+  final IconData? leading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? tokens.brand : tokens.surface,
+      borderRadius: BorderRadius.circular(14.r),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14.r),
+        child: Container(
+          constraints: BoxConstraints(minHeight: 44),
+          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
+              color: selected ? tokens.brand : tokens.border,
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (leading != null) ...[
+                Icon(
+                  leading,
+                  size: 16,
+                  color: selected ? tokens.onBrand : tokens.mutedStrong,
+                ),
+                6.w.widthBox(),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  color: selected ? tokens.onBrand : tokens.ink,
+                  fontSize: 13.5.sp,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ReservationInterval extends StatelessWidget {
   const _ReservationInterval({required this.range, required this.error});
 
@@ -352,7 +650,7 @@ class _ReservationInterval extends StatelessWidget {
         border: Border.all(
           color: hasError
               ? AppPalette.danger.withValues(alpha: 0.3)
-              : tokens.brandSoft,
+              : tokens.brandBorder,
         ),
       ),
       child: Row(
@@ -391,65 +689,117 @@ class _ReservationInterval extends StatelessWidget {
   }
 }
 
-class _SlotSelector extends StatelessWidget {
-  const _SlotSelector({
+class _BookingSummary extends StatelessWidget {
+  const _BookingSummary({
     required this.facility,
-    required this.selected,
-    required this.customTimeSelected,
-    required this.onSelected,
-    required this.onPickCustomTime,
+    required this.date,
+    required this.startTime,
+    required this.durationHours,
+    required this.range,
   });
 
   final Facility facility;
-  final String? selected;
-  final bool customTimeSelected;
-  final ValueChanged<String> onSelected;
-  final VoidCallback onPickCustomTime;
-
-  /// Custom time is offered after the facility's own slots and is always last,
-  /// so the facility's schedule is not obscured.
-  static const _customLabel = 'Custom time';
+  final String date;
+  final String? startTime;
+  final int durationHours;
+  final AppTimeRange? range;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (final slot in facility.availableSlots)
-          ChoiceChip(
-            key: Key('facility-slot-$slot'),
-            label: Text(slot),
-            selected: slot == selected,
-            onSelected: (_) => onSelected(slot),
-            selectedColor: tokens.brandOnDark,
-            labelStyle: TextStyle(
-              color: slot == selected ? tokens.brand : tokens.mutedStrong,
-              fontWeight: FontWeight.w700,
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: tokens.surface,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: tokens.border),
+        boxShadow: tokens.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.receipt_long_rounded, size: 18, color: tokens.brand),
+              8.w.widthBox(),
+              Text(
+                'Reservation summary',
+                style: TextStyle(
+                  color: tokens.ink,
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          12.h.heightBox(),
+          _SummaryRow(label: 'Facility', value: displayFacilityName(facility.name)),
+          _SummaryRow(label: 'Date', value: date),
+          _SummaryRow(
+            label: 'Start time',
+            value: startTime ?? 'Not selected',
+            muted: startTime == null,
+          ),
+          _SummaryRow(
+            label: 'Duration',
+            value: durationHours == 1 ? '1 hour' : '$durationHours hours',
+          ),
+          _SummaryRow(
+            label: 'Reservation time',
+            value: range?.label ?? 'Not selected',
+            muted: range == null,
+            emphasis: range != null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryRow extends StatelessWidget {
+  const _SummaryRow({
+    required this.label,
+    required this.value,
+    this.muted = false,
+    this.emphasis = false,
+  });
+
+  final String label;
+  final String value;
+  final bool muted;
+  final bool emphasis;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(color: tokens.muted, fontSize: 13.sp),
             ),
           ),
-        // The icon and the label prefix set this apart from the facility's own
-        // slots, and the label carries the chosen time once there is one.
-        ChoiceChip(
-          key: Key('facility-slot-custom'),
-          avatar: Icon(
-            Icons.schedule_rounded,
-            size: 17,
-            color: customTimeSelected ? tokens.brand : tokens.mutedStrong,
+          12.w.widthBox(),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: muted
+                    ? tokens.muted
+                    : (emphasis ? tokens.brand : tokens.ink),
+                fontSize: 13.5.sp,
+                fontWeight: emphasis ? FontWeight.w800 : FontWeight.w700,
+              ),
+            ),
           ),
-          label: Text(
-            customTimeSelected && selected != null ? selected! : _customLabel,
-          ),
-          selected: customTimeSelected,
-          onSelected: (_) => onPickCustomTime(),
-          selectedColor: tokens.brandOnDark,
-          labelStyle: TextStyle(
-            color: customTimeSelected ? tokens.brand : tokens.mutedStrong,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
