@@ -13,6 +13,7 @@ import '../../features/auth/domain/entities/auth_session.dart';
 
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 
+import '../deep_link_state.dart';
 import '../routes/app_routes.dart';
 
 class SplashPage extends StatefulWidget {
@@ -106,6 +107,7 @@ class _SplashPageState extends State<SplashPage>
     }
     final restored = results.last as AuthSession?;
     Get.offNamed(restored == null ? AppRoutes.login : AppRoutes.home);
+    openPendingInvoiceIfReady();
   }
 
   /// Validates the stored session, if there is one, and adopts it on success.

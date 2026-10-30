@@ -1,0 +1,27 @@
+
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.asiamatrix.matrixcondo.dev",
+      "sha256_cert_fingerprints": [
+        "AC:9E:86:F5:C6:B1:8D:13:C0:8D:88:F4:EF:FA:81:56:82:48:EC:23:32:20:5E:F7:41:E9:22:89:0D:EA:74:DA"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.asiamatrix.matrixcondo",
+      "sha256_cert_fingerprints": [
+        "35:63:04:DC:E4:36:C3:5D:3A:D9:3F:9D:79:67:3A:BD:77:8C:04:82:17:D3:0F:44:F9:19:33:5C:03:FA:B0:C0"
+      ]
+    }
+  }
+]

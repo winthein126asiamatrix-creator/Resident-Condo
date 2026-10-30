@@ -6,6 +6,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../core/config/app_environment.dart';
+import 'deep_link_state.dart';
 import '../core/constants/app_constants.dart';
 import '../core/localization/app_locale_controller.dart';
 import '../core/localization/app_translations.dart';
@@ -22,17 +24,8 @@ import '../features/notifications/domain/entities/notification_item.dart';
 import '../features/session/presentation/controllers/session_controller.dart';
 import 'routes/app_pages.dart';
 import 'routes/app_routes.dart';
+import 'package:app_links/app_links.dart';
 
-/// The application root.
-///
-/// The theme is built from [AppearanceController], which is the single source of
-/// truth for the resident's brand colour. Registering it here, before the first
-/// build, means the saved colour is applied on the very first frame rather than
-/// flashing the default and correcting a moment later.
-///
-/// The [Obx] is the whole integration: the theme is built from the controller's
-/// *applied* preference, so only "Apply Theme" — never a preview — rebuilds
-/// `GetMaterialApp` and repaints every mounted screen at once.
 class CondoResidentApp extends StatefulWidget {
   const CondoResidentApp({this.initialLocale = const Locale('en'), super.key});
 
@@ -56,6 +49,9 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
   /// Firebase, registered by `FirebaseBinding` in `main` before this widget
   /// exists, so it is looked up rather than created here.
   FirebaseService? _firebase;
+
+  late final AppLinks _appLinks;
+  StreamSubscription<Uri>? _deepLinkSubscription;
 
   @override
   void initState() {
@@ -97,7 +93,58 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
       );
       unawaited(_openNotificationsFromTap());
     }
+    unawaited(_startDeepLinkListener());
   }
+
+  Future<void> _startDeepLinkListener() async {
+  _appLinks = AppLinks();
+
+  try {
+    final initialUri = await _appLinks.getInitialLink();
+
+    if (initialUri != null) {
+      _handleDeepLink(initialUri);
+    }
+  } catch (error) {
+    superPrint(
+      'Initial deep link error: $error',
+      title: 'Deep Link',
+    );
+  }
+
+  _deepLinkSubscription = _appLinks.uriLinkStream.listen(
+    _handleDeepLink,
+    onError: (Object error) {
+      superPrint(
+        'Deep link stream error: $error',
+        title: 'Deep Link',
+      );
+    },
+  );
+}
+
+void _handleDeepLink(Uri uri) {
+  final expectedHost = AppEnvironment.current.isProduction
+      ? 'matrix-condo.web.app'
+      : 'matrix-condo-dev.web.app';
+
+  if (uri.scheme != 'https' || uri.host != expectedHost) {
+    return;
+  }
+
+  final segments = uri.pathSegments;
+  if (segments.length == 3 &&
+      segments[0] == 'payments' &&
+      segments[1] == 'detail') {
+    final invoiceId = segments[2];
+    if (invoiceId.isNotEmpty) {
+      superPrint('Opening invoice detail: $invoiceId', title: 'Deep Link');
+      setPendingInvoiceId(invoiceId);
+      openPendingInvoiceIfReady();
+      return;
+    }
+  }
+}
 
   /// Opens the notifications page for a notification the resident tapped.
   ///
@@ -173,6 +220,7 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
   void dispose() {
     _connectivityWorker?.dispose();
     _notificationTapWorker?.dispose();
+      unawaited(_deepLinkSubscription?.cancel());
     super.dispose();
   }
 
@@ -225,6 +273,20 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
           darkTheme: _appearance.darkTheme,
           themeMode: _appearance.themeMode,
           translations: AppTranslations(),
+          unknownRoute: GetPage<dynamic>(
+    name: '/unknown',
+    page: () {
+      debugPrint(
+        'UNKNOWN ROUTE: ${Get.currentRoute}, '
+        'arguments=${Get.arguments}',
+      );
+      return const Scaffold(
+        body: Center(
+          child: Text('Unknown route'),
+        ),
+      );
+    },
+  ),
           locale: _localeController.locale,
           fallbackLocale: const Locale('en'),
           supportedLocales: const <Locale>[

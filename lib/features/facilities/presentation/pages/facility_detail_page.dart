@@ -13,21 +13,110 @@ import '../controllers/facility_controller.dart';
 import '../widgets/facility_labels.dart';
 
 import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/errors/app_exception.dart';
+import '../../../../core/widgets/app_state_message.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-class FacilityDetailPage extends GetView<FacilityController> {
-  const FacilityDetailPage({required this.facility, super.key});
+class FacilityDetailPage extends StatefulWidget {
+  const FacilityDetailPage({required this.facilityId, super.key});
 
-  final Facility facility;
+  final String facilityId;
+
+  @override
+  State<FacilityDetailPage> createState() => _FacilityDetailPageState();
+}
+
+class _FacilityDetailPageState extends State<FacilityDetailPage> {
+  final facility = Rxn<Facility>();
+  final isLoading = true.obs;
+  final errorMessage = RxnString();
+
+  late final FacilityController controller;
+  var _requestToken = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<FacilityController>();
+    _loadFacility();
+  }
+
+  Future<void> _loadFacility() async {
+    final requestToken = ++_requestToken;
+    isLoading.value = true;
+    errorMessage.value = null;
+
+    final loaded = _loadedFacility();
+    if (loaded != null) {
+      facility.value = loaded;
+      isLoading.value = false;
+      return;
+    }
+
+    try {
+      final result = await controller.getFacility(widget.facilityId);
+      if (!mounted || requestToken != _requestToken) {
+        return;
+      }
+      facility.value = result;
+      if (result == null) {
+        errorMessage.value = 'The facility could not be found.';
+      }
+    } on AppException catch (error) {
+      if (!mounted || requestToken != _requestToken) {
+        return;
+      }
+      errorMessage.value = error.message;
+    } catch (_) {
+      if (!mounted || requestToken != _requestToken) {
+        return;
+      }
+      errorMessage.value = 'Unable to load the facility details.';
+    } finally {
+      if (mounted && requestToken == _requestToken) {
+        isLoading.value = false;
+      }
+    }
+  }
+
+  Facility? _loadedFacility() {
+    for (final item in controller.facilities) {
+      if (item.id == widget.facilityId) {
+        return item;
+      }
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       final current = _currentFacility();
       final tokens = AppThemeTokens.of(context);
+      if (isLoading.value && current == null) {
+        return Scaffold(
+          appBar: AppDetailAppBar(title: 'Facility details'),
+          body: const Center(child: CircularProgressIndicator()),
+        );
+      }
+      if (current == null) {
+        final message = errorMessage.value;
+        return Scaffold(
+          appBar: AppDetailAppBar(title: 'Facility details'),
+          body: AppStateMessage(
+            title: message == null
+                ? 'Facility not found'
+                : 'Unable to load details',
+            message: message ?? 'This facility is no longer available.',
+            icon: Icons.apartment_rounded,
+            actionLabel: message == null ? null : 'Try again',
+            onAction: message == null ? null : _loadFacility,
+          ),
+        );
+      }
       return Scaffold(
         appBar: AppDetailAppBar(title: 'Facility details'),
         body: ListView(
@@ -102,11 +191,12 @@ class FacilityDetailPage extends GetView<FacilityController> {
     });
   }
 
-  Facility _currentFacility() {
-    return controller.facilities.firstWhere(
-      (item) => item.id == facility.id,
-      orElse: () => facility,
-    );
+  Facility? _currentFacility() {
+    final loaded = _loadedFacility();
+    if (loaded != null) {
+      return loaded;
+    }
+    return facility.value;
   }
 }
 

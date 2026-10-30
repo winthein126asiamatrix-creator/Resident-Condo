@@ -5,6 +5,7 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round">
+       
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -22,10 +23,23 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+               <meta-data
+            android:name="flutter_deeplinking_enabled"
+            android:value="false" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <intent-filter android:autoVerify="true">
+    <action android:name="android.intent.action.VIEW" />
+
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+
+    <data
+        android:scheme="https"
+        android:host="${hostUrl}" />
+</intent-filter>
         </activity>
         <!-- Channel the Firebase Android SDK posts a notification to when the
              FCM payload does not name one. Without this, every background

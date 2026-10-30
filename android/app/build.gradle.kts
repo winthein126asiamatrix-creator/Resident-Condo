@@ -1,3 +1,5 @@
+
+import java.util.Properties
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -5,6 +7,13 @@ plugins {
     // END: FlutterFire Configuration
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val releaseKeyProperties = Properties().apply {
+    val propertiesFile = file("${System.getProperty("user.home")}/keys/key.properties")
+    if (propertiesFile.exists()) {
+        propertiesFile.inputStream().use { load(it) }
+    }
 }
 
 android {
@@ -30,25 +39,40 @@ android {
     }
         flavorDimensions += "environment"
 
+    signingConfigs {
+        create("prodRelease") {
+            val storePath = releaseKeyProperties.getProperty("storeFile")
+            require(!storePath.isNullOrBlank()) {
+                "Missing storeFile in C:/Users/winth/keys/key.properties"
+            }
+            storeFile = file(storePath)
+            storePassword = releaseKeyProperties.getProperty("storePassword")
+            keyAlias = releaseKeyProperties.getProperty("keyAlias")
+            keyPassword = releaseKeyProperties.getProperty("keyPassword")
+        }
+    }
+
     productFlavors {
         create("dev") {
             dimension = "environment"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
+            signingConfig = signingConfigs.getByName("debug")
+            manifestPlaceholders["hostUrl"] = "matrix-condo-dev.web.app"
         }
 
         create("prod") {
             dimension = "environment"
+            signingConfig = signingConfigs.getByName("prodRelease")
+            manifestPlaceholders["hostUrl"] = "matrix-condo.web.app"
         }
     }
 
-    buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
-        }
+buildTypes {
+    release {
+        // Signing is configured per product flavor below.
     }
+}
 }
 
 kotlin {

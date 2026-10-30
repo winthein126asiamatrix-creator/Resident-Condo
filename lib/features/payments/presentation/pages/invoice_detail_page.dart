@@ -6,6 +6,8 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 
+import '../../../../core/errors/app_exception.dart';
+
 import '../../../../core/theme/app_palette.dart';
 
 import '../../../../core/theme/app_theme_tokens.dart';
@@ -13,6 +15,8 @@ import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 
 import '../../../../core/widgets/app_section.dart';
+
+import '../../../../core/widgets/app_state_message.dart';
 
 import '../../domain/entities/invoice.dart';
 
@@ -26,10 +30,76 @@ import '../../../../core/widgets/app_detail_app_bar.dart';
 
 import '../../../../core/theme/app_spacing.dart';
 
-class InvoiceDetailPage extends GetView<PaymentController> {
-  const InvoiceDetailPage({required this.invoice, super.key});
+class InvoiceDetailPage extends StatefulWidget {
+  const InvoiceDetailPage({required this.invoiceId, super.key});
 
-  final Invoice invoice;
+  final String invoiceId;
+
+  @override
+  State<InvoiceDetailPage> createState() => _InvoiceDetailPageState();
+}
+
+class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
+  final invoice = Rxn<Invoice>();
+  final isLoading = true.obs;
+  final errorMessage = RxnString();
+
+  late final PaymentController controller;
+  var _requestToken = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.find<PaymentController>();
+    _loadInvoice();
+  }
+
+  Future<void> _loadInvoice() async {
+    final requestToken = ++_requestToken;
+    isLoading.value = true;
+    errorMessage.value = null;
+
+    final loaded = _loadedInvoice();
+    if (loaded != null) {
+      invoice.value = loaded;
+      isLoading.value = false;
+      return;
+    }
+
+    try {
+      final result = await controller.getInvoice(widget.invoiceId);
+      if (!mounted || requestToken != _requestToken) {
+        return;
+      }
+      invoice.value = result;
+      if (result == null) {
+        errorMessage.value = 'The invoice could not be found.';
+      }
+    } on AppException catch (error) {
+      if (!mounted || requestToken != _requestToken) {
+        return;
+      }
+      errorMessage.value = error.message;
+    } catch (_) {
+      if (!mounted || requestToken != _requestToken) {
+        return;
+      }
+      errorMessage.value = 'Unable to load the invoice.';
+    } finally {
+      if (mounted && requestToken == _requestToken) {
+        isLoading.value = false;
+      }
+    }
+  }
+
+  Invoice? _loadedInvoice() {
+    for (final item in controller.invoices) {
+      if (item.id == widget.invoiceId) {
+        return item;
+      }
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +112,20 @@ class InvoiceDetailPage extends GetView<PaymentController> {
     });
   }
 
-  Widget _buildBody(BuildContext context, Invoice currentInvoice) {
+  Widget _buildBody(BuildContext context, Invoice? currentInvoice) {
+    if (isLoading.value && currentInvoice == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (currentInvoice == null) {
+      final message = errorMessage.value;
+      return AppStateMessage(
+        title: message == null ? 'Invoice not found' : 'Unable to load invoice',
+        message: message ?? 'This invoice is no longer available.',
+        icon: Icons.receipt_long_outlined,
+        actionLabel: message == null ? null : 'Try again',
+        onAction: message == null ? null : _loadInvoice,
+      );
+    }
     final tokens = AppThemeTokens.of(context);
     return ListView(
       key: Key('invoice-detail-scroll'),
@@ -143,11 +226,12 @@ class InvoiceDetailPage extends GetView<PaymentController> {
     );
   }
 
-  Invoice _currentInvoice() {
-    return controller.invoices.firstWhere(
-      (item) => item.id == invoice.id,
-      orElse: () => invoice,
-    );
+  Invoice? _currentInvoice() {
+    final loaded = _loadedInvoice();
+    if (loaded != null) {
+      return loaded;
+    }
+    return invoice.value;
   }
 
   Payment? _paymentFor(Invoice currentInvoice) {

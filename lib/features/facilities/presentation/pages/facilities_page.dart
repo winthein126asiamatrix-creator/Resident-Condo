@@ -300,7 +300,7 @@ class _FacilityCard extends StatelessWidget {
     return InkWell(
       onTap: () {
         vibrateNow();
-        Get.toNamed(AppRoutes.facilityDetail, arguments: facility);
+        Get.toNamed(AppRoutes.facilityDetail, arguments: facility.id);
       },
       borderRadius: BorderRadius.circular(20.r),
       child: Container(

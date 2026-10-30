@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../features/announcements/presentation/pages/announcements_page.dart';
@@ -25,7 +26,6 @@ import '../../features/maintenance/presentation/pages/create_maintenance_request
 import '../../features/maintenance/presentation/pages/maintenance_detail_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../../features/parking/presentation/pages/parking_page.dart';
-import '../../features/payments/domain/entities/invoice.dart';
 import '../../features/payments/domain/entities/payment.dart';
 import '../../features/payments/presentation/pages/invoice_detail_page.dart';
 import '../../features/payments/presentation/pages/payment_failure_page.dart';
@@ -98,7 +98,17 @@ abstract final class AppPages {
     ),
     GetPage<dynamic>(
       name: AppRoutes.paymentDetail,
-      page: () => InvoiceDetailPage(invoice: Get.arguments as Invoice),
+      page: () {
+        // final invoiceId = 'invoice-2026-010';
+        debugPrint(
+          '[Invoice Route] '
+          'currentRoute=${Get.currentRoute}, '
+          'arguments=${Get.arguments}, '
+          'argumentsType=${Get.arguments.runtimeType}',
+        );
+
+        return InvoiceDetailPage(invoiceId: Get.arguments as String);
+      },
     ),
     GetPage<dynamic>(
       name: AppRoutes.paymentSummary,
@@ -135,7 +145,7 @@ abstract final class AppPages {
     ),
     GetPage<dynamic>(
       name: AppRoutes.facilityDetail,
-      page: () => FacilityDetailPage(facility: Get.arguments as Facility),
+      page: () => FacilityDetailPage(facilityId: Get.arguments as String),
     ),
     GetPage<dynamic>(
       name: AppRoutes.facilityReserve,

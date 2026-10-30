@@ -279,7 +279,7 @@ class _BalanceSummary extends StatelessWidget {
       );
       return;
     }
-    Get.toNamed(AppRoutes.paymentDetail, arguments: invoice);
+    Get.toNamed(AppRoutes.paymentDetail, arguments: invoice.id);
   }
 }
 
@@ -465,7 +465,7 @@ class _InvoiceCard extends StatelessWidget {
     return InkWell(
       onTap: () {
         vibrateNow();
-        Get.toNamed(AppRoutes.paymentDetail, arguments: invoice);
+        Get.toNamed(AppRoutes.paymentDetail, arguments: invoice.id);
       },
       borderRadius: BorderRadius.circular(18.r),
       child: Container(
