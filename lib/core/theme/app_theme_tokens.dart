@@ -52,28 +52,26 @@ class AppThemeTokens extends ThemeExtension<AppThemeTokens> {
     // exactly Teal, which is what a resident expects when they tap a swatch. In
     // dark mode the raw seed would be unreadably dark against the canvas, so the
     // scheme's lighter primary is used instead.
-    final brand = dark ? scheme.primary : seed;
+    final brand = dark ? seed : seed;
 
     // Text or an icon drawn on that fill. In dark mode the fill is light, so the
     // scheme's dark on-colour is right. In light mode the fill's own luminance
     // decides, so a bright Amber or Lime gets the theme's dark ink and a dark
     // Teal gets white rather than a contrast pair that fails WCAG.
     final lightInk = neutral(0.28, 0.145);
-    final onBrand = dark
-        ? scheme.onPrimary
-        : (brand.computeLuminance() > 0.45 ? lightInk : Colors.white);
+    final onBrand = (brand.computeLuminance() > 0.45 ? lightInk : Colors.white);
 
     return AppThemeTokens(
       seed: seed,
       brightness: scheme.brightness,
-      canvas: dark ? neutral(0.14, 0.08) : neutral(0.14, 0.978),
-      surface: dark ? neutral(0.10, 0.115) : Colors.white,
-      surfaceMuted: dark ? neutral(0.10, 0.155) : neutral(0.18, 0.957),
-      border: dark ? neutral(0.08, 0.225) : neutral(0.16, 0.902),
-      ink: dark ? neutral(0.18, 0.96) : neutral(0.28, 0.145),
-      muted: dark ? neutral(0.08, 0.68) : neutral(0.09, 0.46),
-      mutedStrong: dark ? neutral(0.10, 0.80) : neutral(0.12, 0.32),
-      faint: dark ? neutral(0.06, 0.52) : neutral(0.08, 0.62),
+      canvas: dark ? AppPalette.darkBackground : neutral(0.14, 0.978),
+      surface: dark ? AppPalette.darkSurface : Colors.white,
+      surfaceMuted: dark ? AppPalette.darkSurfaceMuted : neutral(0.18, 0.957),
+      border: dark ? AppPalette.darkBorder : neutral(0.16, 0.902),
+      ink: dark ? AppPalette.darkText : neutral(0.28, 0.145),
+      muted: dark ? AppPalette.darkMuted : neutral(0.09, 0.46),
+      mutedStrong: dark ? AppPalette.darkMutedStrong : neutral(0.12, 0.32),
+      faint: dark ? AppPalette.darkFaint : neutral(0.08, 0.62),
       brand: brand,
       onBrand: onBrand,
       brandDark: dark ? scheme.primary : Color.lerp(brand, Colors.black, 0.24)!,

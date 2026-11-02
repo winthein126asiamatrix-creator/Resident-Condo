@@ -31,6 +31,17 @@ abstract final class AppPalette {
   static const infoSoft = Color(0xFFEAE8FA);
   static const amberSoft = Color(0xFFFFF1D6);
 
+  // Premium dark neutrals (surface / text / borders)
+  static const darkBackground = Color(0xFF111827);
+  static const darkSurface = Color(0xFF1F2937);
+  static const darkSurfaceMuted = Color(0xFF28314A);
+  static const darkText = Color(0xFFF9FAFB);
+  static const darkTextSecondary = Color(0xFF9CA3AF);
+  static const darkBorder = Color(0xFF374151);
+  static const darkMuted = Color(0xFF9CA3AF);
+  static const darkMutedStrong = Color(0xFFD1D5DB);
+  static const darkFaint = Color(0xFF6B7280);
+
   static const heroShadow = <BoxShadow>[
     BoxShadow(color: Color(0x1A0F766E), blurRadius: 18, offset: Offset(0, 8)),
   ];

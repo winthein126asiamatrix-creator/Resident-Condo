@@ -34,6 +34,15 @@ abstract final class AppTheme {
       seedColor: seed,
       brightness: brightness,
     );
+    if (brightness == Brightness.dark) {
+      return scheme.copyWith(
+        surface: AppPalette.darkSurface,
+        surfaceContainerHighest: AppPalette.darkBorder,
+        onSurface: AppPalette.darkText,
+        onSurfaceVariant: AppPalette.darkTextSecondary,
+        outline: AppPalette.darkBorder,
+      );
+    }
     if (brightness == Brightness.light) {
       return scheme.copyWith(
         primary: seed,
