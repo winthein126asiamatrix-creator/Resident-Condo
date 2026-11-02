@@ -44,19 +44,6 @@ class DashboardPage extends GetView<DashboardController> {
     return Get.find<NotificationController>().unreadCount;
   }
 
-  /// The signed-in resident, so the greeting names the account behind the
-  /// tokens rather than a sample name.
-  ///
-  /// Read from [SessionController] for the same reason the unread count is read
-  /// from [NotificationController]: it is the one place the app already keeps
-  /// the authenticated resident, and [AuthController.adoptIntoSession] writes
-  /// it from `/auth/me` during login and Restore Session â€” before this page is
-  /// ever mounted. No extra request is made.
-  ///
-  /// Null when no session controller is registered. That cannot happen on the
-  /// real route (`/home` registers `SessionBinding` through `AppBinding`), but
-  /// returning null rather than a placeholder keeps the greeting from showing
-  /// a name that belongs to nobody.
   ResidentSession? get _residentSession {
     if (!Get.isRegistered<SessionController>()) {
       return null;
@@ -199,13 +186,6 @@ class _GreetingHeader extends StatelessWidget {
   final VoidCallback onNotifications;
   final VoidCallback onMore;
 
-  /// The given name, or a neutral word rather than a blank greeting.
-  ///
-  /// [ResidentSession.name] is never blank in practice â€” the controller seeds
-  /// it with a placeholder and [AuthController.adoptIntoSession] refuses to
-  /// overwrite it with an empty string â€” but a blank greeting reads as a bug,
-  /// so one is never painted. Splitting on whitespace rather than a single
-  /// space also keeps a doubled space from yielding an empty first name.
   static String _firstName(String? name) {
     final trimmed = (name ?? '').trim();
     if (trimmed.isEmpty) {

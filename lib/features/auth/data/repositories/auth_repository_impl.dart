@@ -12,7 +12,7 @@ import '../datasources/auth_remote_data_source.dart';
 import '../models/auth_user.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  const AuthRepositoryImpl({
+  AuthRepositoryImpl({
     required AuthRemoteDataSource remoteDataSource,
     required AuthLocalDataSource localDataSource,
     required TokenStorage tokenStorage,
@@ -27,6 +27,10 @@ class AuthRepositoryImpl implements AuthRepository {
   final TokenStorage _tokens;
   final ApiCacheStore? _cache;
 
+  /// Prevents concurrent duplicate /auth/me calls when the same flow
+  /// (sign-in or restore) triggers it more than once.
+  Future<AuthSession>? _updateMeInFlight;
+
   /// The registered store when it is the switchable one, null otherwise.
   ///
   /// Null in tests that register a plain [TokenStorage] fake, which then keeps
@@ -39,11 +43,6 @@ class AuthRepositoryImpl implements AuthRepository {
     // A new session must not inherit profile data from the previous account.
     await _cache?.clearAll();
     final result = await _remote.signIn(request);
-
-    // Remember Me decides where the pair is allowed to live, and it has to be
-    // decided before the write: an in-memory-only sign-in must not leave a
-    // pair persisted by an earlier remembered one behind, or the next launch
-    // would restore a session this sign-in was told not to keep.
     await _switchable?.useSession(persistent: request.rememberMe);
 
     // A failed write is not fatal: the resident is signed in for this launch,
@@ -51,16 +50,34 @@ class AuthRepositoryImpl implements AuthRepository {
     // anything logged here would describe a live session.
     await _tokens.writeTokens(result.tokens);
 
-    return AuthSession(
-      username: result.user.username,
-      displayName: result.user.displayName,
-      rememberMe: request.rememberMe,
-      user: result.user,
-    );
+    // Synchronize the authenticated user's latest profile and resident/unit
+    // information with the backend and Drift (cache DB). Do not treat the
+    // login response as fully authenticated until this succeeds.
+    try {
+      final session = await updateMe();
+      return session.copyWith(rememberMe: request.rememberMe);
+    } catch (_) {
+      // The session is not fully established until /auth/me succeeds.
+      // The tokens are kept so a temporary failure can be retried on
+      // restart, but the controller will not navigate to the dashboard.
+      rethrow;
+    }
   }
 
   @override
   Future<AuthSession> updateMe() async {
+    if (_updateMeInFlight != null) {
+      return await _updateMeInFlight!;
+    }
+    _updateMeInFlight = _updateMeImpl();
+    try {
+      return await _updateMeInFlight!;
+    } finally {
+      _updateMeInFlight = null;
+    }
+  }
+
+  Future<AuthSession> _updateMeImpl() async {
     const cacheKey = 'auth.me';
     try {
       final user = await _remote.updateMe();

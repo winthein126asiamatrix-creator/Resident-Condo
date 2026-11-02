@@ -120,8 +120,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _submit() async {
-    // Dismisses the keyboard so the loading state and any error are visible
-    // without the resident having to scroll.
+
     FocusScope.of(context).unfocus();
 
     // Runs the field validators, which is what actually paints the inline
@@ -135,9 +134,14 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     if (session == null) {
-      // Put focus on the first field that needs attention, so the resident can
-      // start fixing it without hunting for the red line.
-      final field = _auth.invalidField.value;
+      final field =
+          _auth.invalidField.value ??
+          _auth
+              .validate(
+                username: _username.text,
+                password: _password.text,
+              )
+              ?.field;
       if (field == 'username') {
         _usernameFocus.requestFocus();
       } else if (field == 'password') {
@@ -145,7 +149,6 @@ class _LoginPageState extends State<LoginPage> {
       }
       return;
     }
-
     (widget.onSignedIn ?? () => Get.offAllNamed(AppRoutes.home))();
   }
 }
@@ -157,7 +160,6 @@ class _LoginHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -239,39 +241,39 @@ class _LoginForm extends StatelessWidget {
                 ? SizedBox.shrink()
                 : _ErrorBanner(message: auth.errorMessage.value!),
           ),
-          AppTextField(
-            fieldKey: Key('login-username'),
-            label: 'Username',
-            hint: 'e.g. alex',
-            icon: Icons.person_outline_rounded,
-            controller: username,
-            focusNode: usernameFocus,
-            textInputAction: TextInputAction.next,
-            // Usernames are not sentences, so no auto capitalisation and no
-            // autocorrect fighting the resident's typing.
-            textCapitalization: TextCapitalization.none,
-            enabled: !auth.isSubmitting.value,
-            onChanged: (_) => auth.onFieldChanged(''),
-            onSubmitted: (_) => passwordFocus.requestFocus(),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              borderSide: BorderSide(color: tokens.border),
-            ),
-            validator: (_) =>
-                auth
+          Obx(
+            () => AppTextField(
+              fieldKey: Key('login-username'),
+              label: 'Username',
+              hint: 'e.g. alex',
+              icon: Icons.person_outline_rounded,
+              controller: username,
+              focusNode: usernameFocus,
+              textInputAction: TextInputAction.next,
+              textCapitalization: TextCapitalization.none,
+              enabled: !auth.isSubmitting.value,
+              onChanged: (_) => auth.onFieldChanged(''),
+              onSubmitted: (_) => passwordFocus.requestFocus(),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                borderSide: BorderSide(color: tokens.border),
+              ),
+              validator: (_) =>
+                  auth
+                          .validate(
+                            username: username.text,
+                            password: password.text,
+                          )
+                          ?.field ==
+                      'username'
+                  ? auth
                         .validate(
                           username: username.text,
                           password: password.text,
                         )
-                        ?.field ==
-                    'username'
-                ? auth
-                      .validate(
-                        username: username.text,
-                        password: password.text,
-                      )
-                      ?.message
-                : null,
+                        ?.message
+                  : null,
+            ),
           ),
           AppSpacing.fieldGap.heightBox(),
           Obx(
@@ -381,35 +383,39 @@ class _RememberMeAndForgot extends StatelessWidget {
       ),
     );
 
-    final rememberMeLabel = GestureDetector(
-      // The whole label is the target, not just the box, which is what makes it
-      // comfortably tappable on a phone.
-      onTap: auth.isSubmitting.value ? null : () => auth.toggleRememberMe(),
-      behavior: HitTestBehavior.opaque,
-      child: Text(
-        'Remember me',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: tokens.mutedStrong,
-          fontSize: 13.5.sp,
-          fontWeight: FontWeight.w600,
+    final rememberMeLabel = Obx(
+      () => GestureDetector(
+        // The whole label is the target, not just the box, which is what makes
+        // it comfortably tappable on a phone.
+        onTap: auth.isSubmitting.value ? null : () => auth.toggleRememberMe(),
+        behavior: HitTestBehavior.opaque,
+        child: Text(
+          'Remember me',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: tokens.mutedStrong,
+            fontSize: 13.5.sp,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
 
-    final forgot = TextButton(
-      key: Key('login-forgot-password'),
-      onPressed: auth.isSubmitting.value
-          ? null
-          : () => _showForgotPassword(context),
-      style: TextButton.styleFrom(
-        foregroundColor: tokens.brand,
-        minimumSize: Size(0, AppSpacing.minTouchTarget),
-        padding: EdgeInsets.symmetric(horizontal: 8),
-        textStyle: TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w700),
+    final forgot = Obx(
+      () => TextButton(
+        key: Key('login-forgot-password'),
+        onPressed: auth.isSubmitting.value
+            ? null
+            : () => _showForgotPassword(context),
+        style: TextButton.styleFrom(
+          foregroundColor: tokens.brand,
+          minimumSize: Size(0, AppSpacing.minTouchTarget),
+          padding: EdgeInsets.symmetric(horizontal: 8),
+          textStyle: TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w700),
+        ),
+        child: Text('Forgot password'),
       ),
-      child: Text('Forgot password'),
     );
 
     // On a narrow phone the two controls cannot share a line without the label

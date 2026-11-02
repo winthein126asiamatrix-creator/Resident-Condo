@@ -24,18 +24,6 @@ class SessionController extends GetxController {
 
   bool get isTenant => session.value?.role.paysRent ?? false;
 
-  void switchRole(ResidentRole next) {
-    final currentSession = session.value;
-    if (currentSession == null || currentSession.role == next) {
-      return;
-    }
-    session.value = currentSession.copyWith(role: next);
-  }
-
-  /// Adopts the name from a successful sign-in, so the greeting on the
-  /// dashboard and the name on the profile match the account just used.
-  /// Ignored while there is an unauthenticated (null) session context unless
-  /// both values are empty, matching the existing guard.
   void signInAs(String displayName, {String? email}) {
     final currentSession = session.value;
     final name = displayName.trim().isEmpty
@@ -47,8 +35,7 @@ class SessionController extends GetxController {
     }
 
     if (currentSession == null) {
-      // Build only from authenticated remote data. Non-user-specific display
-      // fields stay empty instead of reusing a former demo resident.
+ 
       session.value = ResidentSession(
         name: name.isEmpty ? 'Resident' : name,
         role: ResidentRole.resident,

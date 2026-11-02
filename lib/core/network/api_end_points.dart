@@ -1,27 +1,13 @@
-/// Every backend path the app uses, in one place.
-///
-/// Paths that never vary are `static const`. Paths built from an identifier
-/// (an invoice id, a reservation code) are static methods, so the caller cannot
-/// accidentally interpolate one and forget a slash.
-///
-/// These mirror the features that already exist in the app. They are grouped by
-/// feature and the paths follow the project's own domain names, so a reader can
-/// match an endpoint to the screen that needs it. Confirm the concrete paths
-/// against the backend before shipping; the structure is what matters here.
+
 abstract final class ApiEndPoints {
   // --- Session -------------------------------------------------------------
 
-  /// Exchanges credentials for an access and refresh token pair.
   static const String login = '/auth/login';
 
-  /// Invalidates the current session token.
   static const String logout = '/auth/logout';
 
-  /// The signed-in resident's own record, used to validate a stored session on
-  /// startup.
   static const String me = '/auth/me';
 
-  /// Exchanges a refresh token for a new pair.
   static const String refreshToken = '/auth/refresh';
 
   // --- Resident unit -------------------------------------------------------
@@ -129,8 +115,6 @@ abstract final class ApiEndPoints {
   /// Marks every unread notification as read in one call.
   static const String notificationReadAll = '/api/notifications/read-all';
 
-  /// Registers this device's FCM token against the signed-in resident, so the
-  /// backend can target it. Paired with [notificationDevice] on sign-out.
   static const String notificationDevices = '/api/notifications/devices';
 
   static String notificationDevice(String token) =>
@@ -154,7 +138,5 @@ abstract final class ApiEndPoints {
 
   static const String profile = '/api/profile';
 
-  /// The resident's own appearance preference, so the chosen brand colour can
-  /// follow an account rather than only a device.
   static const String appearance = '/api/profile/appearance';
 }

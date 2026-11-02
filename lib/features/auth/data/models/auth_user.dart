@@ -66,7 +66,8 @@ class AuthUser {
       firstName: _asString(json['firstName']),
       lastName: _asString(json['lastName']),
       gender: json['gender'] is String ? json['gender'] as String : null,
-      image: json['image'] is String ? json['image'] as String : null,
+      image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbZ0WFrgDfCi0quSSO2usQ032wzQ1AjvHpBJE3m4e15g&s=10"
+      //json['image'] is String ? json['image'] as String : null,
     );
   }
 

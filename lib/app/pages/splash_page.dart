@@ -85,17 +85,8 @@ class _SplashPageState extends State<SplashPage>
     _continue();
   }
 
-  /// Sends the resident onward once the splash has shown and the session check
-  /// has settled.
-  ///
-  /// A remembered session means they were signed in on this device, so they go
-  /// straight home. That is not taken on trust: the stored tokens are validated
-  /// against the backend first, which also renews them if they expired while the
-  /// app was closed. Only once that settles does a route change happen, so the
-  /// dashboard is never mounted for a session that is about to be rejected.
+  
   Future<void> _continue() async {
-    // Both must finish: the animation for the brand, the restore for the truth
-    // about the session.
     final results = await Future.wait<Object?>(<Future<Object?>>[
       Future<void>.delayed(_minimumDisplay),
       _restore,

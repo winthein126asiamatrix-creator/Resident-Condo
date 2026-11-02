@@ -12,9 +12,8 @@ import '../models/auth_user.dart';
 
 /// What a sign-in returned: who signed in, and the tokens that prove it.
 class AuthResult {
-  const AuthResult({required this.user, required this.tokens});
+  const AuthResult({required this.tokens});
 
-  final AuthUser user;
   final AuthTokens tokens;
 }
 
@@ -48,7 +47,6 @@ class AuthRemoteDataSource {
       );
       superPrint(response, title: "Login");
       return AuthResult(
-        user: _userFrom(response),
         tokens: TokenParser.tokensFrom(response),
       );
     } on ApiException catch (error) {
@@ -67,19 +65,13 @@ class AuthRemoteDataSource {
         ApiEndPoints.me,
         parse: AuthUser.parse,
       );
-      superPrint(response, title: "Update Me");
+      superPrint(response.toJson(), title: "Update Me");
       return response;
     } on ApiException catch (error) {
       throw _translate(error);
     }
   }
 
-  /// Exchanges a refresh token for a new pair.
-  ///
-  /// Not used by the automatic 401 handler, which does its refresh inside the
-  /// interceptor so the logic exists once. This is here for the flows that need
-  /// to renew deliberately, such as validating a stored session on startup when
-  /// no authenticated request is in flight.
   Future<AuthTokens?> refresh(String refreshToken) async {
     try {
       final response = await _service.post<Map<String, dynamic>>(
@@ -95,14 +87,6 @@ class AuthRemoteDataSource {
     } on ApiException {
       return null;
     }
-  }
-
-  static AuthUser _userFrom(Map<String, dynamic> response) {
-    final raw = response['user'];
-    // Some backends nest the profile under `user` and some return it flat;
-    // accept either so a change of shape does not break sign-in.
-    final record = raw is Map ? Map<String, dynamic>.from(raw) : response;
-    return AuthUser.fromJson(record);
   }
 
   /// Turns transport failures into something worth showing a resident.

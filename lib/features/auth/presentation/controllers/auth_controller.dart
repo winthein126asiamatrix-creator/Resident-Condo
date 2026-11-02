@@ -15,16 +15,7 @@ import '../../data/models/auth_user.dart';
 import '../../domain/entities/auth_session.dart';
 import '../../domain/usecases/auth_usecases.dart';
 
-/// Drives the login screen.
-///
-/// Two things this deliberately does not do: it never stores the password, and
-/// it never navigates. Returning a result and letting the page decide keeps the
-/// controller testable and stops a failed attempt from leaving the resident on
-/// a screen they did not ask for.
-///
-/// Token refresh deliberately lives in the network layer, not here. This
-/// controller asks for the signed-in resident and gets either one or an error,
-/// so there is no second copy of the refresh rules to keep in step.
+
 class AuthController extends GetxController {
   AuthController(this.useCases);
 
@@ -87,13 +78,8 @@ class AuthController extends GetxController {
     invalidField.value = null;
   }
 
-  /// Validates and attempts a sign-in.
-  ///
-  /// Returns the session on success, or null when validation failed or the
-  /// credentials were rejected, in which case [errorMessage] explains why.
   Future<AuthSession?> signIn() async {
-    // A second tap while the first is still in flight is ignored rather than
-    // queued, so the resident never ends up signed in twice.
+
     if (isSubmitting.value) {
       return null;
     }
@@ -108,6 +94,7 @@ class AuthController extends GetxController {
       return null;
     }
 
+    invalidField.value = null;
     isSubmitting.value = true;
     errorMessage.value = null;
     try {
@@ -120,19 +107,13 @@ class AuthController extends GetxController {
       );
       final remembered = session.copyWith(
         rememberMe: rememberMe.value,
-        displayName: "Win Thein",
       );
       await useCases.persistSession(remembered);
-      // Cleared as soon as the attempt lands, so a password never lingers in
-      // memory after the resident is through with it.
       passwordController.clear();
-      // The rest of the app reads the resident from SessionController, so a
-      // sign-in only takes effect once it knows who walked in.
       adoptIntoSession(remembered);
       return remembered;
     } on AppException catch (error) {
       errorMessage.value = error.message;
-      passwordController.clear();
       return null;
     } catch (_) {
       errorMessage.value = 'We could not sign you in. Please try again.';
@@ -142,15 +123,6 @@ class AuthController extends GetxController {
     }
   }
 
-  /// Ends the session, after telling the backend to stop pushing to this device.
-  ///
-  /// Unregistering first is the order that matters: it needs the access token,
-  /// which [AuthUseCases.signOut] is about to discard. A device left registered
-  /// after sign-out would keep receiving the previous resident's push
-  /// notifications.
-  ///
-  /// The cached notifications go at the same time, so the next resident to sign
-  /// in on this device does not see this one's history.
   Future<void> signOut() async {
     await _releaseDevice();
     await useCases.signOut();
@@ -180,19 +152,8 @@ class AuthController extends GetxController {
     }
   }
 
-  /// True while the session is known only locally, because the server could not
-  /// be reached when it was last checked.
-  ///
-  /// The resident is in the app on tokens they already hold, not on the
-  /// server's word, so [revalidateSession] asks again once it is reachable.
   final isUnverified = false.obs;
 
-  /// The remembered session from a previous launch, or null.
-  ///
-  /// Null means the resident has to sign in again: either nothing was stored, or
-  /// the server rejected what was stored. A session the server could not be
-  /// reached to check is *not* null — it is returned with [AuthSession.unverified]
-  /// set, so the resident is not signed out for being offline.
   Future<AuthSession?> restoreSession() async {
     isRestoring.value = true;
     try {
@@ -209,16 +170,6 @@ class AuthController extends GetxController {
     }
   }
 
-  /// Re-runs the session check now that the backend is reachable.
-  ///
-  /// Only worth calling when [isUnverified] is set: a session the server has
-  /// already said yes to needs no second opinion, and asking again would spend
-  /// a request the resident did not trigger.
-  ///
-  /// Nothing happens when the server is *still* unreachable — the repository
-  /// hands back another unverified session and the resident stays put. A null
-  /// result means the server has now refused the session, so the repository has
-  /// already cleared it and the resident is sent back to sign in.
   Future<void> revalidateSession() async {
     final restored = await useCases.restoreSession();
     if (restored != null) {
@@ -232,11 +183,6 @@ class AuthController extends GetxController {
     Get.offAllNamed(AppRoutes.login);
   }
 
-  /// Makes the rest of the app know who signed in.
-  ///
-  /// Features read the resident from [SessionController], which does not know
-  /// about auth on its own, so a sign-in (or a restored session) only takes
-  /// effect once it is handed over here.
   void adoptIntoSession(AuthSession session) {
     _prepareNotifications();
     if (!Get.isRegistered<SessionController>()) {
@@ -253,15 +199,6 @@ class AuthController extends GetxController {
     }
   }
 
-  /// Asks for notification permission and fetches the FCM token, once there is
-  /// a resident to notify.
-  ///
-  /// This is the single point every sign-in path goes through — a restored
-  /// session from the splash, a fresh sign-in, and a session revalidated on
-  /// reconnect — so the prompt appears behind an authenticated resident and
-  /// never over the splash. Fire and forget: the permission and the token are
-  /// not needed for anything the resident is doing right now, so nothing here
-  /// is allowed to hold up (or break) the route change that follows.
   void _prepareNotifications() {
     if (!Get.isRegistered<FirebaseService>()) {
       return;
@@ -270,14 +207,6 @@ class AuthController extends GetxController {
     unawaited(_registerDeviceToken(firebase));
   }
 
-  /// Hands this device's FCM token to the backend for the signed-in resident.
-  ///
-  /// Runs after [FirebaseService.onResidentSignedIn] has had its chance at the
-  /// token, so the token this registers is the one that was actually issued.
-  /// Fire and forget and swallowed: push not being registered is not a reason for
-  /// a sign-in to fail, and the resident is never shown this.
-  ///
-  /// The token itself is never logged.
   Future<void> _registerDeviceToken(FirebaseService firebase) async {
     try {
       await firebase.onResidentSignedIn();
