@@ -77,4 +77,17 @@ abstract final class ApiConfig {
       return false;
     }
   }
+
+  /// Whether the dev-only in-app API logger is active.
+  ///
+  /// Keyed to the flavor rather than [kDebugMode]: the debug tool belongs to
+  /// the dev build, and production must not collect logs even in a debug run.
+  /// A missing flavor (a unit test, for example) means disabled.
+  static bool get enableApiLogger {
+    try {
+      return AppEnvironment.current.isDev;
+    } on StateError {
+      return false;
+    }
+  }
 }

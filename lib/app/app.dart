@@ -10,6 +10,7 @@ import '../core/constants/app_constants.dart';
 import '../core/localization/app_locale_controller.dart';
 import '../core/localization/app_translations.dart';
 import '../core/network/api_binding.dart';
+import '../core/network/api_log_store.dart';
 import '../core/network/connectivity_service.dart';
 import '../core/network/refresh_registry.dart';
 import '../core/services/firebase_service.dart';
@@ -18,6 +19,7 @@ import '../features/appearance/presentation/bindings/appearance_binding.dart';
 import '../features/appearance/presentation/controllers/appearance_controller.dart';
 import '../features/auth/presentation/controllers/auth_controller.dart';
 import '../features/dashboard/presentation/controllers/dashboard_controller.dart';
+import '../features/dev_tools/presentation/widgets/api_log_floating_button.dart';
 import '../features/notifications/domain/entities/notification_item.dart';
 import '../features/session/presentation/controllers/session_controller.dart';
 import 'routes/app_pages.dart';
@@ -222,6 +224,19 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
           theme: _appearance.theme,
           darkTheme: _appearance.darkTheme,
           themeMode: _appearance.themeMode,
+          builder: (context, child) {
+            final app = child ?? const SizedBox.shrink();
+            // The builder wraps the app's navigator, so one stack here is
+            // above every route, dialog and bottom sheet. Production never
+            // registers the store, so neither branch below adds anything.
+            if (!Get.isRegistered<ApiLogStore>()) {
+              return app;
+            }
+            return Stack(
+              fit: StackFit.expand,
+              children: [app, const ApiLogFloatingButton()],
+            );
+          },
           translations: AppTranslations(),
           locale: _localeController.locale,
           fallbackLocale: const Locale('en'),

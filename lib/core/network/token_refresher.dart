@@ -30,7 +30,7 @@ class TokenRefresher {
         ApiEndPoints.refreshToken,
         data: <String, Object?>{
           'refresh_token': refreshToken,
-         // 'expiresInMins': ApiConfig.tokenExpiresInMins,
+          // 'expiresInMins': ApiConfig.tokenExpiresInMins,
         },
       );
       superPrint({
@@ -51,19 +51,24 @@ class TokenRefresher {
   ///
   /// Used by [DioApiService] in the app, where an interceptor-driven refresh
   /// would otherwise be able to re-enter itself.
-  static TokenRefresher bare(String baseUrl) {
-    return TokenRefresher(
-      Dio(
-        BaseOptions(
-          baseUrl: baseUrl,
-          connectTimeout: ApiConfig.connectTimeout,
-          receiveTimeout: ApiConfig.receiveTimeout,
-          contentType: Headers.jsonContentType,
-          responseType: ResponseType.json,
-          validateStatus: (status) =>
-              status != null && status >= 200 && status < 300,
-        ),
+  static TokenRefresher bare(
+    String baseUrl, {
+    List<Interceptor> interceptors = const <Interceptor>[],
+  }) {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: ApiConfig.connectTimeout,
+        receiveTimeout: ApiConfig.receiveTimeout,
+        contentType: Headers.jsonContentType,
+        responseType: ResponseType.json,
+        validateStatus: (status) =>
+            status != null && status >= 200 && status < 300,
       ),
     );
+    if (interceptors.isNotEmpty) {
+      dio.interceptors.addAll(interceptors);
+    }
+    return TokenRefresher(dio);
   }
 }

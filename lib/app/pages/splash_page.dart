@@ -13,6 +13,8 @@ import '../../features/auth/domain/entities/auth_session.dart';
 
 import '../../features/auth/presentation/controllers/auth_controller.dart';
 
+import '../../features/session/presentation/controllers/session_controller.dart';
+
 import '../routes/app_routes.dart';
 
 class SplashPage extends StatefulWidget {
@@ -22,8 +24,7 @@ class SplashPage extends StatefulWidget {
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage>
-    with TickerProviderStateMixin {
+class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   late final AnimationController _logoController;
   late final AnimationController _loaderController;
   late final Animation<double> _logoScale;
@@ -37,6 +38,10 @@ class _SplashPageState extends State<SplashPage>
   /// Session restore starts with the animation so the network round trip
   /// overlaps the animation instead of being added to it.
   late final Future<AuthSession?> _restore;
+
+  /// True when `/auth/me` failed transiently. The tokens are kept, so the
+  /// resident can retry without entering credentials again.
+  bool _restoreFailed = false;
 
   @override
   void initState() {
@@ -85,7 +90,6 @@ class _SplashPageState extends State<SplashPage>
     _continue();
   }
 
-  
   Future<void> _continue() async {
     final results = await Future.wait<Object?>(<Future<Object?>>[
       Future<void>.delayed(_minimumDisplay),
@@ -96,7 +100,39 @@ class _SplashPageState extends State<SplashPage>
       return;
     }
     final restored = results.last as AuthSession?;
-    Get.offNamed(restored == null ? AppRoutes.login : AppRoutes.home);
+    _finishRestore(restored);
+  }
+
+  /// Routes away from the splash once the restore attempt settles.
+  ///
+  /// A transient failure keeps the splash visible with a retry action instead of
+  /// sending the resident to sign in: their tokens were never proven invalid.
+  void _finishRestore(AuthSession? restored) {
+    if (restored == null) {
+      Get.offNamed(AppRoutes.login);
+      return;
+    }
+    if (restored.unverified && !_hasSession) {
+      setState(() => _restoreFailed = true);
+      return;
+    }
+    Get.offNamed(AppRoutes.home);
+  }
+
+  bool get _hasSession {
+    if (!Get.isRegistered<SessionController>()) {
+      return false;
+    }
+    return Get.find<SessionController>().isAuthenticated;
+  }
+
+  Future<void> _retryRestore() async {
+    setState(() => _restoreFailed = false);
+    final restored = await _restoreSession();
+    if (!mounted) {
+      return;
+    }
+    _finishRestore(restored);
   }
 
   /// Validates the stored session, if there is one, and adopts it on success.
@@ -177,12 +213,18 @@ class _SplashPageState extends State<SplashPage>
                   ),
                 ),
                 40.h.heightBox(),
-                _BrandDotsLoader(
-                  color: tokens.brand,
-                  controller: _loaderController,
-                  dotScales: _dotScales,
-                  dotOpacities: _dotOpacities,
-                ),
+                if (_restoreFailed)
+                  _RestoreRetry(
+                    onRetry: _retryRestore,
+                    onSignIn: () => Get.offNamed(AppRoutes.login),
+                  )
+                else
+                  _BrandDotsLoader(
+                    color: tokens.brand,
+                    controller: _loaderController,
+                    dotScales: _dotScales,
+                    dotOpacities: _dotOpacities,
+                  ),
               ],
             ),
           ),
@@ -230,6 +272,42 @@ class _BrandDotsLoader extends StatelessWidget {
   }
 }
 
+/// Shown when the session could not be validated because the server was
+/// temporarily unreachable. Signing in again is optional: the tokens were kept.
+class _RestoreRetry extends StatelessWidget {
+  const _RestoreRetry({required this.onRetry, required this.onSignIn});
+
+  final VoidCallback onRetry;
+  final VoidCallback onSignIn;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Column(
+      children: [
+        Text(
+          'We could not reach the server.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: tokens.ink,
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        6.h.heightBox(),
+        Text(
+          'Your session is still saved. Check your connection and try again.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: tokens.muted, fontSize: 12.5.sp, height: 1.4),
+        ),
+        14.h.heightBox(),
+        FilledButton(onPressed: onRetry, child: const Text('Try again')),
+        TextButton(onPressed: onSignIn, child: const Text('Sign in')),
+      ],
+    );
+  }
+}
+
 /// Single pulsing dot driven by the splash loader animations.
 class _DotPulse extends StatelessWidget {
   const _DotPulse({
@@ -252,10 +330,7 @@ class _DotPulse extends StatelessWidget {
           width: 7,
           height: 7,
           margin: const EdgeInsets.symmetric(horizontal: 3),
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
       ),
     );

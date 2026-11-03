@@ -43,4 +43,5 @@ abstract final class AppRoutes {
   static const storeCheckout = '/store/checkout';
   static const storeOrderDetail = '/store/orders/detail';
   static const sample = '/sample';
+  static const apiLogs = '/dev/api-logs';
 }

@@ -10,6 +10,7 @@ import '../../features/complaints/presentation/pages/complaint_detail_page.dart'
 import '../../features/complaints/presentation/pages/complaints_page.dart';
 import '../../features/complaints/presentation/pages/create_complaint_page.dart';
 import '../../features/dashboard/presentation/pages/main_shell_page.dart';
+import '../../features/dev_tools/presentation/pages/api_log_viewer_page.dart';
 import '../../features/facilities/domain/entities/facility.dart';
 import '../../features/facilities/presentation/pages/booking_confirmed_page.dart';
 import '../../features/facilities/presentation/pages/facility_detail_page.dart';
@@ -236,6 +237,10 @@ abstract final class AppPages {
       name: AppRoutes.sample,
       page: () => SamplePage(),
       binding: SampleBinding(),
+    ),
+    GetPage<dynamic>(
+      name: AppRoutes.apiLogs,
+      page: () => const ApiLogViewerPage(),
     ),
   ];
 }

@@ -96,6 +96,11 @@ class AuthController extends GetxController {
     invalidField.value = null;
     isSubmitting.value = true;
     errorMessage.value = null;
+    // A new sign-in must never inherit the previous account's in-memory user,
+    // even if the login screen was reached without going through sign-out.
+    if (Get.isRegistered<SessionController>()) {
+      Get.find<SessionController>().clearSession();
+    }
     try {
       final session = await useCases.signIn(
         SignInRequest(
@@ -125,6 +130,11 @@ class AuthController extends GetxController {
     try {
       await useCases.signOut();
     } finally {
+      // Tokens are gone at this point (or the repository failed); either way the
+      // previous resident's in-memory profile must not remain accessible.
+      if (Get.isRegistered<SessionController>()) {
+        Get.find<SessionController>().clearSession();
+      }
       await _resetAppearance();
     }
   }
@@ -165,6 +175,9 @@ class AuthController extends GetxController {
         // The password is never remembered, only offered as a starting point.
         usernameController.text = restored.username;
       } else {
+        if (Get.isRegistered<SessionController>()) {
+          Get.find<SessionController>().clearSession();
+        }
         await _resetAppearance();
       }
       return restored;
@@ -175,37 +188,43 @@ class AuthController extends GetxController {
 
   Future<void> revalidateSession() async {
     final restored = await useCases.restoreSession();
-    if (restored != null) {
-      isUnverified.value = restored.unverified;
-      await adoptIntoSession(restored);
+    if (restored == null) {
+      if (Get.isRegistered<SessionController>()) {
+        Get.find<SessionController>().clearSession();
+      }
+      isUnverified.value = false;
+      await _resetAppearance();
+      Get.offAllNamed(AppRoutes.login);
       return;
     }
-    if (Get.isRegistered<SessionController>()) {
-      Get.find<SessionController>().clearResident();
+    isUnverified.value = restored.unverified;
+    // A transient failure leaves the already established session untouched; it
+    // must not be replaced with the remembered (unverified) details.
+    if (restored.unverified) {
+      return;
     }
-    await _resetAppearance();
-    Get.offAllNamed(AppRoutes.login);
+    await adoptIntoSession(restored);
   }
 
+  /// Publishes the authenticated user to the shared session.
+  ///
+  /// Only a complete [AuthUser] from `/auth/me` may establish a session. A
+  /// remembered name on its own is never promoted into an authenticated user.
   Future<void> adoptIntoSession(AuthSession session) async {
-    _prepareNotifications();
     final user = session.user;
+    final verifiedUser = user is AuthUser && !session.unverified ? user : null;
     if (Get.isRegistered<SessionController>()) {
       final controller = Get.find<SessionController>();
-      if (user is AuthUser) {
-        // The backend's record is richer than a name, so the profile carries the
-        // email the account actually belongs to.
-        controller.signInAs(
-          user.displayName,
-          email: user.email,
-          image: user.image,
-        );
+      if (verifiedUser != null) {
+        controller.setSession(verifiedUser);
       } else {
-        controller.signInAs(session.displayName);
+        controller.clearSession();
       }
     }
-    if (user is AuthUser) {
-      await _applyAppearance(user);
+    if (verifiedUser != null) {
+      // Device registration and theme seeding are authenticated side effects.
+      _prepareNotifications();
+      await _applyAppearance(verifiedUser);
     }
   }
 
@@ -218,7 +237,7 @@ class AuthController extends GetxController {
     if (!Get.isRegistered<AppearanceController>()) {
       return;
     }
-    final accountId = user.id > 0 ? user.id.toString() : user.username;
+    final accountId = user.id > 0 ? user.id.toString() : user.name;
     if (accountId.isEmpty) {
       return;
     }

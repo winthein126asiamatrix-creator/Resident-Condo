@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 
 import '../cache/api_cache_store.dart';
 import '../cache/app_cache_database.dart';
+import 'api_config.dart';
+import 'api_log_store.dart';
 import 'dio_api_service.dart';
 import 'secure_token_storage.dart';
 import 'session_token_storage.dart';
@@ -32,9 +34,18 @@ abstract final class ApiBinding extends Bindings {
             // Wrapped rather than registered bare, so a sign-in can route the
             // pair between the keychain and memory according to Remember Me.
             : SessionTokenStorage(SecureTokenStorage()));
+
+    // Dev only. Production registers no store, so the interceptor has nowhere
+    // to write and the global button has nothing to open.
+    final logsEnabled = ApiConfig.enableApiLogger;
+    if (logsEnabled && !Get.isRegistered<ApiLogStore>()) {
+      Get.put<ApiLogStore>(ApiLogStore(), permanent: true);
+    }
+    final logStore = logsEnabled ? Get.find<ApiLogStore>() : null;
+
     Get.put<TokenStorage>(storage, permanent: true);
     Get.put<DioApiService>(
-      service ?? DioApiService(tokenStorage: storage),
+      service ?? DioApiService(tokenStorage: storage, apiLogStore: logStore),
       permanent: true,
     );
 

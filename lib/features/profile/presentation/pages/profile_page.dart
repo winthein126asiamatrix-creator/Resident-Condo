@@ -29,8 +29,6 @@ import '../../../auth/presentation/controllers/auth_controller.dart';
 
 import '../../../dashboard/presentation/controllers/dashboard_controller.dart';
 
-import '../../../session/presentation/controllers/session_controller.dart';
-
 import '../../domain/entities/profile.dart';
 
 import '../controllers/profile_controller.dart';
@@ -463,11 +461,6 @@ class ProfilePage extends GetView<ProfileController> {
     // later request can reuse the old credentials.
     if (Get.isRegistered<AuthController>()) {
       await Get.find<AuthController>().signOut();
-    }
-    // Drops the in-memory resident too, so the next person to sign in on this
-    // device does not briefly see the previous one's name and email.
-    if (Get.isRegistered<SessionController>()) {
-      Get.find<SessionController>().clearResident();
     }
     if (Get.isRegistered<DashboardController>()) {
       Get.find<DashboardController>().selectedTab.value = 0;

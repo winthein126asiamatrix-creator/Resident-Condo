@@ -61,11 +61,12 @@ class NotificationBinding extends Bindings {
     if (!Get.isRegistered<SessionController>()) {
       return null;
     }
-    final session = Get.find<SessionController>().session.value;
-    if (session == null) {
+    final user = Get.find<SessionController>().currentUser;
+    if (user == null) {
       return null;
     }
-    final email = session.email.trim();
-    return email.isEmpty ? session.name.trim() : email;
+    if (user.id > 0) return 'user:${user.id}';
+    final email = user.email?.trim() ?? '';
+    return email.isEmpty ? user.displayName : email;
   }
 }

@@ -1,58 +1,41 @@
 import '../../../../core/models/resident_role.dart';
+import '../../../auth/data/models/auth_user.dart';
 
-/// Lightweight mock of the signed-in resident session.
+/// The authenticated resident session.
 ///
-/// A real backend would return these values from the Odoo res.users / partner
-/// record. Keeping it in one place lets every feature render role aware UI.
+/// Wraps the complete [AuthUser] returned by `/auth/me` rather than copying a
+/// hand-picked subset of its fields. Every feature reads the same object, so a
+/// profile change cannot leave one screen showing stale information.
 class ResidentSession {
-  const ResidentSession({
-    required this.name,
-    required this.role,
-    required this.tower,
-    required this.unitNumber,
-    required this.email,
-    required this.phone,
-    this.image,
-  });
+  const ResidentSession({required this.user});
 
-  final String name;
-  final ResidentRole role;
-  final String tower;
-  final String unitNumber;
-  final String email;
-  final String phone;
-  final String? image;
+  final AuthUser user;
 
-  String get unitLabel => '$tower · $unitNumber';
+  String get name => user.displayName;
 
-  String get initials {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty || parts.first.isEmpty) {
-      return '?';
-    }
-    if (parts.length == 1) {
-      return parts.first.substring(0, 1).toUpperCase();
-    }
-    return (parts.first.substring(0, 1) + parts.last.substring(0, 1))
-        .toUpperCase();
+  String get email => user.email ?? '';
+
+  String get phone => user.phone;
+
+  String? get image => user.avatarUrl;
+
+  String get tower => user.unit?.tower ?? '';
+
+  String get unitNumber => user.unit?.number ?? '';
+
+  String get unitLabel {
+    final label = user.unit?.label.trim() ?? '';
+    if (label.isNotEmpty) return label;
+    return [tower, unitNumber].where((part) => part.isNotEmpty).join(' · ');
   }
+
+  ResidentRole get role => switch (user.role.trim().toLowerCase()) {
+    'owner' => ResidentRole.owner,
+    'tenant' => ResidentRole.tenant,
+    _ => ResidentRole.resident,
+  };
+
+  String get initials => user.initials;
 
   String get firstName => name.trim().split(RegExp(r'\s+')).first;
-
-  ResidentSession copyWith({
-    ResidentRole? role,
-    String? name,
-    String? email,
-    String? image,
-  }) {
-    return ResidentSession(
-      name: name ?? this.name,
-      role: role ?? this.role,
-      tower: tower,
-      unitNumber: unitNumber,
-      email: email ?? this.email,
-      phone: phone,
-      image: image ?? this.image,
-    );
-  }
 }

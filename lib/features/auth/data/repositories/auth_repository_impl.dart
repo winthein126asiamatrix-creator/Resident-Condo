@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import '../../../../core/cache/api_cache_store.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/api_exception.dart';
@@ -78,50 +76,26 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   Future<AuthSession> _updateMeImpl() async {
-    const cacheKey = 'auth.me';
+    // `/auth/me` is the only source of an authenticated profile. A cached copy
+    // is written for other features, but it is never read back here to stand in
+    // for a successful validation.
+    final user = await _remote.updateMe();
     try {
-      final user = await _remote.updateMe();
-      try {
-        await _cache?.save(
-          key: cacheKey,
-          accountKey: user.id.toString(),
-          payload: user.toJson(),
-        );
-      } on Object {
-        // Caching is a local convenience and must not turn a successful API
-        // request into a failure.
-      }
-      return AuthSession(
-        username: user.username,
-        displayName: user.displayName,
-        rememberMe: true,
-        user: user,
+      await _cache?.save(
+        key: 'auth.me',
+        accountKey: user.id.toString(),
+        payload: user.toJson(),
       );
-    } on ApiException catch (error) {
-      // Transport-level failures may still allow a stale-but-usable profile read
-      // from SQLite. 401/403 are handled by the refresh interceptor and never
-      // reach here; only genuine server/network failures are considered offline.
-      if (!error.isRetryable) {
-        rethrow;
-      }
-      final cached = await _cache?.read(cacheKey);
-      if (cached == null) {
-        rethrow;
-      }
-      try {
-        final user = AuthUser.fromJson(
-          jsonDecode(cached.payloadJson) as Map<String, dynamic>,
-        );
-        return AuthSession(
-          username: user.username,
-          displayName: user.displayName,
-          rememberMe: true,
-          user: user,
-        );
-      } on Object {
-        rethrow;
-      }
+    } on Object {
+      // Caching is a local convenience and must not turn a successful API
+      // request into a failure.
     }
+    return AuthSession(
+      username: user.name,
+      displayName: user.displayName,
+      rememberMe: true,
+      user: user,
+    );
   }
 
   @override
@@ -153,26 +127,29 @@ class AuthRepositoryImpl implements AuthRepository {
       await _local.persistSession(session);
       return session;
     } on AppException catch (error) {
-      // A network-level failure says nothing about the session. The tokens are
-      // still held and the server simply cannot be reached right now, so ending
-      // the session here would sign the resident out for being offline. The
-      // stored details are used instead and the session is marked unverified
-      // until the server is reachable again.
+      // A network-level failure, timeout, or server error says nothing about the
+      // tokens: the resident must not be signed out because the backend is
+      // temporarily unreachable. The tokens are kept and only the non-sensitive
+      // remembered details are loaded, marked unverified, so the caller can
+      // retry `/auth/me` without asking for credentials again.
       //
-      // Only a failure that is not retryable is treated as real: the server
-      // answered, so what it answered with stands.
-      final unreachable = error is ApiException && error.isRetryable;
-      if (unreachable) {
+      // Only a failure that proves the session is invalid ends it.
+      final transient =
+          error is ApiException &&
+          (error.isRetryable || error.kind == ApiFailureKind.server);
+      if (transient) {
         return _restoreFromStorage();
       }
       return await _endSession();
     }
   }
 
-  /// Builds a session from the locally remembered details.
+  /// Builds an unverified result from the locally remembered details.
   ///
-  /// Used only when the server is unreachable, so the resident is let in on
-  /// tokens they already hold rather than on the server's word.
+  /// Used only when the server is temporarily unreachable. It carries no
+  /// [AuthUser], deliberately: remembered details can explain the state to the
+  /// resident, but they are not proof of authentication and must not populate
+  /// the shared session.
   Future<AuthSession> _restoreFromStorage() async {
     final remembered = await _local.restoreSession();
     if (remembered != null) {

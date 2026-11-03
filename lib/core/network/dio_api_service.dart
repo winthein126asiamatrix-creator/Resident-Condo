@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
-import 'package:test/core/network/interceptors/api_log_interceptor.dart';
 
 import 'api_config.dart';
 import 'api_exception.dart';
+import 'api_log_store.dart';
 import 'interceptors/api_auth_interceptor.dart';
+import 'interceptors/api_log_interceptor.dart';
 import 'interceptors/token_refresh_interceptor.dart';
 import 'network_status_observer.dart';
 import 'token_refresher.dart';
@@ -31,6 +32,7 @@ class DioApiService {
     Dio? dio,
     String? baseUrl,
     TokenRefresher? tokenRefresher,
+    ApiLogStore? apiLogStore,
   }) : _dio = dio ?? Dio(),
        _tokenStorage = tokenStorage,
        _authInterceptor = ApiAuthInterceptor(tokenStorage) {
@@ -49,18 +51,40 @@ class DioApiService {
       validateStatus: (status) =>
           status != null && status >= 200 && status < 300,
     );
+
+    // An injected store is an explicit request to log (a test, for example).
+    // The app only injects one in the dev flavor.
+    final loggingEnabled = ApiConfig.enableApiLogger || apiLogStore != null;
+    final logStore = apiLogStore ?? (loggingEnabled ? ApiLogStore() : null);
+
     _refreshInterceptor = TokenRefreshInterceptor(
       tokenStorage,
       _dio,
-      tokenRefresher ?? TokenRefresher.bare(resolvedBaseUrl),
+      tokenRefresher ??
+          TokenRefresher.bare(
+            resolvedBaseUrl,
+            interceptors: loggingEnabled
+                ? <Interceptor>[
+                    // The refresh call uses its own bare client, so it needs
+                    // its own logger. A separate instance keeps its in-flight
+                    // ids independent, while both write to the same store.
+                    ApiLogInterceptor(
+                      enabled: true,
+                      store: logStore,
+                      label: ApiLogInterceptor.refreshLabel,
+                    ),
+                  ]
+                : const <Interceptor>[],
+          ),
     );
     _dio.interceptors.addAll(<Interceptor>[
-      // Order matters: the bearer has to be attached before the log interceptor
-      // prints the headers, and the refresh interceptor must see a request the
-      // auth interceptor has already finished with.
+      // The auth header must be attached before anything inspects the request.
+      // The refresh interceptor is ahead of the logger so the logger records
+      // the final outcome of a 401 replay (or the final failure) rather than
+      // the intermediate 401 that the refresh is about to replace.
       _authInterceptor,
-      ApiLogInterceptor(),
       _refreshInterceptor,
+      ApiLogInterceptor(enabled: loggingEnabled, store: logStore),
     ]);
   }
 

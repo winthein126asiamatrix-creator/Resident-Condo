@@ -1,68 +1,48 @@
 import 'package:get/get.dart';
 
 import '../../../../core/models/resident_role.dart';
+import '../../../auth/data/models/auth_user.dart';
 import '../../domain/entities/resident_session.dart';
 
 /// Holds the active resident session so every feature can render
 /// role-aware UI (owner / tenant / resident) without duplicating auth code.
 ///
-/// `null` is an explicit "no signed-in resident" state. It is never seeded
-/// with demo data: an unauthenticated user must not look authenticated.
+/// The session is the single in-memory source of truth for the authenticated
+/// user. It is only populated from a complete [AuthUser] resolved by
+/// `/auth/me`; cached profile data never establishes a session on its own.
 class SessionController extends GetxController {
+  /// The active session, or null when nobody is authenticated.
+  ///
+  /// Reactive: widgets that read [session] inside an `Obx` rebuild when the
+  /// resident signs in, is refreshed, or signs out.
   final session = Rxn<ResidentSession>();
 
-  /// The active signed-in resident, or null when nobody is signed in.
+  bool get isAuthenticated => session.value != null;
+
+  AuthUser? get currentUser => session.value?.user;
+
   ResidentSession? get current => session.value;
 
   ResidentRole? get role => session.value?.role;
 
-  String get name => session.value?.name ?? '';
+  String get name => currentUser?.displayName ?? '';
 
   String get unitLabel => session.value?.unitLabel ?? '';
 
-  bool get isOwner => session.value?.role.managesLease ?? false;
+  bool get isOwner => role?.managesLease ?? false;
 
-  bool get isTenant => session.value?.role.paysRent ?? false;
+  bool get isTenant => role?.paysRent ?? false;
 
-  void signInAs(String displayName, {String? email, String? image}) {
-    final currentSession = session.value;
-    final name = displayName.trim().isEmpty
-        ? (currentSession?.name ?? '')
-        : displayName.trim();
-    final nextImage = image ?? currentSession?.image;
-
-    if (name.isEmpty &&
-        (email == null || email.isEmpty) &&
-        (image == null || image.isEmpty)) {
-      return;
-    }
-
-    if (currentSession == null) {
-      session.value = ResidentSession(
-        name: name.isEmpty ? 'Resident' : name,
-        role: ResidentRole.resident,
-        tower: '',
-        unitNumber: '',
-        email: email?.isNotEmpty == true ? email! : '',
-        phone: '',
-        image: nextImage,
-      );
-      return;
-    }
-    if (currentSession.name == name &&
-        (email == null || currentSession.email == email) &&
-        currentSession.image == nextImage) {
-      return;
-    }
-    session.value = currentSession.copyWith(
-      name: name.isEmpty ? currentSession.name : name,
-      email: email?.isNotEmpty == true ? email : currentSession.email,
-      image: nextImage,
-    );
+  /// Replaces the session with the complete authenticated user.
+  ///
+  /// Called after `/auth/me` succeeds, so the previous account's profile is
+  /// replaced atomically rather than merged field by field.
+  void setSession(AuthUser user) {
+    session.value = ResidentSession(user: user);
   }
 
-  /// Puts the session back to its signed-out state.
-  void clearResident() {
+  /// Ends the session and drops the previous resident's profile.
+  void clearSession() {
     session.value = null;
   }
 }

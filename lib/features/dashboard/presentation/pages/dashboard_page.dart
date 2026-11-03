@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:test/features/auth/data/models/auth_user.dart';
 
 import '../../../../app/routes/app_routes.dart';
 
@@ -77,7 +78,6 @@ class DashboardPage extends GetView<DashboardController> {
               padding: EdgeInsets.fromLTRB(20, 18, 20, 0),
               child: _GreetingHeader(
                 resident: _residentSession,
-                unreadCount: _unreadNotifications,
                 onNotifications: () => Get.toNamed(AppRoutes.notifications),
                 onMore: () => Get.toNamed(AppRoutes.more),
               ),
@@ -91,7 +91,7 @@ class DashboardPage extends GetView<DashboardController> {
                   padding: EdgeInsets.fromLTRB(20, 12, 20, 28),
                   children: [
                     _HomeCard(
-                      unit: data.unit,
+                      user: _residentSession!.user,
                       onViewDetails: () => Get.toNamed(AppRoutes.unit),
                     ),
                     22.h.heightBox(),
@@ -175,13 +175,11 @@ class DashboardPage extends GetView<DashboardController> {
 class _GreetingHeader extends StatelessWidget {
   const _GreetingHeader({
     required this.resident,
-    required this.unreadCount,
     required this.onNotifications,
     required this.onMore,
   });
 
   final ResidentSession? resident;
-  final int unreadCount;
   final VoidCallback onNotifications;
   final VoidCallback onMore;
 
@@ -299,7 +297,7 @@ class _GreetingHeader extends StatelessWidget {
                       ),
               ),
             ),
-            if (unreadCount > 0)
+            if (resident!.user.unreadNotificationCount > 0)
               Positioned(
                 top: -2,
                 right: -2,
@@ -313,7 +311,7 @@ class _GreetingHeader extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      unreadCount > 9 ? '9+' : '$unreadCount',
+                      resident!.user.unreadNotificationCount > 9 ? '9+' : '$resident!.user.unreadNotificationCount',
                       style: TextStyle(
                         color: tokens.onBrand,
                         fontSize: 9.sp,
@@ -331,9 +329,9 @@ class _GreetingHeader extends StatelessWidget {
 }
 
 class _HomeCard extends StatelessWidget {
-  const _HomeCard({required this.unit, required this.onViewDetails});
+  const _HomeCard({required this.user, required this.onViewDetails});
 
-  final UnitSummary unit;
+  final AuthUser user;
   final VoidCallback onViewDetails;
 
   @override
@@ -378,12 +376,12 @@ class _HomeCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      StatusBadge(label: unit.occupancy),
+                     // StatusBadge(label: unit.occupancy),
                     ],
                   ),
                   18.h.heightBox(),
                   Text(
-                    '${unit.tower} Â· Unit ${unit.unit}',
+                   user.unit?.label??"",
                     style: TextStyle(
                       color: tokens.brandOnDark,
                       fontSize: 21.sp,
@@ -392,7 +390,8 @@ class _HomeCard extends StatelessWidget {
                   ),
                   6.h.heightBox(),
                   Text(
-                    '${unit.type} Â· ${unit.area} Â· ${unit.floor}',
+                    //'${unit.type} Â· ${unit.area} Â· ${unit.floor}',
+                    "2 bedroom . 86 m . 12th floor",
                     style: TextStyle(
                       color: tokens.brandOnDarkMuted,
                       fontSize: 13.sp,
@@ -409,7 +408,7 @@ class _HomeCard extends StatelessWidget {
                       6.w.widthBox(),
                       Flexible(
                         child: Text(
-                          '${unit.ownership} Â· Parking ${unit.parkingSlot}',
+                          '${user.role.capitalizeFirst} · Parking B2-125',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

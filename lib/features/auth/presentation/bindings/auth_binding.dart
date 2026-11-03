@@ -66,7 +66,7 @@ class AuthBinding extends Bindings {
       return;
     }
     if (Get.isRegistered<SessionController>()) {
-      Get.find<SessionController>().clearResident();
+      Get.find<SessionController>().clearSession();
     }
     if (Get.isRegistered<AppearanceController>()) {
       unawaited(Get.find<AppearanceController>().onSignedOut());
