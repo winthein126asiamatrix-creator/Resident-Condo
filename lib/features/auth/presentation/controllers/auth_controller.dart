@@ -193,7 +193,11 @@ class AuthController extends GetxController {
     if (user is AuthUser) {
       // The backend's record is richer than a name, so the profile carries the
       // email the account actually belongs to.
-      controller.signInAs(user.displayName, email: user.email);
+      controller.signInAs(
+        user.displayName,
+        email: user.email,
+        image: user.image,
+      );
     } else {
       controller.signInAs(session.displayName);
     }

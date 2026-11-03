@@ -24,18 +24,20 @@ class SessionController extends GetxController {
 
   bool get isTenant => session.value?.role.paysRent ?? false;
 
-  void signInAs(String displayName, {String? email}) {
+  void signInAs(String displayName, {String? email, String? image}) {
     final currentSession = session.value;
     final name = displayName.trim().isEmpty
         ? (currentSession?.name ?? '')
         : displayName.trim();
+    final nextImage = image ?? currentSession?.image;
 
-    if (name.isEmpty && (email == null || email.isEmpty)) {
+    if (name.isEmpty &&
+        (email == null || email.isEmpty) &&
+        (image == null || image.isEmpty)) {
       return;
     }
 
     if (currentSession == null) {
- 
       session.value = ResidentSession(
         name: name.isEmpty ? 'Resident' : name,
         role: ResidentRole.resident,
@@ -43,16 +45,19 @@ class SessionController extends GetxController {
         unitNumber: '',
         email: email?.isNotEmpty == true ? email! : '',
         phone: '',
+        image: nextImage,
       );
       return;
     }
     if (currentSession.name == name &&
-        (email == null || currentSession.email == email)) {
+        (email == null || currentSession.email == email) &&
+        currentSession.image == nextImage) {
       return;
     }
     session.value = currentSession.copyWith(
       name: name.isEmpty ? currentSession.name : name,
       email: email?.isNotEmpty == true ? email : currentSession.email,
+      image: nextImage,
     );
   }
 

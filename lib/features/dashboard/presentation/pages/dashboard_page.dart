@@ -194,17 +194,6 @@ class _GreetingHeader extends StatelessWidget {
     return trimmed.split(RegExp(r'\s+')).first;
   }
 
-  /// Copies this device's FCM token to the clipboard.
-  ///
-  /// A developer affordance, so a real token can be pasted into the Firebase
-  /// console without reading it out of the debug log. The token comes from the
-  /// one [FirebaseService] the app already keeps, so this never asks FCM for a
-  /// second one and never triggers another request.
-  ///
-  /// Reports the three states that actually happen: no Firebase, no token yet,
-  /// or a token copied. A token is only ever read after the resident has granted
-  /// the notification permission, so "no token yet" here normally means the
-  /// permission was declined rather than a fault.
   static Future<void> _copyDeviceToken(BuildContext context) async {
     if (!Get.isRegistered<FirebaseService>()) {
       showAppFeedback(
@@ -244,6 +233,12 @@ class _GreetingHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    final imageUrl = resident?.image?.trim() ?? '';
+    final avatarPixels = (44 * MediaQuery.devicePixelRatioOf(context)).round();
+    final avatarFallback = Text(
+      resident?.initials ?? '?',
+      style: TextStyle(color: tokens.brand, fontWeight: FontWeight.w800),
+    );
     return Row(
       children: [
         Expanded(
@@ -286,13 +281,23 @@ class _GreetingHeader extends StatelessWidget {
               child: CircleAvatar(
                 radius: 22,
                 backgroundColor: tokens.brandOnDark,
-                child: Text(
-                  resident?.initials ?? '?',
-                  style: TextStyle(
-                    color: tokens.brand,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+                child:
+                 imageUrl.isEmpty
+                    ? avatarFallback
+                    : ClipOval(
+                        child: Image.network(
+                          imageUrl,
+                          width: 44,
+                          height: 44,
+                          fit: BoxFit.cover,
+                          cacheWidth: avatarPixels,
+                          cacheHeight: avatarPixels,
+                          gaplessPlayback: true,
+                          errorBuilder: (_, _, _) => avatarFallback,
+                          loadingBuilder: (context, child, progress) =>
+                              progress == null ? child : avatarFallback,
+                        ),
+                      ),
               ),
             ),
             if (unreadCount > 0)

@@ -9,6 +9,8 @@ abstract final class ApiEndPoints {
   static const String me = '/auth/me';
 
   static const String refreshToken = '/auth/refresh';
+  
+  static const String changePassword = '/auth/change-password';
 
   // --- Resident unit -------------------------------------------------------
 

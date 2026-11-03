@@ -12,6 +12,7 @@ class ResidentSession {
     required this.unitNumber,
     required this.email,
     required this.phone,
+    this.image,
   });
 
   final String name;
@@ -20,6 +21,7 @@ class ResidentSession {
   final String unitNumber;
   final String email;
   final String phone;
+  final String? image;
 
   String get unitLabel => '$tower · $unitNumber';
 
@@ -37,7 +39,12 @@ class ResidentSession {
 
   String get firstName => name.trim().split(RegExp(r'\s+')).first;
 
-  ResidentSession copyWith({ResidentRole? role, String? name, String? email}) {
+  ResidentSession copyWith({
+    ResidentRole? role,
+    String? name,
+    String? email,
+    String? image,
+  }) {
     return ResidentSession(
       name: name ?? this.name,
       role: role ?? this.role,
@@ -45,6 +52,7 @@ class ResidentSession {
       unitNumber: unitNumber,
       email: email ?? this.email,
       phone: phone,
+      image: image ?? this.image,
     );
   }
 }
