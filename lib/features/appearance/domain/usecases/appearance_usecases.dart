@@ -6,12 +6,29 @@ class AppearanceUseCases {
 
   final AppearanceRepository repository;
 
-  Future<AppearancePreference> getPreference() => repository.getPreference();
+  Future<String?> getActiveAccountId() => repository.getActiveAccountId();
+
+  Future<void> setActiveAccount(String accountId) =>
+      repository.setActiveAccount(accountId);
+
+  Future<void> clearActiveAccount() => repository.clearActiveAccount();
+
+  Future<AppearancePreference?> getPreference(String accountId) =>
+      repository.getPreference(accountId);
+
+  Future<bool> hasPendingSync(String accountId) =>
+      repository.hasPendingSync(accountId);
 
   Future<AppearancePreference> savePreference(
-    AppearancePreference preference,
-  ) => repository.savePreference(preference);
+    String accountId,
+    AppearancePreference preference, {
+    bool markPendingSync = false,
+  }) => repository.savePreference(
+    accountId,
+    preference,
+    markPendingSync: markPendingSync,
+  );
 
-  Future<AppearancePreference> resetPreference() =>
-      repository.resetPreference();
+  Future<AppearancePreference> resetPreference(String accountId) =>
+      repository.resetPreference(accountId);
 }

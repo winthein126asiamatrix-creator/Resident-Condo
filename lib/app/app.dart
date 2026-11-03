@@ -80,9 +80,11 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
 
     _connectivityWorker = ever(_connectivity.isOnline, (_) {
       if (!_connectivity.isOnline.value) return;
-      // The backend is reachable again. Two things follow, and only ever on the
-      // way back online: the active screen takes up any data that went stale,
-      // and a session that was only admitted locally is put to the server.
+      // The device has a network interface again. Two things follow, and only
+      // ever on the way back online: the active screen takes up any data that
+      // went stale, and a session that was only admitted locally is put to the
+      // server. A server error does not reach this path, because it never
+      // changes device connectivity.
       _refreshActiveScreen();
       _revalidateSession();
     });

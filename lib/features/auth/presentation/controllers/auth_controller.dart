@@ -8,13 +8,13 @@ import 'package:test/app/routes/app_routes.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/services/firebase_service.dart';
 import '../../../../core/utils/super_print.dart';
+import '../../../appearance/presentation/controllers/appearance_controller.dart';
 import '../../../notifications/data/datasources/notification_remote_data_source.dart';
 import '../../../notifications/presentation/controllers/notification_controller.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../data/models/auth_user.dart';
 import '../../domain/entities/auth_session.dart';
 import '../../domain/usecases/auth_usecases.dart';
-
 
 class AuthController extends GetxController {
   AuthController(this.useCases);
@@ -79,7 +79,6 @@ class AuthController extends GetxController {
   }
 
   Future<AuthSession?> signIn() async {
-
     if (isSubmitting.value) {
       return null;
     }
@@ -105,12 +104,10 @@ class AuthController extends GetxController {
           rememberMe: rememberMe.value,
         ),
       );
-      final remembered = session.copyWith(
-        rememberMe: rememberMe.value,
-      );
+      final remembered = session.copyWith(rememberMe: rememberMe.value);
       await useCases.persistSession(remembered);
       passwordController.clear();
-      adoptIntoSession(remembered);
+      await adoptIntoSession(remembered);
       return remembered;
     } on AppException catch (error) {
       errorMessage.value = error.message;
@@ -125,7 +122,11 @@ class AuthController extends GetxController {
 
   Future<void> signOut() async {
     await _releaseDevice();
-    await useCases.signOut();
+    try {
+      await useCases.signOut();
+    } finally {
+      await _resetAppearance();
+    }
   }
 
   /// Removes this device's token and its cached notifications.
@@ -163,6 +164,8 @@ class AuthController extends GetxController {
         rememberedUsername = restored.username;
         // The password is never remembered, only offered as a starting point.
         usernameController.text = restored.username;
+      } else {
+        await _resetAppearance();
       }
       return restored;
     } finally {
@@ -174,33 +177,62 @@ class AuthController extends GetxController {
     final restored = await useCases.restoreSession();
     if (restored != null) {
       isUnverified.value = restored.unverified;
-      adoptIntoSession(restored);
+      await adoptIntoSession(restored);
       return;
     }
     if (Get.isRegistered<SessionController>()) {
       Get.find<SessionController>().clearResident();
     }
+    await _resetAppearance();
     Get.offAllNamed(AppRoutes.login);
   }
 
-  void adoptIntoSession(AuthSession session) {
+  Future<void> adoptIntoSession(AuthSession session) async {
     _prepareNotifications();
-    if (!Get.isRegistered<SessionController>()) {
+    final user = session.user;
+    if (Get.isRegistered<SessionController>()) {
+      final controller = Get.find<SessionController>();
+      if (user is AuthUser) {
+        // The backend's record is richer than a name, so the profile carries the
+        // email the account actually belongs to.
+        controller.signInAs(
+          user.displayName,
+          email: user.email,
+          image: user.image,
+        );
+      } else {
+        controller.signInAs(session.displayName);
+      }
+    }
+    if (user is AuthUser) {
+      await _applyAppearance(user);
+    }
+  }
+
+  /// Seeds the app theme from the authenticated user's `/auth/me` record.
+  ///
+  /// The account id scopes the local cache, and the backend colour is applied
+  /// only when it is valid; a missing or malformed value leaves the user's
+  /// cached preference (or the default) in place.
+  Future<void> _applyAppearance(AuthUser user) async {
+    if (!Get.isRegistered<AppearanceController>()) {
       return;
     }
-    final controller = Get.find<SessionController>();
-    final user = session.user;
-    if (user is AuthUser) {
-      // The backend's record is richer than a name, so the profile carries the
-      // email the account actually belongs to.
-      controller.signInAs(
-        user.displayName,
-        email: user.email,
-        image: user.image,
-      );
-    } else {
-      controller.signInAs(session.displayName);
+    final accountId = user.id > 0 ? user.id.toString() : user.username;
+    if (accountId.isEmpty) {
+      return;
     }
+    await Get.find<AppearanceController>().applyAuthenticatedUser(
+      accountId: accountId,
+      backendThemeColor: user.themeColor,
+    );
+  }
+
+  Future<void> _resetAppearance() async {
+    if (!Get.isRegistered<AppearanceController>()) {
+      return;
+    }
+    await Get.find<AppearanceController>().onSignedOut();
   }
 
   void _prepareNotifications() {

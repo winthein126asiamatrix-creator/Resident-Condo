@@ -15,8 +15,8 @@ abstract final class TokenParser {
   /// here where the backend response is still in hand.
   static AuthTokens tokensFrom(Object? json) {
     final map = json is Map ? json : const <Object?, Object?>{};
-    final access = map['accessToken'];
-    final refresh = map['refreshToken'];
+    final access = map['access_token'];
+    final refresh = map['refresh_token'];
 
     if (access is! String ||
         access.isEmpty ||

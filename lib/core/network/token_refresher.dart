@@ -29,8 +29,8 @@ class TokenRefresher {
       final response = await _dio.post<Object?>(
         ApiEndPoints.refreshToken,
         data: <String, Object?>{
-          'refreshToken': refreshToken,
-          'expiresInMins': ApiConfig.tokenExpiresInMins,
+          'refresh_token': refreshToken,
+         // 'expiresInMins': ApiConfig.tokenExpiresInMins,
         },
       );
       superPrint({

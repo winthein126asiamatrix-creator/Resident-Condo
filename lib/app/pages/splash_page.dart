@@ -111,7 +111,7 @@ class _SplashPageState extends State<SplashPage>
       return null;
     }
     superPrint(restored.displayName, title: "Restore Session Display Name");
-    auth.adoptIntoSession(restored);
+    await auth.adoptIntoSession(restored);
     return restored;
   }
 

@@ -84,6 +84,7 @@ class ApiLogInterceptor extends Interceptor {
     if (enabled) {
       _emit(
         '✗ ${err.response?.statusCode ?? err.type.name} '
+        '✗ ${err.response?.data} '
         '${_uri(err.requestOptions.uri)}',
         title: 'API Error',
       );

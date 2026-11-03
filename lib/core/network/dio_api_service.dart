@@ -241,9 +241,9 @@ class DioApiService {
   }) async {
     try {
       final response = await request();
-      // A completed request means the backend is reachable, whatever the radio
-      // reports. Reported so the connectivity layer can clear the offline
-      // banner and stop treating the active screen's data as stale.
+      // A completed request means the backend answered. This is a server
+      // reachability signal only; the offline banner is driven by device
+      // connectivity, not by request outcomes.
       NetworkStatusObserver.notify(true);
       final payload = _unwrap(response.data, response.statusCode);
       // A void call over a body-less response is a success, not a type error.
@@ -266,10 +266,10 @@ class DioApiService {
   /// Reports a failure to [NetworkStatusObserver] when it means the backend is
   /// unreachable.
   ///
-  /// Deliberately narrow. A 401 or a 500 means the server answered, so
-  /// connectivity is fine and the banner must stay hidden. Only
+  /// Deliberately narrow. A 401 or a 500 means the server answered, so only
   /// [ApiFailureKind.network] and [ApiFailureKind.timeout] describe a request
-  /// that never got through.
+  /// that never got through. The signal never moves the offline banner, which
+  /// reflects device connectivity instead.
   ///
   /// This never touches the session: a network error is not an authentication
   /// failure, so it must not sign the resident out or trigger a token refresh.

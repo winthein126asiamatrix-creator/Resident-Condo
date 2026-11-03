@@ -1,3 +1,8 @@
+/// A signal about the backend, not about the device.
+///
+/// A failed request does not mean the resident is offline, so this must never
+/// drive the offline banner. Device connectivity lives in `ConnectivityService`
+/// and comes only from the radio.
 abstract final class NetworkStatusObserver {
   static final _listeners = <void Function(bool online)>{};
 

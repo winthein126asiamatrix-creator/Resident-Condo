@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/network/api_binding.dart';
 import '../../../../core/network/dio_api_service.dart';
+import '../../../appearance/presentation/controllers/appearance_controller.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../data/datasources/auth_local_data_source.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
@@ -64,6 +67,9 @@ class AuthBinding extends Bindings {
     }
     if (Get.isRegistered<SessionController>()) {
       Get.find<SessionController>().clearResident();
+    }
+    if (Get.isRegistered<AppearanceController>()) {
+      unawaited(Get.find<AppearanceController>().onSignedOut());
     }
     Get.offAllNamed(AppRoutes.login);
   }

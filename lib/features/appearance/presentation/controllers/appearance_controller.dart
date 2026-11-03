@@ -22,10 +22,22 @@ import '../../domain/usecases/appearance_usecases.dart';
 /// The root [GetMaterialApp] builds its `ThemeData` from [saved], so tapping a
 /// colour never repaints another screen by accident. "Apply Theme" is the only
 /// path from preview to applied, and it persists in the same step.
+///
+/// Preferences are scoped to the authenticated user's id. A valid `theme_color`
+/// from `/auth/me` is the source of truth and replaces the cached local colour;
+/// a missing or invalid value falls back to the user's cache, then the default.
 class AppearanceController extends GetxController {
   AppearanceController(this.useCases);
 
   final AppearanceUseCases useCases;
+
+  /// The authenticated user whose preference is loaded, or null when nobody is
+  /// signed in.
+  String? _accountId;
+
+  /// Guards async loads against each other, so a slow read for a previous user
+  /// cannot land after a newer sign-in and paint the wrong theme.
+  int _loadVersion = 0;
 
   /// The colour being previewed on the Appearance screen.
   final draft = AppearancePreference.defaults().obs;
@@ -79,14 +91,23 @@ class AppearanceController extends GetxController {
   /// "Reset to Default" only appears when it would do something.
   bool get canReset => draft.value != AppearancePreference.defaults();
 
+  /// Restores the last active user's theme, or the shipped default when there
+  /// is none. This is what paints the first frame before `/auth/me` answers.
   Future<void> loadPreference() async {
+    final version = ++_loadVersion;
     isLoading.value = true;
     errorMessage.value = null;
     try {
-      final stored = await useCases.getPreference();
-      saved.value = stored;
-      draft.value = stored;
-      customColorDraft.value = stored.seedColor;
+      final activeAccountId = await useCases.getActiveAccountId();
+      final accountId = _accountId ?? activeAccountId;
+      _accountId = accountId;
+      final stored = accountId == null
+          ? null
+          : await useCases.getPreference(accountId);
+      if (version != _loadVersion) {
+        return;
+      }
+      _apply(stored ?? AppearancePreference.defaults());
     } on AppException catch (error) {
       errorMessage.value = error.message;
     } catch (_) {
@@ -94,7 +115,82 @@ class AppearanceController extends GetxController {
       // resident keeps the default palette and can carry on using the app.
       errorMessage.value = 'Unable to load your appearance settings.';
     } finally {
-      isLoading.value = false;
+      if (version == _loadVersion) {
+        isLoading.value = false;
+      }
+    }
+  }
+
+  /// Applies `/auth/me`'s theme for [accountId].
+  ///
+  /// Precedence is deliberate:
+  ///
+  /// * A valid backend `theme_color` always wins, and is written over the local
+  ///   cache so a stale colour cannot survive the next launch.
+  /// * When the backend value is missing or invalid, the user's cached
+  ///   preference is used, then the shipped default.
+  ///
+  /// A colour chosen on the Appearance screen is applied and cached immediately,
+  /// then reasserted by the backend on the next successful `/auth/me`, which is
+  /// the source of truth once the session is validated.
+  ///
+  /// Never throws: appearance must not turn a successful sign-in into a failed
+  /// one.
+  Future<void> applyAuthenticatedUser({
+    required String accountId,
+    String? backendThemeColor,
+  }) async {
+    final version = ++_loadVersion;
+    _accountId = accountId;
+    errorMessage.value = null;
+    try {
+      final backendColor = AppColorSeeds.colorFromHex(backendThemeColor);
+      final local = await useCases.getPreference(accountId);
+
+      var preference = local ?? AppearancePreference.defaults();
+      if (backendColor != null) {
+        final preset = AppColorSeeds.byColor(backendColor);
+        preference = preference.copyWith(
+          seedColor: backendColor,
+          presetId: preset?.id,
+          clearPreset: preset == null,
+        );
+        await useCases.savePreference(
+          accountId,
+          preference,
+          markPendingSync: false,
+        );
+      }
+
+      await useCases.setActiveAccount(accountId);
+      if (version != _loadVersion) {
+        return;
+      }
+      _apply(preference);
+    } catch (_) {
+      // Keep the current theme; a preference is not a reason to block access.
+    } finally {
+      if (version == _loadVersion) {
+        isLoading.value = false;
+      }
+    }
+  }
+
+  /// Returns the app to the shipped default and forgets the active user.
+  ///
+  /// Per-user preferences are deliberately left on disk: signing the same user
+  /// back in restores their colour, while another user still reads only their
+  /// own keys because every preference is account-scoped.
+  Future<void> onSignedOut() async {
+    ++_loadVersion;
+    _accountId = null;
+    errorMessage.value = null;
+    isLoading.value = false;
+    _apply(AppearancePreference.defaults());
+    try {
+      await useCases.clearActiveAccount();
+    } catch (_) {
+      // Signing out must finish even if the local marker cannot be cleared.
     }
   }
 
@@ -130,10 +226,20 @@ class AppearanceController extends GetxController {
   /// every mounted screen picks the new colour up at once. Returns whether the
   /// write stuck.
   Future<bool> applyTheme() async {
+    final accountId = await _currentAccountId();
+    if (accountId == null) {
+      errorMessage.value = 'No signed-in resident for this appearance change.';
+      return false;
+    }
+
     isSaving.value = true;
     errorMessage.value = null;
     try {
-      final stored = await useCases.savePreference(draft.value);
+      final stored = await useCases.savePreference(
+        accountId,
+        draft.value,
+        markPendingSync: true,
+      );
       saved.value = stored;
       return true;
     } on AppException catch (error) {
@@ -147,6 +253,16 @@ class AppearanceController extends GetxController {
     }
   }
 
+  Future<String?> _currentAccountId() async {
+    final known = _accountId;
+    if (known != null) {
+      return known;
+    }
+    final active = await useCases.getActiveAccountId();
+    _accountId = active;
+    return active;
+  }
+
   /// Puts the live selection back to the shipped blue and System combination,
   /// and saves it straight away: a reset the resident could not see would be a
   /// trap.
@@ -155,6 +271,12 @@ class AppearanceController extends GetxController {
     draft.value = defaults;
     customColorDraft.value = defaults.seedColor;
     return applyTheme();
+  }
+
+  void _apply(AppearancePreference preference) {
+    saved.value = preference;
+    draft.value = preference;
+    customColorDraft.value = preference.seedColor;
   }
 
   /// The brightness the preview renders at, with System resolved against the

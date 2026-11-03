@@ -69,7 +69,6 @@ class DashboardPage extends GetView<DashboardController> {
           ),
         );
       }
-
       final data = controller.dashboard.value!;
       return SafeArea(
         child: Column(

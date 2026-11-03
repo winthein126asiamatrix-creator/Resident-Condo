@@ -1,7 +1,6 @@
+import 'package:test/core/utils/super_print.dart';
+
 /// The signed-in resident, as the backend describes them.
-///
-/// Hand written like the rest of the project's models rather than generated:
-/// the shape is small, and the parsing lives in one place either way.
 class AuthUser {
   const AuthUser({
     required this.id,
@@ -11,6 +10,7 @@ class AuthUser {
     required this.lastName,
     this.gender,
     this.image,
+    this.themeColor,
   });
 
   final int id;
@@ -20,6 +20,7 @@ class AuthUser {
   final String lastName;
   final String? gender;
   final String? image;
+  final String? themeColor;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,
@@ -29,18 +30,16 @@ class AuthUser {
     'lastName': lastName,
     'gender': gender,
     'image': image,
+    'theme_color': themeColor,
   };
 
   /// The name to greet the resident by.
-  ///
-  /// Falls back through the parts before settling on the username, so a record
-  /// missing a name still greets the account it belongs to rather than showing a
-  /// blank dashboard.
   String get displayName {
     final joined = <String>[
       firstName,
       lastName,
     ].where((part) => part.trim().isNotEmpty).join(' ').trim();
+
     return joined.isNotEmpty ? joined : username;
   }
 
@@ -49,12 +48,15 @@ class AuthUser {
       firstName,
       lastName,
     ].where((part) => part.trim().isNotEmpty).toList();
+
     if (parts.isEmpty) {
       return username.isEmpty ? '?' : username[0].toUpperCase();
     }
+
     if (parts.length == 1) {
       return parts.first[0].toUpperCase();
     }
+
     return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
 
@@ -65,21 +67,18 @@ class AuthUser {
       email: _asString(json['email']),
       firstName: _asString(json['firstName']),
       lastName: _asString(json['lastName']),
-      gender: json['gender'] is String ? json['gender'] as String : null,
+      gender: _asNullableString(json['gender']),
       image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbZ0WFrgDfCi0quSSO2usQ032wzQ1AjvHpBJE3m4e15g&s=10",
-     // json['image'] is String ? json['image'] as String : null,
+      // json['image'] is String ? json['image'] as String : null,,
+      themeColor: 
+      //"#EF4444",
+      _asThemeColor(json['theme_color']),
     );
   }
 
-  /// Builds a user from a decoded backend record.
-  ///
-  /// Tolerant of a missing or wrongly typed field rather than throwing: an
-  /// incomplete profile should still let the resident in, and the only required
-  /// pieces are the id and the username the session is keyed on.
-  ///
-  /// Takes [Object?] rather than a map so it matches the client's parserPa
-  /// signature and can be handed straight to a request.
   static AuthUser parse(Object? json) {
+    superPrint(json, title: "Auth User Response");
+
     if (json is! Map) {
       return const AuthUser(
         id: 0,
@@ -92,19 +91,29 @@ class AuthUser {
     return AuthUser.fromJson(Map<String, dynamic>.from(json));
   }
 
-  static int _asInt(Object? value) {
-    if (value is int) {
-      return value;
-    }
-    if (value is num) {
-      return value.toInt();
-    }
+  static int _asInt(Object? value) { 
+    if (value is int) return value;
+    if (value is num) return value.toInt();
     return int.tryParse('$value') ?? 0;
   }
 
   static String _asString(Object? value) =>
       value is String ? value : (value?.toString() ?? '');
 
+  static String? _asNullableString(Object? value) {
+    if (value is! String || value.trim().isEmpty) return null;
+    return value.trim();
+  }
+
+  static String? _asThemeColor(Object? value) {
+    if (value is! String) return null;
+    final match = RegExp(r'^#?([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$')
+        .firstMatch(value.trim());
+    if (match == null) return null;
+    return '#${match.group(1)!.toUpperCase()}';
+  }
+
   @override
-  String toString() => 'AuthUser(id: $id, username: $username)';
+  String toString() =>
+      'AuthUser(id: $id, username: $username, themeColor: $themeColor)';
 }

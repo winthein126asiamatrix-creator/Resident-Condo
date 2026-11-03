@@ -66,6 +66,41 @@ abstract final class AppColorSeeds {
     }
     return null;
   }
+
+  /// The preset that paints exactly [color], or null for a custom colour.
+  static AppColorSeed? byColor(Color color) {
+    final argb = color.toARGB32();
+    for (final seed in all) {
+      if (seed.color.toARGB32() == argb) {
+        return seed;
+      }
+    }
+    return null;
+  }
+
+  /// Parses a backend `#RRGGBB` or `#AARRGGBB` value.
+  ///
+  /// Returns null for anything that is not a complete hex colour, so a bad
+  /// preference falls back to the cached or default palette instead of painting
+  /// an arbitrary colour.
+  static Color? colorFromHex(String? value) {
+    final raw = value?.trim() ?? '';
+    if (raw.isEmpty) {
+      return null;
+    }
+    var hex = raw.startsWith('#') ? raw.substring(1) : raw;
+    if (hex.length == 6) {
+      hex = 'FF$hex';
+    }
+    if (hex.length != 8) {
+      return null;
+    }
+    final parsed = int.tryParse(hex, radix: 16);
+    if (parsed == null) {
+      return null;
+    }
+    return Color(parsed);
+  }
 }
 
 /// Which appearance the app renders with.

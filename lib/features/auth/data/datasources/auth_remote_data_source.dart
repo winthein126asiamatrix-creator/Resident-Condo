@@ -39,9 +39,6 @@ class AuthRemoteDataSource {
         data: <String, Object?>{
           'username': request.username,
           'password': request.password,
-          // Short lived during development so the refresh path is exercised
-          // constantly rather than only in production.
-          'expiresInMins': ApiConfig.tokenExpiresInMins,
         },
         options: _service.withoutAuth(),
       );

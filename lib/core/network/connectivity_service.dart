@@ -3,21 +3,20 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 
-import 'network_status_observer.dart';
-
-/// Tracks whether the app can reach the backend.
+/// Tracks whether the device has a usable network interface.
 ///
-/// Two sources, because neither is sufficient alone:
+/// Only [Connectivity] radio readings feed [isOnline]. Request outcomes are
+/// deliberately not used: a 500, a DNS failure, a timeout or an unreachable API
+/// host says something about the backend, not about the device's connection.
+/// Treating any of those as "offline" is what made the banner appear when the
+/// device was connected but the server was not reachable.
 ///
-/// * [Connectivity] watches the radio. It is the only thing that can notice the
-///   resident walking out of range before anything has been requested.
-/// * [NetworkStatusObserver] watches request outcomes. A device on Wi-Fi with no
-///   route to the server still reports "connected", so a network-level failure
-///   is the only signal that the backend is genuinely unreachable.
+/// A Wi-Fi network with no internet route still reports Wi-Fi here. That is the
+/// honest limit of the radio API; the failed request itself surfaces the problem
+/// to the screen that made it, without claiming the device is disconnected.
 ///
 /// Radio readings are debounced, because connectivity can flap and each flap
-/// would otherwise toggle the banner and re-trigger a refresh. Request outcomes
-/// are applied at once: they are discrete, unambiguous signals.
+/// would otherwise toggle the banner and re-trigger a refresh.
 class ConnectivityService extends GetxService {
   ConnectivityService({Connectivity? connectivity})
     : _connectivity = connectivity ?? Connectivity();
@@ -27,7 +26,10 @@ class ConnectivityService extends GetxService {
 
   final Connectivity _connectivity;
 
-  /// Whether the backend is believed reachable.
+  /// Whether the device currently has a network interface.
+  ///
+  /// This is device connectivity only. It does not mean the backend is
+  /// reachable.
   final isOnline = true.obs;
 
   bool _online = true;
@@ -37,7 +39,6 @@ class ConnectivityService extends GetxService {
   @override
   void onInit() {
     super.onInit();
-    NetworkStatusObserver.addListener(_onRequestOutcome);
     _subscription = _connectivity.onConnectivityChanged.listen(_onRadioChanged);
     _checkRadio();
   }
@@ -46,7 +47,6 @@ class ConnectivityService extends GetxService {
   void onClose() {
     _debounce?.cancel();
     _subscription?.cancel();
-    NetworkStatusObserver.removeListener(_onRequestOutcome);
     super.onClose();
   }
 
@@ -57,12 +57,6 @@ class ConnectivityService extends GetxService {
 
   void _onRadioChanged(List<ConnectivityResult> results) {
     _scheduleRadio(!results.contains(ConnectivityResult.none));
-  }
-
-  /// A request completed, so the backend is reachable whatever the radio says.
-  void _onRequestOutcome(bool online) {
-    _debounce?.cancel();
-    _apply(online);
   }
 
   void _scheduleRadio(bool online) {
