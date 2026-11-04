@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 
 import 'api_config.dart';
@@ -122,6 +124,42 @@ class DioApiService {
     ),
     parse: parse,
   );
+
+  /// GET, returning the raw response bytes.
+  ///
+  /// Used for binary resources such as avatars. The request still goes through
+  /// the shared client, so the bearer token, refresh-and-retry and API logging
+  /// behave exactly as they do for JSON calls.
+  Future<ApiBinaryResponse> getBytes(
+    String path, {
+    Map<String, dynamic>? query,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      final response = await _dio.get<List<int>>(
+        path,
+        queryParameters: query,
+        options: (options ?? Options()).copyWith(
+          responseType: ResponseType.bytes,
+        ),
+        cancelToken: cancelToken,
+      );
+      NetworkStatusObserver.notify(true);
+      final payload = response.data ?? const <int>[];
+      return ApiBinaryResponse(
+        bytes: payload is Uint8List ? payload : Uint8List.fromList(payload),
+        contentType: response.headers.value(Headers.contentTypeHeader),
+      );
+    } on ApiException catch (error) {
+      _reportReachability(error);
+      rethrow;
+    } catch (error) {
+      final apiError = ApiException.from(error);
+      _reportReachability(apiError);
+      throw apiError;
+    }
+  }
 
   /// POST, with [data] serialised as the JSON body.
   Future<T> post<T>(
@@ -355,4 +393,12 @@ class DioApiService {
   /// Returns the pair rather than the access token alone, because "is the
   /// resident signed in" is only meaningful when both are present.
   Future<AuthTokens?> get currentTokens => _tokenStorage.readTokens();
+}
+
+/// Raw response bytes and the media type the server reported for them.
+class ApiBinaryResponse {
+  const ApiBinaryResponse({required this.bytes, this.contentType});
+
+  final Uint8List bytes;
+  final String? contentType;
 }

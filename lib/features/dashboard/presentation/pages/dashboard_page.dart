@@ -13,6 +13,8 @@ import '../../../../core/utils/super_print.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_state_message.dart';
 
+import '../../../../core/widgets/authenticated_avatar.dart';
+
 import '../../../../core/widgets/branded_loading_view.dart';
 
 import '../../../notifications/presentation/controllers/notification_controller.dart';
@@ -231,7 +233,6 @@ class _GreetingHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     final imageUrl = resident?.image?.trim() ?? '';
-    final avatarPixels = (44 * MediaQuery.devicePixelRatioOf(context)).round();
     final avatarFallback = Text(
       resident?.initials ?? '?',
       style: TextStyle(color: tokens.brand, fontWeight: FontWeight.w800),
@@ -278,23 +279,10 @@ class _GreetingHeader extends StatelessWidget {
               child: CircleAvatar(
                 radius: 22,
                 backgroundColor: tokens.brandOnDark,
-                child:
-                 imageUrl.isEmpty
-                    ? avatarFallback
-                    : ClipOval(
-                        child: Image.network(
-                          imageUrl,
-                          width: 44,
-                          height: 44,
-                          fit: BoxFit.cover,
-                          cacheWidth: avatarPixels,
-                          cacheHeight: avatarPixels,
-                          gaplessPlayback: true,
-                          errorBuilder: (_, _, _) => avatarFallback,
-                          loadingBuilder: (context, child, progress) =>
-                              progress == null ? child : avatarFallback,
-                        ),
-                      ),
+                child: AuthenticatedAvatar(
+                  url: imageUrl,
+                  fallback: avatarFallback,
+                ),
               ),
             ),
             if (resident!.user.unreadNotificationCount > 0)

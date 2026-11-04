@@ -25,6 +25,8 @@ import '../../../../core/widgets/app_primary_action.dart';
 
 import '../../../../core/widgets/app_state_message.dart';
 
+import '../../../../core/widgets/authenticated_avatar.dart';
+
 import '../../../auth/data/models/auth_user.dart';
 
 import '../../../dashboard/presentation/controllers/dashboard_controller.dart';
@@ -575,18 +577,15 @@ class _ProfileHero extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 31,
                   backgroundColor: tokens.brandOnDark,
-                  foregroundImage: user.avatarUrl == null
-                      ? null
-                      : NetworkImage(user.avatarUrl!),
-                  onForegroundImageError: user.avatarUrl == null
-                      ? null
-                      : (_, _) {},
-                  child: Text(
-                    user.initials,
-                    style: TextStyle(
-                      color: tokens.brandDark,
-                      fontSize: 21.sp,
-                      fontWeight: FontWeight.w800,
+                  child: AuthenticatedAvatar(
+                    url: user.avatarUrl,
+                    fallback: Text(
+                      user.initials,
+                      style: TextStyle(
+                        color: tokens.brandDark,
+                        fontSize: 21.sp,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ),
