@@ -140,6 +140,115 @@ class AuthUser {
     return '#${match.group(1)!.toUpperCase()}';
   }
 
+  /// Applies a profile update response to [currentUser] without clearing fields
+  /// the response did not describe.
+  ///
+  /// The backend may return a complete user, a partial record, or only a success
+  /// message. Recognised fields in [response] win; otherwise the values the
+  /// resident submitted are applied; everything else is carried over from
+  /// [currentUser].
+  static AuthUser mergeProfile(
+    Object? response, {
+    required AuthUser currentUser,
+    required Map<String, Object?> submitted,
+  }) {
+    final json = _profileResponseMap(response);
+
+    final name = _mergeText(json?['name'], submitted['name'], currentUser.name);
+    final phone = _mergeText(
+      json?['phone'],
+      submitted['phone'],
+      currentUser.phone,
+    );
+
+    String? email = currentUser.email;
+    if (json != null && json.containsKey('email')) {
+      email = _asNullableString(json['email']);
+    } else if (submitted.containsKey('email')) {
+      email = _asNullableString(submitted['email']);
+    }
+
+    var id = currentUser.id;
+    if (json != null && json.containsKey('id')) {
+      final parsedId = _asInt(json['id']);
+      if (parsedId > 0) {
+        id = parsedId;
+      }
+    }
+
+    var avatarUrl = currentUser.avatarUrl;
+    if (json != null && json.containsKey('avatar_url')) {
+      final parsedAvatar = _asAvatarUrl(json['avatar_url']);
+      if (parsedAvatar != null && parsedAvatar.isNotEmpty) {
+        avatarUrl = parsedAvatar;
+      }
+    }
+
+    var unit = currentUser.unit;
+    final unitJson = json?['unit'];
+    if (unitJson is Map) {
+      unit = AuthUnit.fromJson(Map<String, dynamic>.from(unitJson));
+    }
+
+    final role = _mergeText(json?['role'], null, currentUser.role);
+
+    var permissions = currentUser.permissions;
+    final permissionsJson = json?['permissions'];
+    if (permissionsJson is List) {
+      permissions = permissionsJson.map((e) => e.toString()).toList();
+    }
+
+    var unreadNotificationCount = currentUser.unreadNotificationCount;
+    final unreadJson = json?['unread_notification_count'];
+    if (unreadJson is num) {
+      unreadNotificationCount = unreadJson.toInt();
+    }
+
+    var themeColor = currentUser.themeColor;
+    if (json != null && json.containsKey('theme_color')) {
+      themeColor = _asThemeColor(json['theme_color']) ?? themeColor;
+    }
+
+    return AuthUser(
+      id: id,
+      name: name,
+      email: email,
+      phone: phone,
+      avatarUrl: avatarUrl,
+      unit: unit,
+      role: role,
+      permissions: permissions,
+      unreadNotificationCount: unreadNotificationCount,
+      themeColor: themeColor,
+    );
+  }
+
+  static Map<String, dynamic>? _profileResponseMap(Object? response) {
+    if (response is! Map) return null;
+    final map = Map<String, dynamic>.from(response);
+    final nestedUser = map['user'];
+    if (nestedUser is Map) {
+      return Map<String, dynamic>.from(nestedUser);
+    }
+    return map;
+  }
+
+  static String _mergeText(
+    Object? responseValue,
+    Object? submittedValue,
+    String currentValue,
+  ) {
+    final fromResponse = responseValue is String ? responseValue.trim() : '';
+    if (fromResponse.isNotEmpty) {
+      return fromResponse;
+    }
+    final fromSubmitted = submittedValue is String ? submittedValue.trim() : '';
+    if (fromSubmitted.isNotEmpty) {
+      return fromSubmitted;
+    }
+    return currentValue;
+  }
+
   static AuthUser parse(Object? json) {
     superPrint(json, title: "Auth User Response");
 
@@ -151,7 +260,6 @@ class AuthUser {
   String toString() =>
       'AuthUser(id: $id, name: $name, role: $role, unit: ${unit?.label})';
 }
-
 
 class AuthUnit {
   const AuthUnit({

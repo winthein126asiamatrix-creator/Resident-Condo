@@ -21,8 +21,6 @@ import '../../../../core/widgets/app_dialogs.dart';
 
 import '../../../../core/widgets/app_form_field.dart';
 
-import '../../../../core/widgets/app_primary_action.dart';
-
 import '../../../../core/widgets/app_state_message.dart';
 
 import '../../../../core/widgets/authenticated_avatar.dart';
@@ -32,6 +30,8 @@ import '../../../auth/data/models/auth_user.dart';
 import '../../../dashboard/presentation/controllers/dashboard_controller.dart';
 
 import '../controllers/profile_controller.dart';
+
+import '../widgets/edit_profile_sheet.dart';
 
 import '../widgets/language_picker_sheet.dart';
 
@@ -109,6 +109,8 @@ class ProfilePage extends GetView<ProfileController> {
                   user: user,
                   unitLabel: controller.unitLabel,
                   onEdit: () => _editProfile(context, user),
+                  isUploadingAvatar: controller.isUploadingAvatar,
+                  onChangeAvatar: () => _changeAvatar(context),
                 ),
                 AppSpacing.sectionGap.heightBox(),
                 _SectionCard(
@@ -345,36 +347,31 @@ class ProfilePage extends GetView<ProfileController> {
   }
 
   Future<void> _editProfile(BuildContext context, AuthUser user) async {
-    final result =
-        await showModalBottomSheet<({String name, String email, String phone})>(
-          context: context,
-          isScrollControlled: true,
-          showDragHandle: false,
-          builder: (_) => _EditProfileSheet(user: user),
-        );
-    if (result == null) {
-      return;
-    }
-    final updated = controller.updateProfile(
-      name: result.name,
-      email: result.email,
-      phone: result.phone,
+    final updated = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: false,
+      builder: (_) => EditProfileSheet(
+        user: user,
+        onSubmit: (name, email, phone) async {
+          final accepted = await controller.updateProfile(
+            name: name,
+            email: email,
+            phone: phone,
+          );
+          if (accepted) {
+            return null;
+          }
+          return controller.profileUpdateError ?? 'profileUpdateFailed'.tr;
+        },
+      ),
     );
-    if (!updated) {
-      if (context.mounted && controller.errorMessage.value != null) {
-        _showMessage(
-          context,
-          'Unable to update profile',
-          controller.errorMessage.value!,
-        );
-      }
-      return;
-    }
-    if (context.mounted) {
-      _showMessage(
+    if (updated == true && context.mounted) {
+      showAppFeedback(
         context,
-        'Profile updated',
-        'Your personal information has been saved locally.',
+        title: 'profileUpdated'.tr,
+        message: 'profileUpdatedMessage'.tr,
+        isError: false,
       );
     }
   }
@@ -389,6 +386,31 @@ class ProfilePage extends GetView<ProfileController> {
       return;
     }
     await localeController.setLanguageCode(chosen);
+  }
+
+  Future<void> _changeAvatar(BuildContext context) async {
+    final uploaded = await controller.pickAndUploadAvatar();
+    if (!context.mounted) {
+      return;
+    }
+    final error = controller.avatarError.value;
+    if (uploaded) {
+      showAppFeedback(
+        context,
+        title: 'photoUpdated'.tr,
+        message: 'photoUpdatedMessage'.tr,
+        isError: false,
+      );
+      return;
+    }
+    if (error != null) {
+      showAppFeedback(
+        context,
+        title: 'photoUpdateFailedTitle'.tr,
+        message: error,
+        isError: true,
+      );
+    }
   }
 
   Future<void> _changePassword(BuildContext context) async {
@@ -541,11 +563,15 @@ class _ProfileHero extends StatelessWidget {
     required this.user,
     required this.unitLabel,
     required this.onEdit,
+    required this.isUploadingAvatar,
+    required this.onChangeAvatar,
   });
 
   final AuthUser user;
   final String unitLabel;
   final VoidCallback onEdit;
+  final bool isUploadingAvatar;
+  final VoidCallback onChangeAvatar;
 
   @override
   Widget build(BuildContext context) {
@@ -565,30 +591,43 @@ class _ProfileHero extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: tokens.brandOnDark.withValues(alpha: 0.45),
-                    width: 2,
-                  ),
-                ),
-                child: CircleAvatar(
-                  radius: 31,
-                  backgroundColor: tokens.brandOnDark,
-                  child: AuthenticatedAvatar(
-                    url: user.avatarUrl,
-                    fallback: Text(
-                      user.initials,
-                      style: TextStyle(
-                        color: tokens.brandDark,
-                        fontSize: 21.sp,
-                        fontWeight: FontWeight.w800,
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: tokens.brandOnDark.withValues(alpha: 0.45),
+                        width: 2,
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      radius: 31,
+                      backgroundColor: tokens.brandOnDark,
+                      child: AuthenticatedAvatar(
+                        url: user.avatarUrl,
+                        fallback: Text(
+                          user.initials,
+                          style: TextStyle(
+                            color: tokens.brandDark,
+                            fontSize: 21.sp,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  Positioned(
+                    right: -6,
+                    bottom: -6,
+                    child: _AvatarCameraButton(
+                      isUploading: isUploadingAvatar,
+                      onTap: isUploadingAvatar ? null : onChangeAvatar,
+                    ),
+                  ),
+                ],
               ),
               15.w.widthBox(),
               Expanded(
@@ -615,6 +654,67 @@ class _ProfileHero extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AvatarCameraButton extends StatelessWidget {
+  const _AvatarCameraButton({required this.isUploading, required this.onTap});
+
+  final bool isUploading;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    final label = isUploading ? 'uploadingPhoto'.tr : 'changeProfilePhoto'.tr;
+    return Tooltip(
+      message: label,
+      child: Semantics(
+        button: true,
+        enabled: onTap != null,
+        label: label,
+        child: SizedBox.square(
+          dimension: AppSpacing.minTouchTarget,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onTap,
+            child: Center(
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: tokens.surface,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: tokens.brand, width: 1.5),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.24),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: isUploading
+                      ? SizedBox.square(
+                          dimension: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: tokens.brand,
+                          ),
+                        )
+                      : Icon(
+                          Icons.photo_camera_rounded,
+                          size: 16,
+                          color: tokens.brandDark,
+                        ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -907,109 +1007,5 @@ class _ActionRow extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _EditProfileSheet extends StatefulWidget {
-  const _EditProfileSheet({required this.user});
-  final AuthUser user;
-
-  @override
-  State<_EditProfileSheet> createState() => _EditProfileSheetState();
-}
-
-class _EditProfileSheetState extends State<_EditProfileSheet> {
-  late final TextEditingController _nameController;
-  late final TextEditingController _emailController;
-  late final TextEditingController _phoneController;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(text: widget.user.name);
-    _emailController = TextEditingController(text: widget.user.email ?? '');
-    _phoneController = TextEditingController(text: widget.user.phone);
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = AppThemeTokens.of(context);
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          10,
-          20,
-          MediaQuery.viewInsetsOf(context).bottom + 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 38,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: tokens.border,
-                  borderRadius: BorderRadius.circular(4.r),
-                ),
-              ),
-            ),
-            20.h.heightBox(),
-            Text(
-              'Edit profile',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20.sp),
-            ),
-            15.h.heightBox(),
-            AppTextField(
-              fieldKey: Key('profile-name-field'),
-              label: 'Full name',
-              controller: _nameController,
-              icon: Icons.person_outline_rounded,
-            ),
-            AppSpacing.fieldGap.heightBox(),
-            AppTextField(
-              fieldKey: Key('profile-email-field'),
-              label: 'Email',
-              controller: _emailController,
-              icon: Icons.alternate_email_rounded,
-              keyboardType: TextInputType.emailAddress,
-            ),
-            AppSpacing.fieldGap.heightBox(),
-            AppTextField(
-              fieldKey: Key('profile-phone-field'),
-              label: 'Phone',
-              controller: _phoneController,
-              icon: Icons.phone_outlined,
-              keyboardType: TextInputType.phone,
-            ),
-            20.h.heightBox(),
-            AppPrimaryAction(
-              key: Key('profile-save'),
-              onPressed: _save,
-              label: 'Save changes',
-              icon: Icons.check_rounded,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _save() {
-    Navigator.pop(context, (
-      name: _nameController.text,
-      email: _emailController.text,
-      phone: _phoneController.text,
-    ));
   }
 }

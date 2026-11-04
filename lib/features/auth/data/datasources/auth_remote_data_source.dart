@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:test/core/utils/super_print.dart';
 
 import '../../../../core/errors/app_exception.dart';
@@ -70,6 +71,27 @@ class AuthRemoteDataSource {
     }
   }
 
+  /// Updates the signed-in resident's editable profile fields.
+  ///
+  /// Only fields present in [changes] are sent. The endpoint has been observed
+  /// returning either the updated resident or a success message, so the response
+  /// is merged into [currentUser] rather than replacing it. Unrelated fields such
+  /// as the avatar and unit are therefore preserved when the body is partial.
+  Future<AuthUser> updateProfile({
+    required AuthUser currentUser,
+    required Map<String, Object?> changes,
+  }) async {
+    final response = await _service.patch<Object?>(
+      ApiEndPoints.me,
+      data: changes,
+    );
+    return AuthUser.mergeProfile(
+      response,
+      currentUser: currentUser,
+      submitted: changes,
+    );
+  }
+
   /// Changes the signed-in resident's password.
   ///
   /// The request is authenticated like every other call, so the shared
@@ -88,6 +110,40 @@ class AuthRemoteDataSource {
         'new_password': newPassword,
       },
     );
+  }
+
+  /// Replaces the signed-in resident's avatar.
+  ///
+  /// The success body is deliberately ignored: the endpoint's response shape has
+  /// not been confirmed. A 2xx is enough to know the upload was accepted, and
+  /// the caller refreshes `/me` for the canonical profile.
+  Future<void> uploadAvatar({
+    required String filePath,
+    required String filename,
+    String? mimeType,
+  }) async {
+    await _service.uploadMultipart<dynamic>(
+      ApiEndPoints.avatar,
+      files: <String, MultipartFile>{
+        'avatar': DioApiService.filePart(
+          filePath: filePath,
+          filename: filename,
+          contentType: _mediaType(mimeType),
+        ),
+      },
+    );
+  }
+
+  static DioMediaType? _mediaType(String? mimeType) {
+    final value = mimeType?.trim().toLowerCase();
+    if (value == null || value.isEmpty) {
+      return null;
+    }
+    try {
+      return DioMediaType.parse(value == 'image/jpg' ? 'image/jpeg' : value);
+    } on Object {
+      return null;
+    }
   }
 
   /// Revokes the session's refresh token on the backend.

@@ -1,19 +1,26 @@
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
-/// A photo the resident attached to a request.
-///
-/// Only the local file and its name are held: the repository does not upload
-/// attachments yet, so the request carries the names and the app keeps the paths
-/// around for the preview.
+/// A local photo selected by the resident.
 class AttachedPhoto {
-  const AttachedPhoto({required this.path, required this.name});
+  const AttachedPhoto({
+    required this.path,
+    required this.name,
+    this.mimeType,
+    this.sizeBytes,
+  });
 
   /// Path of the picked file on the device.
   final String path;
 
   /// File name, sent along with the request.
   final String name;
+
+  /// Media type reported by the picker, when the platform provides one.
+  final String? mimeType;
+
+  /// File size in bytes, when it could be read.
+  final int? sizeBytes;
 }
 
 /// Outcome of a single pick attempt.
@@ -57,8 +64,19 @@ class DevicePhotoPicker implements PhotoPicker {
       if (file == null) {
         return const PhotoPickResult.cancelled();
       }
+      int? sizeBytes;
+      try {
+        sizeBytes = await file.length();
+      } on Object {
+        sizeBytes = null;
+      }
       return PhotoPickResult.success(
-        AttachedPhoto(path: file.path, name: file.name),
+        AttachedPhoto(
+          path: file.path,
+          name: file.name,
+          mimeType: file.mimeType,
+          sizeBytes: sizeBytes,
+        ),
       );
     } on PlatformException catch (error) {
       return PhotoPickResult.failure(

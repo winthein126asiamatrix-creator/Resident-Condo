@@ -33,6 +33,78 @@ void main() {
     expect(user.themeColor, '#3366FF');
   });
 
+  test('merges a success-only profile response without losing fields', () {
+    final current = AuthUser(
+      id: 6,
+      name: 'Owner One',
+      phone: '0811111111',
+      role: 'owner',
+      email: 'owner@example.com',
+      avatarUrl: 'https://example.com/avatar.png',
+      themeColor: '#123456',
+      permissions: const <String>['profile.read'],
+      unit: const AuthUnit(
+        id: 1,
+        label: 'Tower A · Unit 1205',
+        tower: 'Tower A',
+        number: '1205',
+      ),
+    );
+
+    final updated = AuthUser.mergeProfile(
+      <String, dynamic>{'message': 'Profile updated'},
+      currentUser: current,
+      submitted: <String, Object?>{
+        'name': 'Owner Two',
+        'phone': '0999999999',
+        'email': 'owner2@example.com',
+      },
+    );
+
+    expect(updated.name, 'Owner Two');
+    expect(updated.phone, '0999999999');
+    expect(updated.email, 'owner2@example.com');
+    expect(updated.avatarUrl, current.avatarUrl);
+    expect(updated.unit?.label, current.unit?.label);
+    expect(updated.role, current.role);
+    expect(updated.permissions, current.permissions);
+    expect(updated.themeColor, current.themeColor);
+  });
+
+  test('uses response fields and preserves unrelated fields when partial', () {
+    final current = AuthUser(
+      id: 6,
+      name: 'Owner One',
+      phone: '0811111111',
+      role: 'owner',
+      email: 'owner@example.com',
+      avatarUrl: 'https://example.com/avatar.png',
+      permissions: const <String>['profile.read'],
+      unit: const AuthUnit(
+        id: 1,
+        label: 'Tower A · Unit 1205',
+        tower: 'Tower A',
+        number: '1205',
+      ),
+    );
+
+    final updated = AuthUser.mergeProfile(
+      <String, dynamic>{'id': 6, 'name': 'Server Name', 'phone': '0999999999'},
+      currentUser: current,
+      submitted: <String, Object?>{
+        'name': 'Local Name',
+        'phone': '0999999999',
+        'email': 'owner2@example.com',
+      },
+    );
+
+    expect(updated.name, 'Server Name');
+    expect(updated.phone, '0999999999');
+    expect(updated.email, 'owner2@example.com');
+    expect(updated.avatarUrl, current.avatarUrl);
+    expect(updated.unit?.label, current.unit?.label);
+  });
+
   test('round-trips the profile through JSON', () {
     final original = AuthUser(
       id: 9,

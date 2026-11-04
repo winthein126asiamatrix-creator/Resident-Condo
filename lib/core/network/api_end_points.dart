@@ -1,4 +1,3 @@
-
 abstract final class ApiEndPoints {
   // --- Session -------------------------------------------------------------
 
@@ -6,10 +5,14 @@ abstract final class ApiEndPoints {
 
   static const String logout = '/auth/logout';
 
+  /// The signed-in resident. GET loads the profile; PATCH updates name, phone
+  /// and email.
   static const String me = '/me';
 
+  static const String avatar = '$me/avatar';
+
   static const String refreshToken = '/auth/refresh';
-  
+
   static const String changePassword = '/auth/change-password';
 
   // --- Resident unit -------------------------------------------------------

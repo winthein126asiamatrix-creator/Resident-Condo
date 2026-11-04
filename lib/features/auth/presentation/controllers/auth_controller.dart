@@ -6,8 +6,10 @@ import 'package:get/get.dart';
 import 'package:test/app/routes/app_routes.dart';
 
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../core/services/firebase_service.dart';
 import '../../../../core/utils/super_print.dart';
+import '../../../../core/widgets/authenticated_avatar.dart';
 import '../../../appearance/presentation/controllers/appearance_controller.dart';
 import '../../../notifications/data/datasources/notification_remote_data_source.dart';
 import '../../../notifications/presentation/controllers/notification_controller.dart';
@@ -67,6 +69,18 @@ class AuthController extends GetxController {
 
   /// The backend's reason for rejecting a password change.
   final changePasswordError = RxnString();
+
+  /// True while an avatar replacement is being uploaded.
+  final isUploadingAvatar = false.obs;
+
+  /// The reason the last avatar upload failed, when it did.
+  final avatarUploadError = RxnString();
+
+  /// True while the editable profile fields are being saved.
+  final isUpdatingProfile = false.obs;
+
+  /// The reason the last profile update failed, when it did.
+  final profileUpdateError = RxnString();
 
   final isPasswordVisible = false.obs;
 
@@ -128,6 +142,8 @@ class AuthController extends GetxController {
     sessionInitializationError.value = null;
     isUnverified.value = false;
     isRestoring.value = false;
+    isUpdatingProfile.value = false;
+    profileUpdateError.value = null;
     // A new sign-in must never inherit the previous account's in-memory user,
     // even if the login screen was reached without going through sign-out.
     if (Get.isRegistered<SessionController>()) {
@@ -243,6 +259,103 @@ class AuthController extends GetxController {
     return Get.find<SessionController>().currentUser;
   }
 
+  /// Saves the editable profile fields and publishes the updated user.
+  ///
+  /// Only values that differ from the current user are sent. The returned user
+  /// is merged into the shared session, then persisted, so the profile,
+  /// dashboard and remembered sign-in details all see the same record without
+  /// losing the avatar or any other unrelated field.
+  Future<bool> updateProfile({
+    required String name,
+    required String email,
+    required String phone,
+  }) async {
+    if (isUpdatingProfile.value) {
+      return false;
+    }
+    final currentUser = _sessionUser;
+    if (currentUser == null) {
+      profileUpdateError.value = 'profileUpdateFailed'.tr;
+      return false;
+    }
+
+    final trimmedName = name.trim();
+    final trimmedEmail = email.trim();
+    final trimmedPhone = phone.trim();
+    final changes = <String, Object?>{};
+    if (trimmedName != currentUser.name) {
+      changes['name'] = trimmedName;
+    }
+    if (trimmedPhone != currentUser.phone) {
+      changes['phone'] = trimmedPhone;
+    }
+    if (trimmedEmail != (currentUser.email?.trim() ?? '')) {
+      changes['email'] = trimmedEmail;
+    }
+    if (changes.isEmpty) {
+      profileUpdateError.value = null;
+      return true;
+    }
+
+    final epoch = _sessionEpoch;
+    isUpdatingProfile.value = true;
+    profileUpdateError.value = null;
+    try {
+      final updated = await useCases.updateProfile(
+        currentUser: currentUser,
+        changes: changes,
+      );
+      if (epoch != _sessionEpoch) {
+        return false;
+      }
+      final session = AuthSession(
+        username: updated.name,
+        displayName: updated.displayName,
+        rememberMe: rememberMe.value,
+        user: updated,
+      );
+      await useCases.persistSession(session);
+      if (epoch != _sessionEpoch) {
+        return false;
+      }
+      await adoptIntoSession(session);
+      return true;
+    } on AppException catch (error) {
+      if (epoch == _sessionEpoch) {
+        profileUpdateError.value = _profileUpdateMessage(error);
+      }
+      return false;
+    } catch (_) {
+      if (epoch == _sessionEpoch) {
+        profileUpdateError.value = 'profileUpdateFailed'.tr;
+      }
+      return false;
+    } finally {
+      if (epoch == _sessionEpoch) {
+        isUpdatingProfile.value = false;
+      }
+    }
+  }
+
+  String _profileUpdateMessage(AppException error) {
+    if (error is ApiException) {
+      final status = error.statusCode;
+      if (status == 400 ||
+          status == 422 ||
+          error.kind == ApiFailureKind.validation) {
+        return 'profileUpdateInvalid'.tr;
+      }
+      if (error.kind == ApiFailureKind.network ||
+          error.kind == ApiFailureKind.timeout) {
+        return 'profileUpdateNetworkError'.tr;
+      }
+      if (error.kind == ApiFailureKind.server) {
+        return 'profileUpdateServerError'.tr;
+      }
+    }
+    return 'profileUpdateFailed'.tr;
+  }
+
   /// Changes the password without disturbing the current session.
   ///
   /// Returns whether the backend accepted the change. The reason for a
@@ -276,6 +389,44 @@ class AuthController extends GetxController {
     }
   }
 
+  /// Uploads a replacement avatar and refreshes the canonical profile.
+  ///
+  /// The upload endpoint's success body is not part of the confirmed contract,
+  /// so `/me` remains the source of the resident record. The avatar cache is
+  /// dropped as soon as the upload succeeds, which also refreshes a URL-stable
+  /// Odoo avatar without appending cache-busting query parameters.
+  Future<bool> uploadAvatar({
+    required String filePath,
+    required String filename,
+    String? mimeType,
+  }) async {
+    if (isUploadingAvatar.value) {
+      return false;
+    }
+    isUploadingAvatar.value = true;
+    avatarUploadError.value = null;
+    try {
+      await useCases.uploadAvatar(
+        filePath: filePath,
+        filename: filename,
+        mimeType: mimeType,
+      );
+      invalidateAuthenticatedAvatarCache();
+      // A refresh failure must not turn an accepted upload into a failure; the
+      // image widget has already been told to reload the new bytes.
+      await fetchCurrentUser(force: true);
+      return true;
+    } on AppException catch (error) {
+      avatarUploadError.value = error.message;
+      return false;
+    } catch (_) {
+      avatarUploadError.value = 'photoUpdateFailed'.tr;
+      return false;
+    } finally {
+      isUploadingAvatar.value = false;
+    }
+  }
+
   Future<void> signOut() async {
     // Invalidate any /auth/me request still in flight. Its response may arrive
     // later, but it now belongs to the session that has just ended.
@@ -285,6 +436,8 @@ class AuthController extends GetxController {
     sessionInitializationError.value = null;
     isUnverified.value = false;
     isRestoring.value = false;
+    isUpdatingProfile.value = false;
+    profileUpdateError.value = null;
     await _releaseDevice();
     try {
       await useCases.signOut();
@@ -294,6 +447,7 @@ class AuthController extends GetxController {
       if (Get.isRegistered<SessionController>()) {
         Get.find<SessionController>().clearSession();
       }
+      invalidateAuthenticatedAvatarCache();
       await _resetAppearance();
     }
   }

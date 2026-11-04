@@ -1,4 +1,5 @@
 import '../../../../core/errors/app_exception.dart';
+import '../../data/models/auth_user.dart';
 import '../entities/auth_session.dart';
 
 /// Sign-in, sign-out and the remembered session.
@@ -25,6 +26,15 @@ abstract interface class AuthRepository {
   /// Kept as an alias of [fetchCurrentUser] for existing callers.
   Future<AuthSession> updateMe();
 
+  /// Updates the signed-in resident's editable profile fields.
+  ///
+  /// Only [changes] entries are sent. The returned user keeps every field the
+  /// backend did not include in its response.
+  Future<AuthUser> updateProfile({
+    required AuthUser currentUser,
+    required Map<String, Object?> changes,
+  });
+
   /// Changes the signed-in resident's password.
   ///
   /// The active session is left untouched: changing a password does not
@@ -32,6 +42,16 @@ abstract interface class AuthRepository {
   Future<void> changePassword({
     required String oldPassword,
     required String newPassword,
+  });
+
+  /// Uploads a replacement avatar for the signed-in resident.
+  ///
+  /// The endpoint's success body is not part of the contract, so callers that
+  /// need canonical profile data should refresh `/me` after this completes.
+  Future<void> uploadAvatar({
+    required String filePath,
+    required String filename,
+    String? mimeType,
   });
 
   /// Ends the current session: tokens and remembered details both cleared.

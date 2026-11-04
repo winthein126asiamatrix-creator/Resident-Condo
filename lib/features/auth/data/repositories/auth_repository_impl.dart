@@ -104,24 +104,43 @@ class AuthRepositoryImpl implements AuthRepository {
     // is written for other features, but it is never read back here to stand in
     // for a successful validation.
     final user = await _remote.updateMe();
-    if (epoch == _sessionEpoch) {
-      try {
-        await _cache?.save(
-          key: 'auth.me',
-          accountKey: user.id.toString(),
-          payload: user.toJson(),
-        );
-      } on Object {
-        // Caching is a local convenience and must not turn a successful API
-        // request into a failure.
-      }
-    }
+    await _cacheUser(user, epoch);
     return AuthSession(
       username: user.name,
       displayName: user.displayName,
       rememberMe: true,
       user: user,
     );
+  }
+
+  Future<void> _cacheUser(AuthUser user, int epoch) async {
+    if (epoch != _sessionEpoch) {
+      return;
+    }
+    try {
+      await _cache?.save(
+        key: 'auth.me',
+        accountKey: user.id.toString(),
+        payload: user.toJson(),
+      );
+    } on Object {
+      // Caching is a local convenience and must not turn a successful API
+      // request into a failure.
+    }
+  }
+
+  @override
+  Future<AuthUser> updateProfile({
+    required AuthUser currentUser,
+    required Map<String, Object?> changes,
+  }) async {
+    final epoch = _sessionEpoch;
+    final user = await _remote.updateProfile(
+      currentUser: currentUser,
+      changes: changes,
+    );
+    await _cacheUser(user, epoch);
+    return user;
   }
 
   @override
@@ -131,6 +150,17 @@ class AuthRepositoryImpl implements AuthRepository {
   }) => _remote.changePassword(
     oldPassword: oldPassword,
     newPassword: newPassword,
+  );
+
+  @override
+  Future<void> uploadAvatar({
+    required String filePath,
+    required String filename,
+    String? mimeType,
+  }) => _remote.uploadAvatar(
+    filePath: filePath,
+    filename: filename,
+    mimeType: mimeType,
   );
 
   @override

@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get/get.dart';
 import 'package:test/core/network/api_end_points.dart';
 import 'package:test/core/network/dio_api_service.dart';
 import 'package:test/core/network/token_refresher.dart';
@@ -380,6 +381,33 @@ void main() {
       expect(find.text('AB'), findsOneWidget);
       expect(find.byType(Image), findsNothing);
       expect(find.byType(SvgPicture), findsNothing);
+    });
+
+    testWidgets('reloads a URL-stable avatar after cache invalidation', (
+      tester,
+    ) async {
+      var calls = 0;
+      final service = _service((_) async {
+        calls++;
+        return _bytes(_png);
+      });
+      Get.put<DioApiService>(service);
+      addTearDown(Get.reset);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: AuthenticatedAvatar(url: _avatarPath, fallback: Text('AB')),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(calls, 1);
+
+      invalidateAuthenticatedAvatarCache();
+      await tester.pumpAndSettle();
+
+      expect(calls, 2);
     });
   });
 }

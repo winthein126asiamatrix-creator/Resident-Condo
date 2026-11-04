@@ -38,6 +38,8 @@ class AuthenticatedAvatarLoader {
       <String, AuthenticatedAvatarData>{};
   final Map<String, Future<AuthenticatedAvatarData?>> _inFlight =
       <String, Future<AuthenticatedAvatarData?>>{};
+  final Map<String, int> _versions = <String, int>{};
+  int _generation = 0;
 
   Future<AuthenticatedAvatarData?> load(String url, {bool force = false}) {
     final cached = _cache[url];
@@ -49,21 +51,36 @@ class AuthenticatedAvatarLoader {
     }
 
     final pending = _inFlight[url];
-    if (pending != null) {
+    if (pending != null && !force) {
       return pending;
     }
 
-    final future = _download(url);
+    final generation = _generation;
+    final version = (_versions[url] ?? 0) + 1;
+    _versions[url] = version;
+    final future = _download(url, generation, version);
     _inFlight[url] = future;
     return future.whenComplete(() {
-      _inFlight.remove(url);
+      if (identical(_inFlight[url], future)) {
+        _inFlight.remove(url);
+      }
     });
   }
 
   /// Drops every cached avatar, for a sign-out or an explicit refresh.
-  void clear() => _cache.clear();
+  ///
+  /// Requests already in flight belong to the previous generation and are not
+  /// allowed to write their stale bytes back into the cache.
+  void clear() {
+    _cache.clear();
+    _generation++;
+  }
 
-  Future<AuthenticatedAvatarData?> _download(String url) async {
+  Future<AuthenticatedAvatarData?> _download(
+    String url,
+    int generation,
+    int version,
+  ) async {
     try {
       final response = await _service.getBytes(url);
       final format = detectFormat(response.bytes);
@@ -75,8 +92,10 @@ class AuthenticatedAvatarLoader {
         format: format,
         contentType: response.contentType,
       );
-      _cache[url] = data;
-      _trim();
+      if (generation == _generation && version == _versions[url]) {
+        _cache[url] = data;
+        _trim();
+      }
       return data;
     } catch (_) {
       return null;
@@ -189,6 +208,7 @@ class _AuthenticatedAvatarState extends State<AuthenticatedAvatar> {
   void initState() {
     super.initState();
     _loader = widget.loader ?? _sharedLoader();
+    _avatarRevision.addListener(_reloadAfterInvalidation);
     _load();
   }
 
@@ -202,7 +222,20 @@ class _AuthenticatedAvatarState extends State<AuthenticatedAvatar> {
     }
   }
 
-  void _load() {
+  @override
+  void dispose() {
+    _avatarRevision.removeListener(_reloadAfterInvalidation);
+    super.dispose();
+  }
+
+  void _reloadAfterInvalidation() {
+    if (!mounted) {
+      return;
+    }
+    _load(force: true);
+  }
+
+  void _load({bool force = false}) {
     final url = widget.url?.trim() ?? '';
     final loader = _loader;
     if (url.isEmpty || loader == null) {
@@ -211,7 +244,7 @@ class _AuthenticatedAvatarState extends State<AuthenticatedAvatar> {
     }
 
     final request = ++_request;
-    loader.load(url).then((data) {
+    loader.load(url, force: force).then((data) {
       if (!mounted || request != _request) {
         return;
       }
@@ -259,6 +292,19 @@ class _AuthenticatedAvatarState extends State<AuthenticatedAvatar> {
       },
     );
   }
+}
+
+/// Notifies every mounted avatar that the shared cache was invalidated.
+final ValueNotifier<int> _avatarRevision = ValueNotifier<int>(0);
+
+/// Drops cached avatar bytes and makes mounted avatars fetch them again.
+///
+/// Use this after an upload. The backend's avatar URL can stay the same while
+/// its bytes change, so a URL-based reload alone would keep showing the old
+/// image.
+void invalidateAuthenticatedAvatarCache() {
+  _sharedLoaderInstance?.clear();
+  _avatarRevision.value++;
 }
 
 AuthenticatedAvatarLoader? _sharedLoaderInstance;

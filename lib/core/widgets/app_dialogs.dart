@@ -22,12 +22,10 @@ class AppSummaryRow {
   final String label;
   final String value;
 
-  /// Rendered in the brand colour, for the line that matters most.
   final bool emphasis;
 }
 
-/// Outcome of a dialog's confirm action. A failure keeps the dialog open with
-/// the message, so the resident can retry without losing their place.
+
 class AppConfirmResult {
   AppConfirmResult.success() : error = null;
 
@@ -38,8 +36,7 @@ class AppConfirmResult {
   bool get isSuccess => error == null;
 }
 
-/// Confirmation dialog used for every destructive or irreversible action
-/// (cancel a reservation, delete a visitor, withdraw a renewal, logout...).
+
 Future<bool> showAppConfirmDialog(
   BuildContext context, {
   required String title,
@@ -101,19 +98,13 @@ void showAppFeedback(
             : backgroundColor ?? tokens.surface,
         content: Text(
           '$title: $message',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: tokens.ink), 
         ),
       ),
     );
 }
 
-/// Confirmation dialog for an action that needs the details reviewed first,
-/// such as booking a facility.
-///
-/// It is a custom dialog rather than an [AlertDialog] so the summary can be
-/// shown as a proper block, and the confirm button can hold a loading state
-/// while the action runs. Repeated taps are ignored while it is in flight, and a
-/// failed action leaves the dialog open with the reason so it can be retried.
+
 Future<bool> showAppConfirmSummaryDialog(
   BuildContext context, {
   required String title,

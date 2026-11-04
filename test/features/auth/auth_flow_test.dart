@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide FormData;
 import 'package:test/core/errors/app_exception.dart';
+import 'package:test/core/network/api_end_points.dart';
 import 'package:test/core/network/api_exception.dart';
 import 'package:test/core/network/dio_api_service.dart';
 import 'package:test/core/network/in_memory_token_storage.dart';
@@ -171,9 +173,22 @@ class _UnusedRepository implements AuthRepository {
   Future<AuthSession> updateMe() => throw UnimplementedError();
 
   @override
+  Future<AuthUser> updateProfile({
+    required AuthUser currentUser,
+    required Map<String, Object?> changes,
+  }) => throw UnimplementedError();
+
+  @override
   Future<void> changePassword({
     required String oldPassword,
     required String newPassword,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> uploadAvatar({
+    required String filePath,
+    required String filename,
+    String? mimeType,
   }) => throw UnimplementedError();
 
   @override
@@ -183,7 +198,8 @@ class _UnusedRepository implements AuthRepository {
   Future<AuthSession?> restoreSession() => throw UnimplementedError();
 
   @override
-  Future<void> persistSession(AuthSession session) => throw UnimplementedError();
+  Future<void> persistSession(AuthSession session) =>
+      throw UnimplementedError();
 }
 
 class _FakeUseCases extends AuthUseCases {
@@ -193,12 +209,23 @@ class _FakeUseCases extends AuthUseCases {
   int fetchCalls = 0;
   int persistCalls = 0;
   int signOutCalls = 0;
+  int uploadAvatarCalls = 0;
+  int updateProfileCalls = 0;
 
   Future<AuthSession> Function(SignInRequest request)? onSignIn;
   Future<AuthSession> Function()? onFetchCurrentUser;
   Future<void> Function()? onSignOut;
+  Future<void> Function(String filePath, String filename, String? mimeType)?
+  onUploadAvatar;
+  Future<AuthUser> Function(AuthUser currentUser, Map<String, Object?> changes)?
+  onUpdateProfile;
 
   AuthSession? persisted;
+  String? uploadedFilePath;
+  String? uploadedFilename;
+  String? uploadedMimeType;
+  AuthUser? updateProfileCurrentUser;
+  Map<String, Object?>? updateProfileChanges;
 
   @override
   Future<AuthSession> signIn(SignInRequest request) {
@@ -221,6 +248,34 @@ class _FakeUseCases extends AuthUseCases {
   }
 
   @override
+  Future<void> uploadAvatar({
+    required String filePath,
+    required String filename,
+    String? mimeType,
+  }) async {
+    uploadAvatarCalls++;
+    uploadedFilePath = filePath;
+    uploadedFilename = filename;
+    uploadedMimeType = mimeType;
+    await onUploadAvatar?.call(filePath, filename, mimeType);
+  }
+
+  @override
+  Future<AuthUser> updateProfile({
+    required AuthUser currentUser,
+    required Map<String, Object?> changes,
+  }) {
+    updateProfileCalls++;
+    updateProfileCurrentUser = currentUser;
+    updateProfileChanges = changes;
+    final handler = onUpdateProfile;
+    if (handler == null) {
+      throw StateError('No profile-update handler configured.');
+    }
+    return handler(currentUser, changes);
+  }
+
+  @override
   Future<void> persistSession(AuthSession session) async {
     persistCalls++;
     persisted = session;
@@ -233,11 +288,10 @@ class _FakeUseCases extends AuthUseCases {
   }
 }
 
-typedef _ResponseHandler =
-    FutureOr<ResponseBody> Function(
-      RequestOptions options,
-      Stream<Uint8List>? requestStream,
-    );
+typedef _ResponseHandler = FutureOr<ResponseBody> Function(
+  RequestOptions options,
+  Stream<Uint8List>? requestStream,
+);
 
 class _FakeAdapter implements HttpClientAdapter {
   _FakeAdapter(this.handle);
@@ -333,43 +387,45 @@ void main() {
       expect(remote.updateMeCalls, 1);
     });
 
-    test('temporary /auth/me failure keeps tokens and can be retried',
-        () async {
-      final remote = _FakeRemote();
-      final storage = _MemoryTokenStorage();
-      final local = _FakeLocal();
-      final repository = _repository(remote, storage, local: local);
-      await repository.signIn(
-        const SignInRequest(username: 'owner1', password: 'secret'),
-      );
+    test(
+      'temporary /auth/me failure keeps tokens and can be retried',
+      () async {
+        final remote = _FakeRemote();
+        final storage = _MemoryTokenStorage();
+        final local = _FakeLocal();
+        final repository = _repository(remote, storage, local: local);
+        await repository.signIn(
+          const SignInRequest(username: 'owner1', password: 'secret'),
+        );
 
-      var attempts = 0;
-      remote.onUpdateMe = () async {
-        attempts++;
-        if (attempts == 1) {
-          throw const ApiException(
-            'No connection.',
-            kind: ApiFailureKind.network,
-          );
-        }
-        return _user();
-      };
+        var attempts = 0;
+        remote.onUpdateMe = () async {
+          attempts++;
+          if (attempts == 1) {
+            throw const ApiException(
+              'No connection.',
+              kind: ApiFailureKind.network,
+            );
+          }
+          return _user();
+        };
 
-      await expectLater(
-        repository.fetchCurrentUser(),
-        throwsA(isA<ApiException>()),
-      );
+        await expectLater(
+          repository.fetchCurrentUser(),
+          throwsA(isA<ApiException>()),
+        );
 
-      expect(storage.tokens?.accessToken, _oldAccess);
-      expect(storage.tokens?.refreshToken, _oldRefresh);
-      expect(storage.clears, 0);
-      expect(local.signOutCalls, 0);
+        expect(storage.tokens?.accessToken, _oldAccess);
+        expect(storage.tokens?.refreshToken, _oldRefresh);
+        expect(storage.clears, 0);
+        expect(local.signOutCalls, 0);
 
-      final retried = await repository.fetchCurrentUser();
+        final retried = await repository.fetchCurrentUser();
 
-      expect((retried.user! as AuthUser).name, 'Owner One');
-      expect(remote.updateMeCalls, 2);
-    });
+        expect((retried.user! as AuthUser).name, 'Owner One');
+        expect(remote.updateMeCalls, 2);
+      },
+    );
 
     test('concurrent current-user requests share one /auth/me call', () async {
       final remote = _FakeRemote();
@@ -395,6 +451,138 @@ void main() {
       expect((results.first.user! as AuthUser).name, 'Owner One');
       expect((results.last.user! as AuthUser).name, 'Owner One');
       expect(remote.updateMeCalls, 1);
+    });
+  });
+
+  group('profile update', () {
+    test('patches /me with only the changed profile fields', () async {
+      final current = _user().copyWith(
+        avatarUrl: 'https://example.com/avatar.png',
+      );
+      String? path;
+      String? method;
+      Object? body;
+      String? bearer;
+      final dio = Dio()
+        ..httpClientAdapter = _FakeAdapter((options, _) async {
+          path = options.path;
+          method = options.method;
+          body = options.data;
+          bearer = _bearer(options);
+          return _json(200, <String, dynamic>{
+            'id': 6,
+            'name': 'Server Name',
+            'phone': '0999999999',
+          });
+        });
+      final remote = AuthRemoteDataSource(
+        DioApiService(
+          tokenStorage: _MemoryTokenStorage(_tokens()),
+          dio: dio,
+          baseUrl: 'https://api.example.com',
+        ),
+      );
+
+      final updated = await remote.updateProfile(
+        currentUser: current,
+        changes: <String, Object?>{
+          'name': 'Server Name',
+          'phone': '0999999999',
+        },
+      );
+
+      expect(path, ApiEndPoints.me);
+      expect(method, 'PATCH');
+      expect(bearer, 'Bearer $_oldAccess');
+      expect(body, <String, Object?>{
+        'name': 'Server Name',
+        'phone': '0999999999',
+      });
+      expect(updated.name, 'Server Name');
+      expect(updated.phone, '0999999999');
+      expect(updated.email, current.email);
+      expect(updated.avatarUrl, current.avatarUrl);
+      expect(updated.unit?.label, current.unit?.label);
+    });
+
+    test('a success message response merges the submitted fields', () async {
+      final current = _user().copyWith(
+        avatarUrl: 'https://example.com/avatar.png',
+      );
+      final dio = Dio()
+        ..httpClientAdapter = _FakeAdapter(
+          (_, _) async =>
+              _json(200, <String, dynamic>{'message': 'Profile updated'}),
+        );
+      final remote = AuthRemoteDataSource(
+        DioApiService(
+          tokenStorage: _MemoryTokenStorage(_tokens()),
+          dio: dio,
+          baseUrl: 'https://api.example.com',
+        ),
+      );
+
+      final updated = await remote.updateProfile(
+        currentUser: current,
+        changes: <String, Object?>{
+          'name': 'Owner Two',
+          'email': 'owner2@example.com',
+        },
+      );
+
+      expect(updated.name, 'Owner Two');
+      expect(updated.email, 'owner2@example.com');
+      expect(updated.phone, current.phone);
+      expect(updated.avatarUrl, current.avatarUrl);
+    });
+  });
+
+  group('avatar upload', () {
+    test('posts the photo as the avatar multipart field', () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'condo-avatar-test',
+      );
+      addTearDown(() async {
+        try {
+          await directory.delete(recursive: true);
+        } on FileSystemException {
+          // The multipart stream may still hold the temporary file on Windows.
+        }
+      });
+      final photo = File('${directory.path}/avatar.png')
+        ..writeAsBytesSync(<int>[0x89, 0x50, 0x4E, 0x47]);
+
+      FormData? form;
+      String? path;
+      String? method;
+      final dio = Dio()
+        ..httpClientAdapter = _FakeAdapter((options, _) async {
+          path = options.path;
+          method = options.method;
+          form = options.data as FormData;
+          return ResponseBody.fromString('', 204);
+        });
+      final remote = AuthRemoteDataSource(
+        DioApiService(
+          tokenStorage: _MemoryTokenStorage(_tokens()),
+          dio: dio,
+          baseUrl: 'https://api.example.com',
+        ),
+      );
+
+      await remote.uploadAvatar(
+        filePath: photo.path,
+        filename: 'avatar.png',
+        mimeType: 'image/png',
+      );
+
+      expect(path, ApiEndPoints.avatar);
+      expect(method, 'POST');
+      expect(form?.files, hasLength(1));
+      final part = form!.files.single;
+      expect(part.key, 'avatar');
+      expect(part.value.filename, 'avatar.png');
+      expect(part.value.contentType?.mimeType, 'image/png');
     });
   });
 
@@ -445,55 +633,57 @@ void main() {
       expect(storage.tokens?.refreshToken, _newRefresh);
     });
 
-    test('confirmed invalid refresh clears tokens and expires the session',
-        () async {
-      final storage = _MemoryTokenStorage(_tokens());
-      var meCalls = 0;
-      var refreshCalls = 0;
-      var expired = 0;
+    test(
+      'confirmed invalid refresh clears tokens and expires the session',
+      () async {
+        final storage = _MemoryTokenStorage(_tokens());
+        var meCalls = 0;
+        var refreshCalls = 0;
+        var expired = 0;
 
-      final mainDio = Dio()
-        ..httpClientAdapter = _FakeAdapter((_, _) async {
-          meCalls++;
-          return _json(401, <String, dynamic>{'message': 'expired'});
-        });
-      final refreshDio = Dio(BaseOptions(baseUrl: 'https://api.example.com'))
-        ..httpClientAdapter = _FakeAdapter((_, _) async {
-          refreshCalls++;
-          return _json(401, <String, dynamic>{'message': 'invalid refresh'});
-        });
-      final service = DioApiService(
-        tokenStorage: storage,
-        dio: mainDio,
-        tokenRefresher: TokenRefresher(refreshDio),
-        baseUrl: 'https://api.example.com',
-      );
+        final mainDio = Dio()
+          ..httpClientAdapter = _FakeAdapter((_, _) async {
+            meCalls++;
+            return _json(401, <String, dynamic>{'message': 'expired'});
+          });
+        final refreshDio = Dio(BaseOptions(baseUrl: 'https://api.example.com'))
+          ..httpClientAdapter = _FakeAdapter((_, _) async {
+            refreshCalls++;
+            return _json(401, <String, dynamic>{'message': 'invalid refresh'});
+          });
+        final service = DioApiService(
+          tokenStorage: storage,
+          dio: mainDio,
+          tokenRefresher: TokenRefresher(refreshDio),
+          baseUrl: 'https://api.example.com',
+        );
 
-      final session = SessionController()..setSession(_user());
-      Get.put<SessionController>(session, permanent: true);
-      addTearDown(Get.reset);
-      service.onSessionExpired = () {
-        expired++;
-        session.clearSession();
-      };
+        final session = SessionController()..setSession(_user());
+        Get.put<SessionController>(session, permanent: true);
+        addTearDown(Get.reset);
+        service.onSessionExpired = () {
+          expired++;
+          session.clearSession();
+        };
 
-      final repository = AuthRepositoryImpl(
-        remoteDataSource: AuthRemoteDataSource(service),
-        localDataSource: _FakeLocal(),
-        tokenStorage: storage,
-      );
+        final repository = AuthRepositoryImpl(
+          remoteDataSource: AuthRemoteDataSource(service),
+          localDataSource: _FakeLocal(),
+          tokenStorage: storage,
+        );
 
-      await expectLater(
-        repository.fetchCurrentUser(),
-        throwsA(isA<ApiException>()),
-      );
+        await expectLater(
+          repository.fetchCurrentUser(),
+          throwsA(isA<ApiException>()),
+        );
 
-      expect(meCalls, 1);
-      expect(refreshCalls, 1);
-      expect(storage.tokens, isNull);
-      expect(expired, 1);
-      expect(session.currentUser, isNull);
-    });
+        expect(meCalls, 1);
+        expect(refreshCalls, 1);
+        expect(storage.tokens, isNull);
+        expect(expired, 1);
+        expect(session.currentUser, isNull);
+      },
+    );
   });
 
   group('controller initialization', () {
@@ -504,26 +694,28 @@ void main() {
 
     tearDown(Get.reset);
 
-    test('signIn saves credentials only and does not fetch current user',
-        () async {
-      final useCases = _FakeUseCases()
-        ..onSignIn = (request) async => AuthSession(
-          username: request.username,
-          displayName: request.username,
-          rememberMe: request.rememberMe,
-        );
-      final controller = AuthController(useCases)
-        ..usernameController.text = 'owner1'
-        ..passwordController.text = 'secret';
+    test(
+      'signIn saves credentials only and does not fetch current user',
+      () async {
+        final useCases = _FakeUseCases()
+          ..onSignIn = (request) async => AuthSession(
+            username: request.username,
+            displayName: request.username,
+            rememberMe: request.rememberMe,
+          );
+        final controller = AuthController(useCases)
+          ..usernameController.text = 'owner1'
+          ..passwordController.text = 'secret';
 
-      final session = await controller.signIn();
+        final session = await controller.signIn();
 
-      expect(session, isNotNull);
-      expect(session!.user, isNull);
-      expect(useCases.fetchCalls, 0);
-      expect(controller.isInitializingSession.value, isFalse);
-      expect(Get.find<SessionController>().isAuthenticated, isFalse);
-    });
+        expect(session, isNotNull);
+        expect(session!.user, isNull);
+        expect(useCases.fetchCalls, 0);
+        expect(controller.isInitializingSession.value, isFalse);
+        expect(Get.find<SessionController>().isAuthenticated, isFalse);
+      },
+    );
 
     test('login failure leaves the session unauthenticated', () async {
       final useCases = _FakeUseCases()
@@ -559,33 +751,38 @@ void main() {
       expect(controller.sessionInitializationError.value, isNull);
     });
 
-    test('duplicate initialization reuses the in-flight /auth/me request',
-        () async {
-      final user = _user();
-      final request = Completer<AuthSession>();
-      final useCases = _FakeUseCases()
-        ..onFetchCurrentUser = () => request.future;
-      final controller = AuthController(useCases);
+    test(
+      'duplicate initialization reuses the in-flight /auth/me request',
+      () async {
+        final user = _user();
+        final request = Completer<AuthSession>();
+        final useCases = _FakeUseCases()
+          ..onFetchCurrentUser = () => request.future;
+        final controller = AuthController(useCases);
 
-      final first = controller.fetchCurrentUser();
-      final second = controller.fetchCurrentUser();
-      expect(useCases.fetchCalls, 1);
+        final first = controller.fetchCurrentUser();
+        final second = controller.fetchCurrentUser();
+        expect(useCases.fetchCalls, 1);
 
-      request.complete(
-        AuthSession(
-          username: user.name,
-          displayName: user.displayName,
-          rememberMe: true,
-          user: user,
-        ),
-      );
+        request.complete(
+          AuthSession(
+            username: user.name,
+            displayName: user.displayName,
+            rememberMe: true,
+            user: user,
+          ),
+        );
 
-      final results = await Future.wait(<Future<AuthSession?>>[first, second]);
+        final results = await Future.wait(<Future<AuthSession?>>[
+          first,
+          second,
+        ]);
 
-      expect(results, hasLength(2));
-      expect(useCases.fetchCalls, 1);
-      expect(Get.find<SessionController>().currentUser, same(user));
-    });
+        expect(results, hasLength(2));
+        expect(useCases.fetchCalls, 1);
+        expect(Get.find<SessionController>().currentUser, same(user));
+      },
+    );
 
     test('logout during /auth/me cannot restore the old session', () async {
       final user = _user();
@@ -611,52 +808,253 @@ void main() {
       expect(controller.isInitializingSession.value, isFalse);
     });
 
-    test('a previous account response cannot overwrite the new account',
-        () async {
-      final firstUser = _user(id: 6, name: 'Owner One');
-      final secondUser = _user(id: 9, name: 'Owner Two');
-      final firstRequest = Completer<AuthSession>();
-      final secondRequest = Completer<AuthSession>();
-      final requests = <Completer<AuthSession>>[firstRequest, secondRequest];
-      final useCases = _FakeUseCases()
-        ..onSignIn = (request) async => AuthSession(
-          username: request.username,
-          displayName: request.username,
-          rememberMe: request.rememberMe,
+    test(
+      'a previous account response cannot overwrite the new account',
+      () async {
+        final firstUser = _user(id: 6, name: 'Owner One');
+        final secondUser = _user(id: 9, name: 'Owner Two');
+        final firstRequest = Completer<AuthSession>();
+        final secondRequest = Completer<AuthSession>();
+        final requests = <Completer<AuthSession>>[firstRequest, secondRequest];
+        final useCases = _FakeUseCases()
+          ..onSignIn = (request) async => AuthSession(
+            username: request.username,
+            displayName: request.username,
+            rememberMe: request.rememberMe,
+          );
+        useCases.onFetchCurrentUser = () => requests.removeAt(0).future;
+        final controller = AuthController(useCases);
+
+        controller.usernameController.text = 'owner1';
+        controller.passwordController.text = 'secret';
+        await controller.signIn();
+        final firstPending = controller.fetchCurrentUser();
+
+        controller.usernameController.text = 'owner2';
+        controller.passwordController.text = 'secret';
+        await controller.signIn();
+        final secondPending = controller.fetchCurrentUser();
+
+        secondRequest.complete(
+          AuthSession(
+            username: secondUser.name,
+            displayName: secondUser.displayName,
+            rememberMe: true,
+            user: secondUser,
+          ),
         );
-      useCases.onFetchCurrentUser = () => requests.removeAt(0).future;
+        expect((await secondPending)!.user, same(secondUser));
+
+        firstRequest.complete(
+          AuthSession(
+            username: firstUser.name,
+            displayName: firstUser.displayName,
+            rememberMe: true,
+            user: firstUser,
+          ),
+        );
+        expect(await firstPending, isNull);
+        expect(Get.find<SessionController>().currentUser, same(secondUser));
+      },
+    );
+
+    test('avatar upload refreshes the canonical profile', () async {
+      final user = _user().copyWith(
+        avatarUrl: 'https://api.example.com/web/image/res.users/6/image_1920',
+      );
+      final useCases = _FakeUseCases()
+        ..onFetchCurrentUser = () async => AuthSession(
+          username: user.name,
+          displayName: user.displayName,
+          rememberMe: true,
+          user: user,
+        );
       final controller = AuthController(useCases);
 
-      controller.usernameController.text = 'owner1';
-      controller.passwordController.text = 'secret';
-      await controller.signIn();
-      final firstPending = controller.fetchCurrentUser();
-
-      controller.usernameController.text = 'owner2';
-      controller.passwordController.text = 'secret';
-      await controller.signIn();
-      final secondPending = controller.fetchCurrentUser();
-
-      secondRequest.complete(
-        AuthSession(
-          username: secondUser.name,
-          displayName: secondUser.displayName,
-          rememberMe: true,
-          user: secondUser,
-        ),
+      final uploaded = await controller.uploadAvatar(
+        filePath: '/tmp/avatar.png',
+        filename: 'avatar.png',
+        mimeType: 'image/png',
       );
-      expect((await secondPending)!.user, same(secondUser));
 
-      firstRequest.complete(
-        AuthSession(
-          username: firstUser.name,
-          displayName: firstUser.displayName,
-          rememberMe: true,
-          user: firstUser,
-        ),
+      expect(uploaded, isTrue);
+      expect(controller.isUploadingAvatar.value, isFalse);
+      expect(controller.avatarUploadError.value, isNull);
+      expect(useCases.uploadAvatarCalls, 1);
+      expect(useCases.uploadedFilePath, '/tmp/avatar.png');
+      expect(useCases.uploadedFilename, 'avatar.png');
+      expect(useCases.uploadedMimeType, 'image/png');
+      expect(useCases.fetchCalls, 1);
+      expect(
+        Get.find<SessionController>().currentUser?.avatarUrl,
+        user.avatarUrl,
       );
-      expect(await firstPending, isNull);
-      expect(Get.find<SessionController>().currentUser, same(secondUser));
     });
+
+    test('avatar upload failure keeps the current profile', () async {
+      final useCases = _FakeUseCases()
+        ..onUploadAvatar = (_, _, _) async =>
+            throw const AppException('Upload rejected');
+      final controller = AuthController(useCases);
+
+      final uploaded = await controller.uploadAvatar(
+        filePath: '/tmp/avatar.png',
+        filename: 'avatar.png',
+      );
+
+      expect(uploaded, isFalse);
+      expect(controller.isUploadingAvatar.value, isFalse);
+      expect(controller.avatarUploadError.value, 'Upload rejected');
+      expect(useCases.fetchCalls, 0);
+      expect(Get.find<SessionController>().currentUser, isNull);
+    });
+
+    test(
+      'profile update publishes the merged user to the shared session',
+      () async {
+        final current = _user().copyWith(
+          avatarUrl: 'https://example.com/avatar.png',
+          themeColor: '#123456',
+        );
+        final session = Get.find<SessionController>()..setSession(current);
+        final useCases = _FakeUseCases()
+          ..onUpdateProfile = (user, changes) async => AuthUser.mergeProfile(
+            null,
+            currentUser: user,
+            submitted: changes,
+          );
+        final controller = AuthController(useCases);
+
+        final updated = await controller.updateProfile(
+          name: '  Owner Two  ',
+          email: ' owner2@example.com ',
+          phone: ' 0999999999 ',
+        );
+
+        expect(updated, isTrue);
+        expect(useCases.updateProfileCalls, 1);
+        expect(useCases.updateProfileChanges, <String, Object?>{
+          'name': 'Owner Two',
+          'phone': '0999999999',
+          'email': 'owner2@example.com',
+        });
+        expect(useCases.persistCalls, 1);
+        expect(useCases.persisted?.user, isA<AuthUser>());
+        expect((useCases.persisted?.user! as AuthUser).name, 'Owner Two');
+        expect(session.currentUser?.name, 'Owner Two');
+        expect(session.currentUser?.email, 'owner2@example.com');
+        expect(session.currentUser?.phone, '0999999999');
+        expect(session.currentUser?.avatarUrl, current.avatarUrl);
+        expect(session.currentUser?.themeColor, current.themeColor);
+        expect(controller.isUpdatingProfile.value, isFalse);
+        expect(controller.profileUpdateError.value, isNull);
+      },
+    );
+
+    test('profile update sends only the edited fields', () async {
+      final current = _user();
+      Get.find<SessionController>().setSession(current);
+      final useCases = _FakeUseCases()
+        ..onUpdateProfile = (user, changes) async =>
+            AuthUser.mergeProfile(null, currentUser: user, submitted: changes);
+      final controller = AuthController(useCases);
+
+      final updated = await controller.updateProfile(
+        name: current.name,
+        email: current.email ?? '',
+        phone: '0999999999',
+      );
+
+      expect(updated, isTrue);
+      expect(useCases.updateProfileChanges, <String, Object?>{
+        'phone': '0999999999',
+      });
+    });
+
+    test(
+      'duplicate profile updates are ignored while one is in flight',
+      () async {
+        final current = _user();
+        Get.find<SessionController>().setSession(current);
+        final request = Completer<AuthUser>();
+        final useCases = _FakeUseCases()
+          ..onUpdateProfile = (_, _) => request.future;
+        final controller = AuthController(useCases);
+
+        final first = controller.updateProfile(
+          name: 'Owner Two',
+          email: current.email ?? '',
+          phone: current.phone,
+        );
+        final second = await controller.updateProfile(
+          name: 'Owner Three',
+          email: current.email ?? '',
+          phone: current.phone,
+        );
+
+        expect(second, isFalse);
+        expect(useCases.updateProfileCalls, 1);
+
+        request.complete(
+          AuthUser.mergeProfile(
+            null,
+            currentUser: current,
+            submitted: const <String, Object?>{'name': 'Owner Two'},
+          ),
+        );
+        expect(await first, isTrue);
+        expect(Get.find<SessionController>().currentUser?.name, 'Owner Two');
+      },
+    );
+
+    test(
+      'a rejected profile update keeps the current user and reports it',
+      () async {
+        final current = _user();
+        final session = Get.find<SessionController>()..setSession(current);
+        final useCases = _FakeUseCases()
+          ..onUpdateProfile = (_, _) async => throw const ApiException(
+            'Invalid phone',
+            kind: ApiFailureKind.validation,
+            statusCode: 422,
+          );
+        final controller = AuthController(useCases);
+
+        final updated = await controller.updateProfile(
+          name: 'Owner Two',
+          email: 'owner2@example.com',
+          phone: 'not-a-phone',
+        );
+
+        expect(updated, isFalse);
+        expect(useCases.persistCalls, 0);
+        expect(controller.profileUpdateError.value, 'profileUpdateInvalid');
+        expect(controller.isUpdatingProfile.value, isFalse);
+        expect(session.currentUser, same(current));
+      },
+    );
+
+    test(
+      'a profile refresh failure does not undo an accepted upload',
+      () async {
+        final useCases = _FakeUseCases()
+          ..onFetchCurrentUser = () async => throw const ApiException(
+            'No connection.',
+            kind: ApiFailureKind.network,
+          );
+        final controller = AuthController(useCases);
+
+        final uploaded = await controller.uploadAvatar(
+          filePath: '/tmp/avatar.png',
+          filename: 'avatar.png',
+        );
+
+        expect(uploaded, isTrue);
+        expect(controller.avatarUploadError.value, isNull);
+        expect(useCases.uploadAvatarCalls, 1);
+        expect(useCases.fetchCalls, 1);
+        expect(controller.sessionInitializationError.value, 'No connection.');
+      },
+    );
   });
 }
