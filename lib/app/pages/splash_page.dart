@@ -108,6 +108,11 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   /// A transient failure keeps the splash visible with a retry action instead of
   /// sending the resident to sign in: their tokens were never proven invalid.
   void _finishRestore(AuthSession? restored) {
+    // The splash may have been replaced while a restore was settling; its old
+    // result must not navigate the new flow.
+    if (!mounted || Get.currentRoute != AppRoutes.splash) {
+      return;
+    }
     if (restored == null) {
       Get.offNamed(AppRoutes.login);
       return;

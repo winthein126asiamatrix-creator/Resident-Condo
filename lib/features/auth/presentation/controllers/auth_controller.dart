@@ -40,6 +40,24 @@ class AuthController extends GetxController {
   /// arrives, rather than flashing it and then bouncing to login.
   final isRestoring = false.obs;
 
+  /// True while `/auth/me` is loading the authenticated profile.
+  ///
+  /// The home shell uses this to keep protected content off screen between
+  /// saving the login tokens and receiving the resident's profile.
+  final isInitializingSession = false.obs;
+
+  /// The reason the current-user request failed, for the home shell's retry UI.
+  ///
+  /// A temporary failure leaves the tokens in place, so retrying does not ask
+  /// the resident for their password again.
+  final sessionInitializationError = RxnString();
+
+  /// Identifies the credential session these controller operations belong to.
+  int _sessionEpoch = 0;
+
+  /// Shares one `/auth/me` call between concurrent initialization callers.
+  Future<AuthSession?>? _currentUserInFlight;
+
   /// A sign-in failure, shown above the form. Distinct from a per field
   /// validation error: this one means the credentials were rejected.
   final errorMessage = RxnString();
@@ -102,6 +120,14 @@ class AuthController extends GetxController {
     invalidField.value = null;
     isSubmitting.value = true;
     errorMessage.value = null;
+    // A new credential session invalidates any profile request or restore still
+    // in flight for the previous account.
+    _sessionEpoch++;
+    _currentUserInFlight = null;
+    isInitializingSession.value = false;
+    sessionInitializationError.value = null;
+    isUnverified.value = false;
+    isRestoring.value = false;
     // A new sign-in must never inherit the previous account's in-memory user,
     // even if the login screen was reached without going through sign-out.
     if (Get.isRegistered<SessionController>()) {
@@ -118,7 +144,8 @@ class AuthController extends GetxController {
       final remembered = session.copyWith(rememberMe: rememberMe.value);
       await useCases.persistSession(remembered);
       passwordController.clear();
-      await adoptIntoSession(remembered);
+      // Login is complete once the tokens are saved. The authenticated profile
+      // is loaded separately by fetchCurrentUser.
       return remembered;
     } on AppException catch (error) {
       errorMessage.value = error.message;
@@ -129,6 +156,91 @@ class AuthController extends GetxController {
     } finally {
       isSubmitting.value = false;
     }
+  }
+
+  /// Loads `/auth/me` and publishes the complete user to the shared session.
+  ///
+  /// This is deliberately separate from [signIn]: credentials are already
+  /// authenticated by the time this runs, and a temporary profile failure must
+  /// not send the resident back to the login form.
+  Future<AuthSession?> fetchCurrentUser({bool force = false}) {
+    final inFlight = _currentUserInFlight;
+    if (inFlight != null) {
+      return inFlight;
+    }
+    if (!force) {
+      final currentUser = _sessionUser;
+      if (currentUser != null) {
+        // A valid session is already established; there is nothing to fetch.
+        return Future<AuthSession?>.value(
+          AuthSession(
+            username: currentUser.name,
+            displayName: currentUser.displayName,
+            rememberMe: rememberMe.value,
+            user: currentUser,
+          ),
+        );
+      }
+    }
+
+    final epoch = _sessionEpoch;
+    final future = _fetchCurrentUser(epoch);
+    late final Future<AuthSession?> tracked;
+    tracked = future.whenComplete(() {
+      if (identical(_currentUserInFlight, tracked)) {
+        _currentUserInFlight = null;
+      }
+    });
+    _currentUserInFlight = tracked;
+    return tracked;
+  }
+
+  Future<AuthSession?> _fetchCurrentUser(int epoch) async {
+    isInitializingSession.value = true;
+    sessionInitializationError.value = null;
+    try {
+      final session = await useCases.fetchCurrentUser();
+      if (epoch != _sessionEpoch) {
+        return null;
+      }
+      final remembered = session.copyWith(rememberMe: rememberMe.value);
+      await useCases.persistSession(remembered);
+      if (epoch != _sessionEpoch) {
+        return null;
+      }
+      await adoptIntoSession(remembered);
+      if (epoch != _sessionEpoch) {
+        return null;
+      }
+      isUnverified.value = false;
+      return remembered;
+    } on AppException catch (error) {
+      if (epoch != _sessionEpoch) {
+        return null;
+      }
+      // Placing the message on the controller keeps the tokens: the resident can
+      // retry without re-entering credentials.
+      sessionInitializationError.value = error.message;
+      return null;
+    } catch (_) {
+      if (epoch != _sessionEpoch) {
+        return null;
+      }
+      sessionInitializationError.value =
+          'We could not load your profile. Please try again.';
+      return null;
+    } finally {
+      if (epoch == _sessionEpoch) {
+        isInitializingSession.value = false;
+      }
+    }
+  }
+
+  AuthUser? get _sessionUser {
+    if (!Get.isRegistered<SessionController>()) {
+      return null;
+    }
+    return Get.find<SessionController>().currentUser;
   }
 
   /// Changes the password without disturbing the current session.
@@ -145,7 +257,7 @@ class AuthController extends GetxController {
     }
     isChangingPassword.value = true;
     changePasswordError.value = null;
-    superPrint(currentPassword,title: "Hello W");
+    superPrint(currentPassword, title: "Hello W");
     try {
       await useCases.changePassword(
         oldPassword: currentPassword,
@@ -165,6 +277,14 @@ class AuthController extends GetxController {
   }
 
   Future<void> signOut() async {
+    // Invalidate any /auth/me request still in flight. Its response may arrive
+    // later, but it now belongs to the session that has just ended.
+    _sessionEpoch++;
+    _currentUserInFlight = null;
+    isInitializingSession.value = false;
+    sessionInitializationError.value = null;
+    isUnverified.value = false;
+    isRestoring.value = false;
     await _releaseDevice();
     try {
       await useCases.signOut();
@@ -205,9 +325,15 @@ class AuthController extends GetxController {
   final isUnverified = false.obs;
 
   Future<AuthSession?> restoreSession() async {
+    final epoch = _sessionEpoch;
     isRestoring.value = true;
     try {
       final restored = await useCases.restoreSession();
+      // A login or logout started while the restore was in flight owns the
+      // session now; the stale result must not change it.
+      if (epoch != _sessionEpoch) {
+        return null;
+      }
       isUnverified.value = restored?.unverified ?? false;
       if (restored != null) {
         rememberedUsername = restored.username;
@@ -221,19 +347,27 @@ class AuthController extends GetxController {
       }
       return restored;
     } finally {
-      isRestoring.value = false;
+      if (epoch == _sessionEpoch) {
+        isRestoring.value = false;
+      }
     }
   }
 
   Future<void> revalidateSession() async {
+    final epoch = _sessionEpoch;
     final restored = await useCases.restoreSession();
+    if (epoch != _sessionEpoch) {
+      return;
+    }
     if (restored == null) {
       if (Get.isRegistered<SessionController>()) {
         Get.find<SessionController>().clearSession();
       }
       isUnverified.value = false;
       await _resetAppearance();
-      Get.offAllNamed(AppRoutes.login);
+      if (Get.currentRoute != AppRoutes.login) {
+        Get.offAllNamed(AppRoutes.login);
+      }
       return;
     }
     isUnverified.value = restored.unverified;
@@ -256,7 +390,9 @@ class AuthController extends GetxController {
       final controller = Get.find<SessionController>();
       if (verifiedUser != null) {
         controller.setSession(verifiedUser);
-      } else {
+      } else if (!session.unverified) {
+        // A transient restore is not proof that the current session is invalid.
+        // Only a confirmed absence of a user may clear it.
         controller.clearSession();
       }
     }

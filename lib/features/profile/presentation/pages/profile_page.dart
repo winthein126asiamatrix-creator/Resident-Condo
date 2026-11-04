@@ -103,11 +103,11 @@ class ProfilePage extends GetView<ProfileController> {
               children: [
                 const _PageHeader(),
                 AppSpacing.sectionGap.heightBox(),
-                // _ProfileHero(
-                //   user: user,
-                //   unitLabel: controller.unitLabel,
-                //   onEdit: () => _editProfile(context, user),
-                // ),
+                _ProfileHero(
+                  user: user,
+                  unitLabel: controller.unitLabel,
+                  onEdit: () => _editProfile(context, user),
+                ),
                 AppSpacing.sectionGap.heightBox(),
                 _SectionCard(
                   icon: Icons.badge_outlined,
@@ -575,12 +575,12 @@ class _ProfileHero extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 31,
                   backgroundColor: tokens.brandOnDark,
-                  // foregroundImage: user.avatarUrl == null
-                  //     ? null
-                  //     : NetworkImage(user.avatarUrl!),
-                  // onForegroundImageError: user.avatarUrl == null
-                  //     ? null
-                  //     : (_, _) {},
+                  foregroundImage: user.avatarUrl == null
+                      ? null
+                      : NetworkImage(user.avatarUrl!),
+                  onForegroundImageError: user.avatarUrl == null
+                      ? null
+                      : (_, _) {},
                   child: Text(
                     user.initials,
                     style: TextStyle(

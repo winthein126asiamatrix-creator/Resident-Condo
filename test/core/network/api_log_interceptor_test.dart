@@ -47,44 +47,69 @@ void main() {
     interceptor = ApiLogInterceptor(enabled: true, store: store);
   });
 
-  test('pairs a request with its success response and redacts both', () async {
+  test(
+    'pairs a request with its success response and keeps the request body',
+    () async {
+      final options = _options(
+        query: <String, dynamic>{'access_token': 'query-secret', 'page': '1'},
+        headers: <String, dynamic>{
+          'Authorization': 'Bearer header-secret',
+          'Content-Type': 'application/json',
+        },
+        data: <String, dynamic>{'name': 'A', 'password': 'body-secret'},
+      );
+
+      _request(interceptor, options);
+
+      final pending = store.logs.single;
+      expect(pending.isPending, isTrue);
+      expect(pending.queryParameters['access_token'], ApiLogRedactor.mask);
+      expect(pending.url, isNot(contains('query-secret')));
+      expect(pending.requestHeaders['Authorization'], ApiLogRedactor.mask);
+      expect(
+        (pending.requestBody as Map<String, Object?>)['password'],
+        'body-secret',
+      );
+
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      _response(
+        interceptor,
+        options,
+        data: <String, dynamic>{'ok': true, 'refresh_token': 'response-secret'},
+      );
+
+      final completed = store.logs.single;
+      expect(completed.id, pending.id);
+      expect(completed.isSuccess, isTrue);
+      expect(completed.statusCode, 200);
+      expect(completed.durationMs, greaterThanOrEqualTo(10));
+      expect(
+        (completed.responseBody as Map<String, Object?>)['refresh_token'],
+        ApiLogRedactor.mask,
+      );
+    },
+  );
+
+  test('request body keeps nested and string values', () {
     final options = _options(
-      query: <String, dynamic>{'access_token': 'query-secret', 'page': '1'},
-      headers: <String, dynamic>{
-        'Authorization': 'Bearer header-secret',
-        'Content-Type': 'application/json',
+      method: 'POST',
+      data: <String, dynamic>{
+        'user': <String, dynamic>{
+          'password': 'nested-secret',
+          'refresh_token': 'nested-token',
+        },
+        'raw': '{"password":"text-secret","access_token":"text-token"}',
       },
-      data: <String, dynamic>{'name': 'A', 'password': 'body-secret'},
     );
 
     _request(interceptor, options);
 
-    final pending = store.logs.single;
-    expect(pending.isPending, isTrue);
-    expect(pending.queryParameters['access_token'], ApiLogRedactor.mask);
-    expect(pending.url, isNot(contains('query-secret')));
-    expect(pending.requestHeaders['Authorization'], ApiLogRedactor.mask);
-    expect(
-      (pending.requestBody as Map<String, Object?>)['password'],
-      ApiLogRedactor.mask,
-    );
-
-    await Future<void>.delayed(const Duration(milliseconds: 20));
-    _response(
-      interceptor,
-      options,
-      data: <String, dynamic>{'ok': true, 'refresh_token': 'response-secret'},
-    );
-
-    final completed = store.logs.single;
-    expect(completed.id, pending.id);
-    expect(completed.isSuccess, isTrue);
-    expect(completed.statusCode, 200);
-    expect(completed.durationMs, greaterThanOrEqualTo(10));
-    expect(
-      (completed.responseBody as Map<String, Object?>)['refresh_token'],
-      ApiLogRedactor.mask,
-    );
+    final body = store.logs.single.requestBody as Map<String, Object?>;
+    final user = body['user'] as Map<String, Object?>;
+    expect(user['password'], 'nested-secret');
+    expect(user['refresh_token'], 'nested-token');
+    expect(body['raw'], contains('text-secret'));
+    expect(body['raw'], contains('text-token'));
   });
 
   test('classifies a non-2xx response as failed', () {

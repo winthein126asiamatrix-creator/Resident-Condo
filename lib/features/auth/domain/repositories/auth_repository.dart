@@ -5,15 +5,24 @@ import '../entities/auth_session.dart';
 abstract interface class AuthRepository {
   /// Verifies [request] against the backend and stores the returned tokens.
   ///
+  /// This is credential authentication only. The returned session proves the
+  /// tokens were saved but carries no [AuthUser]; call [fetchCurrentUser] to
+  /// load the resident's profile.
+  ///
   /// Throws an [AppException] with a resident-readable message when the
   /// credentials are wrong, so the screen never has to interpret a failure
   /// shape of its own.
   Future<AuthSession> signIn(SignInRequest request);
 
+  /// Loads the signed-in resident from `/auth/me`.
+  ///
+  /// Throws when the profile cannot be loaded. Temporary failures leave the
+  /// stored tokens untouched so the caller can retry.
+  Future<AuthSession> fetchCurrentUser();
+
   /// The signed-in resident, validated against the backend.
   ///
-  /// Throws when the session cannot be recovered, including when the stored
-  /// tokens are absent or have expired past refreshing.
+  /// Kept as an alias of [fetchCurrentUser] for existing callers.
   Future<AuthSession> updateMe();
 
   /// Changes the signed-in resident's password.

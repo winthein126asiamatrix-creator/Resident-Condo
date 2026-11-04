@@ -101,7 +101,7 @@ class AuthUser {
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,
     'name': name,
-    'email': email ?? false,
+    'email': email,
     'phone': phone,
     'avatar_url': avatarUrl,
     'unit': unit?.toJson(),
@@ -151,6 +151,7 @@ class AuthUser {
   String toString() =>
       'AuthUser(id: $id, name: $name, role: $role, unit: ${unit?.label})';
 }
+
 
 class AuthUnit {
   const AuthUnit({

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -120,7 +122,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _submit() async {
-
     FocusScope.of(context).unfocus();
 
     // Runs the field validators, which is what actually paints the inline
@@ -137,10 +138,7 @@ class _LoginPageState extends State<LoginPage> {
       final field =
           _auth.invalidField.value ??
           _auth
-              .validate(
-                username: _username.text,
-                password: _password.text,
-              )
+              .validate(username: _username.text, password: _password.text)
               ?.field;
       if (field == 'username') {
         _usernameFocus.requestFocus();
@@ -149,6 +147,10 @@ class _LoginPageState extends State<LoginPage> {
       }
       return;
     }
+    // Credentials are authenticated and the tokens are saved. Enter the
+    // authenticated flow now, and let the home shell show its loading state
+    // until the separate `/auth/me` request publishes the resident.
+    unawaited(_auth.fetchCurrentUser());
     (widget.onSignedIn ?? () => Get.offAllNamed(AppRoutes.home))();
   }
 }

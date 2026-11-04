@@ -128,7 +128,7 @@ void main() {
       expect(
         (refreshLogs.single.requestBody
             as Map<String, Object?>)['refresh_token'],
-        '***',
+        'refresh-old',
       );
     },
   );

@@ -1,13 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/network/connectivity_service.dart';
+import '../../../../core/widgets/app_bottom_nav_bar.dart';
+import '../../../../core/widgets/app_state_message.dart';
+import '../../../../core/widgets/branded_loading_view.dart';
+import '../../../../core/widgets/offline_banner.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../facilities/presentation/pages/facilities_page.dart';
 import '../../../maintenance/presentation/pages/maintenance_page.dart';
 import '../../../payments/presentation/pages/payments_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
-import '../../../../core/network/connectivity_service.dart';
-import '../../../../core/widgets/app_bottom_nav_bar.dart';
-import '../../../../core/widgets/offline_banner.dart';
+import '../../../session/presentation/controllers/session_controller.dart';
 import 'dashboard_page.dart';
 import '../controllers/dashboard_controller.dart';
 
@@ -89,7 +95,18 @@ class _MainShellPageState extends State<MainShellPage> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = Get.isRegistered<AuthController>()
+        ? Get.find<AuthController>()
+        : null;
     return Obx(() {
+      final session = Get.isRegistered<SessionController>()
+          ? Get.find<SessionController>().session.value
+          : null;
+      if (session == null) {
+        // Login has saved the tokens, but the complete AuthUser from `/auth/me`
+        // has not arrived yet. Keep every protected screen off stage.
+        return _buildSessionInitialization(auth);
+      }
       // Read once, so the whole shell rebuilds on a change. This is the same
       // ConnectivityService observable the banner already uses; no second
       // controller, Rx variable or listener is introduced.
@@ -165,5 +182,27 @@ class _MainShellPageState extends State<MainShellPage> {
         ),
       );
     });
+  }
+
+  Widget _buildSessionInitialization(AuthController? auth) {
+    final error = auth?.sessionInitializationError.value;
+    if (error == null) {
+      return const Scaffold(
+        body: BrandedLoadingView(message: 'Preparing your residence...'),
+      );
+    }
+    return Scaffold(
+      body: SafeArea(
+        child: AppStateMessage(
+          title: 'Unable to load your profile',
+          message: error,
+          icon: Icons.person_off_outlined,
+          actionLabel: 'Try again',
+          onAction: auth == null
+              ? null
+              : () => unawaited(auth.fetchCurrentUser(force: true)),
+        ),
+      ),
+    );
   }
 }

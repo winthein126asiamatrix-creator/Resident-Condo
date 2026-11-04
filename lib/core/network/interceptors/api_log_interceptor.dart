@@ -220,7 +220,9 @@ class ApiLogInterceptor extends Interceptor {
       endpoint: uri.path.isEmpty ? '/' : uri.path,
       queryParameters: safeQuery,
       requestHeaders: ApiLogRedactor.redactHeaders(options.headers),
-      requestBody: ApiLogRedactor.value(options.data),
+      // Show the payload exactly as sent. This is the dev-only request log;
+      // headers, query parameters and response bodies stay redacted.
+      requestBody: ApiLogRedactor.value(options.data, redact: false),
       requestTimestamp: trace.requestTimestamp,
       requestContentType: contentType?.toString(),
       requestSize: ApiLogRedactor.sizeOf(options.data),

@@ -9,6 +9,8 @@ class AuthUseCases {
   Future<AuthSession> signIn(SignInRequest request) =>
       repository.signIn(request);
 
+  Future<AuthSession> fetchCurrentUser() => repository.fetchCurrentUser();
+
   Future<AuthSession> updateMe() => repository.updateMe();
 
   Future<void> changePassword({

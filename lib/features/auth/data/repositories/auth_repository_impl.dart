@@ -25,9 +25,18 @@ class AuthRepositoryImpl implements AuthRepository {
   final TokenStorage _tokens;
   final ApiCacheStore? _cache;
 
-  /// Prevents concurrent duplicate /auth/me calls when the same flow
-  /// (sign-in or restore) triggers it more than once.
-  Future<AuthSession>? _updateMeInFlight;
+  /// Identifies the current credential session.
+  ///
+  /// A login or logout starts a new generation. Work started for an older
+  /// generation can finish later, but it must not be reused by, or written into,
+  /// the new session.
+  int _sessionEpoch = 0;
+
+  /// Prevents concurrent duplicate /auth/me calls in the same session.
+  Future<AuthSession>? _currentUserInFlight;
+
+  /// The generation [_currentUserInFlight] belongs to.
+  int _currentUserEpoch = -1;
 
   /// The registered store when it is the switchable one, null otherwise.
   ///
@@ -36,8 +45,17 @@ class AuthRepositoryImpl implements AuthRepository {
   SessionTokenStorage? get _switchable =>
       _tokens is SessionTokenStorage ? _tokens : null;
 
+  void _startNewSession() {
+    _sessionEpoch++;
+    _currentUserInFlight = null;
+    _currentUserEpoch = -1;
+  }
+
   @override
   Future<AuthSession> signIn(SignInRequest request) async {
+    // A credential attempt belongs to a new session; any profile request from
+    // the previous one is now stale and must not be shared with it.
+    _startNewSession();
     // A new session must not inherit profile data from the previous account.
     await _cache?.clearAll();
     final result = await _remote.signIn(request);
@@ -48,47 +66,55 @@ class AuthRepositoryImpl implements AuthRepository {
     // anything logged here would describe a live session.
     await _tokens.writeTokens(result.tokens);
 
-    // Synchronize the authenticated user's latest profile and resident/unit
-    // information with the backend and Drift (cache DB). Do not treat the
-    // login response as fully authenticated until this succeeds.
-    try {
-      final session = await updateMe();
-      return session.copyWith(rememberMe: request.rememberMe);
-    } catch (_) {
-      // The session is not fully established until /auth/me succeeds.
-      // The tokens are kept so a temporary failure can be retried on
-      // restart, but the controller will not navigate to the dashboard.
-      rethrow;
-    }
+    // Login proves the credentials and establishes the token pair. It does not
+    // describe the resident: the complete AuthUser comes from fetchCurrentUser.
+    return AuthSession(
+      username: request.username,
+      displayName: request.username,
+      rememberMe: request.rememberMe,
+    );
   }
 
   @override
-  Future<AuthSession> updateMe() async {
-    if (_updateMeInFlight != null) {
-      return await _updateMeInFlight!;
+  Future<AuthSession> fetchCurrentUser() {
+    final epoch = _sessionEpoch;
+    final inFlight = _currentUserInFlight;
+    if (inFlight != null && _currentUserEpoch == epoch) {
+      return inFlight;
     }
-    _updateMeInFlight = _updateMeImpl();
-    try {
-      return await _updateMeInFlight!;
-    } finally {
-      _updateMeInFlight = null;
-    }
+
+    final future = _fetchCurrentUser(epoch);
+    late final Future<AuthSession> tracked;
+    tracked = future.whenComplete(() {
+      if (identical(_currentUserInFlight, tracked)) {
+        _currentUserInFlight = null;
+        _currentUserEpoch = -1;
+      }
+    });
+    _currentUserInFlight = tracked;
+    _currentUserEpoch = epoch;
+    return tracked;
   }
 
-  Future<AuthSession> _updateMeImpl() async {
+  @override
+  Future<AuthSession> updateMe() => fetchCurrentUser();
+
+  Future<AuthSession> _fetchCurrentUser(int epoch) async {
     // `/auth/me` is the only source of an authenticated profile. A cached copy
     // is written for other features, but it is never read back here to stand in
     // for a successful validation.
     final user = await _remote.updateMe();
-    try {
-      await _cache?.save(
-        key: 'auth.me',
-        accountKey: user.id.toString(),
-        payload: user.toJson(),
-      );
-    } on Object {
-      // Caching is a local convenience and must not turn a successful API
-      // request into a failure.
+    if (epoch == _sessionEpoch) {
+      try {
+        await _cache?.save(
+          key: 'auth.me',
+          accountKey: user.id.toString(),
+          payload: user.toJson(),
+        );
+      } on Object {
+        // Caching is a local convenience and must not turn a successful API
+        // request into a failure.
+      }
     }
     return AuthSession(
       username: user.name,
@@ -109,6 +135,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> signOut() async {
+    // A late /auth/me response from the session being ended must never be
+    // adopted into the next one.
+    _startNewSession();
     final tokens = await _tokens.readTokens();
     if (tokens != null && tokens.refreshToken.isNotEmpty) {
       try {
@@ -130,7 +159,11 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<AuthSession?> restoreSession() async {
+    final epoch = _sessionEpoch;
     final tokens = await _tokens.readTokens();
+    if (epoch != _sessionEpoch) {
+      return null;
+    }
 
     if (tokens == null) {
       // No tokens at all: there is nothing to validate and no reason to spend a
@@ -143,10 +176,16 @@ class AuthRepositoryImpl implements AuthRepository {
       // Validates the session. If the access token has expired, the refresh
       // interceptor renews it and replays this request before it returns, so an
       // expiry is invisible here and only a genuine failure surfaces.
-      final session = await updateMe();
+      final session = await fetchCurrentUser();
+      if (epoch != _sessionEpoch) {
+        return null;
+      }
       await _local.persistSession(session);
       return session;
     } on AppException catch (error) {
+      if (epoch != _sessionEpoch) {
+        return null;
+      }
       // A network-level failure, timeout, or server error says nothing about the
       // tokens: the resident must not be signed out because the backend is
       // temporarily unreachable. The tokens are kept and only the non-sensitive
@@ -158,9 +197,9 @@ class AuthRepositoryImpl implements AuthRepository {
           error is ApiException &&
           (error.isRetryable || error.kind == ApiFailureKind.server);
       if (transient) {
-        return _restoreFromStorage();
+        return _restoreFromStorage(epoch);
       }
-      return await _endSession();
+      return await _endSession(epoch);
     }
   }
 
@@ -170,8 +209,11 @@ class AuthRepositoryImpl implements AuthRepository {
   /// [AuthUser], deliberately: remembered details can explain the state to the
   /// resident, but they are not proof of authentication and must not populate
   /// the shared session.
-  Future<AuthSession> _restoreFromStorage() async {
+  Future<AuthSession?> _restoreFromStorage(int epoch) async {
     final remembered = await _local.restoreSession();
+    if (epoch != _sessionEpoch) {
+      return null;
+    }
     if (remembered != null) {
       return remembered.copyWith(unverified: true);
     }
@@ -186,7 +228,10 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   /// Clears everything and reports no session, for a genuine rejection.
-  Future<AuthSession?> _endSession() async {
+  Future<AuthSession?> _endSession(int epoch) async {
+    if (epoch != _sessionEpoch) {
+      return null;
+    }
     await signOut();
     return null;
   }

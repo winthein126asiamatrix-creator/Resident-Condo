@@ -134,11 +134,15 @@ abstract final class ApiLogRedactor {
     return safe;
   }
 
-  /// Returns a bounded, redacted copy of [input] suitable for storage.
-  static Object? value(Object? input) =>
-      _value(input, 0, _Budget(maxBodyCharacters));
+  /// Returns a bounded copy of [input] suitable for storage.
+  ///
+  /// Sensitive fields are masked when [redact] is true. Request bodies pass
+  /// `redact: false` so the dev log shows the payload that was actually sent;
+  /// headers, query parameters and response bodies stay redacted.
+  static Object? value(Object? input, {bool redact = true}) =>
+      _value(input, 0, _Budget(maxBodyCharacters), redact);
 
-  static Object? _value(Object? input, int depth, _Budget budget) {
+  static Object? _value(Object? input, int depth, _Budget budget, bool redact) {
     if (budget.exhausted) {
       return '<truncated: log size limit>';
     }
@@ -149,7 +153,7 @@ abstract final class ApiLogRedactor {
       return '<truncated: nesting limit>';
     }
     if (input is String) {
-      return budget.take(truncateText(input));
+      return budget.take(truncateText(input, redact: redact));
     }
     if (input is Uint8List || input is ByteBuffer) {
       return budget.take(
@@ -160,7 +164,7 @@ abstract final class ApiLogRedactor {
       return budget.take('<binary ${input.length} bytes>');
     }
     if (input is FormData) {
-      return _formData(input, budget);
+      return _formData(input, budget, redact);
     }
     if (input is MultipartFile) {
       return _multipartFile(input);
@@ -178,9 +182,9 @@ abstract final class ApiLogRedactor {
           break;
         }
         final key = '${entry.key}';
-        safe[key] = isSensitiveKey(key)
+        safe[key] = redact && isSensitiveKey(key)
             ? mask
-            : _value(entry.value, depth + 1, budget);
+            : _value(entry.value, depth + 1, budget, redact);
       }
       return safe;
     }
@@ -196,7 +200,7 @@ abstract final class ApiLogRedactor {
           safe.add('<truncated: more than $maxEntries items>');
           break;
         }
-        safe.add(_value(item, depth + 1, budget));
+        safe.add(_value(item, depth + 1, budget, redact));
       }
       return safe;
     }
@@ -206,19 +210,23 @@ abstract final class ApiLogRedactor {
     if (input is Stream) {
       return '<stream>';
     }
-    return budget.take(truncateText(input.toString()));
+    return budget.take(truncateText(input.toString(), redact: redact));
   }
 
-  static Map<String, Object?> _formData(FormData data, _Budget budget) {
+  static Map<String, Object?> _formData(
+    FormData data,
+    _Budget budget,
+    bool redact,
+  ) {
     final fields = <String, Object?>{};
     for (final field in data.fields) {
       if (budget.exhausted) {
         fields['<truncated>'] = '<size limit>';
         break;
       }
-      fields[field.key] = isSensitiveKey(field.key)
+      fields[field.key] = redact && isSensitiveKey(field.key)
           ? mask
-          : budget.take(truncateText(field.value));
+          : budget.take(truncateText(field.value, redact: redact));
     }
     return <String, Object?>{
       'type': 'multipart/form-data',
@@ -242,10 +250,12 @@ abstract final class ApiLogRedactor {
     return '$value';
   }
 
-  static String truncateText(String text) {
-    final safe = text
-        .replaceAll(_bearer, r'$1 ***')
-        .replaceAll(_sensitiveText, r'$1***');
+  static String truncateText(String text, {bool redact = true}) {
+    final safe = redact
+        ? text
+              .replaceAll(_bearer, r'$1 ***')
+              .replaceAll(_sensitiveText, r'$1***')
+        : text;
     if (safe.length <= maxStringLength) {
       return safe;
     }

@@ -10,7 +10,7 @@ import '../../../../core/network/token_storage.dart';
 import '../../domain/entities/auth_session.dart';
 import '../models/auth_user.dart';
 
-/// What a sign-in returned: who signed in, and the tokens that prove it.
+/// What a sign-in returned: the tokens that prove the credentials.
 class AuthResult {
   const AuthResult({required this.tokens});
 
@@ -27,7 +27,7 @@ class AuthRemoteDataSource {
 
   final DioApiService _service;
 
-  /// Signs in and returns the resident plus their token pair.
+  /// Signs in and returns the token pair.
   ///
   /// `withoutAuth` matters here: a stale token from an expired session must not
   /// be sent to the sign-in endpoint, and it also stops a rejected password
@@ -62,8 +62,11 @@ class AuthRemoteDataSource {
       );
       superPrint(response.toJson(), title: "Update Me");
       return response;
-    } on ApiException catch (error) {
-      throw _translate(error);
+    } on ApiException {
+      // Unlike sign-in, a rejected profile request is not a credential problem.
+      // Re-throw it unchanged so the caller keeps the retryable / unauthorized
+      // distinction the network layer already made.
+      rethrow;
     }
   }
 
