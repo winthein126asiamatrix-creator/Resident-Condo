@@ -9,6 +9,11 @@ abstract final class ApiEndPoints {
   /// and email.
   static const String me = '/me';
 
+  /// The signed-in resident's appearance and notification preferences.
+  ///
+  /// A partial update: each request carries only the field being changed.
+  static const String preferences = '$me/preferences';
+
   static const String avatar = '$me/avatar';
 
   static const String refreshToken = '/auth/refresh';

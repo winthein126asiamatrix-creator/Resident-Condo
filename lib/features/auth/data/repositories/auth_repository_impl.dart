@@ -3,6 +3,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/session_token_storage.dart';
 import '../../../../core/network/token_storage.dart';
+import '../../../../core/network/user_preferences_remote_data_source.dart';
 import '../../domain/entities/auth_session.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_local_data_source.dart';
@@ -15,15 +16,18 @@ class AuthRepositoryImpl implements AuthRepository {
     required AuthLocalDataSource localDataSource,
     required TokenStorage tokenStorage,
     ApiCacheStore? cacheStore,
+    UserPreferencesRemoteDataSource? preferencesRemote,
   }) : _remote = remoteDataSource,
        _local = localDataSource,
        _tokens = tokenStorage,
-       _cache = cacheStore;
+       _cache = cacheStore,
+       _preferences = preferencesRemote;
 
   final AuthRemoteDataSource _remote;
   final AuthLocalDataSource _local;
   final TokenStorage _tokens;
   final ApiCacheStore? _cache;
+  final UserPreferencesRemoteDataSource? _preferences;
 
   /// Identifies the current credential session.
   ///
@@ -104,13 +108,39 @@ class AuthRepositoryImpl implements AuthRepository {
     // is written for other features, but it is never read back here to stand in
     // for a successful validation.
     final user = await _remote.updateMe();
-    await _cacheUser(user, epoch);
+    final mergedUser = await _mergePreferences(user, epoch);
+    await _cacheUser(mergedUser, epoch);
     return AuthSession(
-      username: user.name,
-      displayName: user.displayName,
+      username: mergedUser.name,
+      displayName: mergedUser.displayName,
       rememberMe: true,
-      user: user,
+      user: mergedUser,
     );
+  }
+
+  /// Applies the separate preferences endpoint to a successful `/auth/me`.
+  ///
+  /// Preferences are a convenience, never an authentication requirement: a
+  /// failed or malformed response leaves the profile exactly as `/auth/me`
+  /// described it.
+  Future<AuthUser> _mergePreferences(AuthUser user, int epoch) async {
+    final remote = _preferences;
+    if (remote == null) {
+      return user;
+    }
+    try {
+      final preferences = await remote.fetchPreferences();
+      if (epoch != _sessionEpoch) {
+        return user;
+      }
+      return AuthUser.mergeProfile(
+        preferences,
+        currentUser: user,
+        submitted: const <String, Object?>{},
+      );
+    } catch (_) {
+      return user;
+    }
   }
 
   Future<void> _cacheUser(AuthUser user, int epoch) async {

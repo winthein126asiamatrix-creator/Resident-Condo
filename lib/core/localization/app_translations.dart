@@ -53,6 +53,10 @@ class AppTranslations extends Translations {
       'details': 'Details',
       'noInternet': 'No internet connection',
       'themeApplied': 'Theme applied',
+      'themeColorUpdateFailed':
+          'Could not save your theme color. Please try again.',
+      'notificationPreferenceUpdateFailed':
+          'Could not update notification preferences. Please try again.',
       'languageUpdated': 'Language updated',
       'preferences': 'Preferences',
       'languageTestTitle': 'Language Preview',
@@ -252,6 +256,10 @@ class AppTranslations extends Translations {
       'details': 'အသေးစိတ်',
       'noInternet': 'အင်တာနက်မရှိပါ',
       'themeApplied': 'အသွင်အပြင်ပြောင်းလဲပြီး',
+      'themeColorUpdateFailed':
+          'သင့်အသွင်အပြင်အရောင်ကို မသိမ်းဆည်းနိုင်ပါ။ ထပ်မံကြိုးစားပါ။',
+      'notificationPreferenceUpdateFailed':
+          'အကြောင်းကြားချက်နှစ်သက်မှုကို မပြောင်းလဲနိုင်ပါ။ ထပ်မံကြိုးစားပါ။',
       'languageUpdated': 'ဘာသာစကားအပ်ဒိတ်လုပ်ပြီး',
       'preferences': 'နှစ်သက်ရွေးချယ်မှုများ',
       'languageTestTitle': 'ဘာသာစကား စမ်းသပ်မှု',
@@ -453,6 +461,8 @@ class AppTranslations extends Translations {
       'details': '详情',
       'noInternet': '无网络连接',
       'themeApplied': '主题已应用',
+      'themeColorUpdateFailed': '无法保存主题颜色，请重试。',
+      'notificationPreferenceUpdateFailed': '无法更新通知偏好，请重试。',
       'languageUpdated': '语言已更新',
       'preferences': '偏好设置',
       'languageTestTitle': '语言预览',

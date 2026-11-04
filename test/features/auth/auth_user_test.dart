@@ -19,6 +19,7 @@ void main() {
       'permissions': <String>['profile.read', 'unit.manage_residents'],
       'unread_notification_count': 3,
       'theme_color': '#3366ff',
+      'notifications_enabled': false,
     });
 
     expect(user.id, 6);
@@ -31,6 +32,39 @@ void main() {
     expect(user.permissions, <String>['profile.read', 'unit.manage_residents']);
     expect(user.unreadNotificationCount, 3);
     expect(user.themeColor, '#3366FF');
+    expect(user.notificationsEnabled, isFalse);
+  });
+
+  test('leaves notifications_enabled null when the backend omits it', () {
+    final user = AuthUser.fromJson(<String, dynamic>{
+      'id': 6,
+      'name': 'Owner One',
+      'phone': '0811111111',
+      'role': 'owner',
+    });
+
+    expect(user.notificationsEnabled, isNull);
+  });
+
+  test('merges notifications_enabled without losing other fields', () {
+    final current = AuthUser(
+      id: 6,
+      name: 'Owner One',
+      phone: '0811111111',
+      role: 'owner',
+      themeColor: '#123456',
+      notificationsEnabled: true,
+    );
+
+    final updated = AuthUser.mergeProfile(
+      <String, dynamic>{'notifications_enabled': false},
+      currentUser: current,
+      submitted: const <String, Object?>{},
+    );
+
+    expect(updated.notificationsEnabled, isFalse);
+    expect(updated.themeColor, '#123456');
+    expect(updated.name, 'Owner One');
   });
 
   test('merges a success-only profile response without losing fields', () {

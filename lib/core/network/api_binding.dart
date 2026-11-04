@@ -8,6 +8,7 @@ import 'dio_api_service.dart';
 import 'secure_token_storage.dart';
 import 'session_token_storage.dart';
 import 'token_storage.dart';
+import 'user_preferences_remote_data_source.dart';
 
 /// Registers the shared network layer.
 ///
@@ -25,6 +26,7 @@ abstract final class ApiBinding extends Bindings {
   /// own before the app boots.
   static void register({TokenStorage? tokenStorage, DioApiService? service}) {
     if (Get.isRegistered<DioApiService>()) {
+      _registerPreferencesRemote();
       return;
     }
     final storage =
@@ -48,6 +50,7 @@ abstract final class ApiBinding extends Bindings {
       service ?? DioApiService(tokenStorage: storage, apiLogStore: logStore),
       permanent: true,
     );
+    _registerPreferencesRemote();
 
     if (!Get.isRegistered<AppCacheDatabase>()) {
       Get.put<AppCacheDatabase>(AppCacheDatabase(), permanent: true);
@@ -58,6 +61,16 @@ abstract final class ApiBinding extends Bindings {
         permanent: true,
       );
     }
+  }
+
+  static void _registerPreferencesRemote() {
+    if (Get.isRegistered<UserPreferencesRemoteDataSource>()) {
+      return;
+    }
+    Get.put<UserPreferencesRemoteDataSource>(
+      UserPreferencesRemoteDataSource(Get.find<DioApiService>()),
+      permanent: true,
+    );
   }
 
   /// Satisfies [Bindings] so the layer can also be attached to a route.

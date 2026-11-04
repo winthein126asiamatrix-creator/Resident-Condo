@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../../../core/network/user_preferences_remote_data_source.dart';
 import '../../data/datasources/appearance_local_data_source.dart';
 import '../../data/repositories/appearance_repository_impl.dart';
 import '../../domain/repositories/appearance_repository.dart';
@@ -19,7 +20,12 @@ class AppearanceBinding extends Bindings {
       return;
     }
     Get.put<AppearanceRepository>(
-      AppearanceRepositoryImpl(AppearanceLocalDataSource()),
+      AppearanceRepositoryImpl(
+        AppearanceLocalDataSource(),
+        preferencesRemote: Get.isRegistered<UserPreferencesRemoteDataSource>()
+            ? Get.find<UserPreferencesRemoteDataSource>()
+            : null,
+      ),
       permanent: true,
     );
     Get.put<AppearanceUseCases>(

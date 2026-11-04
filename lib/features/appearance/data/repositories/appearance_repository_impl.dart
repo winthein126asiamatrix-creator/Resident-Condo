@@ -1,11 +1,16 @@
+import '../../../../core/network/user_preferences_remote_data_source.dart';
 import '../../domain/entities/appearance_preference.dart';
 import '../../domain/repositories/appearance_repository.dart';
 import '../datasources/appearance_local_data_source.dart';
 
 class AppearanceRepositoryImpl implements AppearanceRepository {
-  const AppearanceRepositoryImpl(this.localDataSource);
+  const AppearanceRepositoryImpl(
+    this.localDataSource, {
+    this.preferencesRemote,
+  });
 
   final AppearanceLocalDataSource localDataSource;
+  final UserPreferencesRemoteDataSource? preferencesRemote;
 
   @override
   Future<String?> getActiveAccountId() => localDataSource.getActiveAccountId();
@@ -37,13 +42,20 @@ class AppearanceRepositoryImpl implements AppearanceRepository {
       markPendingSync: markPendingSync,
     );
 
-    // TODO(appearance-api): The backend update endpoint is not ready yet. When
-    // its contract is confirmed, call ApiEndPoints.appearance here with this
-    // preference and clear the pending-sync flag only after the request
-    // succeeds. Do not call it before then: the local write above is what keeps
-    // startup fast, and the backend stays the source of truth for the next
-    // successful /auth/me.
+    // The local write is what keeps startup fast and the UI responsive. The
+    // backend call is made by the controller only when the colour itself
+    // changed, so brightness-only saves never reach /me/preferences.
     return stored;
+  }
+
+  @override
+  Future<void> updateThemeColor(String hexColor) async {
+    final remote = preferencesRemote;
+    if (remote == null) {
+      // No network layer in a local-only test or a pre-ApiBinding context.
+      return;
+    }
+    await remote.updateThemeColor(hexColor);
   }
 
   @override

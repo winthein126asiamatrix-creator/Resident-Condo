@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../../core/errors/app_exception.dart';
+import '../../../../core/network/user_preferences_remote_data_source.dart';
 import '../../../../core/services/photo_picker.dart';
 import '../../../auth/data/models/auth_user.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
@@ -16,11 +20,13 @@ class ProfileController extends GetxController {
     this.sessionController, {
     PhotoPicker? photoPicker,
     this.authController,
+    this.preferencesRemote,
   }) : _photoPicker = photoPicker ?? const DevicePhotoPicker();
 
   final SessionController sessionController;
   final PhotoPicker _photoPicker;
   final AuthController? authController;
+  final UserPreferencesRemoteDataSource? preferencesRemote;
 
   /// The current authenticated user, or null after logout.
   AuthUser? get user => sessionController.currentUser;
@@ -28,8 +34,39 @@ class ProfileController extends GetxController {
   /// The resident's display unit, taken from the same session user.
   String get unitLabel => sessionController.unitLabel;
 
-  /// A local display preference. It is not part of the `/auth/me` payload.
+  /// The resident's notification preference.
+  ///
+  /// Optimistically updated on toggle and synchronised through
+  /// `/me/preferences`. When `/auth/me` carries `notifications_enabled`, that
+  /// value replaces the local one after successful authentication.
   final notificationsEnabled = true.obs;
+
+  /// True while a notification-preference request is in flight.
+  final isSyncingNotifications = false.obs;
+
+  /// The latest notification-preference failure, for the profile page.
+  final notificationPreferenceError = RxnString();
+
+  int _notificationSyncVersion = 0;
+  Future<void> _notificationSyncChain = Future<void>.value();
+  String? _preferenceAccountId;
+  Worker? _sessionWorker;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _applySessionUser();
+    _sessionWorker = ever(
+      sessionController.session,
+      (_) => _applySessionUser(),
+    );
+  }
+
+  @override
+  void onClose() {
+    _sessionWorker?.dispose();
+    super.onClose();
+  }
 
   final errorMessage = RxnString();
 
@@ -129,8 +166,127 @@ class ProfileController extends GetxController {
     return null;
   }
 
-  void toggleNotifications(bool enabled) {
+  /// Applies [enabled] immediately, then persists it through the API.
+  ///
+  /// Returns false only when the latest request failed and the toggle was
+  /// rolled back. A failure that has already been superseded is not surfaced.
+  Future<bool> toggleNotifications(bool enabled) async {
+    if (notificationsEnabled.value == enabled) {
+      return true;
+    }
+
+    final previous = notificationsEnabled.value;
+    final version = ++_notificationSyncVersion;
     notificationsEnabled.value = enabled;
+    notificationPreferenceError.value = null;
+    isSyncingNotifications.value = true;
+    try {
+      return await _syncNotificationPreference(
+        enabled: enabled,
+        version: version,
+        fallback: previous,
+      );
+    } finally {
+      if (version == _notificationSyncVersion) {
+        isSyncingNotifications.value = false;
+      }
+    }
+  }
+
+  Future<bool> _syncNotificationPreference({
+    required bool enabled,
+    required int version,
+    required bool fallback,
+  }) {
+    final result = Completer<bool>();
+    _notificationSyncChain = _notificationSyncChain.then((_) async {
+      if (version != _notificationSyncVersion) {
+        result.complete(true);
+        return;
+      }
+
+      try {
+        final remote = preferencesRemote;
+        if (remote != null) {
+          await remote.updateNotificationsEnabled(enabled);
+          if (version == _notificationSyncVersion) {
+            _updateSessionNotificationPreference(enabled);
+          }
+        }
+        if (version == _notificationSyncVersion) {
+          notificationPreferenceError.value = null;
+        }
+        result.complete(true);
+      } on AppException catch (_) {
+        _settleNotificationFailure(version, fallback, result);
+      } catch (_) {
+        _settleNotificationFailure(version, fallback, result);
+      }
+    });
+    return result.future;
+  }
+
+  void _settleNotificationFailure(
+    int version,
+    bool fallback,
+    Completer<bool> result,
+  ) {
+    if (version != _notificationSyncVersion) {
+      result.complete(true);
+      return;
+    }
+    notificationsEnabled.value = fallback;
+    notificationPreferenceError.value = 'notificationPreferenceUpdateFailed'.tr;
+    result.complete(false);
+  }
+
+  /// Keeps the shared session user in step with a successful preference save,
+  /// so an unrelated profile refresh cannot restore an older toggle value.
+  void _updateSessionNotificationPreference(bool enabled) {
+    final current = sessionController.currentUser;
+    if (current == null || current.notificationsEnabled == enabled) {
+      return;
+    }
+    sessionController.setSession(
+      current.copyWith(notificationsEnabled: enabled),
+    );
+  }
+
+  /// Seeds the toggle from the authenticated user, when the backend provided it.
+  ///
+  /// A missing field keeps the current local value, and a request already in
+  /// flight is never overwritten by a profile response that started earlier.
+  void applyAuthenticatedUser(AuthUser user) {
+    final accountId = user.id > 0 ? user.id.toString() : user.name;
+    final accountChanged = _preferenceAccountId != accountId;
+    _preferenceAccountId = accountId;
+
+    final backendValue = user.notificationsEnabled;
+    if (backendValue == null) {
+      if (accountChanged) {
+        notificationsEnabled.value = true;
+        notificationPreferenceError.value = null;
+      }
+      return;
+    }
+    if (isSyncingNotifications.value) {
+      return;
+    }
+    notificationsEnabled.value = backendValue;
+    notificationPreferenceError.value = null;
+  }
+
+  void _applySessionUser() {
+    final user = sessionController.currentUser;
+    if (user == null) {
+      _preferenceAccountId = null;
+      ++_notificationSyncVersion;
+      isSyncingNotifications.value = false;
+      notificationsEnabled.value = true;
+      notificationPreferenceError.value = null;
+      return;
+    }
+    applyAuthenticatedUser(user);
   }
 
   /// True while the profile API request is in flight.

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -51,6 +53,18 @@ class AppearanceController extends GetxController {
   final isLoading = true.obs;
   final isSaving = false.obs;
   final errorMessage = RxnString();
+
+  /// The number of apply operations still in flight, so rapid taps cannot make
+  /// the spinner disappear while a later save is still running.
+  int _savingOperations = 0;
+
+  /// Identifies the latest colour the resident asked to sync. An older response
+  /// that lands later must not overwrite a newer selection.
+  int _themeSyncVersion = 0;
+
+  /// Serialises colour PATCHes: an in-flight request finishes first, then the
+  /// latest selection is sent. Rapid changes are coalesced instead of racing.
+  Future<void> _themeSyncChain = Future<void>.value();
 
   @override
   void onInit() {
@@ -232,16 +246,33 @@ class AppearanceController extends GetxController {
       return false;
     }
 
-    isSaving.value = true;
+    final previous = saved.value;
+    final next = draft.value;
+    final colorChanged =
+        next.seedColor.toARGB32() != previous.seedColor.toARGB32();
+    // Take the version before the local write so two rapid applies cannot
+    // complete out of order and make the older one look like the latest.
+    final version = colorChanged ? ++_themeSyncVersion : _themeSyncVersion;
+
+    _beginSaving();
     errorMessage.value = null;
     try {
       final stored = await useCases.savePreference(
         accountId,
-        draft.value,
-        markPendingSync: true,
+        next,
+        markPendingSync: colorChanged,
       );
       saved.value = stored;
-      return true;
+      if (!colorChanged) {
+        // Brightness-only changes stay entirely local, as they always have.
+        return true;
+      }
+      return await _syncThemeColor(
+        accountId: accountId,
+        hexColor: stored.hexLabel,
+        version: version,
+        fallback: previous,
+      );
     } on AppException catch (error) {
       errorMessage.value = error.message;
       return false;
@@ -249,7 +280,114 @@ class AppearanceController extends GetxController {
       errorMessage.value = 'Unable to apply the theme.';
       return false;
     } finally {
+      _endSaving();
+    }
+  }
+
+  void _beginSaving() {
+    _savingOperations++;
+    isSaving.value = true;
+  }
+
+  void _endSaving() {
+    if (_savingOperations > 0) {
+      _savingOperations--;
+    }
+    if (_savingOperations == 0) {
       isSaving.value = false;
+    }
+  }
+
+  /// Sends [hexColor] once any earlier colour request has settled.
+  ///
+  /// Only the latest selection is sent, and only its response is allowed to
+  /// clear the pending flag or roll the UI back. A failure that has already
+  /// been superseded is ignored, so a newer choice is never reverted by an
+  /// older request.
+  Future<bool> _syncThemeColor({
+    required String accountId,
+    required String hexColor,
+    required int version,
+    required AppearancePreference fallback,
+  }) {
+    final result = Completer<bool>();
+    _themeSyncChain = _themeSyncChain.then((_) async {
+      if (version != _themeSyncVersion) {
+        result.complete(true);
+        return;
+      }
+
+      try {
+        await useCases.updateThemeColor(hexColor);
+      } on AppException {
+        if (version == _themeSyncVersion) {
+          await _restoreThemeColor(accountId, fallback);
+          errorMessage.value = 'themeColorUpdateFailed'.tr;
+          result.complete(false);
+        } else {
+          result.complete(true);
+        }
+        return;
+      } catch (_) {
+        if (version == _themeSyncVersion) {
+          await _restoreThemeColor(accountId, fallback);
+          errorMessage.value = 'themeColorUpdateFailed'.tr;
+          result.complete(false);
+        } else {
+          result.complete(true);
+        }
+        return;
+      }
+
+      if (version == _themeSyncVersion) {
+        try {
+          // Clear the pending marker only after the backend accepted the
+          // colour. A local failure here must not undo a successful sync.
+          await useCases.savePreference(
+            accountId,
+            saved.value,
+            markPendingSync: false,
+          );
+        } catch (_) {
+          // The colour is already on the backend; the stale marker is harmless.
+        }
+      }
+      result.complete(true);
+    });
+    return result.future;
+  }
+
+  /// Puts the previous colour back after a failed sync.
+  ///
+  /// Only the colour is restored, so a brightness change made while the request
+  /// was in flight is kept.
+  Future<void> _restoreThemeColor(
+    String accountId,
+    AppearancePreference fallback,
+  ) async {
+    final current = saved.value;
+    final restored = current.copyWith(
+      seedColor: fallback.seedColor,
+      presetId: fallback.presetId,
+      clearPreset: fallback.presetId == null,
+    );
+    try {
+      final stored = await useCases.savePreference(
+        accountId,
+        restored,
+        markPendingSync: false,
+      );
+      saved.value = stored;
+      if (draft.value.seedColor.toARGB32() == current.seedColor.toARGB32()) {
+        draft.value = draft.value.copyWith(
+          seedColor: stored.seedColor,
+          presetId: stored.presetId,
+          clearPreset: stored.presetId == null,
+        );
+        customColorDraft.value = stored.seedColor;
+      }
+    } catch (_) {
+      saved.value = restored;
     }
   }
 

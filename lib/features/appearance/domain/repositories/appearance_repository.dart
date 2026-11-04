@@ -24,6 +24,12 @@ abstract interface class AppearanceRepository {
     bool markPendingSync = false,
   });
 
+  /// Sends only [hexColor] to the backend preferences endpoint.
+  ///
+  /// The local write is separate: callers persist first so the UI stays
+  /// responsive, then use this to synchronise the colour.
+  Future<void> updateThemeColor(String hexColor);
+
   /// Removes [accountId]'s saved appearance and returns the shipped default.
   Future<AppearancePreference> resetPreference(String accountId);
 }

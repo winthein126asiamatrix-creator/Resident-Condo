@@ -13,6 +13,7 @@ import 'package:test/core/network/dio_api_service.dart';
 import 'package:test/core/network/in_memory_token_storage.dart';
 import 'package:test/core/network/token_refresher.dart';
 import 'package:test/core/network/token_storage.dart';
+import 'package:test/core/network/user_preferences_remote_data_source.dart';
 import 'package:test/features/auth/data/datasources/auth_local_data_source.dart';
 import 'package:test/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:test/features/auth/data/models/auth_user.dart';
@@ -124,6 +125,30 @@ class _FakeRemote extends AuthRemoteDataSource {
   }
 }
 
+class _FakePreferencesRemote extends UserPreferencesRemoteDataSource {
+  _FakePreferencesRemote()
+    : super(
+        DioApiService(
+          tokenStorage: InMemoryTokenStorage(),
+          baseUrl: 'https://api.example.com',
+        ),
+      );
+
+  int fetchCalls = 0;
+  Map<String, dynamic> response = const <String, dynamic>{};
+  Object? error;
+
+  @override
+  Future<Map<String, dynamic>> fetchPreferences() async {
+    fetchCalls++;
+    final failure = error;
+    if (failure != null) {
+      throw failure;
+    }
+    return response;
+  }
+}
+
 class _FakeLocal extends AuthLocalDataSource {
   _FakeLocal() : super(null);
 
@@ -151,11 +176,13 @@ AuthRepositoryImpl _repository(
   _FakeRemote remote,
   _MemoryTokenStorage tokens, {
   _FakeLocal? local,
+  _FakePreferencesRemote? preferences,
 }) {
   return AuthRepositoryImpl(
     remoteDataSource: remote,
     localDataSource: local ?? _FakeLocal(),
     tokenStorage: tokens,
+    preferencesRemote: preferences,
   );
 }
 
@@ -385,6 +412,50 @@ void main() {
       expect(session.user, isA<AuthUser>());
       expect((session.user! as AuthUser).name, 'Owner One');
       expect(remote.updateMeCalls, 1);
+    });
+
+    test('successful /auth/me merges /me/preferences', () async {
+      final remote = _FakeRemote();
+      final preferences = _FakePreferencesRemote()
+        ..response = <String, dynamic>{
+          'theme_color': '#0ea5e9',
+          'notifications_enabled': false,
+        };
+      final repository = _repository(
+        remote,
+        _MemoryTokenStorage(),
+        preferences: preferences,
+      );
+
+      final session = await repository.fetchCurrentUser();
+
+      final user = session.user! as AuthUser;
+      expect(preferences.fetchCalls, 1);
+      expect(user.themeColor, '#0EA5E9');
+      expect(user.notificationsEnabled, isFalse);
+      expect(user.name, 'Owner One');
+    });
+
+    test('a preference failure does not fail /auth/me', () async {
+      final remote = _FakeRemote();
+      final preferences = _FakePreferencesRemote()
+        ..error = const ApiException(
+          'Server error.',
+          kind: ApiFailureKind.server,
+          statusCode: 500,
+        );
+      final repository = _repository(
+        remote,
+        _MemoryTokenStorage(),
+        preferences: preferences,
+      );
+
+      final session = await repository.fetchCurrentUser();
+
+      final user = session.user! as AuthUser;
+      expect(preferences.fetchCalls, 1);
+      expect(user.name, 'Owner One');
+      expect(user.notificationsEnabled, isNull);
     });
 
     test(

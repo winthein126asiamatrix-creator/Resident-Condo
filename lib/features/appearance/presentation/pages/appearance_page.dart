@@ -378,7 +378,7 @@ class _AppearanceActionBar extends StatelessWidget {
       title: applied ? 'Theme applied' : 'Could not apply theme',
       message: applied
           ? 'The app now uses ${controller.saved.value.label}.'
-          : 'Please try again.',
+          : controller.errorMessage.value ?? 'themeColorUpdateFailed'.tr,
       isError: !applied,
       backgroundColor: backgroundColor,
     );

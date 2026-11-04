@@ -32,6 +32,7 @@ class AuthUser {
     this.permissions = const <String>[],
     this.unreadNotificationCount = 0,
     this.themeColor,
+    this.notificationsEnabled,
   });
 
   final int id;
@@ -49,6 +50,12 @@ class AuthUser {
   final List<String> permissions;
   final int unreadNotificationCount;
   final String? themeColor;
+
+  /// The backend notification preference, when `/auth/me` includes it.
+  ///
+  /// Nullable so an older backend that does not return the field does not
+  /// reset the resident's local toggle.
+  final bool? notificationsEnabled;
 
   static const AuthUser empty = AuthUser(id: 0, name: '', phone: '', role: '');
 
@@ -82,6 +89,7 @@ class AuthUser {
     List<String>? permissions,
     int? unreadNotificationCount,
     String? themeColor,
+    bool? notificationsEnabled,
   }) {
     return AuthUser(
       id: id ?? this.id,
@@ -95,6 +103,7 @@ class AuthUser {
       unreadNotificationCount:
           unreadNotificationCount ?? this.unreadNotificationCount,
       themeColor: themeColor ?? this.themeColor,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
     );
   }
 
@@ -109,6 +118,7 @@ class AuthUser {
     'permissions': permissions,
     'unread_notification_count': unreadNotificationCount,
     'theme_color': themeColor,
+    'notifications_enabled': notificationsEnabled,
   };
 
   factory AuthUser.fromJson(Map<String, dynamic> json) {
@@ -130,6 +140,7 @@ class AuthUser {
           : const <String>[],
       unreadNotificationCount: _asInt(json['unread_notification_count']),
       themeColor: _asThemeColor(json['theme_color']),
+      notificationsEnabled: _asNullableBool(json['notifications_enabled']),
     );
   }
   static String? _asThemeColor(Object? value) {
@@ -209,6 +220,13 @@ class AuthUser {
       themeColor = _asThemeColor(json['theme_color']) ?? themeColor;
     }
 
+    var notificationsEnabled = currentUser.notificationsEnabled;
+    if (json != null && json.containsKey('notifications_enabled')) {
+      notificationsEnabled =
+          _asNullableBool(json['notifications_enabled']) ??
+          notificationsEnabled;
+    }
+
     return AuthUser(
       id: id,
       name: name,
@@ -220,6 +238,7 @@ class AuthUser {
       permissions: permissions,
       unreadNotificationCount: unreadNotificationCount,
       themeColor: themeColor,
+      notificationsEnabled: notificationsEnabled,
     );
   }
 
@@ -305,6 +324,19 @@ String _asString(Object? value) => value is String
 String? _asNullableString(Object? value) {
   if (value is! String || value.trim().isEmpty) return null;
   return value.trim();
+}
+
+/// Parses a backend boolean, accepting the numeric form Odoo sometimes sends.
+///
+/// Anything unrecognised returns null, so a missing or malformed preference
+/// does not overwrite the resident's local toggle.
+bool? _asNullableBool(Object? value) {
+  if (value is bool) return value;
+  if (value is num) return value != 0;
+  final text = value?.toString().trim().toLowerCase();
+  if (text == 'true' || text == '1') return true;
+  if (text == 'false' || text == '0') return false;
+  return null;
 }
 
 /// Resolves the backend's relative avatar path into a loadable absolute URL.

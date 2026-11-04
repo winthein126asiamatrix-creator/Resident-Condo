@@ -157,13 +157,15 @@ class ProfilePage extends GetView<ProfileController> {
                           : 'Disabled',
                       onTap: () {
                         vibrateNow();
-                        controller.toggleNotifications(
+                        _toggleNotifications(
+                          context,
                           !controller.notificationsEnabled.value,
                         );
                       },
                       trailing: Switch.adaptive(
                         value: controller.notificationsEnabled.value,
-                        onChanged: controller.toggleNotifications,
+                        onChanged: (enabled) =>
+                            _toggleNotifications(context, enabled),
                       ),
                     ),
                     const _RowDivider(),
@@ -343,6 +345,21 @@ class ProfilePage extends GetView<ProfileController> {
           );
         }),
       ),
+    );
+  }
+
+  Future<void> _toggleNotifications(BuildContext context, bool enabled) async {
+    final updated = await controller.toggleNotifications(enabled);
+    if (updated || !context.mounted) {
+      return;
+    }
+    showAppFeedback(
+      context,
+      title: 'notificationPreferenceUpdateFailed'.tr,
+      message:
+          controller.notificationPreferenceError.value ??
+          'notificationPreferenceUpdateFailed'.tr,
+      isError: true,
     );
   }
 

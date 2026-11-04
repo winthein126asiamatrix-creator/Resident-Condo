@@ -29,6 +29,9 @@ class AppearanceUseCases {
     markPendingSync: markPendingSync,
   );
 
+  Future<void> updateThemeColor(String hexColor) =>
+      repository.updateThemeColor(hexColor);
+
   Future<AppearancePreference> resetPreference(String accountId) =>
       repository.resetPreference(accountId);
 }
