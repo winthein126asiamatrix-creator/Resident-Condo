@@ -14,6 +14,7 @@ import '../../features/rules/presentation/bindings/rules_binding.dart';
 import '../../features/services/presentation/bindings/condo_service_binding.dart';
 import '../../features/session/presentation/bindings/session_binding.dart';
 import '../../features/visitors/presentation/bindings/visitor_binding.dart';
+import '../../features/unit/presentation/bindings/unit_binding.dart';
 
 /// Registers every app-scoped feature dependency in one place.
 ///
@@ -44,9 +45,12 @@ class AppBinding extends Bindings {
       ParkingBinding(),
       ComplaintBinding(),
       RulesBinding(),
+      UnitBinding(),
     ];
     for (final binding in bindings) {
       binding.dependencies();
     }
   }
 }
+
+

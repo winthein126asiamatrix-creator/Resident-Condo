@@ -14,6 +14,7 @@ import '../../../appearance/presentation/controllers/appearance_controller.dart'
 import '../../../notifications/data/datasources/notification_remote_data_source.dart';
 import '../../../notifications/presentation/controllers/notification_controller.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
+import '../../../unit/presentation/controllers/unit_controller.dart';
 import '../../data/models/auth_user.dart';
 import '../../domain/entities/auth_session.dart';
 import '../../domain/usecases/auth_usecases.dart';
@@ -149,6 +150,9 @@ class AuthController extends GetxController {
     if (Get.isRegistered<SessionController>()) {
       Get.find<SessionController>().clearSession();
     }
+    if (Get.isRegistered<UnitController>()) {
+      Get.find<UnitController>().clear();
+    }
     try {
       final session = await useCases.signIn(
         SignInRequest(
@@ -227,6 +231,9 @@ class AuthController extends GetxController {
       await adoptIntoSession(remembered);
       if (epoch != _sessionEpoch) {
         return null;
+      }
+      if (Get.isRegistered<UnitController>()) {
+        unawaited(Get.find<UnitController>().prefetch());
       }
       isUnverified.value = false;
       return remembered;
@@ -447,6 +454,9 @@ class AuthController extends GetxController {
       if (Get.isRegistered<SessionController>()) {
         Get.find<SessionController>().clearSession();
       }
+      if (Get.isRegistered<UnitController>()) {
+        Get.find<UnitController>().clear();
+      }
       invalidateAuthenticatedAvatarCache();
       await _resetAppearance();
     }
@@ -544,6 +554,9 @@ class AuthController extends GetxController {
       final controller = Get.find<SessionController>();
       if (verifiedUser != null) {
         controller.setSession(verifiedUser);
+        if (Get.isRegistered<UnitController>()) {
+          unawaited(Get.find<UnitController>().prefetch());
+        }
       } else if (!session.unverified) {
         // A transient restore is not proof that the current session is invalid.
         // Only a confirmed absence of a user may clear it.

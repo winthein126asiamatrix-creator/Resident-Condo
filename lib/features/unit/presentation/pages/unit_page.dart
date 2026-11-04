@@ -4,46 +4,47 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/theme/app_theme_tokens.dart';
-
 import '../../../../core/widgets/app_state_message.dart';
+import '../../../../core/widgets/app_detail_app_bar.dart';
+import '../../../../core/theme/app_spacing.dart';
 
 import '../../domain/entities/unit.dart';
 
 import '../controllers/unit_controller.dart';
-
 import '../widgets/unit_info_tile.dart';
-
 import '../widgets/unit_person_tile.dart';
 
-import '../../../../core/widgets/app_detail_app_bar.dart';
-
-import '../../../../core/theme/app_spacing.dart';
-
-class UnitPage extends GetView<UnitController> {
+class UnitPage extends StatefulWidget {
   const UnitPage({super.key});
 
   @override
+  State<UnitPage> createState() => _UnitPageState();
+}
+
+class _UnitPageState extends State<UnitPage> {
+  late final UnitController controller = Get.find<UnitController>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.loadMyUnit();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => Scaffold(
-        appBar: AppDetailAppBar(
-          title: 'My Unit',
-          actions: [
-            IconButton(
-              onPressed: controller.loadMyUnit,
-              tooltip: 'Refresh unit information',
-              icon: Icon(Icons.refresh_rounded),
-            ),
-          ],
-        ),
-        body: _buildBody(context),
-      ),
-    );
+    return Obx(() => Scaffold(
+          appBar: AppDetailAppBar(
+            title: 'My Unit',
+          ),
+          body: _buildBody(context),
+        ));
   }
 
   Widget _buildBody(BuildContext context) {
     if (controller.isLoading.value && controller.unit.value == null) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
     if (controller.errorMessage.value != null &&
         controller.unit.value == null) {
@@ -52,23 +53,25 @@ class UnitPage extends GetView<UnitController> {
         message: controller.errorMessage.value!,
         icon: Icons.home_work_outlined,
         actionLabel: 'Try again',
-        onAction: controller.loadMyUnit,
+        onAction: () => controller.loadMyUnit(force: true),
       );
     }
 
-    final unit = controller.unit.value;
-    if (unit == null) {
+    final data = controller.unit.value;
+    if (data == null) {
       return AppStateMessage(
         title: 'No unit information',
         message: 'Your unit details are not available right now.',
         icon: Icons.home_work_outlined,
+        actionLabel: 'Try again',
+        onAction: () => controller.loadMyUnit(force: true),
       );
     }
 
     return RefreshIndicator(
-      onRefresh: controller.loadMyUnit,
+      onRefresh: () => controller.loadMyUnit(force: true),
       child: ListView(
-        physics: AlwaysScrollableScrollPhysics(),
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.fromLTRB(
           AppSpacing.gutter,
           AppSpacing.pageTop,
@@ -76,19 +79,34 @@ class UnitPage extends GetView<UnitController> {
           32,
         ),
         children: [
-          _UnitHero(unit: unit),
+          _UnitHero(unit: data),
           24.h.heightBox(),
+          if (controller.errorMessage.value != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                controller.errorMessage.value!,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
           _SectionTitle(title: 'Unit information'),
           11.h.heightBox(),
-          _UnitInformationCard(unit: unit),
+          _UnitInformationCard(unit: data),
           24.h.heightBox(),
           _SectionTitle(title: 'People'),
           11.h.heightBox(),
-          _PeopleCard(unit: unit),
+          _PeopleCard(unit: data),
           24.h.heightBox(),
-          _SectionTitle(title: 'Parking'),
+          _SectionTitle(title: 'Vehicles'),
           11.h.heightBox(),
-          _ParkingCard(parking: unit.parking),
+          _VehiclesCard(vehicles: data.vehicles),
+          24.h.heightBox(),
+          if (data.unit.parkingSlot != null) ...[
+            _SectionTitle(title: 'Parking'),
+            11.h.heightBox(),
+            _ParkingCard(slot: data.unit.parkingSlot!),
+            24.h.heightBox(),
+          ],
         ],
       ),
     );
@@ -103,6 +121,7 @@ class _UnitHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    final u = unit.unit;
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
@@ -140,14 +159,14 @@ class _UnitHero extends StatelessWidget {
                       ),
                     ),
                     _StatusBadge(
-                      label: unit.occupancyStatus,
+                      label: u.occupancy ?? '',
                       color: tokens.brandOnDark,
                     ),
                   ],
                 ),
                 20.h.heightBox(),
                 Text(
-                  '${unit.tower} Â· Unit ${unit.unitNumber}',
+                  u.label,
                   style: TextStyle(
                     color: tokens.brandOnDark,
                     fontSize: 22.sp,
@@ -156,7 +175,7 @@ class _UnitHero extends StatelessWidget {
                 ),
                 6.h.heightBox(),
                 Text(
-                  '${unit.unitType} Â· ${unit.area} Â· ${unit.floor}',
+                  '${u.unitType?.name ?? ''} · ${u.areaM2 ?? ''} m² · ${u.floorLabel ?? ''}',
                   style: TextStyle(
                     color: tokens.brandOnDarkMuted,
                     fontSize: 13.sp,
@@ -172,7 +191,7 @@ class _UnitHero extends StatelessWidget {
                     ),
                     6.w.widthBox(),
                     Text(
-                      '${unit.ownershipStatus} Â· Parking ${unit.parking.slot}',
+                      '${(unit.myRole ?? u.myRole ?? '').capitalizeFirst} · Parking ${u.parkingSlot ?? 'N/A'}',
                       style: TextStyle(
                         color: tokens.brandOnDarkMuted,
                         fontSize: 12.sp,
@@ -196,58 +215,31 @@ class _UnitInformationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final u = unit.unit;
     return _UnitCard(
       child: GridView.count(
         crossAxisCount: 2,
         shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
         childAspectRatio: 2.35,
         children: [
-          UnitInfoTile(
-            label: 'Unit number',
-            value: unit.unitNumber,
-            icon: Icons.tag_rounded,
-          ),
-          UnitInfoTile(
-            label: 'Tower',
-            value: unit.tower,
-            icon: Icons.apartment_rounded,
-          ),
-          UnitInfoTile(
-            label: 'Floor',
-            value: unit.floor,
-            icon: Icons.layers_outlined,
-          ),
-          UnitInfoTile(
-            label: 'Unit type',
-            value: unit.unitType,
-            icon: Icons.bed_outlined,
-          ),
-          UnitInfoTile(
-            label: 'Area',
-            value: unit.area,
-            icon: Icons.square_foot_rounded,
-          ),
-          UnitInfoTile(
-            label: 'Bedrooms',
-            value: '${unit.bedrooms}',
-            icon: Icons.king_bed_outlined,
-          ),
-          UnitInfoTile(
-            label: 'Bathrooms',
-            value: '${unit.bathrooms}',
-            icon: Icons.bathtub_outlined,
-          ),
-          UnitInfoTile(
-            label: 'Occupancy',
-            value: unit.occupancyStatus,
-            icon: Icons.check_circle_outline_rounded,
-          ),
+          _tile('Unit number', u.number, Icons.tag_rounded),
+          _tile('Tower', u.tower?.name ?? '', Icons.apartment_rounded),
+          _tile('Floor', u.floorLabel ?? '', Icons.layers_outlined),
+          _tile('Unit type', u.unitType?.name ?? '', Icons.bed_outlined),
+          _tile('Area', '${u.areaM2 ?? ''}', Icons.square_foot_rounded),
+          _tile('Bedrooms', '${u.bedrooms ?? ''}', Icons.king_bed_outlined),
+          _tile('Bathrooms', '${u.bathrooms ?? ''}', Icons.bathtub_outlined),
+          _tile('Occupancy', u.occupancy ?? '', Icons.check_circle_outline_rounded),
         ],
       ),
     );
+  }
+
+  Widget _tile(String label, String value, IconData icon) {
+    return UnitInfoTile(label: label, value: value, icon: icon);
   }
 }
 
@@ -259,42 +251,28 @@ class _PeopleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    final people = unit.people;
     return _UnitCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Owner',
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: tokens.muted,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          Text('Owner', style: TextStyle(fontSize: 12.sp, color: tokens.muted, fontWeight: FontWeight.w700)),
           2.h.heightBox(),
-          UnitPersonTile(person: unit.owner),
-          Divider(height: 24),
-          Text(
-            'Residents',
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: tokens.muted,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          if (people.owner != null)
+            UnitPersonTile(person: people.owner!)
+          else
+            const Text('No owner'),
+          const Divider(height: 24),
+          Text('Residents', style: TextStyle(fontSize: 12.sp, color: tokens.muted, fontWeight: FontWeight.w700)),
           2.h.heightBox(),
-          ...unit.residents.map((resident) => UnitPersonTile(person: resident)),
-          if (unit.tenant != null) ...[
-            Divider(height: 24),
-            Text(
-              'Tenant',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: tokens.muted,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            UnitPersonTile(person: unit.tenant!),
+          if (people.residents.isEmpty)
+            const Text('No residents')
+          else
+            ...people.residents.map((r) => UnitPersonTile(person: r)),
+          if (people.tenant != null) ...[
+            const Divider(height: 24),
+            Text('Tenant', style: TextStyle(fontSize: 12.sp, color: tokens.muted, fontWeight: FontWeight.w700)),
+            UnitPersonTile(person: people.tenant!),
           ],
         ],
       ),
@@ -302,87 +280,59 @@ class _PeopleCard extends StatelessWidget {
   }
 }
 
-class _ParkingCard extends StatelessWidget {
-  const _ParkingCard({required this.parking});
+class _VehiclesCard extends StatelessWidget {
+  const _VehiclesCard({required this.vehicles});
 
-  final ParkingInfo parking;
+  final List<UnitVehicle> vehicles;
 
   @override
   Widget build(BuildContext context) {
-    final tokens = AppThemeTokens.of(context);
+    if (vehicles.isEmpty) {
+      return _UnitCard(child: const Text('No vehicles registered.'));
+    }
     return _UnitCard(
       child: Column(
-        children: [
-          Row(
+        children: vehicles.map((v) => Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Row(
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Color(0xFFFFF1D6),
-                  borderRadius: BorderRadius.circular(14.r),
-                ),
-                child: Icon(
-                  Icons.directions_car_filled_outlined,
-                  color: Color(0xFFB45309),
-                ),
-              ),
+              const Icon(Icons.directions_car_filled_outlined),
               12.w.widthBox(),
-              Expanded(
-                child: Text(
-                  'Registered vehicle',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
-              ),
-              Text(
-                parking.slot,
-                style: TextStyle(
-                  color: tokens.brand,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
+              Expanded(child: Text('${v.model} · ${v.plate}')),
+              Text(v.slot ?? ''),
             ],
           ),
-          Divider(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: _ParkingValue(label: 'Vehicle', value: parking.vehicle),
-              ),
-              12.w.widthBox(),
-              Expanded(
-                child: _ParkingValue(
-                  label: 'License plate',
-                  value: parking.licensePlate,
-                ),
-              ),
-            ],
-          ),
-        ],
+        )).toList(),
       ),
     );
   }
 }
 
-class _ParkingValue extends StatelessWidget {
-  const _ParkingValue({required this.label, required this.value});
+class _ParkingCard extends StatelessWidget {
+  const _ParkingCard({required this.slot});
 
-  final String label;
-  final String value;
+  final String slot;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 11.sp, color: tokens.muted),
-        ),
-        4.h.heightBox(),
-        Text(value, style: TextStyle(fontWeight: FontWeight.w800)),
-      ],
+    return _UnitCard(
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF1D6),
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+            child: const Icon(Icons.directions_car_filled_outlined, color: Color(0xFFB45309)),
+          ),
+          12.w.widthBox(),
+          const Expanded(child: Text('Registered vehicle', style: TextStyle(fontWeight: FontWeight.w800))),
+          Text(slot, style: TextStyle(color: tokens.brand, fontWeight: FontWeight.w800)),
+        ],
+      ),
     );
   }
 }
@@ -418,8 +368,7 @@ class _SectionTitle extends StatelessWidget {
     final tokens = AppThemeTokens.of(context);
     return Text(
       title,
-      style: Theme.of(context).textTheme.titleMedium
-          ?.copyWith(fontWeight: FontWeight.w800, color: tokens.ink),
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800, color: tokens.ink),
     );
   }
 }
@@ -440,11 +389,7 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
-          color: color,
-          fontSize: 11.sp,
-          fontWeight: FontWeight.w800,
-        ),
+        style: TextStyle(color: color, fontSize: 11.sp, fontWeight: FontWeight.w800),
       ),
     );
   }

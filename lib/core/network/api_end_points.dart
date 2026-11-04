@@ -149,4 +149,11 @@ abstract final class ApiEndPoints {
   static const String profile = '/api/profile';
 
   static const String appearance = '/api/profile/appearance';
+
+  // --- My Unit -------------------------------------------------------------
+
+  static const String myUnit = '/my-unit';
 }
+
+
+
