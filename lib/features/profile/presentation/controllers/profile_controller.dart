@@ -1,118 +1,99 @@
 import 'package:get/get.dart';
 
-import '../../../../core/errors/app_exception.dart';
-import '../../../../core/models/resident_role.dart';
-import '../../domain/entities/profile.dart';
-import '../../domain/usecases/profile_usecases.dart';
+import '../../../auth/data/models/auth_user.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../session/presentation/controllers/session_controller.dart';
 
+/// Profile-specific actions and preferences.
+///
+/// The authenticated profile itself is not stored here. It lives in
+/// [SessionController], which is the single in-memory source of truth for the
+/// complete [AuthUser] returned by `/auth/me`.
 class ProfileController extends GetxController {
-  ProfileController(this.useCases);
+  ProfileController(this.sessionController);
 
-  final ProfileUseCases useCases;
-  final profile = Rxn<Profile>();
-  final isLoading = false.obs;
-  final isSaving = false.obs;
+  final SessionController sessionController;
+
+  /// The current authenticated user, or null after logout.
+  AuthUser? get user => sessionController.currentUser;
+
+  /// The resident's display unit, taken from the same session user.
+  String get unitLabel => sessionController.unitLabel;
+
+  /// A local display preference. It is not part of the `/auth/me` payload.
+  final notificationsEnabled = true.obs;
+
   final errorMessage = RxnString();
 
-  @override
-  void onInit() {
-    super.onInit();
-    loadProfile();
+  void toggleNotifications(bool enabled) {
+    notificationsEnabled.value = enabled;
   }
 
-  Future<void> loadProfile() async {
-    isLoading.value = true;
-    errorMessage.value = null;
-    try {
-      profile.value = await useCases.getProfile();
-    } on AppException catch (error) {
-      errorMessage.value = error.message;
-    } catch (_) {
-      errorMessage.value = 'Unable to load your profile.';
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  Future<Profile?> updateProfile({
+  /// Updates the in-memory authenticated user while preserving every field that
+  /// was not edited.
+  ///
+  /// There is no profile update API yet. This keeps the previous local-only
+  /// edit behaviour, but writes through the session so the profile cannot
+  /// diverge from what every other screen reads.
+  bool updateProfile({
     required String name,
     required String email,
     required String phone,
-    String? language,
-    bool? notificationsEnabled,
-  }) async {
-    final current = profile.value;
+  }) {
+    final current = user;
     if (current == null) {
       errorMessage.value = 'Profile information is not available.';
-      return null;
+      return false;
     }
     if (name.trim().isEmpty || email.trim().isEmpty || phone.trim().isEmpty) {
       errorMessage.value = 'Name, email, and phone are required.';
-      return null;
+      return false;
     }
 
-    isSaving.value = true;
     errorMessage.value = null;
-    try {
-      final updated = await useCases.updateProfile(
-        current.copyWith(
-          name: name.trim(),
-          email: email.trim(),
-          phone: phone.trim(),
-          language: language,
-          notificationsEnabled: notificationsEnabled,
-        ),
-      );
-      profile.value = updated;
-      return updated;
-    } on AppException catch (error) {
-      errorMessage.value = error.message;
-      return null;
-    } catch (_) {
-      errorMessage.value = 'Unable to update your profile.';
-      return null;
-    } finally {
-      isSaving.value = false;
-    }
+    sessionController.setSession(
+      current.copyWith(
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+      ),
+    );
+    return true;
   }
 
-  void toggleNotifications(bool enabled) {
-    final current = profile.value;
-    if (current == null) {
+  /// Re-reads `/auth/me` only when the resident explicitly refreshes.
+  Future<void> refreshProfile() async {
+    if (!Get.isRegistered<AuthController>()) {
       return;
     }
-    updateProfile(
-      name: current.name,
-      email: current.email,
-      phone: current.phone,
-      language: current.language,
-      notificationsEnabled: enabled,
+    await Get.find<AuthController>().revalidateSession();
+  }
+
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    if (!Get.isRegistered<AuthController>()) {
+      return false;
+    }
+    return Get.find<AuthController>().changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
     );
   }
 
-  /// Keeps the profile role label in sync with the active session role.
-  Future<Profile?> syncRole(ResidentRole role) async {
-    final current = profile.value;
-    if (current == null || current.role == role.label) {
-      return current;
+  String? get changePasswordError {
+    if (!Get.isRegistered<AuthController>()) {
+      return null;
     }
-    return useCases
-        .updateProfile(
-          Profile(
-            name: current.name,
-            email: current.email,
-            phone: current.phone,
-            unit: current.unit,
-            role: role.label,
-            initials: current.initials,
-            language: current.language,
-            notificationsEnabled: current.notificationsEnabled,
-          ),
-        )
-        .then((updated) {
-          profile.value = updated;
-          return updated;
-        })
-        .catchError((_) => current);
+    return Get.find<AuthController>().changePasswordError.value;
+  }
+
+  Future<void> signOut() async {
+    if (!Get.isRegistered<AuthController>()) {
+      sessionController.clearSession();
+      return;
+    }
+    await Get.find<AuthController>().signOut();
   }
 }

@@ -99,7 +99,27 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) => _remote.changePassword(
+    oldPassword: oldPassword,
+    newPassword: newPassword,
+  );
+
+  @override
   Future<void> signOut() async {
+    final tokens = await _tokens.readTokens();
+    if (tokens != null && tokens.refreshToken.isNotEmpty) {
+      try {
+        // The app has no durable device id yet, and the backend accepts an
+        // empty string until notification devices are linked to sign-out.
+        await _remote.logout(refreshToken: tokens.refreshToken, deviceId: '');
+      } on Object {
+        // Signing out locally must succeed even when the backend is
+        // unreachable; the refresh token is cleared below either way.
+      }
+    }
     // Tokens first, so an interruption between the two cannot leave a usable
     // credential behind for a session the resident believes they have ended.
     await _tokens.clearTokens();

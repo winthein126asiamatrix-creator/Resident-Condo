@@ -3,8 +3,24 @@ import 'package:dio/dio.dart';
 import '../utils/super_print.dart';
 import 'api_config.dart';
 import 'api_end_points.dart';
+import 'api_exception.dart';
 import 'token_parser.dart';
 import 'token_storage.dart';
+
+/// A refresh failure that does not prove the stored credentials are invalid.
+///
+/// Network failures, timeouts and backend 5xx responses can all interrupt a
+/// refresh while the refresh token itself is still perfectly usable. The
+/// interceptor must keep the session and surface a retryable error for these,
+/// rather than signing the resident out.
+class TokenRefreshException implements Exception {
+  const TokenRefreshException(this.cause);
+
+  final Object cause;
+
+  @override
+  String toString() => 'TokenRefreshException($cause)';
+}
 
 /// Exchanges a refresh token for a new pair.
 ///
@@ -38,14 +54,38 @@ class TokenRefresher {
         'status': response.statusCode,
       }, title: 'Token Refresh: Response');
       return TokenParser.tokensFrom(response.data);
-    } catch (_) {
+    } on DioException catch (error) {
+      final status = error.response?.statusCode;
+      superPrint({
+        'path': ApiEndPoints.refreshToken,
+        'error': 'request failed',
+      }, title: 'Token Refresh: Failed');
+      // Only a clear rejection of the refresh credential proves the session is
+      // over. Anything else (no response, timeout, 5xx) may be temporary and
+      // must not destroy a still-valid pair.
+      if (_isInvalidCredentialResponse(status)) {
+        return null;
+      }
+      throw TokenRefreshException(error);
+    } on ApiException {
+      // A 2xx with an unusable body is a malformed refresh response, not proof
+      // of a temporary network problem.
       superPrint({
         'path': ApiEndPoints.refreshToken,
         'error': 'request failed',
       }, title: 'Token Refresh: Failed');
       return null;
+    } catch (error) {
+      superPrint({
+        'path': ApiEndPoints.refreshToken,
+        'error': 'request failed',
+      }, title: 'Token Refresh: Failed');
+      throw TokenRefreshException(error);
     }
   }
+
+  static bool _isInvalidCredentialResponse(int? status) =>
+      status == 400 || status == 401 || status == 403;
 
   /// A refresher with a client of its own, carrying no interceptors.
   ///

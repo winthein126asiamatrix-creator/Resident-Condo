@@ -378,12 +378,97 @@ Future<bool> showAppFormDialog(
   IconData? icon,
   String confirmLabel = 'Save',
   String cancelLabel = 'Cancel',
+  String pendingLabel = 'Saving...',
+  Future<AppConfirmResult> Function()? onConfirm,
 }) async {
   final confirmed = await showDialog<bool>(
     context: context,
-    builder: (dialogContext) {
-      final tokens = AppThemeTokens.of(dialogContext);
-      return Dialog(
+    // An async form keeps the dialog open until the action settles, so tapping
+    // outside must not hide a request that is still running.
+    barrierDismissible: onConfirm == null,
+    builder: (dialogContext) => _AppFormDialog(
+      title: title,
+      message: message,
+      icon: icon,
+      confirmLabel: confirmLabel,
+      cancelLabel: cancelLabel,
+      pendingLabel: pendingLabel,
+      onConfirm: onConfirm,
+      child: child,
+    ),
+  );
+  return confirmed ?? false;
+}
+
+class _AppFormDialog extends StatefulWidget {
+  const _AppFormDialog({
+    required this.title,
+    required this.child,
+    required this.message,
+    required this.icon,
+    required this.confirmLabel,
+    required this.cancelLabel,
+    required this.pendingLabel,
+    required this.onConfirm,
+  });
+
+  final String title;
+  final Widget child;
+  final String? message;
+  final IconData? icon;
+  final String confirmLabel;
+  final String cancelLabel;
+  final String pendingLabel;
+  final Future<AppConfirmResult> Function()? onConfirm;
+
+  @override
+  State<_AppFormDialog> createState() => _AppFormDialogState();
+}
+
+class _AppFormDialogState extends State<_AppFormDialog> {
+  bool _isSubmitting = false;
+  String? _error;
+
+  Future<void> _confirm() async {
+    if (_isSubmitting) {
+      return;
+    }
+    final handler = widget.onConfirm;
+    if (handler == null) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+    setState(() {
+      _isSubmitting = true;
+      _error = null;
+    });
+    AppConfirmResult result;
+    try {
+      result = await handler();
+    } catch (_) {
+      result = AppConfirmResult.failure(
+        'Something went wrong. Please try again.',
+      );
+    }
+    if (!mounted) {
+      return;
+    }
+    if (result.isSuccess) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+    setState(() {
+      _isSubmitting = false;
+      _error = result.error;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return PopScope(
+      canPop: !_isSubmitting,
+      child: Dialog(
         backgroundColor: tokens.surface,
         insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         shape: RoundedRectangleBorder(
@@ -397,7 +482,7 @@ Future<bool> showAppFormDialog(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (icon != null) ...[
+                if (widget.icon != null) ...[
                   Container(
                     width: 52,
                     height: 52,
@@ -405,12 +490,12 @@ Future<bool> showAppFormDialog(
                       color: tokens.brandTint,
                       borderRadius: BorderRadius.circular(17.r),
                     ),
-                    child: Icon(icon, color: tokens.brand, size: 26),
+                    child: Icon(widget.icon, color: tokens.brand, size: 26),
                   ),
                   14.h.heightBox(),
                 ],
                 Text(
-                  title,
+                  widget.title,
                   key: Key('app-form-dialog-title'),
                   style: TextStyle(
                     color: tokens.ink,
@@ -418,10 +503,10 @@ Future<bool> showAppFormDialog(
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                if (message != null) ...[
+                if (widget.message != null) ...[
                   6.h.heightBox(),
                   Text(
-                    message,
+                    widget.message!,
                     style: TextStyle(
                       color: tokens.muted,
                       fontSize: 13.5.sp,
@@ -430,15 +515,53 @@ Future<bool> showAppFormDialog(
                   ),
                 ],
                 18.h.heightBox(),
-                child,
+                widget.child,
+                if (_error != null && _error!.isNotEmpty) ...[
+                  14.h.heightBox(),
+                  Container(
+                    key: Key('app-form-dialog-error'),
+                    width: double.infinity,
+                    padding: EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppPalette.danger.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(14.r),
+                      border: Border.all(
+                        color: AppPalette.danger.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.error_outline_rounded,
+                          size: 17,
+                          color: AppPalette.danger,
+                        ),
+                        8.w.widthBox(),
+                        Expanded(
+                          child: Text(
+                            _error!,
+                            style: TextStyle(
+                              color: AppPalette.danger,
+                              fontSize: 12.5.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 18.h.heightBox(),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
-                    onPressed: () {
-                      vibrateNow();
-                      Navigator.of(dialogContext).pop(false);
-                    },
+                    onPressed: _isSubmitting
+                        ? null
+                        : () {
+                            vibrateNow();
+                            Navigator.of(context).pop(false);
+                          },
                     style: OutlinedButton.styleFrom(
                       foregroundColor: tokens.mutedStrong,
                       side: BorderSide(color: tokens.border),
@@ -447,22 +570,24 @@ Future<bool> showAppFormDialog(
                         borderRadius: BorderRadius.circular(14.r),
                       ),
                     ),
-                    child: Text(cancelLabel),
+                    child: Text(widget.cancelLabel),
                   ),
                 ),
                 10.h.heightBox(),
                 AppPrimaryAction(
                   key: Key('app-form-dialog-confirm'),
-                  onPressed: () => Navigator.of(dialogContext).pop(true),
-                  label: confirmLabel,
+                  onPressed: _isSubmitting ? null : _confirm,
+                  isLoading: _isSubmitting,
+                  label: _isSubmitting
+                      ? widget.pendingLabel
+                      : widget.confirmLabel,
                   icon: Icons.check_rounded,
                 ),
               ],
             ),
           ),
         ),
-      );
-    },
-  );
-  return confirmed ?? false;
+      ),
+    );
+  }
 }

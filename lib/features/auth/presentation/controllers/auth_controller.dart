@@ -44,6 +44,12 @@ class AuthController extends GetxController {
   /// validation error: this one means the credentials were rejected.
   final errorMessage = RxnString();
 
+  /// True while the change-password request is in flight.
+  final isChangingPassword = false.obs;
+
+  /// The backend's reason for rejecting a password change.
+  final changePasswordError = RxnString();
+
   final isPasswordVisible = false.obs;
 
   /// The field currently being corrected, so the screen can move focus to the
@@ -122,6 +128,39 @@ class AuthController extends GetxController {
       return null;
     } finally {
       isSubmitting.value = false;
+    }
+  }
+
+  /// Changes the password without disturbing the current session.
+  ///
+  /// Returns whether the backend accepted the change. The reason for a
+  /// rejection is left in [changePasswordError] so the dialog can show it
+  /// without closing and losing what the resident typed.
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    if (isChangingPassword.value) {
+      return false;
+    }
+    isChangingPassword.value = true;
+    changePasswordError.value = null;
+    superPrint(currentPassword,title: "Hello W");
+    try {
+      await useCases.changePassword(
+        oldPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      return true;
+    } on AppException catch (error) {
+      changePasswordError.value = error.message;
+      return false;
+    } catch (_) {
+      changePasswordError.value =
+          'We could not change your password. Please try again.';
+      return false;
+    } finally {
+      isChangingPassword.value = false;
     }
   }
 

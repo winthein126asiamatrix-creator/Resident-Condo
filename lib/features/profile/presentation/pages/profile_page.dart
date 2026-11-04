@@ -25,11 +25,9 @@ import '../../../../core/widgets/app_primary_action.dart';
 
 import '../../../../core/widgets/app_state_message.dart';
 
-import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../auth/data/models/auth_user.dart';
 
 import '../../../dashboard/presentation/controllers/dashboard_controller.dart';
-
-import '../../domain/entities/profile.dart';
 
 import '../controllers/profile_controller.dart';
 
@@ -37,9 +35,7 @@ import '../widgets/language_picker_sheet.dart';
 
 /// The greeting line at the top of the profile page.
 class _PageHeader extends StatelessWidget {
-  const _PageHeader({required this.profile});
-
-  final Profile profile;
+  const _PageHeader();
 
   @override
   Widget build(BuildContext context) {
@@ -82,30 +78,19 @@ class ProfilePage extends GetView<ProfileController> {
     return Scaffold(
       body: SafeArea(
         child: Obx(() {
-          if (controller.isLoading.value && controller.profile.value == null) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (controller.errorMessage.value != null &&
-              controller.profile.value == null) {
-            return AppStateMessage(
-              title: 'Unable to load profile',
-              message: controller.errorMessage.value!,
-              icon: Icons.person_outline_rounded,
-              actionLabel: 'Try again',
-              onAction: controller.loadProfile,
-            );
-          }
-          final profile = controller.profile.value;
-          if (profile == null) {
+          final user = controller.user;
+          if (user == null) {
             return AppStateMessage(
               title: 'No profile information',
               message: 'Your resident profile is not available right now.',
               icon: Icons.person_outline_rounded,
+              actionLabel: 'Try again',
+              onAction: controller.refreshProfile,
             );
           }
 
           return RefreshIndicator(
-            onRefresh: controller.loadProfile,
+            onRefresh: controller.refreshProfile,
             child: ListView(
               key: const Key('profile-scroll'),
               physics: const AlwaysScrollableScrollPhysics(),
@@ -116,12 +101,13 @@ class ProfilePage extends GetView<ProfileController> {
                 AppSpacing.pageBottom,
               ),
               children: [
-                _PageHeader(profile: profile),
+                const _PageHeader(),
                 AppSpacing.sectionGap.heightBox(),
-                _ProfileHero(
-                  profile: profile,
-                  onEdit: () => _editProfile(context, profile),
-                ),
+                // _ProfileHero(
+                //   user: user,
+                //   unitLabel: controller.unitLabel,
+                //   onEdit: () => _editProfile(context, user),
+                // ),
                 AppSpacing.sectionGap.heightBox(),
                 _SectionCard(
                   icon: Icons.badge_outlined,
@@ -130,25 +116,27 @@ class ProfilePage extends GetView<ProfileController> {
                     _InfoRow(
                       icon: Icons.person_outline_rounded,
                       label: 'Full name',
-                      value: profile.name,
+                      value: user.name.trim().isEmpty ? '—' : user.name,
                     ),
                     const _RowDivider(),
                     _InfoRow(
                       icon: Icons.mail_outline_rounded,
                       label: 'Email',
-                      value: profile.email,
+                      value: user.email ?? '—',
                     ),
                     const _RowDivider(),
                     _InfoRow(
                       icon: Icons.phone_outlined,
                       label: 'Phone',
-                      value: profile.phone,
+                      value: user.phone.trim().isEmpty ? '—' : user.phone,
                     ),
                     const _RowDivider(),
                     _InfoRow(
                       icon: Icons.apartment_rounded,
                       label: 'Unit',
-                      value: profile.unit,
+                      value: controller.unitLabel.isEmpty
+                          ? '—'
+                          : controller.unitLabel,
                     ),
                   ],
                 ),
@@ -160,17 +148,17 @@ class ProfilePage extends GetView<ProfileController> {
                     _PreferenceRow(
                       icon: Icons.notifications_none_rounded,
                       label: 'Notification preferences',
-                      value: profile.notificationsEnabled
+                      value: controller.notificationsEnabled.value
                           ? 'Enabled'
                           : 'Disabled',
                       onTap: () {
                         vibrateNow();
                         controller.toggleNotifications(
-                          !profile.notificationsEnabled,
+                          !controller.notificationsEnabled.value,
                         );
                       },
                       trailing: Switch.adaptive(
-                        value: profile.notificationsEnabled,
+                        value: controller.notificationsEnabled.value,
                         onChanged: controller.toggleNotifications,
                       ),
                     ),
@@ -192,7 +180,7 @@ class ProfilePage extends GetView<ProfileController> {
                       ),
                       onTap: () {
                         vibrateNow();
-                        _chooseLanguage(context, profile);
+                        _chooseLanguage(context);
                       },
                     ),
                   ],
@@ -291,7 +279,7 @@ class ProfilePage extends GetView<ProfileController> {
                       label: 'Edit profile',
                       onTap: () {
                         vibrateNow();
-                        _editProfile(context, profile);
+                        _editProfile(context, user);
                       },
                     ),
                     const _RowDivider(),
@@ -354,23 +342,33 @@ class ProfilePage extends GetView<ProfileController> {
     );
   }
 
-  Future<void> _editProfile(BuildContext context, Profile profile) async {
+  Future<void> _editProfile(BuildContext context, AuthUser user) async {
     final result =
         await showModalBottomSheet<({String name, String email, String phone})>(
           context: context,
           isScrollControlled: true,
           showDragHandle: false,
-          builder: (_) => _EditProfileSheet(profile: profile),
+          builder: (_) => _EditProfileSheet(user: user),
         );
     if (result == null) {
       return;
     }
-    final updated = await controller.updateProfile(
+    final updated = controller.updateProfile(
       name: result.name,
       email: result.email,
       phone: result.phone,
     );
-    if (updated != null && context.mounted) {
+    if (!updated) {
+      if (context.mounted && controller.errorMessage.value != null) {
+        _showMessage(
+          context,
+          'Unable to update profile',
+          controller.errorMessage.value!,
+        );
+      }
+      return;
+    }
+    if (context.mounted) {
       _showMessage(
         context,
         'Profile updated',
@@ -379,7 +377,7 @@ class ProfilePage extends GetView<ProfileController> {
     }
   }
 
-  Future<void> _chooseLanguage(BuildContext context, Profile profile) async {
+  Future<void> _chooseLanguage(BuildContext context) async {
     final localeController = Get.find<AppLocaleController>();
     final chosen = await showLanguagePickerSheet(
       context,
@@ -389,44 +387,113 @@ class ProfilePage extends GetView<ProfileController> {
       return;
     }
     await localeController.setLanguageCode(chosen);
-    await controller.updateProfile(
-      name: profile.name,
-      email: profile.email,
-      phone: profile.phone,
-      language: localeController.englishName(chosen),
-    );
   }
 
   Future<void> _changePassword(BuildContext context) async {
-    final confirmed = await showAppFormDialog(
-      context,
-      title: 'Change password',
-      message: 'Use at least 8 characters with a number and a letter.',
-      icon: Icons.lock_outline_rounded,
-      confirmLabel: 'Save',
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AppTextField(
-            label: 'Current password',
-            obscureText: true,
-            icon: Icons.lock_outline_rounded,
-          ),
-          14.h.heightBox(),
-          AppTextField(
-            label: 'New password',
-            obscureText: true,
-            icon: Icons.lock_reset_rounded,
-          ),
-        ],
-      ),
-    );
-    if (confirmed && context.mounted) {
-      _showMessage(
+    final formKey = GlobalKey<FormState>();
+    final currentPassword = TextEditingController();
+    final newPassword = TextEditingController();
+    final confirmPassword = TextEditingController();
+
+    try {
+      final changed = await showAppFormDialog(
         context,
-        'Password updated',
-        'Your password was changed in this local demo.',
+        title: 'changePassword'.tr,
+        message: 'passwordHint'.tr,
+        icon: Icons.lock_outline_rounded,
+        confirmLabel: 'save'.tr,
+        cancelLabel: 'cancel'.tr,
+        pendingLabel: 'changingPassword'.tr,
+        onConfirm: () async {
+          if (!(formKey.currentState?.validate() ?? false)) {
+            return AppConfirmResult.failure('');
+          }
+          final accepted = await controller.changePassword(
+            currentPassword: currentPassword.text,
+            newPassword: newPassword.text,
+          );
+          if (!accepted) {
+            return AppConfirmResult.failure(
+              controller.changePasswordError ?? 'changePasswordFailed'.tr,
+            );
+          }
+          currentPassword.clear();
+          newPassword.clear();
+          confirmPassword.clear();
+          return AppConfirmResult.success();
+        },
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppTextField(
+                fieldKey: const Key('change-password-current'),
+                controller: currentPassword,
+                label: 'currentPassword'.tr,
+                obscureText: true,
+                icon: Icons.lock_outline_rounded,
+                textInputAction: TextInputAction.next,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'currentPasswordRequired'.tr
+                    : null,
+              ),
+              14.h.heightBox(),
+              AppTextField(
+                fieldKey: const Key('change-password-new'),
+                controller: newPassword,
+                label: 'newPassword'.tr,
+                obscureText: true,
+                icon: Icons.lock_reset_rounded,
+                textInputAction: TextInputAction.next,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'newPasswordRequired'.tr;
+                  }
+                  if (value.length < 8) {
+                    return 'passwordTooShort'.tr;
+                  }
+                  if (!RegExp(r'[A-Za-z]').hasMatch(value) ||
+                      !RegExp(r'\d').hasMatch(value)) {
+                    return 'passwordNeedsLetterAndNumber'.tr;
+                  }
+                  return null;
+                },
+              ),
+              14.h.heightBox(),
+              AppTextField(
+                fieldKey: const Key('change-password-confirm'),
+                controller: confirmPassword,
+                label: 'confirmPassword'.tr,
+                obscureText: true,
+                icon: Icons.lock_reset_rounded,
+                textInputAction: TextInputAction.done,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'confirmPasswordRequired'.tr;
+                  }
+                  if (value != newPassword.text) {
+                    return 'passwordsDoNotMatch'.tr;
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
       );
+      if (changed && context.mounted) {
+        showAppFeedback(
+          context,
+          title: 'passwordChanged'.tr,
+          message: 'passwordChangedMessage'.tr,
+          isError: false,
+        );
+      }
+    } finally {
+      currentPassword.dispose();
+      newPassword.dispose();
+      confirmPassword.dispose();
     }
   }
 
@@ -459,9 +526,7 @@ class ProfilePage extends GetView<ProfileController> {
     // Clears the stored tokens and the remembered details first, so the splash
     // will not quietly sign the resident back in on the next launch and no
     // later request can reuse the old credentials.
-    if (Get.isRegistered<AuthController>()) {
-      await Get.find<AuthController>().signOut();
-    }
+    await controller.signOut();
     if (Get.isRegistered<DashboardController>()) {
       Get.find<DashboardController>().selectedTab.value = 0;
     }
@@ -470,9 +535,14 @@ class ProfilePage extends GetView<ProfileController> {
 }
 
 class _ProfileHero extends StatelessWidget {
-  const _ProfileHero({required this.profile, required this.onEdit});
+  const _ProfileHero({
+    required this.user,
+    required this.unitLabel,
+    required this.onEdit,
+  });
 
-  final Profile profile;
+  final AuthUser user;
+  final String unitLabel;
   final VoidCallback onEdit;
 
   @override
@@ -505,8 +575,14 @@ class _ProfileHero extends StatelessWidget {
                 child: CircleAvatar(
                   radius: 31,
                   backgroundColor: tokens.brandOnDark,
+                  // foregroundImage: user.avatarUrl == null
+                  //     ? null
+                  //     : NetworkImage(user.avatarUrl!),
+                  // onForegroundImageError: user.avatarUrl == null
+                  //     ? null
+                  //     : (_, _) {},
                   child: Text(
-                    profile.initials,
+                    user.initials,
                     style: TextStyle(
                       color: tokens.brandDark,
                       fontSize: 21.sp,
@@ -521,7 +597,7 @@ class _ProfileHero extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      profile.name,
+                      user.displayName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -530,8 +606,10 @@ class _ProfileHero extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    6.h.heightBox(),
-                    _UnitBadge(unit: profile.unit),
+                    if (unitLabel.trim().isNotEmpty) ...[
+                      6.h.heightBox(),
+                      _UnitBadge(unit: unitLabel),
+                    ],
                   ],
                 ),
               ),
@@ -834,8 +912,8 @@ class _ActionRow extends StatelessWidget {
 }
 
 class _EditProfileSheet extends StatefulWidget {
-  const _EditProfileSheet({required this.profile});
-  final Profile profile;
+  const _EditProfileSheet({required this.user});
+  final AuthUser user;
 
   @override
   State<_EditProfileSheet> createState() => _EditProfileSheetState();
@@ -849,9 +927,9 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.profile.name);
-    _emailController = TextEditingController(text: widget.profile.email);
-    _phoneController = TextEditingController(text: widget.profile.phone);
+    _nameController = TextEditingController(text: widget.user.name);
+    _emailController = TextEditingController(text: widget.user.email ?? '');
+    _phoneController = TextEditingController(text: widget.user.phone);
   }
 
   @override

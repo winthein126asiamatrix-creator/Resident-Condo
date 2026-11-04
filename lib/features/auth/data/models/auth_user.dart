@@ -120,8 +120,7 @@ class AuthUser {
       name: _asString(json['name']),
       email: _asNullableString(json['email']),
       phone: _asString(json['phone']),
-      avatarUrl: null,
-      //_asAvatarUrl(json['avatar_url']),
+      avatarUrl: _asAvatarUrl(json['avatar_url']),
       unit: unitJson is Map
           ? AuthUnit.fromJson(Map<String, dynamic>.from(unitJson))
           : null,

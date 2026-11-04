@@ -11,6 +11,14 @@ class AuthUseCases {
 
   Future<AuthSession> updateMe() => repository.updateMe();
 
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) => repository.changePassword(
+    oldPassword: oldPassword,
+    newPassword: newPassword,
+  );
+
   Future<void> signOut() => repository.signOut();
 
   Future<AuthSession?> restoreSession() => repository.restoreSession();

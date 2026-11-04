@@ -16,6 +16,15 @@ abstract interface class AuthRepository {
   /// tokens are absent or have expired past refreshing.
   Future<AuthSession> updateMe();
 
+  /// Changes the signed-in resident's password.
+  ///
+  /// The active session is left untouched: changing a password does not
+  /// invalidate the resident's own access token.
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  });
+
   /// Ends the current session: tokens and remembered details both cleared.
   Future<void> signOut();
 

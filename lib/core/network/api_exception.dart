@@ -181,8 +181,9 @@ class ApiException extends AppException {
           kind: ApiFailureKind.unknown,
         );
       case DioExceptionType.badResponse:
+        final serverMessage = _serverMessageOf(error.response?.data);
         return ApiException(
-          _messageForStatus(status),
+          serverMessage ?? _messageForStatus(status),
           kind: _kindFor(status),
           statusCode: status,
         );
@@ -219,6 +220,37 @@ class ApiException extends AppException {
     final message = error['message'];
     if (message is String && message.trim().isNotEmpty) {
       return message.trim();
+    }
+    return null;
+  }
+
+  /// A plain REST error body, which uses a different shape from the Odoo
+  /// envelope handled by [_rpcErrorOf].
+  ///
+  /// Only short text is accepted: an HTML error page is not something to put
+  /// in front of a resident, so those fall back to the status wording.
+  static String? _serverMessageOf(Object? data) {
+    if (data is String) {
+      final text = data.trim();
+      if (text.isNotEmpty && text.length <= 300 && !text.startsWith('<')) {
+        return text;
+      }
+      return null;
+    }
+    if (data is! Map) {
+      return null;
+    }
+    for (final key in const <String>[
+      'message',
+      'detail',
+      'error',
+      'error_description',
+      'reason',
+    ]) {
+      final value = data[key];
+      if (value is String && value.trim().isNotEmpty) {
+        return value.trim();
+      }
     }
     return null;
   }

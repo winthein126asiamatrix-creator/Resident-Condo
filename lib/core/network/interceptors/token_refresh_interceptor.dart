@@ -38,7 +38,7 @@ class TokenRefreshInterceptor extends Interceptor {
   /// non-null future and waits on it instead of starting its own refresh, so a
   /// dashboard that fires six requests at once produces one refresh call, not
   /// six.
-  Future<AuthTokens?>? _inFlight;
+  Future<_RefreshResult>? _inFlight;
 
   /// Marks a request that has already been replayed, so a second 401 on the
   /// same request is reported instead of retried forever.
@@ -70,12 +70,19 @@ class TokenRefreshInterceptor extends Interceptor {
     }, title: 'Token Refresh: 401 Detected');
     superPrint({'path': options.path}, title: 'Token Refresh: Started');
 
-    final tokens = await _refreshOnce();
+    final result = await _refreshOnce();
 
+    final tokens = result.tokens;
     if (tokens == null) {
-      // Refresh failed or there was nothing to refresh with. The stored pair is
-      // already cleared; the app is told so it can drop user state and route to
-      // login.
+      if (result.isTransient) {
+        // The refresh could not complete, but nothing proved the session is
+        // invalid. Keep the stored pair and let the caller retry later.
+        handler.next(_transientError(err, result.cause));
+        return;
+      }
+      // Refresh was rejected or there was nothing to refresh with. The stored
+      // pair is already cleared; the app is told so it can drop user state and
+      // route to login.
       onSessionExpired?.call();
       handler.next(err);
       return;
@@ -88,6 +95,28 @@ class TokenRefreshInterceptor extends Interceptor {
       options.extra[retriedExtra] = true;
       options.headers[ApiConfig.authorizationHeader] =
           '${ApiConfig.authScheme} ${tokens.accessToken}';
+
+      // Dio finalizes a FormData body when it sends it, so the same instance
+      // cannot be sent again. Clone it before replaying; otherwise a multipart
+      // request that gets a 401 could never be retried.
+      final body = options.data;
+      if (body is FormData) {
+        options.data = body.clone();
+      } else if (body is Stream) {
+        // A one-shot stream cannot be replayed safely.
+        handler.next(
+          DioException(
+            requestOptions: options,
+            type: DioExceptionType.unknown,
+            error: StateError(
+              'The request body is a stream and cannot be replayed after a '
+              'token refresh.',
+            ),
+          ),
+        );
+        return;
+      }
+
       superPrint({
         'method': options.method,
         'path': options.path,
@@ -105,8 +134,32 @@ class TokenRefreshInterceptor extends Interceptor {
     }
   }
 
+  /// Re-expresses a temporary refresh failure against the original request.
+  ///
+  /// The caller sees a retryable network/server error instead of a 401, so a
+  /// dropped connection during refresh cannot be mistaken for an invalid
+  /// session.
+  DioException _transientError(DioException original, Object? cause) {
+    if (cause is DioException) {
+      return DioException(
+        requestOptions: original.requestOptions,
+        response: cause.response,
+        type: cause.type,
+        error: cause.error,
+        message: cause.message,
+        stackTrace: cause.stackTrace,
+      );
+    }
+    return DioException(
+      requestOptions: original.requestOptions,
+      type: DioExceptionType.unknown,
+      error: cause,
+      message: 'The session could not be refreshed. Please try again.',
+    );
+  }
+
   /// Runs at most one refresh at a time and returns its result to every caller.
-  Future<AuthTokens?> _refreshOnce() {
+  Future<_RefreshResult> _refreshOnce() {
     return _inFlight ??= _refresh().whenComplete(() {
       // Cleared on completion so the next expiry can refresh again. Without
       // this the app would refresh exactly once for the whole session.
@@ -114,7 +167,7 @@ class TokenRefreshInterceptor extends Interceptor {
     });
   }
 
-  Future<AuthTokens?> _refresh() async {
+  Future<_RefreshResult> _refresh() async {
     final current = await _storage.readTokens();
     final refreshToken = current?.refreshToken;
 
@@ -124,7 +177,7 @@ class TokenRefreshInterceptor extends Interceptor {
         'reason': 'no refresh token in storage',
       }, title: 'Token Refresh: Failed');
       await _storage.clearTokens();
-      return null;
+      return const _RefreshResult.invalid();
     }
 
     try {
@@ -134,19 +187,56 @@ class TokenRefreshInterceptor extends Interceptor {
           'reason': 'refresh request returned no tokens',
         }, title: 'Token Refresh: Failed');
         await _storage.clearTokens();
-        return null;
+        return const _RefreshResult.invalid();
       }
       // Both tokens are replaced together; keeping the old refresh token would
       // guarantee a second failure at the next expiry.
-      await _storage.writeTokens(tokens);
+      final saved = await _storage.writeTokens(tokens);
+      if (!saved) {
+        // The new pair was minted but could not be persisted. Report a
+        // temporary failure rather than pretending the session was renewed.
+        superPrint({
+          'reason': 'could not save refreshed tokens',
+        }, title: 'Token Refresh: Failed');
+        return const _RefreshResult.transient(null);
+      }
       superPrint({'tokensExist': true}, title: 'Token Refresh: Tokens Saved');
-      return tokens;
+      return _RefreshResult.success(tokens);
+    } on TokenRefreshException catch (error) {
+      // Network/timeout/5xx: keep the old pair and let the caller retry.
+      superPrint({
+        'reason': 'temporary refresh failure',
+      }, title: 'Token Refresh: Failed');
+      return _RefreshResult.transient(error.cause);
     } catch (_) {
       superPrint({
         'reason': 'exception during refresh',
       }, title: 'Token Refresh: Failed');
       await _storage.clearTokens();
-      return null;
+      return const _RefreshResult.invalid();
     }
   }
+}
+
+/// The outcome of one shared refresh attempt.
+class _RefreshResult {
+  const _RefreshResult.success(AuthTokens this.tokens)
+    : isTransient = false,
+      cause = null;
+
+  const _RefreshResult.invalid()
+    : tokens = null,
+      isTransient = false,
+      cause = null;
+
+  const _RefreshResult.transient(this.cause)
+    : tokens = null,
+      isTransient = true;
+
+  final AuthTokens? tokens;
+
+  /// True when the refresh could not complete for a temporary reason.
+  final bool isTransient;
+
+  final Object? cause;
 }

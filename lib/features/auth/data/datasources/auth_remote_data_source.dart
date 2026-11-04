@@ -43,9 +43,7 @@ class AuthRemoteDataSource {
         options: _service.withoutAuth(),
       );
       superPrint(response, title: "Login");
-      return AuthResult(
-        tokens: TokenParser.tokensFrom(response),
-      );
+      return AuthResult(tokens: TokenParser.tokensFrom(response));
     } on ApiException catch (error) {
       throw _translate(error);
     }
@@ -67,6 +65,45 @@ class AuthRemoteDataSource {
     } on ApiException catch (error) {
       throw _translate(error);
     }
+  }
+
+  /// Changes the signed-in resident's password.
+  ///
+  /// The request is authenticated like every other call, so the shared
+  /// interceptor adds the bearer token and renews it if needed. The success
+  /// body is deliberately not parsed: the endpoint is known to accept the
+  /// request, but its success shape has not been confirmed, and a 2xx is
+  /// enough to know the password changed.
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    await _service.post<dynamic>(
+      ApiEndPoints.changePassword,
+      data: <String, Object?>{
+        'old_password': oldPassword,
+        'new_password': newPassword,
+      },
+    );
+  }
+
+  /// Revokes the session's refresh token on the backend.
+  ///
+  /// The call is deliberately unauthenticated: the refresh token is the
+  /// credential being revoked, and an expired access token must not trigger a
+  /// refresh while the resident is signing out.
+  Future<void> logout({
+    required String refreshToken,
+    required String deviceId,
+  }) async {
+    await _service.post<dynamic>(
+      ApiEndPoints.logout,
+      data: <String, Object?>{
+        'refresh_token': refreshToken,
+        'device_id': deviceId,
+      },
+      options: _service.withoutAuth(),
+    );
   }
 
   Future<AuthTokens?> refresh(String refreshToken) async {
