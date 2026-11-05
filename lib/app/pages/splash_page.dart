@@ -124,6 +124,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     Get.offNamed(AppRoutes.home);
   }
 
+
   bool get _hasSession {
     if (!Get.isRegistered<SessionController>()) {
       return false;
@@ -140,10 +141,6 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     _finishRestore(restored);
   }
 
-  /// Validates the stored session, if there is one, and adopts it on success.
-  ///
-  /// Returns the session when the resident may go through to the dashboard, and
-  /// null when they have to sign in.
   Future<AuthSession?> _restoreSession() async {
     final auth = Get.find<AuthController>();
     final restored = await auth.restoreSession();
@@ -277,8 +274,6 @@ class _BrandDotsLoader extends StatelessWidget {
   }
 }
 
-/// Shown when the session could not be validated because the server was
-/// temporarily unreachable. Signing in again is optional: the tokens were kept.
 class _RestoreRetry extends StatelessWidget {
   const _RestoreRetry({required this.onRetry, required this.onSignIn});
 

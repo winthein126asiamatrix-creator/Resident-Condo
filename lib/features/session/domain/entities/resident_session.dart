@@ -1,15 +1,26 @@
 import '../../../../core/models/resident_role.dart';
 import '../../../auth/data/models/auth_user.dart';
 
+enum SessionVerificationStatus { verified, unverified }
+
 /// The authenticated resident session.
 ///
 /// Wraps the complete [AuthUser] returned by `/auth/me` rather than copying a
 /// hand-picked subset of its fields. Every feature reads the same object, so a
 /// profile change cannot leave one screen showing stale information.
 class ResidentSession {
-  const ResidentSession({required this.user});
+  const ResidentSession({
+    required this.user,
+    this.verificationStatus = SessionVerificationStatus.verified,
+  });
 
   final AuthUser user;
+  final SessionVerificationStatus verificationStatus;
+
+  bool get isSessionVerified =>
+      verificationStatus == SessionVerificationStatus.verified;
+  bool get isOfflineSession =>
+      verificationStatus == SessionVerificationStatus.unverified;
 
   String get name => user.displayName;
 

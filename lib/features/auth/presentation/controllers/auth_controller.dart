@@ -13,6 +13,7 @@ import '../../../../core/widgets/authenticated_avatar.dart';
 import '../../../appearance/presentation/controllers/appearance_controller.dart';
 import '../../../notifications/data/datasources/notification_remote_data_source.dart';
 import '../../../notifications/presentation/controllers/notification_controller.dart';
+import '../../../session/domain/entities/resident_session.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../../unit/presentation/controllers/unit_controller.dart';
 import '../../data/models/auth_user.dart';
@@ -549,11 +550,16 @@ class AuthController extends GetxController {
   /// remembered name on its own is never promoted into an authenticated user.
   Future<void> adoptIntoSession(AuthSession session) async {
     final user = session.user;
-    final verifiedUser = user is AuthUser && !session.unverified ? user : null;
+    final resolvedUser = user is AuthUser ? user : null;
     if (Get.isRegistered<SessionController>()) {
       final controller = Get.find<SessionController>();
-      if (verifiedUser != null) {
-        controller.setSession(verifiedUser);
+      if (resolvedUser != null) {
+        controller.setSession(
+          resolvedUser,
+          verificationStatus: session.unverified
+              ? SessionVerificationStatus.unverified
+              : SessionVerificationStatus.verified,
+        );
         if (Get.isRegistered<UnitController>()) {
           unawaited(Get.find<UnitController>().prefetch());
         }
@@ -563,10 +569,13 @@ class AuthController extends GetxController {
         controller.clearSession();
       }
     }
-    if (verifiedUser != null) {
+    if (resolvedUser != null && !session.unverified) {
       // Device registration and theme seeding are authenticated side effects.
       _prepareNotifications();
-      await _applyAppearance(verifiedUser);
+      await _applyAppearance(resolvedUser);
+    } else if (resolvedUser != null) {
+      // Cached/offline session: still apply appearance from cached profile.
+      await _applyAppearance(resolvedUser);
     }
   }
 

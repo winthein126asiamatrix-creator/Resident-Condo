@@ -81,14 +81,6 @@ class _UnitPageState extends State<UnitPage> {
         children: [
           _UnitHero(unit: data),
           24.h.heightBox(),
-          if (controller.errorMessage.value != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                controller.errorMessage.value!,
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
           _SectionTitle(title: 'Unit information'),
           11.h.heightBox(),
           _UnitInformationCard(unit: data),

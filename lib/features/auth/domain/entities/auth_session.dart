@@ -1,3 +1,5 @@
+import '../../../session/domain/entities/resident_session.dart';
+
 /// A resident's sign-in credentials.
 ///
 /// Deliberately holds no password: the value is passed straight to the
@@ -57,6 +59,12 @@ class AuthSession {
   /// [AuthController.revalidateSession] asks the server again once it is
   /// reachable. It is never treated as proof the session is still valid.
   final bool unverified;
+
+  SessionVerificationStatus get verificationStatus => unverified
+      ? SessionVerificationStatus.unverified
+      : SessionVerificationStatus.verified;
+
+  bool get isSessionVerified => !unverified;
 
   AuthSession copyWith({
     String? username,

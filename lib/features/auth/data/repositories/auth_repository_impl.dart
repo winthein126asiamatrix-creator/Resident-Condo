@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../../../../core/cache/api_cache_store.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/api_exception.dart';
@@ -248,28 +250,39 @@ class AuthRepositoryImpl implements AuthRepository {
       }
       // A network-level failure, timeout, or server error says nothing about the
       // tokens: the resident must not be signed out because the backend is
-      // temporarily unreachable. The tokens are kept and only the non-sensitive
-      // remembered details are loaded, marked unverified, so the caller can
-      // retry `/auth/me` without asking for credentials again.
-      //
-      // Only a failure that proves the session is invalid ends it.
+      // temporarily unreachable. The tokens are kept and the cached AuthUser, if
+      // present, is restored as an unverified session so the resident can use
+      // the app offline. Only a failure that proves the session is invalid ends
+      // it.
       final transient =
           error is ApiException &&
           (error.isRetryable || error.kind == ApiFailureKind.server);
       if (transient) {
-        return _restoreFromStorage(epoch);
+        return _restoreFromCacheOrStorage(epoch);
       }
       return await _endSession(epoch);
     }
   }
 
-  /// Builds an unverified result from the locally remembered details.
+  /// Builds an unverified result, preferring the cached AuthUser.
   ///
-  /// Used only when the server is temporarily unreachable. It carries no
-  /// [AuthUser], deliberately: remembered details can explain the state to the
-  /// resident, but they are not proof of authentication and must not populate
-  /// the shared session.
-  Future<AuthSession?> _restoreFromStorage(int epoch) async {
+  /// Used only when the server is temporarily unreachable. A cached profile is
+  /// enough to populate the shared session in an unverified state; remembered
+  /// details are only a fallback when no profile was cached.
+  Future<AuthSession?> _restoreFromCacheOrStorage(int epoch) async {
+    final cachedUser = await _cachedAuthUser();
+    if (epoch != _sessionEpoch) {
+      return null;
+    }
+    if (cachedUser != null) {
+      return AuthSession(
+        username: cachedUser.name,
+        displayName: cachedUser.displayName,
+        rememberMe: true,
+        user: cachedUser,
+        unverified: true,
+      );
+    }
     final remembered = await _local.restoreSession();
     if (epoch != _sessionEpoch) {
       return null;
@@ -277,14 +290,29 @@ class AuthRepositoryImpl implements AuthRepository {
     if (remembered != null) {
       return remembered.copyWith(unverified: true);
     }
-    // The tokens persisted but the name never did. Still better than signing
-    // the resident out over a connectivity problem.
+    // The tokens persisted but no profile was cached. Still better than signing
+    // the resident out over a connectivity problem, but there is no user to show.
     return const AuthSession(
       username: '',
       displayName: 'Resident',
       rememberMe: true,
       unverified: true,
     );
+  }
+
+  /// Reads the cached AuthUser written by a successful `/auth/me`.
+  Future<AuthUser?> _cachedAuthUser() async {
+    final entry = await _cache?.read('auth.me');
+    if (entry == null) return null;
+    try {
+      final decoded = jsonDecode(entry.payloadJson);
+      if (decoded is! Map) return null;
+      final user = AuthUser.fromJson(Map<String, dynamic>.from(decoded));
+      if (user.id <= 0) return null;
+      return user;
+    } on Object {
+      return null;
+    }
   }
 
   /// Clears everything and reports no session, for a genuine rejection.
