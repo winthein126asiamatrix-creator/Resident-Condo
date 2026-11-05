@@ -22,6 +22,7 @@ import '../../../notifications/presentation/controllers/notification_controller.
 import '../../../session/domain/entities/resident_session.dart';
 
 import '../../../session/presentation/controllers/session_controller.dart';
+import '../../../unit/presentation/controllers/unit_controller.dart';
 
 import '../../domain/entities/dashboard.dart';
 
@@ -93,7 +94,9 @@ class DashboardPage extends GetView<DashboardController> {
                   padding: EdgeInsets.fromLTRB(20, 12, 20, 28),
                   children: [
                     _HomeCard(
-                      user: _residentSession!.user,
+                      unitController: Get.isRegistered<UnitController>()
+                          ? Get.find<UnitController>()
+                          : null,
                       onViewDetails: () => Get.toNamed(AppRoutes.unit),
                     ),
                     22.h.heightBox(),
@@ -317,14 +320,17 @@ class _GreetingHeader extends StatelessWidget {
 }
 
 class _HomeCard extends StatelessWidget {
-  const _HomeCard({required this.user, required this.onViewDetails});
+  const _HomeCard({required this.unitController, required this.onViewDetails});
 
-  final AuthUser user;
+  final UnitController? unitController;
   final VoidCallback onViewDetails;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    final unitData = unitController?.unit.value;
+    final unitInfo = unitData?.unit;
+    final isLoading = unitController?.isLoading.value ?? false;
     return InkWell(
       onTap: onViewDetails,
       borderRadius: BorderRadius.circular(24.r),
@@ -369,7 +375,9 @@ class _HomeCard extends StatelessWidget {
                   ),
                   18.h.heightBox(),
                   Text(
-                   user.unit?.label??"",
+                    isLoading
+                        ? 'Loading unit...'
+                        : (unitInfo?.label ?? unitData?.unit.label ?? ''),
                     style: TextStyle(
                       color: tokens.brandOnDark,
                       fontSize: 21.sp,
@@ -378,8 +386,9 @@ class _HomeCard extends StatelessWidget {
                   ),
                   6.h.heightBox(),
                   Text(
-                    //'${unit.type} Â· ${unit.area} Â· ${unit.floor}',
-                    "2 bedroom . 86 m . 12th floor",
+                    isLoading
+                        ? ''
+                        : '${unitInfo?.unitType?.name ?? ''} · ${unitInfo?.areaM2 ?? ''} m² · ${unitInfo?.floorLabel ?? ''}',
                     style: TextStyle(
                       color: tokens.brandOnDarkMuted,
                       fontSize: 13.sp,
@@ -396,7 +405,7 @@ class _HomeCard extends StatelessWidget {
                       6.w.widthBox(),
                       Flexible(
                         child: Text(
-                          '${user.role.capitalizeFirst} · Parking B2-125',
+                          '${unitInfo?.parkingSlot ?? 'N/A'}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

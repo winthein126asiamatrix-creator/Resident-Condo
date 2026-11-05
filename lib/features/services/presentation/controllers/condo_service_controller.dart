@@ -100,6 +100,8 @@ class CondoServiceController extends GetxController {
     required CondoService service,
     required String date,
     required String slot,
+    int? slotId,
+    Map<String, dynamic> bookingDetails = const <String, dynamic>{},
     String notes = '',
   }) async {
     isSubmitting.value = true;
@@ -118,6 +120,8 @@ class CondoServiceController extends GetxController {
           requestedOn: 'Sep 25, 2026',
           provider: service.provider,
           notes: notes,
+          slotId: slotId,
+          bookingDetails: bookingDetails,
         ),
       );
       requests.insert(0, request);
@@ -179,7 +183,7 @@ class CondoServiceController extends GetxController {
     }
   }
 
-  CondoService? _findService(String id) {
+  CondoService? _findService(int id) {
     for (final service in services) {
       if (service.id == id) {
         return service;

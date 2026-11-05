@@ -230,7 +230,7 @@ class _ServiceCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    AppFormatters.currency(service.price),
+                    _pricingLabel(service),
                     style: TextStyle(
                       color: tokens.brand,
                       fontWeight: FontWeight.w800,
@@ -239,7 +239,7 @@ class _ServiceCard extends StatelessWidget {
                   ),
                   2.h.heightBox(),
                   Text(
-                    service.unit,
+                    _pricingUnit(service),
                     style: TextStyle(color: tokens.faint, fontSize: 10.5.sp),
                   ),
                 ],
@@ -414,5 +414,31 @@ class _RequestCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+String _pricingLabel(CondoService service) {
+  switch (service.pricing.type) {
+    case ServicePricingType.quote:
+      return 'Request a Quote';
+    case ServicePricingType.free:
+      return 'Free';
+    default:
+      return AppFormatters.currency(service.price);
+  }
+}
+
+String _pricingUnit(CondoService service) {
+  switch (service.pricing.type) {
+    case ServicePricingType.fixed:
+      return 'fixed';
+    case ServicePricingType.perUnit:
+      return '/ ${service.pricing.unit ?? 'unit'}';
+    case ServicePricingType.perHour:
+      return '/ hour';
+    case ServicePricingType.quote:
+      return '';
+    case ServicePricingType.free:
+      return '';
   }
 }

@@ -2,8 +2,6 @@ import '../../../../core/errors/app_exception.dart';
 import '../../domain/entities/condo_service.dart';
 import '../models/condo_service_model.dart';
 
-/// Condo services (cleaning, laundry, pest control…) are a completely separate
-/// workflow from maintenance / repair requests.
 class CondoServiceLocalDataSource {
   CondoServiceLocalDataSource()
     : _services = List<CondoServiceModel>.of(_initialServices),
@@ -14,108 +12,195 @@ class CondoServiceLocalDataSource {
 
   static final List<CondoServiceModel> _initialServices = [
     const CondoServiceModel(
-      id: 'service-cleaning',
-      name: 'Deep cleaning',
-      category: ServiceCategory.cleaning,
-      description: 'Full home deep clean including kitchen, bathrooms, windows and floors.',
-      price: 55,
-      unit: 'per visit',
-      leadTimeDays: 2,
-      provider: 'BrightHome Services',
-    ),
-    const CondoServiceModel(
-      id: 'service-laundry',
-      name: 'Laundry & ironing',
-      category: ServiceCategory.laundry,
-      description: 'Wash, dry and fold up to 10 kg of laundry per visit.',
-      price: 22,
-      unit: 'per 10 kg',
-      leadTimeDays: 1,
-      provider: 'FreshFold Laundry',
-    ),
-    const CondoServiceModel(
-      id: 'service-pest',
-      name: 'Pest control',
-      category: ServiceCategory.pestControl,
-      description: 'Targeted treatment for cockroaches, ants or mosquitoes.',
-      price: 75,
-      unit: 'per unit',
-      leadTimeDays: 3,
-      provider: 'ShieldCare Pest Management',
-    ),
-    const CondoServiceModel(
-      id: 'service-waste',
-      name: 'Bulky item disposal',
-      category: ServiceCategory.waste,
-      description:
-          'Collection and disposal of furniture or e-waste up to 3 items.',
-      price: 40,
-      unit: 'per collection',
-      leadTimeDays: 4,
-      provider: 'CityWaste Services',
-    ),
-    const CondoServiceModel(
-      id: 'service-aircon',
-      name: 'Aircon filter cleaning',
+      id: 1,
       category: ServiceCategory.aircon,
-      description: 'Filter cleaning and coil check for up to two split units.',
-      price: 60,
-      unit: 'per 2 units',
-      leadTimeDays: 2,
-      provider: 'CoolBreeze Engineering',
+      name: 'AC Cleaning',
+      providerName: 'BrightHome Services',
+      description: 'Professional AC cleaning service.',
+      pricing: ServicePricing(
+        type: ServicePricingType.perUnit,
+        price: 30000,
+        unit: 'AC',
+        currency: 'MMK',
+      ),
+      estimatedDurationMinutes: 60,
+      bookingFields: [
+        ServiceBookingField(
+          key: 'ac_quantity',
+          label: 'Number of AC Units',
+          type: ServiceBookingFieldType.quantity,
+          required: true,
+          min: 1,
+          max: 5,
+        ),
+      ],
+      availableDates: [
+        ServiceAvailableDate(
+          date: '2026-11-07',
+          slots: [
+            ServiceTimeSlot(
+              id: 101,
+              startTime: '09:00',
+              endTime: '11:00',
+              status: 'available',
+            ),
+            ServiceTimeSlot(
+              id: 102,
+              startTime: '13:00',
+              endTime: '15:00',
+              status: 'available',
+            ),
+          ],
+        ),
+         ServiceAvailableDate(
+          date: '2026-11-08',
+          slots: [
+            ServiceTimeSlot(
+              id: 103,
+              startTime: '09:00',
+              endTime: '11:00',
+              status: 'available',
+            ),
+            ServiceTimeSlot(
+              id: 104,
+              startTime: '13:00',
+              endTime: '18:00',
+              status: 'available',
+            ),
+          ],
+        ),
+        ServiceAvailableDate(
+          date: '2026-11-09',
+          slots: [
+            ServiceTimeSlot(
+              id: 103,
+              startTime: '09:00',
+              endTime: '11:00',
+              status: 'available',
+            ),
+            ServiceTimeSlot(
+              id: 104,
+              startTime: '14:00',
+              endTime: '19:00',
+              status: 'available',
+            ),
+          ],
+        ),
+      ],
+      isActive: true,
     ),
     const CondoServiceModel(
-      id: 'service-catering',
-      name: 'Private catering',
-      category: ServiceCategory.catering,
-      description:
-          'In-unit catering for up to eight guests with setup and cleanup.',
-      price: 120,
-      unit: 'per booking',
-      leadTimeDays: 5,
-      provider: 'The Lobby Kitchen',
+      id: 2,
+      category: ServiceCategory.cleaning,
+      name: 'Home Cleaning',
+      providerName: 'BrightHome Services',
+      description: 'Full home deep clean including kitchen and bathrooms.',
+      pricing: ServicePricing(
+        type: ServicePricingType.fixed,
+        price: 55,
+        currency: 'MMK',
+      ),
+      estimatedDurationMinutes: 240,
+      bookingFields: [
+        ServiceBookingField(
+          key: 'bedrooms',
+          label: 'Bedrooms',
+          type: ServiceBookingFieldType.quantity,
+          required: true,
+          min: 1,
+          max: 6,
+        ),
+        ServiceBookingField(
+          key: 'bathrooms',
+          label: 'Bathrooms',
+          type: ServiceBookingFieldType.quantity,
+          required: true,
+          min: 1,
+          max: 4,
+        ),
+      ],
+      availableDates: [
+        ServiceAvailableDate(
+          date: '2026-11-08',
+          slots: [
+            ServiceTimeSlot(
+              id: 201,
+              startTime: '10:00',
+              endTime: '12:00',
+              status: 'available',
+            ),
+          ],
+        ),
+      ],
+      isActive: true,
     ),
     const CondoServiceModel(
-      id: 'service-moving',
-      name: 'Moving help',
+      id: 3,
+      category: ServiceCategory.laundry,
+      name: 'Laundry Service',
+      providerName: 'FreshFold Laundry',
+      description: 'Wash, dry and fold laundry.',
+      pricing: ServicePricing(
+        type: ServicePricingType.perUnit,
+        price: 22,
+        unit: '10 kg',
+        currency: 'MMK',
+      ),
+      estimatedDurationMinutes: 120,
+      bookingFields: [
+        ServiceBookingField(
+          key: 'laundry_weight',
+          label: 'Laundry weight',
+          type: ServiceBookingFieldType.quantity,
+          required: true,
+          min: 1,
+          max: 20,
+        ),
+      ],
+      availableDates: [],
+      isActive: true,
+    ),
+    const CondoServiceModel(
+      id: 4,
       category: ServiceCategory.moving,
-      description: 'Two helpers and a trolley for a three hour moving slot.',
-      price: 90,
-      unit: 'per 3 hours',
-      leadTimeDays: 7,
-      provider: 'EasyMove Residents',
+      name: 'Moving Help',
+      providerName: 'EasyMove Residents',
+      description: 'Two helpers and a trolley for a moving slot.',
+      pricing: ServicePricing(
+        type: ServicePricingType.quote,
+        currency: 'MMK',
+      ),
+      estimatedDurationMinutes: 180,
+      bookingFields: [
+        ServiceBookingField(
+          key: 'moving_details',
+          label: 'Moving details',
+          type: ServiceBookingFieldType.text,
+          required: true,
+        ),
+      ],
+      availableDates: [],
+      isActive: true,
+    ),
+    const CondoServiceModel(
+      id: 5,
+      category: ServiceCategory.pestControl,
+      name: 'Pest Control',
+      providerName: 'ShieldCare Pest Management',
+      description: 'Targeted treatment for pests.',
+      pricing: ServicePricing(
+        type: ServicePricingType.fixed,
+        price: 75,
+        currency: 'MMK',
+      ),
+      estimatedDurationMinutes: 90,
+      bookingFields: [],
+      availableDates: [],
+      isActive: true,
     ),
   ];
 
-  static final List<ServiceRequestModel> _initialRequests = [
-    const ServiceRequestModel(
-      id: 'service-request-002',
-      serviceId: 'service-aircon',
-      serviceName: 'Aircon filter cleaning',
-      category: ServiceCategory.aircon,
-      scheduledDate: 'Sep 27, 2026',
-      scheduledSlot: '9:00 AM – 11:00 AM',
-      status: ServiceRequestStatus.scheduled,
-      price: 60,
-      requestedOn: 'Sep 23, 2026',
-      provider: 'CoolBreeze Engineering',
-      notes: 'Please focus on the living room and master bedroom units.',
-    ),
-    const ServiceRequestModel(
-      id: 'service-request-001',
-      serviceId: 'service-cleaning',
-      serviceName: 'Deep cleaning',
-      category: ServiceCategory.cleaning,
-      scheduledDate: 'Sep 18, 2026',
-      scheduledSlot: '1:00 PM – 4:00 PM',
-      status: ServiceRequestStatus.completed,
-      price: 55,
-      requestedOn: 'Sep 15, 2026',
-      provider: 'BrightHome Services',
-      feedback: 'Great work, the kitchen looks brand new.',
-      rating: 5,
-    ),
-  ];
+  static final List<ServiceRequestModel> _initialRequests = [];
 
   Future<List<CondoServiceModel>> getServices() async {
     return List<CondoServiceModel>.unmodifiable(_services);
@@ -133,9 +218,6 @@ class CondoServiceLocalDataSource {
       throw const AppException('Service could not be found.');
     }
     final service = _services[index];
-    if (request.scheduledDate.isEmpty) {
-      throw const AppException('Choose a preferred date.');
-    }
     final created = ServiceRequestModel(
       id: 'service-request-${DateTime.now().microsecondsSinceEpoch}',
       serviceId: service.id,
@@ -148,6 +230,8 @@ class CondoServiceLocalDataSource {
       requestedOn: 'Sep 25, 2026',
       provider: service.provider,
       notes: request.notes,
+      slotId: request.slotId,
+      bookingDetails: request.bookingDetails,
     );
     _requests.insert(0, created);
     return created;
@@ -204,6 +288,8 @@ class CondoServiceLocalDataSource {
       notes: updated.notes,
       feedback: updated.feedback,
       rating: updated.rating,
+      slotId: updated.slotId,
+      bookingDetails: updated.bookingDetails,
     );
     _requests[index] = model;
     return model;

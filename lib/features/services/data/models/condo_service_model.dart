@@ -3,13 +3,15 @@ import '../../domain/entities/condo_service.dart';
 class CondoServiceModel extends CondoService {
   const CondoServiceModel({
     required super.id,
-    required super.name,
     required super.category,
+    required super.name,
+    required super.providerName,
     required super.description,
-    required super.price,
-    required super.unit,
-    required super.leadTimeDays,
-    required super.provider,
+    required super.pricing,
+    super.estimatedDurationMinutes,
+    super.bookingFields,
+    super.availableDates,
+    super.isActive,
   });
 }
 
@@ -28,5 +30,7 @@ class ServiceRequestModel extends ServiceRequest {
     super.notes,
     super.feedback,
     super.rating,
+    super.slotId,
+    super.bookingDetails,
   });
 }

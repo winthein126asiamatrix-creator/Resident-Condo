@@ -49,26 +49,209 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
   final CondoServiceController controller = Get.find<CondoServiceController>();
   final TextEditingController _notesController = TextEditingController();
 
-  String _date = 'Sep 27, 2026';
-  String _slot = '9:00 AM â€“ 11:00 AM';
+  List<String> _dates = <String>[];
+  String? _selectedDate;
+  int? _selectedSlotId;
+  String _selectedSlotLabel = '';
+  final Map<String, dynamic> _bookingValues = <String, dynamic>{};
+  final Map<String, String> _fieldErrors = <String, String>{};
   String _error = '';
-
-  static const _dates = [
-    'Sep 26, 2026',
-    'Sep 27, 2026',
-    'Sep 28, 2026',
-    'Sep 29, 2026',
-  ];
-  static const _slots = [
-    '9:00 AM â€“ 11:00 AM',
-    '1:00 PM â€“ 3:00 PM',
-    '4:00 PM â€“ 6:00 PM',
-  ];
+  String? _initializedServiceId;
 
   @override
   void dispose() {
     _notesController.dispose();
     super.dispose();
+  }
+
+  void _initializeForService(CondoService service) {
+    if (_initializedServiceId == service.id.toString()) return;
+    _initializedServiceId = service.id.toString();
+    _dates = service.availableDates.map((d) => d.date).toList();
+    _selectedDate = _dates.isNotEmpty ? _dates.first : null;
+    _selectedSlotId = null;
+    _selectedSlotLabel = '';
+    _bookingValues.clear();
+    _fieldErrors.clear();
+    _selectFirstAvailableSlot(service);
+  }
+
+  void _selectFirstAvailableSlot(CondoService service) {
+    final date = _selectedDate;
+    if (date == null) return;
+    final availableDate = service.availableDates.firstWhereOrNull((d) => d.date == date);
+    final slots = availableDate?.slots.where((s) => s.isAvailable).toList() ?? const <ServiceTimeSlot>[];
+    if (slots.isNotEmpty) {
+      _selectedSlotId = slots.first.id;
+      _selectedSlotLabel = '${slots.first.startTime} - ${slots.first.endTime}';
+    } else {
+      _selectedSlotId = null;
+      _selectedSlotLabel = '';
+    }
+  }
+
+  List<ServiceTimeSlot> _slotsFor(CondoService service, String? date) {
+    if (date == null) return const <ServiceTimeSlot>[];
+    final availableDate = service.availableDates.firstWhereOrNull((d) => d.date == date);
+    return availableDate?.slots ?? const <ServiceTimeSlot>[];
+  }
+
+  String? _validateField(ServiceBookingField field) {
+    final value = _bookingValues[field.key];
+    if (field.required) {
+      if (value == null) return 'Required';
+      if (value is String && value.trim().isEmpty) return 'Required';
+      if (value is List && value.isEmpty) return 'Required';
+    }
+    if (field.type == ServiceBookingFieldType.quantity && value != null) {
+      final number = value is num ? value : num.tryParse('$value');
+      if (number == null) return 'Enter a valid number';
+      if (field.min != null && number < field.min!) return 'Minimum ${field.min}';
+      if (field.max != null && number > field.max!) return 'Maximum ${field.max}';
+    }
+    return null;
+  }
+
+  bool _validateAll(CondoService service) {
+    var valid = true;
+    for (final field in service.bookingFields) {
+      final error = _validateField(field);
+      if (error != null) {
+        _fieldErrors[field.key] = error;
+        valid = false;
+      } else {
+        _fieldErrors.remove(field.key);
+      }
+    }
+    if (_selectedDate == null || _selectedSlotId == null) {
+      _error = 'Choose a preferred date and time slot.';
+      valid = false;
+    } else {
+      _error = '';
+    }
+    return valid;
+  }
+
+  Future<void> _submit() async {
+    _error = '';
+    final service = controller.selectedService.value;
+    if (service == null) return;
+    if (!_validateAll(service)) {
+      setState(() {});
+      return;
+    }
+    final confirmed = await showAppConfirmDialog(
+      context,
+      title: 'Confirm booking?',
+      message:
+          '${service.name} on $_selectedDate, $_selectedSlotLabel.',
+      confirmLabel: 'Confirm booking',
+    );
+    if (!confirmed || !mounted) return;
+    final request = await controller.bookService(
+      service: service,
+      date: _selectedDate!,
+      slot: _selectedSlotLabel,
+      slotId: _selectedSlotId,
+      bookingDetails: Map<String, dynamic>.from(_bookingValues),
+      notes: _notesController.text.trim(),
+    );
+    if (!mounted) return;
+    if (request == null) {
+      setState(() {
+        _error = controller.errorMessage.value ?? 'Booking failed.';
+      });
+      return;
+    }
+    Get.offNamed(AppRoutes.serviceRequestDetail, arguments: request);
+  }
+
+  Widget _buildBookingField(CondoService service, ServiceBookingField field) {
+    final tokens = AppThemeTokens.of(context);
+    final errorText = _fieldErrors[field.key];
+    switch (field.type) {
+      case ServiceBookingFieldType.quantity:
+        return AppTextField(
+          fieldKey: Key('booking-${field.key}'),
+          label: field.label,
+          hint: field.min != null ? 'Min ${field.min}' : null,
+          keyboardType: TextInputType.number,
+          onChanged: (value) {
+            setState(() {
+              _bookingValues[field.key] = int.tryParse(value) ?? value;
+              _fieldErrors.remove(field.key);
+            });
+          },
+        );
+      case ServiceBookingFieldType.text:
+        return AppTextField(
+          fieldKey: Key('booking-${field.key}'),
+          label: field.label,
+          onChanged: (value) {
+            setState(() {
+              _bookingValues[field.key] = value;
+              _fieldErrors.remove(field.key);
+            });
+          },
+        );
+      case ServiceBookingFieldType.singleSelect:
+        return DropdownButtonFormField<String>(
+          key: Key('booking-${field.key}'),
+          decoration: InputDecoration(
+            labelText: field.label,
+
+            border: const OutlineInputBorder(),
+          ),
+          initialValue: _bookingValues[field.key] as String?,
+          items: field.options
+              .map((option) => DropdownMenuItem<String>(
+                    value: option,
+                    child: Text(option),
+                  ))
+              .toList(),
+          onChanged: (value) {
+            setState(() {
+              _bookingValues[field.key] = value;
+              _fieldErrors.remove(field.key);
+            });
+          },
+        );
+      case ServiceBookingFieldType.multiSelect:
+        final selected = (_bookingValues[field.key] as List?)?.cast<String>() ?? <String>[];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(field.label, style: TextStyle(color: tokens.mutedStrong, fontWeight: FontWeight.w700)),
+            8.h.heightBox(),
+            Wrap(
+              spacing: 8,
+              children: field.options.map((option) {
+                final isSelected = selected.contains(option);
+                return FilterChip(
+                  label: Text(option),
+                  selected: isSelected,
+                  onSelected: (value) {
+                    setState(() {
+                      final next = List<String>.from(selected);
+                      if (value) {
+                        next.add(option);
+                      } else {
+                        next.remove(option);
+                      }
+                      _bookingValues[field.key] = next;
+                      _fieldErrors.remove(field.key);
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+            if (errorText != null) ...[
+              4.h.heightBox(),
+              Text(errorText, style: TextStyle(color: AppPalette.danger, fontSize: 12.sp)),
+            ],
+          ],
+        );
+    }
   }
 
   @override
@@ -87,9 +270,11 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
           ),
         );
       }
+      _initializeForService(service);
       final tokens = AppThemeTokens.of(context);
       final styles = AppTextStyles.of(context);
       final error = _error.isNotEmpty ? _error : controller.errorMessage.value;
+      final slots = _slotsFor(service, _selectedDate);
       return Scaffold(
         appBar: AppDetailAppBar(title: 'Book a service'),
         body: ListView(
@@ -107,6 +292,21 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
             16.h.heightBox(),
             _SelectedServiceCard(service: service),
             22.h.heightBox(),
+            if (service.bookingFields.isNotEmpty) ...[
+              AppSectionCard(
+                title: 'Booking details',
+                subtitle: 'Provide the details required for this service.',
+                child: Column(
+                  children: [
+                    for (final field in service.bookingFields) ...[
+                      _buildBookingField(service, field),
+                      12.h.heightBox(),
+                    ],
+                  ],
+                ),
+              ),
+              18.h.heightBox(),
+            ],
             AppSectionCard(
               title: 'Schedule',
               subtitle: 'Choose a preferred date and time for the visit.',
@@ -118,28 +318,48 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                     label: 'Preferred date',
                   ),
                   8.h.heightBox(),
-                  _DateGrid(
-                    dates: _dates,
-                    selected: _date,
-                    onSelected: (date) => setState(() {
-                      _date = date;
-                      _error = '';
-                    }),
-                  ),
+                  if (_dates.isEmpty)
+                    Text('No available dates', style: TextStyle(color: tokens.muted))
+                  else
+                    _DateGrid(
+                      dates: _dates,
+                      selected: _selectedDate ?? '',
+                      onSelected: (date) => setState(() {
+                        _selectedDate = date;
+                        _selectFirstAvailableSlot(service);
+                        _error = '';
+                      }),
+                    ),
                   18.h.heightBox(),
                   _FieldHeading(
                     icon: Icons.schedule_rounded,
                     label: 'Time slot',
                   ),
                   8.h.heightBox(),
-                  _SlotList(
-                    slots: _slots,
-                    selected: _slot,
-                    onSelected: (slot) => setState(() {
-                      _slot = slot;
-                      _error = '';
-                    }),
-                  ),
+                  if (slots.isEmpty)
+                    Text('No available slots', style: TextStyle(color: tokens.muted))
+                  else
+                    Column(
+                      children: [
+                        for (final slot in slots)
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 10),
+                            child: _SelectionTile(
+                              label: '${slot.startTime} - ${slot.endTime}',
+                              icon: Icons.schedule_rounded,
+                              selected: slot.id == _selectedSlotId,
+                              enabled: slot.isAvailable,
+                              onTap: slot.isAvailable
+                                  ? () => setState(() {
+                                        _selectedSlotId = slot.id;
+                                        _selectedSlotLabel = '${slot.startTime} - ${slot.endTime}';
+                                        _error = '';
+                                      })
+                                  : () {},
+                            ),
+                          ),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -192,8 +412,8 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
               child: Column(
                 children: [
                   AppLabelValueRow(label: 'Service', value: service.name),
-                  AppLabelValueRow(label: 'Date', value: _date),
-                  AppLabelValueRow(label: 'Time slot', value: _slot),
+                  AppLabelValueRow(label: 'Date', value: _selectedDate ?? ''),
+                  AppLabelValueRow(label: 'Time slot', value: _selectedSlotLabel),
                   AppLabelValueRow(
                     label: 'Service fee',
                     value:
@@ -234,41 +454,6 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
         ),
       );
     });
-  }
-
-  Future<void> _submit() async {
-    _error = '';
-    final service = controller.selectedService.value;
-    if (service == null) {
-      return;
-    }
-    final confirmed = await showAppConfirmDialog(
-      context,
-      title: 'Confirm booking?',
-      message:
-          '${service.name} on $_date, $_slot for '
-          '${AppFormatters.currency(service.price)} ${service.unit}.',
-      confirmLabel: 'Confirm booking',
-    );
-    if (!confirmed || !mounted) {
-      return;
-    }
-    final request = await controller.bookService(
-      service: service,
-      date: _date,
-      slot: _slot,
-      notes: _notesController.text.trim(),
-    );
-    if (!mounted) {
-      return;
-    }
-    if (request == null) {
-      setState(() {
-        _error = controller.errorMessage.value ?? 'Booking failed.';
-      });
-      return;
-    }
-    Get.offNamed(AppRoutes.serviceRequestDetail, arguments: request);
   }
 }
 
@@ -316,20 +501,6 @@ class _SelectedServiceCard extends StatelessWidget {
                   ],
                 ),
               ),
-              8.w.widthBox(),
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: tokens.brand,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.check_rounded,
-                  size: 15,
-                  color: tokens.onBrand,
-                ),
-              ),
             ],
           ),
           10.h.heightBox(),
@@ -342,41 +513,6 @@ class _SelectedServiceCard extends StatelessWidget {
               fontSize: 12.5.sp,
               height: 1.4,
             ),
-          ),
-          12.h.heightBox(),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Icon(Icons.schedule_rounded, size: 15, color: tokens.faint),
-              5.w.widthBox(),
-              Expanded(
-                child: Text(
-                  'Needs ${service.leadTimeDays} day notice',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: tokens.faint, fontSize: 11.sp),
-                ),
-              ),
-              8.w.widthBox(),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    AppFormatters.currency(service.price),
-                    style: TextStyle(
-                      color: tokens.brand,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16.sp,
-                    ),
-                  ),
-                  2.h.heightBox(),
-                  Text(
-                    service.unit,
-                    style: TextStyle(color: tokens.muted, fontSize: 10.5.sp),
-                  ),
-                ],
-              ),
-            ],
           ),
         ],
       ),
@@ -449,47 +585,20 @@ class _DateGrid extends StatelessWidget {
   }
 }
 
-class _SlotList extends StatelessWidget {
-  const _SlotList({
-    required this.slots,
-    required this.selected,
-    required this.onSelected,
-  });
-
-  final List<String> slots;
-  final String selected;
-  final ValueChanged<String> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        for (var index = 0; index < slots.length; index++) ...[
-          _SelectionTile(
-            label: slots[index],
-            icon: Icons.schedule_rounded,
-            selected: slots[index] == selected,
-            onTap: () => onSelected(slots[index]),
-          ),
-          if (index != slots.length - 1) 10.h.heightBox(),
-        ],
-      ],
-    );
-  }
-}
-
 class _SelectionTile extends StatelessWidget {
   const _SelectionTile({
     required this.label,
     required this.icon,
     required this.selected,
     required this.onTap,
+    this.enabled = true,
   });
 
   final String label;
   final IconData icon;
   final bool selected;
   final VoidCallback onTap;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -515,10 +624,7 @@ class _SelectionTile extends StatelessWidget {
           borderRadius: radius,
           clipBehavior: Clip.antiAlias,
           child: InkWell(
-            onTap: () {
-              vibrateNow();
-              onTap();
-            },
+            onTap: enabled ? onTap : null,
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 10),
               child: Row(
