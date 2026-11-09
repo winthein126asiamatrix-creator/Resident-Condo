@@ -42,15 +42,21 @@ Color serviceStatusColor(ServiceRequestStatus status, AppThemeTokens tokens) {
 }
 
 class ServiceStatusPill extends StatelessWidget {
-  const ServiceStatusPill({required this.status, this.dense = true, super.key});
+  const ServiceStatusPill({
+    required this.status,
+    this.label,
+    this.dense = true,
+    super.key,
+  });
 
   final ServiceRequestStatus status;
+  final String? label;
   final bool dense;
 
   @override
   Widget build(BuildContext context) {
     return AppStatusPill(
-      label: status.label,
+      label: label ?? status.label,
       color: serviceStatusColor(status, AppThemeTokens.of(context)),
       dense: dense,
     );

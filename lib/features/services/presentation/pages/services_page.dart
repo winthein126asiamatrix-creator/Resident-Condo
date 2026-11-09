@@ -12,6 +12,8 @@ import '../../../../core/theme/app_text_styles.dart';
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
+import '../../../../core/utils/app_dates.dart';
+
 import '../../../../core/utils/app_formatters.dart';
 
 import '../../../../core/widgets/app_card.dart';
@@ -110,18 +112,18 @@ class _ServicesHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = AppThemeTokens.of(context);
+    //final tokens = AppThemeTokens.of(context);
     return AppHeroPanel(
       icon: Icons.room_service_rounded,
       title: 'Book a service',
       subtitle:
           '${controller.services.length} services Â· ${controller.openRequestCount} open requests',
       footnote: 'Services are handled by the concierge team, separately from maintenance repairs.',
-      trailing: IconButton(
-        tooltip: 'Refresh services',
-        onPressed: controller.loadAll,
-        icon: Icon(Icons.refresh_rounded, color: tokens.brandOnDark),
-      ),
+      // trailing: IconButton(
+      //   tooltip: 'Refresh services',
+      //   onPressed: controller.loadAll,
+      //   icon: Icon(Icons.refresh_rounded, color: tokens.brandOnDark),
+      // ),
     );
   }
 }
@@ -184,7 +186,7 @@ class _ServiceCard extends StatelessWidget {
 
   void _openBooking() {
     controller.selectService(service);
-    Get.toNamed(AppRoutes.serviceRequest);
+    Get.toNamed(AppRoutes.serviceRequest, arguments: service.id);
   }
 
   @override
@@ -300,44 +302,131 @@ class _Requests extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
-    if (controller.requests.isEmpty) {
+    final active = controller.activeRequests;
+    final history = controller.historyRequests;
+    if (active.isEmpty &&
+        history.isEmpty &&
+        controller.historyTotal.value == 0 &&
+        !controller.isLoading.value) {
       return AppStateMessage(
         title: 'No service requests',
         message: 'Book a service and it will show up here.',
         icon: Icons.event_note_outlined,
       );
     }
+    final groups = _groupHistory(history);
+    final historyCount = controller.historyTotal.value > 0
+        ? controller.historyTotal.value
+        : history.length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppSectionHeader(
-          title: 'Active',
-          count: controller.activeRequests.length,
-        ),
+        AppSectionHeader(title: 'Active', count: active.length),
         10.h.heightBox(),
-        if (controller.activeRequests.isEmpty)
+        if (active.isEmpty)
           Text(
             'Nothing active right now.',
             style: TextStyle(color: tokens.muted, fontSize: 12.sp),
           )
         else
-          for (final request in controller.activeRequests)
+          for (final request in active)
             Padding(
               padding: EdgeInsets.only(bottom: 10),
               child: _RequestCard(controller: controller, request: request),
             ),
-        16.h.heightBox(),
-        AppSectionHeader(
-          title: 'History',
-          count: controller.pastRequests.length,
-        ),
-        10.h.heightBox(),
-        for (final request in controller.pastRequests)
-          Padding(
-            padding: EdgeInsets.only(bottom: 10),
-            child: _RequestCard(controller: controller, request: request),
+        18.h.heightBox(),
+        if (history.isNotEmpty) AppSectionHeader(title: 'History', count: historyCount)
+        else
+          for (final group in groups) ...[
+            _HistoryMonthHeader(label: group.label),
+            8.h.heightBox(),
+            for (final request in group.requests)
+              Padding(
+                padding: EdgeInsets.only(bottom: 10),
+                child: _RequestCard(controller: controller, request: request),
+              ),
+          ],
+        if (controller.hasMoreHistory) ...[
+          12.h.heightBox(),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: controller.isLoadingMoreHistory.value
+                  ? null
+                  : controller.loadMoreHistory,
+              icon: controller.isLoadingMoreHistory.value
+                  ? SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(Icons.expand_more_rounded, size: 18),
+              label: Text(
+                controller.isLoadingMoreHistory.value
+                    ? 'Loading...'
+                    : 'Load older requests',
+              ),
+              style: OutlinedButton.styleFrom(minimumSize: Size.fromHeight(48)),
+            ),
           ),
+        ],
       ],
+    );
+  }
+}
+
+List<({String label, List<ServiceRequest> requests})> _groupHistory(
+  List<ServiceRequest> requests,
+) {
+  final groups = <String, ({String label, List<ServiceRequest> requests})>{};
+  for (final request in requests) {
+    final date = AppDates.parse(request.scheduledDate);
+    final key = '${date.year}-${date.month}';
+    final group = groups[key];
+    if (group == null) {
+      groups[key] = (
+        label: AppDates.formatMonthYear(date),
+        requests: <ServiceRequest>[request],
+      );
+    } else {
+      group.requests.add(request);
+    }
+  }
+  return groups.values.toList();
+}
+
+class _HistoryMonthHeader extends StatelessWidget {
+  const _HistoryMonthHeader({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Padding(
+      padding: EdgeInsets.only(top: 4, bottom: 2),
+      child: Row(
+        children: [
+          Container(
+            width: 3,
+            height: 14,
+            decoration: BoxDecoration(
+              color: tokens.brand,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          8.w.widthBox(),
+          Text(
+            label,
+            style: TextStyle(
+              color: tokens.mutedStrong,
+              fontSize: 12.5.sp,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -368,9 +457,23 @@ class _RequestCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  request.serviceName,
-                  style: TextStyle(fontWeight: FontWeight.w800),
+                Row(
+                  mainAxisAlignment: .spaceBetween,
+                  children: [
+                    Text(
+                      request.serviceName,
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),Column(
+            mainAxisAlignment: .end,
+            children: [
+              Text(
+                '${request.currency} ${AppFormatters.currency(request.price)}',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+             
+            ],
+          ),
+                  ],
                 ),
                 4.h.heightBox(),
                 Text(
@@ -378,39 +481,21 @@ class _RequestCard extends StatelessWidget {
                   style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                 ),
                 6.h.heightBox(),
-                ServiceStatusPill(status: request.status),
+                Row(
+                  mainAxisAlignment: .spaceBetween,
+                  children: [
+                    ServiceStatusPill(
+                      status: request.status,
+                      label: request.displayStatus,
+                    ),
+                     Icon(Icons.chevron_right_rounded, color: tokens.faint),
+                  ],
+                ),
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                AppFormatters.currency(request.price),
-                style: TextStyle(fontWeight: FontWeight.w800),
-              ),
-              4.h.heightBox(),
-              if (request.rating != null)
-                Row(
-                  children: [
-                    Icon(
-                      Icons.star_rounded,
-                      size: 14,
-                      color: AppPalette.warning,
-                    ),
-                    Text(
-                      '${request.rating}',
-                      style: TextStyle(
-                        color: tokens.mutedStrong,
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-          Icon(Icons.chevron_right_rounded, color: tokens.faint),
+          
+         
         ],
       ),
     );
@@ -424,7 +509,7 @@ String _pricingLabel(CondoService service) {
     case ServicePricingType.free:
       return 'Free';
     default:
-      return AppFormatters.currency(service.price);
+      return '${service.pricing.currency} ${AppFormatters.currency(service.price)}';
   }
 }
 

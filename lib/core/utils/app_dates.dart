@@ -16,6 +16,21 @@ abstract final class AppDates {
     'Dec',
   ];
 
+  static const _fullMonths = <String>[
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
   static const _weekdays = <String>[
     'Monday',
     'Tuesday',
@@ -51,6 +66,9 @@ abstract final class AppDates {
 
   static String formatShort(DateTime value) =>
       '${_months[value.month - 1]} ${value.day}';
+
+  static String formatMonthYear(DateTime value) =>
+      '${_fullMonths[value.month - 1]} ${value.year}';
 
   /// `Wednesday, October 1`, used where a date is read out in full.
   static String formatLong(DateTime value) =>

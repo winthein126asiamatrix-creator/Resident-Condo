@@ -47,7 +47,11 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
               title: current.serviceName,
               subtitle: '${current.scheduledDate} Â· ${current.scheduledSlot}',
               footnote: 'Provider: ${current.provider}',
-              trailing: ServiceStatusPill(status: current.status, dense: false),
+              trailing: ServiceStatusPill(
+                status: current.status,
+                label: current.displayStatus,
+                dense: false,
+              ),
             ),
             18.h.heightBox(),
             AppSectionCard(
@@ -141,13 +145,13 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                 style: FilledButton.styleFrom(minimumSize: Size.fromHeight(50)),
               ),
             ],
-            if (controller.errorMessage.value != null) ...[
-              10.h.heightBox(),
-              Text(
-                controller.errorMessage.value!,
-                style: TextStyle(color: AppPalette.danger),
-              ),
-            ],
+            // if (controller.errorMessage.value != null) ...[
+            //   10.h.heightBox(),
+            //   Text(
+            //     controller.errorMessage.value!,
+            //     style: TextStyle(color: AppPalette.danger),
+            //   ),
+            // ],
           ],
         ),
       );

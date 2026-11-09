@@ -94,7 +94,7 @@ void showAppFeedback(
       SnackBar(
         behavior: SnackBarBehavior.floating,
         backgroundColor: isError
-            ? Color(0xFFC2410C)
+            ? tokens.surface
             : backgroundColor ?? tokens.surface,
         content: Text(
           '$title: $message',

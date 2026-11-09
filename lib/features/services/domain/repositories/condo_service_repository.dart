@@ -3,7 +3,12 @@ import '../entities/condo_service.dart';
 abstract interface class CondoServiceRepository {
   Future<List<CondoService>> getServices();
 
-  Future<List<ServiceRequest>> getRequests();
+  Future<CondoService> getService(int id);
+
+  Future<ServiceRequestPageResult> getRequests({
+    required String status,
+    int page = 1,
+  });
 
   Future<ServiceRequest> createRequest(ServiceRequest request);
 

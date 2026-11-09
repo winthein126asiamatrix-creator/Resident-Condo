@@ -148,12 +148,17 @@ abstract final class ApiEndPoints {
 
   static const String profile = '/api/profile';
 
+  // --- Condo services -----------------------------------------------------
+
+  static const String services = '/services';
+
+  static String service(int id) => '/services/$id';
+
+  static const String serviceRequests = '/service-requests';
+
   static const String appearance = '/api/profile/appearance';
 
   // --- My Unit -------------------------------------------------------------
 
   static const String myUnit = '/my-unit';
 }
-
-
-

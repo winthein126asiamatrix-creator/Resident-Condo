@@ -22,6 +22,7 @@ import '../../../notifications/presentation/controllers/notification_controller.
 import '../../../session/domain/entities/resident_session.dart';
 
 import '../../../session/presentation/controllers/session_controller.dart';
+import '../../../unit/domain/entities/unit.dart';
 import '../../../unit/presentation/controllers/unit_controller.dart';
 
 import '../../domain/entities/dashboard.dart';
@@ -302,7 +303,9 @@ class _GreetingHeader extends StatelessWidget {
                   ),
                   child: Center(
                     child: Text(
-                      resident!.user.unreadNotificationCount > 9 ? '9+' : '$resident!.user.unreadNotificationCount',
+                      resident!.user.unreadNotificationCount > 9
+                          ? '9+'
+                          : '$resident!.user.unreadNotificationCount',
                       style: TextStyle(
                         color: tokens.onBrand,
                         fontSize: 9.sp,
@@ -327,10 +330,22 @@ class _HomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = unitController;
+    if (controller == null) {
+      return _buildCard(context, null, false);
+    }
+    return Obx(
+      () => _buildCard(
+        context,
+        controller.unit.value,
+        controller.isLoading.value && controller.unit.value == null,
+      ),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, Unit? unitData, bool isLoading) {
     final tokens = AppThemeTokens.of(context);
-    final unitData = unitController?.unit.value;
     final unitInfo = unitData?.unit;
-    final isLoading = unitController?.isLoading.value ?? false;
     return InkWell(
       onTap: onViewDetails,
       borderRadius: BorderRadius.circular(24.r),
@@ -370,7 +385,7 @@ class _HomeCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                     // StatusBadge(label: unit.occupancy),
+                      // StatusBadge(label: unit.occupancy),
                     ],
                   ),
                   18.h.heightBox(),

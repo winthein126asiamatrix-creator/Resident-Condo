@@ -46,6 +46,7 @@ import '../../features/services/domain/entities/condo_service.dart';
 import '../../features/services/presentation/pages/service_request_detail_page.dart';
 import '../../features/services/presentation/pages/service_request_page.dart';
 import '../../features/services/presentation/pages/services_page.dart';
+import '../../features/services/presentation/bindings/condo_service_binding.dart';
 import '../../features/store/domain/entities/store_product.dart';
 import '../../features/store/presentation/bindings/store_binding.dart';
 import '../../features/store/presentation/pages/store_checkout_page.dart';
@@ -180,10 +181,15 @@ abstract final class AppPages {
       name: AppRoutes.visitorVerify,
       page: () => VisitorVerifyPage(),
     ),
-    GetPage<dynamic>(name: AppRoutes.services, page: () => ServicesPage()),
+    GetPage<dynamic>(
+      name: AppRoutes.services,
+      page: () => ServicesPage(),
+      binding: CondoServiceBinding(),
+    ),
     GetPage<dynamic>(
       name: AppRoutes.serviceRequest,
       page: () => ServiceRequestPage(),
+      binding: CondoServiceBinding(),
     ),
     GetPage<dynamic>(
       name: AppRoutes.serviceRequestDetail,

@@ -60,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
       _auth.usernameController.text = _auth.rememberedUsername ?? '';
     }
     _auth.usernameController.text = "owner1";
-    _auth.passwordController.text = "owner1xx";
+    _auth.passwordController.text = "test";
     _username = _auth.usernameController;
     _password = _auth.passwordController;
   }

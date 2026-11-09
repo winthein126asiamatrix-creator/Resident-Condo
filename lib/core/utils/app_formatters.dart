@@ -2,7 +2,7 @@
 abstract final class AppFormatters {
   static String currency(double value) {
     final sign = value < 0 ? '-' : '';
-    return '$sign\$${value.abs().toStringAsFixed(2)}';
+    return value.abs().toStringAsFixed(0);
   }
 
   static String currencyCompact(double value) {

@@ -47,6 +47,16 @@ class ServiceRequestPage extends StatefulWidget {
 
 class _ServiceRequestPageState extends State<ServiceRequestPage> {
   final CondoServiceController controller = Get.find<CondoServiceController>();
+
+  @override
+  void initState() {
+    super.initState();
+    final args = Get.arguments;
+    if (args is int) {
+      controller.loadServiceDetail(args);
+    }
+  }
+
   final TextEditingController _notesController = TextEditingController();
 
   List<String> _dates = <String>[];
@@ -67,20 +77,32 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
   void _initializeForService(CondoService service) {
     if (_initializedServiceId == service.id.toString()) return;
     _initializedServiceId = service.id.toString();
-    _dates = service.availableDates.map((d) => d.date).toList();
+    _dates = service.availableDates
+        .where((d) => d.slots.any((s) => s.isAvailable))
+        .map((d) => d.date)
+        .toList();
     _selectedDate = _dates.isNotEmpty ? _dates.first : null;
     _selectedSlotId = null;
     _selectedSlotLabel = '';
     _bookingValues.clear();
     _fieldErrors.clear();
+    for (final field in service.bookingFields) {
+      if (field.defaultValue != null) {
+        _bookingValues[field.key] = field.defaultValue;
+      }
+    }
     _selectFirstAvailableSlot(service);
   }
 
   void _selectFirstAvailableSlot(CondoService service) {
     final date = _selectedDate;
     if (date == null) return;
-    final availableDate = service.availableDates.firstWhereOrNull((d) => d.date == date);
-    final slots = availableDate?.slots.where((s) => s.isAvailable).toList() ?? const <ServiceTimeSlot>[];
+    final availableDate = service.availableDates.firstWhereOrNull(
+      (d) => d.date == date,
+    );
+    final slots =
+        availableDate?.slots.where((s) => s.isAvailable).toList() ??
+        const <ServiceTimeSlot>[];
     if (slots.isNotEmpty) {
       _selectedSlotId = slots.first.id;
       _selectedSlotLabel = '${slots.first.startTime} - ${slots.first.endTime}';
@@ -92,7 +114,9 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
 
   List<ServiceTimeSlot> _slotsFor(CondoService service, String? date) {
     if (date == null) return const <ServiceTimeSlot>[];
-    final availableDate = service.availableDates.firstWhereOrNull((d) => d.date == date);
+    final availableDate = service.availableDates.firstWhereOrNull(
+      (d) => d.date == date,
+    );
     return availableDate?.slots ?? const <ServiceTimeSlot>[];
   }
 
@@ -106,8 +130,10 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
     if (field.type == ServiceBookingFieldType.quantity && value != null) {
       final number = value is num ? value : num.tryParse('$value');
       if (number == null) return 'Enter a valid number';
-      if (field.min != null && number < field.min!) return 'Minimum ${field.min}';
-      if (field.max != null && number > field.max!) return 'Maximum ${field.max}';
+      if (field.min != null && number < field.min!)
+        return 'Minimum ${field.min}';
+      if (field.max != null && number > field.max!)
+        return 'Maximum ${field.max}';
     }
     return null;
   }
@@ -143,8 +169,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
     final confirmed = await showAppConfirmDialog(
       context,
       title: 'Confirm booking?',
-      message:
-          '${service.name} on $_selectedDate, $_selectedSlotLabel.',
+      message: '${service.name} on $_selectedDate, $_selectedSlotLabel.',
       confirmLabel: 'Confirm booking',
     );
     if (!confirmed || !mounted) return;
@@ -158,9 +183,17 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
     );
     if (!mounted) return;
     if (request == null) {
+      final message = controller.errorMessage.value ?? 'Booking failed.';
+      vibrateNow();
       setState(() {
-        _error = controller.errorMessage.value ?? 'Booking failed.';
+        _error = message;
       });
+      showAppFeedback(
+        context,
+        title: 'Booking failed',
+        message: message,
+        isError: true,
+      );
       return;
     }
     Get.offNamed(AppRoutes.serviceRequestDetail, arguments: request);
@@ -204,10 +237,12 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
           ),
           initialValue: _bookingValues[field.key] as String?,
           items: field.options
-              .map((option) => DropdownMenuItem<String>(
-                    value: option,
-                    child: Text(option),
-                  ))
+              .map(
+                (option) => DropdownMenuItem<String>(
+                  value: option,
+                  child: Text(option),
+                ),
+              )
               .toList(),
           onChanged: (value) {
             setState(() {
@@ -217,11 +252,18 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
           },
         );
       case ServiceBookingFieldType.multiSelect:
-        final selected = (_bookingValues[field.key] as List?)?.cast<String>() ?? <String>[];
+        final selected =
+            (_bookingValues[field.key] as List?)?.cast<String>() ?? <String>[];
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(field.label, style: TextStyle(color: tokens.mutedStrong, fontWeight: FontWeight.w700)),
+            Text(
+              field.label,
+              style: TextStyle(
+                color: tokens.mutedStrong,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             8.h.heightBox(),
             Wrap(
               spacing: 8,
@@ -247,7 +289,10 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
             ),
             if (errorText != null) ...[
               4.h.heightBox(),
-              Text(errorText, style: TextStyle(color: AppPalette.danger, fontSize: 12.sp)),
+              Text(
+                errorText,
+                style: TextStyle(color: AppPalette.danger, fontSize: 12.sp),
+              ),
             ],
           ],
         );
@@ -257,6 +302,12 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      if (controller.isLoadingDetail.value) {
+        return Scaffold(
+          appBar: AppDetailAppBar(title: 'Book a service'),
+          body: const Center(child: CircularProgressIndicator()),
+        );
+      }
       final service = controller.selectedService.value;
       if (service == null) {
         return Scaffold(
@@ -265,6 +316,18 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
             title: 'No service selected',
             message: 'Pick a service from the catalogue first.',
             icon: Icons.room_service_outlined,
+            actionLabel: 'Back to services',
+            onAction: () => Get.offNamed(AppRoutes.services),
+          ),
+        );
+      }
+      if (!service.isActive) {
+        return Scaffold(
+          appBar: AppDetailAppBar(title: 'Book a service'),
+          body: AppStateMessage(
+            title: 'Service unavailable',
+            message: 'This service is not available for booking.',
+            icon: Icons.block_rounded,
             actionLabel: 'Back to services',
             onAction: () => Get.offNamed(AppRoutes.services),
           ),
@@ -319,7 +382,10 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                   ),
                   8.h.heightBox(),
                   if (_dates.isEmpty)
-                    Text('No available dates', style: TextStyle(color: tokens.muted))
+                    Text(
+                      'No available dates',
+                      style: TextStyle(color: tokens.muted),
+                    )
                   else
                     _DateGrid(
                       dates: _dates,
@@ -337,7 +403,10 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                   ),
                   8.h.heightBox(),
                   if (slots.isEmpty)
-                    Text('No available slots', style: TextStyle(color: tokens.muted))
+                    Text(
+                      'No available slots',
+                      style: TextStyle(color: tokens.muted),
+                    )
                   else
                     Column(
                       children: [
@@ -351,10 +420,11 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                               enabled: slot.isAvailable,
                               onTap: slot.isAvailable
                                   ? () => setState(() {
-                                        _selectedSlotId = slot.id;
-                                        _selectedSlotLabel = '${slot.startTime} - ${slot.endTime}';
-                                        _error = '';
-                                      })
+                                      _selectedSlotId = slot.id;
+                                      _selectedSlotLabel =
+                                          '${slot.startTime} - ${slot.endTime}';
+                                      _error = '';
+                                    })
                                   : () {},
                             ),
                           ),
@@ -413,7 +483,10 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                 children: [
                   AppLabelValueRow(label: 'Service', value: service.name),
                   AppLabelValueRow(label: 'Date', value: _selectedDate ?? ''),
-                  AppLabelValueRow(label: 'Time slot', value: _selectedSlotLabel),
+                  AppLabelValueRow(
+                    label: 'Time slot',
+                    value: _selectedSlotLabel,
+                  ),
                   AppLabelValueRow(
                     label: 'Service fee',
                     value:
