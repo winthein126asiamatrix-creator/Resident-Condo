@@ -6,6 +6,8 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart' hide FormData;
+import 'package:test/core/cache/api_cache_store.dart';
+import 'package:test/core/cache/app_cache_database.dart';
 import 'package:test/core/errors/app_exception.dart';
 import 'package:test/core/network/api_end_points.dart';
 import 'package:test/core/network/api_exception.dart';
@@ -22,6 +24,7 @@ import 'package:test/features/auth/domain/entities/auth_session.dart';
 import 'package:test/features/auth/domain/repositories/auth_repository.dart';
 import 'package:test/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:test/features/auth/presentation/controllers/auth_controller.dart';
+import 'package:test/features/session/domain/entities/resident_session.dart';
 import 'package:test/features/session/presentation/controllers/session_controller.dart';
 
 const _oldAccess = 'old-access-token';
@@ -172,16 +175,59 @@ class _FakeLocal extends AuthLocalDataSource {
   }
 }
 
+class _FakeCache extends ApiCacheStore {
+  // One database instance keeps drift from warning about multiple connections;
+  // every method that would touch it is overridden below.
+  static final AppCacheDatabase _database = AppCacheDatabase();
+
+  _FakeCache() : super(_database);
+
+  final entries = <String, CachedApiEntry>{};
+
+  @override
+  Future<CachedApiEntry?> read(String key) async => entries[key];
+
+  @override
+  Future<void> save({
+    required String key,
+    String? accountKey,
+    required Object payload,
+  }) async {
+    entries[key] = CachedApiEntry(
+      key: key,
+      accountKey: accountKey,
+      payloadJson: jsonEncode(payload),
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  @override
+  Future<void> clearAll() async => entries.clear();
+}
+
+_FakeCache _cacheWith(AuthUser user) {
+  final cache = _FakeCache();
+  cache.entries['auth.me'] = CachedApiEntry(
+    key: 'auth.me',
+    accountKey: user.id.toString(),
+    payloadJson: jsonEncode(user.toJson()),
+    updatedAt: DateTime.now(),
+  );
+  return cache;
+}
+
 AuthRepositoryImpl _repository(
   _FakeRemote remote,
   _MemoryTokenStorage tokens, {
   _FakeLocal? local,
   _FakePreferencesRemote? preferences,
+  _FakeCache? cache,
 }) {
   return AuthRepositoryImpl(
     remoteDataSource: remote,
     localDataSource: local ?? _FakeLocal(),
     tokenStorage: tokens,
+    cacheStore: cache,
     preferencesRemote: preferences,
   );
 }
@@ -522,6 +568,141 @@ void main() {
       expect((results.first.user! as AuthUser).name, 'Owner One');
       expect((results.last.user! as AuthUser).name, 'Owner One');
       expect(remote.updateMeCalls, 1);
+    });
+  });
+
+  group('cache-first session restore', () {
+    test('cached profile enters without waiting for /auth/me', () async {
+      final user = _user();
+      final remote = _FakeRemote()
+        ..onUpdateMe = () async => throw StateError('must not call /me');
+      final storage = _MemoryTokenStorage(_tokens());
+      final cache = _cacheWith(user);
+      final repository = _repository(remote, storage, cache: cache);
+
+      final restored = await repository.restoreSession();
+
+      expect(restored, isNotNull);
+      expect(restored!.unverified, isTrue);
+      expect(restored.isSessionVerified, isFalse);
+      expect((restored.user! as AuthUser).id, user.id);
+      expect(remote.updateMeCalls, 0);
+      expect(storage.tokens, isNotNull);
+      expect(storage.clears, 0);
+    });
+
+    test('revalidation confirms a cached session against /auth/me', () async {
+      final user = _user();
+      final remote = _FakeRemote();
+      final storage = _MemoryTokenStorage(_tokens());
+      final repository = _repository(remote, storage, cache: _cacheWith(user));
+
+      final cached = await repository.restoreSession();
+      expect(cached!.unverified, isTrue);
+      expect(remote.updateMeCalls, 0);
+
+      final verified = await repository.fetchCurrentUser();
+
+      expect(verified.unverified, isFalse);
+      expect(verified.isSessionVerified, isTrue);
+      expect(remote.updateMeCalls, 1);
+    });
+
+    test('no cached profile validates before restoring', () async {
+      final user = _user();
+      final remote = _FakeRemote();
+      final storage = _MemoryTokenStorage(_tokens());
+      final repository = _repository(remote, storage, cache: _FakeCache());
+
+      final restored = await repository.restoreSession();
+
+      expect(restored, isNotNull);
+      expect(restored!.unverified, isFalse);
+      expect((restored.user! as AuthUser).id, user.id);
+      expect(remote.updateMeCalls, 1);
+    });
+
+    test(
+      'temporary failure keeps tokens when there is no cached profile',
+      () async {
+        final remote = _FakeRemote()
+          ..onUpdateMe = () async => throw const ApiException(
+            'No connection.',
+            kind: ApiFailureKind.network,
+          );
+        final storage = _MemoryTokenStorage(_tokens());
+        final local = _FakeLocal();
+        final repository = _repository(
+          remote,
+          storage,
+          local: local,
+          cache: _FakeCache(),
+        );
+
+        final restored = await repository.restoreSession();
+
+        expect(restored, isNull);
+        expect(storage.tokens, isNotNull);
+        expect(storage.clears, 0);
+        expect(local.signOutCalls, 0);
+      },
+    );
+
+    test(
+      'temporary server error keeps tokens when there is no cached profile',
+      () async {
+        final remote = _FakeRemote()
+          ..onUpdateMe = () async => throw const ApiException(
+            'Backend unavailable.',
+            kind: ApiFailureKind.server,
+            statusCode: 503,
+          );
+        final storage = _MemoryTokenStorage(_tokens());
+        final repository = _repository(remote, storage, cache: _FakeCache());
+
+        final restored = await repository.restoreSession();
+
+        expect(restored, isNull);
+        expect(storage.tokens, isNotNull);
+        expect(storage.clears, 0);
+      },
+    );
+
+    test('a rejected session ends the stored credentials', () async {
+      final remote = _FakeRemote()
+        ..onUpdateMe = () async => throw const ApiException(
+          'Session expired.',
+          kind: ApiFailureKind.unauthorized,
+          statusCode: 401,
+        );
+      final storage = _MemoryTokenStorage(_tokens());
+      final local = _FakeLocal();
+      final repository = _repository(
+        remote,
+        storage,
+        local: local,
+        cache: _FakeCache(),
+      );
+
+      final restored = await repository.restoreSession();
+
+      expect(restored, isNull);
+      expect(storage.tokens, isNull);
+      expect(storage.clears, 1);
+      expect(local.signOutCalls, 1);
+    });
+
+    test('a transport failure hidden inside Dio unknown stays retryable', () {
+      final exception = ApiException.from(
+        DioException(
+          requestOptions: RequestOptions(path: '/me'),
+          type: DioExceptionType.unknown,
+          error: const SocketException('network unreachable'),
+        ),
+      );
+
+      expect(exception.kind, ApiFailureKind.network);
+      expect(exception.isRetryable, isTrue);
     });
   });
 
@@ -1127,5 +1308,175 @@ void main() {
         expect(controller.sessionInitializationError.value, 'No connection.');
       },
     );
+  });
+
+  group('cache-first revalidation', () {
+    setUp(() {
+      Get.reset();
+      Get.put<SessionController>(SessionController(), permanent: true);
+    });
+
+    tearDown(Get.reset);
+
+    void admitUnverified(AuthUser user) {
+      Get.find<SessionController>().setSession(
+        user,
+        verificationStatus: SessionVerificationStatus.unverified,
+      );
+    }
+
+    Future<AuthSession> verifiedSession(AuthUser user) async => AuthSession(
+      username: user.name,
+      displayName: user.displayName,
+      rememberMe: true,
+      user: user,
+    );
+
+    test('a reachable backend confirms the cached session in place', () async {
+      final user = _user();
+      admitUnverified(user);
+      final updated = user.copyWith(phone: '0999999999');
+      final useCases = _FakeUseCases()
+        ..onFetchCurrentUser = () => verifiedSession(updated);
+      final controller = AuthController(useCases)..isUnverified.value = true;
+
+      await controller.revalidateSession();
+
+      expect(useCases.fetchCalls, 1);
+      expect(useCases.persistCalls, 1);
+      expect(controller.isUnverified.value, isFalse);
+      expect(controller.sessionInitializationError.value, isNull);
+      expect(Get.find<SessionController>().currentUser?.phone, '0999999999');
+      expect(Get.find<SessionController>().isSessionVerified, isTrue);
+    });
+
+    test('a temporary network failure keeps the cached session', () async {
+      final user = _user();
+      admitUnverified(user);
+      final useCases = _FakeUseCases()
+        ..onFetchCurrentUser = () async => throw const ApiException(
+          'No connection.',
+          kind: ApiFailureKind.network,
+        );
+      final controller = AuthController(useCases)..isUnverified.value = true;
+
+      await controller.revalidateSession();
+
+      expect(useCases.persistCalls, 0);
+      expect(useCases.signOutCalls, 0);
+      expect(controller.isUnverified.value, isTrue);
+      expect(Get.find<SessionController>().currentUser, same(user));
+      expect(Get.find<SessionController>().isSessionVerified, isFalse);
+    });
+
+    test('a temporary server error keeps the cached session', () async {
+      final user = _user();
+      admitUnverified(user);
+      final useCases = _FakeUseCases()
+        ..onFetchCurrentUser = () async => throw const ApiException(
+          'Backend unavailable.',
+          kind: ApiFailureKind.server,
+          statusCode: 503,
+        );
+      final controller = AuthController(useCases)..isUnverified.value = true;
+
+      await controller.revalidateSession();
+
+      expect(useCases.signOutCalls, 0);
+      expect(controller.isUnverified.value, isTrue);
+      expect(Get.find<SessionController>().currentUser, same(user));
+    });
+
+    test(
+      'connectivity restoration revalidates after a failed attempt',
+      () async {
+        final user = _user();
+        admitUnverified(user);
+        var online = false;
+        final useCases = _FakeUseCases()
+          ..onFetchCurrentUser = () async {
+            if (!online) {
+              throw const ApiException(
+                'No connection.',
+                kind: ApiFailureKind.network,
+              );
+            }
+            return verifiedSession(user);
+          };
+        final controller = AuthController(useCases)..isUnverified.value = true;
+
+        await controller.revalidateSession();
+        expect(controller.isUnverified.value, isTrue);
+        expect(Get.find<SessionController>().currentUser, same(user));
+
+        online = true;
+        await controller.revalidateSession();
+        expect(controller.isUnverified.value, isFalse);
+        expect(Get.find<SessionController>().isSessionVerified, isTrue);
+      },
+    );
+
+    test('a 401 follows the existing logout flow', () async {
+      final user = _user();
+      admitUnverified(user);
+      final useCases = _FakeUseCases()
+        ..onFetchCurrentUser = () async => throw const ApiException(
+          'Session expired.',
+          kind: ApiFailureKind.unauthorized,
+          statusCode: 401,
+        );
+      final controller = AuthController(useCases)..isUnverified.value = true;
+
+      await controller.revalidateSession();
+
+      expect(useCases.signOutCalls, 1);
+      expect(Get.find<SessionController>().currentUser, isNull);
+      expect(controller.isUnverified.value, isFalse);
+    });
+
+    test('concurrent revalidations share one /auth/me request', () async {
+      final user = _user();
+      final request = Completer<AuthSession>();
+      final useCases = _FakeUseCases()
+        ..onFetchCurrentUser = () => request.future;
+      final controller = AuthController(useCases);
+
+      final first = controller.revalidateSession();
+      final second = controller.revalidateSession();
+      expect(useCases.fetchCalls, 1);
+
+      request.complete(await verifiedSession(user));
+      await Future.wait(<Future<void>>[first, second]);
+
+      expect(useCases.fetchCalls, 1);
+      expect(useCases.persistCalls, 1);
+      expect(Get.find<SessionController>().currentUser, same(user));
+    });
+
+    test('a late response cannot overwrite a newer login', () async {
+      final oldUser = _user(id: 6, name: 'Owner One');
+      admitUnverified(oldUser);
+      final request = Completer<AuthSession>();
+      final useCases = _FakeUseCases();
+      useCases.onFetchCurrentUser = () => request.future;
+      useCases.onSignIn = (signIn) async => AuthSession(
+        username: signIn.username,
+        displayName: signIn.username,
+        rememberMe: signIn.rememberMe,
+      );
+      final controller = AuthController(useCases)
+        ..isUnverified.value = true
+        ..usernameController.text = 'owner2'
+        ..passwordController.text = 'secret';
+
+      final pending = controller.revalidateSession();
+      await controller.signIn();
+      request.complete(await verifiedSession(oldUser));
+      await pending;
+
+      expect(Get.find<SessionController>().currentUser, isNull);
+      expect(Get.find<SessionController>().isSessionVerified, isFalse);
+      expect(controller.isUnverified.value, isFalse);
+    });
   });
 }

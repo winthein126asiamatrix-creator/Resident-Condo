@@ -62,6 +62,9 @@ class AuthController extends GetxController {
   /// Shares one `/auth/me` call between concurrent initialization callers.
   Future<AuthSession?>? _currentUserInFlight;
 
+  /// Shares one background validation between concurrent revalidation callers.
+  Future<void>? _revalidationInFlight;
+
   /// A sign-in failure, shown above the form. Distinct from a per field
   /// validation error: this one means the credentials were rejected.
   final errorMessage = RxnString();
@@ -140,6 +143,7 @@ class AuthController extends GetxController {
     // in flight for the previous account.
     _sessionEpoch++;
     _currentUserInFlight = null;
+    _revalidationInFlight = null;
     isInitializingSession.value = false;
     sessionInitializationError.value = null;
     isUnverified.value = false;
@@ -440,6 +444,7 @@ class AuthController extends GetxController {
     // later, but it now belongs to the session that has just ended.
     _sessionEpoch++;
     _currentUserInFlight = null;
+    _revalidationInFlight = null;
     isInitializingSession.value = false;
     sessionInitializationError.value = null;
     isUnverified.value = false;
@@ -518,30 +523,85 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<void> revalidateSession() async {
+  /// Confirms an admitted (unverified) session against `/auth/me`.
+  ///
+  /// Safe to call whenever connectivity returns: one request is shared between
+  /// concurrent callers, a temporary failure leaves the cached profile and
+  /// tokens exactly as they are, and only a response that proves rejection ends
+  /// the session. A response that belongs to an older session is discarded.
+  Future<void> revalidateSession() {
+    final existing = _revalidationInFlight;
+    if (existing != null) {
+      return existing;
+    }
+    late final Future<void> tracked;
+    tracked = _revalidateSession().whenComplete(() {
+      if (identical(_revalidationInFlight, tracked)) {
+        _revalidationInFlight = null;
+      }
+    });
+    _revalidationInFlight = tracked;
+    return tracked;
+  }
+
+  Future<void> _revalidateSession() async {
     final epoch = _sessionEpoch;
-    final restored = await useCases.restoreSession();
+    try {
+      final session = await useCases.fetchCurrentUser();
+      if (epoch != _sessionEpoch) {
+        return;
+      }
+      final remembered = session.copyWith(rememberMe: rememberMe.value);
+      await useCases.persistSession(remembered);
+      if (epoch != _sessionEpoch) {
+        return;
+      }
+      await adoptIntoSession(remembered);
+      if (epoch != _sessionEpoch) {
+        return;
+      }
+      isUnverified.value = false;
+      sessionInitializationError.value = null;
+    } on AppException catch (error) {
+      if (epoch != _sessionEpoch) {
+        return;
+      }
+      if (_isTransientFailure(error)) {
+        // The backend did not answer. Keep the cached profile and tokens; the
+        // session simply stays unverified until a later validation succeeds.
+        isUnverified.value = true;
+        return;
+      }
+      await _endRejectedSession(epoch);
+    } on Object {
+      if (epoch != _sessionEpoch) {
+        return;
+      }
+      // An unexpected local failure is not proof that the session is invalid.
+      isUnverified.value = true;
+    }
+  }
+
+  static bool _isTransientFailure(AppException error) =>
+      error is ApiException &&
+      (error.isRetryable || error.kind == ApiFailureKind.server);
+
+  /// Ends a session the backend explicitly rejected and leaves protected
+  /// screens, reusing the normal sign-out path.
+  Future<void> _endRejectedSession(int epoch) async {
     if (epoch != _sessionEpoch) {
       return;
     }
-    if (restored == null) {
-      if (Get.isRegistered<SessionController>()) {
-        Get.find<SessionController>().clearSession();
-      }
-      isUnverified.value = false;
-      await _resetAppearance();
-      if (Get.currentRoute != AppRoutes.login) {
+    try {
+      await signOut();
+    } on Object {
+      // signOut clears the local session in its finally block, so navigation
+      // below still takes the resident away from protected screens.
+    } finally {
+      if (Get.key.currentState != null && Get.currentRoute != AppRoutes.login) {
         Get.offAllNamed(AppRoutes.login);
       }
-      return;
     }
-    isUnverified.value = restored.unverified;
-    // A transient failure leaves the already established session untouched; it
-    // must not be replaced with the remembered (unverified) details.
-    if (restored.unverified) {
-      return;
-    }
-    await adoptIntoSession(restored);
   }
 
   /// Publishes the authenticated user to the shared session.

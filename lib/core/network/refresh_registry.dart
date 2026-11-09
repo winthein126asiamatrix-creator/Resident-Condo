@@ -14,6 +14,7 @@ import 'package:get/get.dart';
 class RefreshRegistry extends GetxService {
   final _refresh = <String, Future<void> Function()>{};
   final _stale = <String, bool>{};
+  final _inFlight = <String, Future<void>>{};
 
   /// Registers [refresh] as the callback that re-fetches [screen]'s data.
   ///
@@ -26,6 +27,7 @@ class RefreshRegistry extends GetxService {
   void unregister(String screen) {
     _refresh.remove(screen);
     _stale.remove(screen);
+    _inFlight.remove(screen);
   }
 
   /// Marks [screen]'s data stale, so it is re-fetched when connectivity returns.
@@ -36,17 +38,32 @@ class RefreshRegistry extends GetxService {
 
   /// Re-fetches [screen] only if its data is stale and a callback is registered.
   ///
-  /// Returns whether a refresh was started, so a caller logging the outcome can
-  /// tell a refresh from a no-op.
+  /// Concurrent callers share the request already in flight for [screen], so a
+  /// burst of connectivity events cannot issue duplicate GETs. Returns whether a
+  /// refresh was started or was already running, so a caller logging the outcome
+  /// can tell a refresh from a no-op.
   Future<bool> refreshIfStale(String screen) async {
     if (_stale[screen] != true) {
       return false;
+    }
+    final existing = _inFlight[screen];
+    if (existing != null) {
+      await existing;
+      return true;
     }
     final refresh = _refresh[screen];
     if (refresh == null) {
       return false;
     }
-    await refresh();
+    final future = refresh();
+    _inFlight[screen] = future;
+    try {
+      await future;
+    } finally {
+      if (identical(_inFlight[screen], future)) {
+        _inFlight.remove(screen);
+      }
+    }
     return true;
   }
 }

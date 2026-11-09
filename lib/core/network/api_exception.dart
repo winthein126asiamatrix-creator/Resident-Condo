@@ -191,6 +191,18 @@ class ApiException extends AppException {
       // Newer Dio versions add transport outcomes; treating an unfamiliar one
       // as unknown keeps this compiling and the failure visible.
       default:
+        // Dio can surface a transport failure as `unknown` when the socket is
+        // lost outside the adapter's connect phase (or while a body is being
+        // streamed). That is still an unreachable server, not a rejection.
+        final cause = error.error;
+        if (cause is SocketException ||
+            cause is HttpException ||
+            cause is HandshakeException) {
+          return const ApiException(
+            'No connection. Check your network and try again.',
+            kind: ApiFailureKind.network,
+          );
+        }
         return ApiException(
           'Something went wrong. Please try again.',
           kind: ApiFailureKind.unknown,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,8 +14,6 @@ import '../../core/theme/app_theme_tokens.dart';
 import '../../features/auth/domain/entities/auth_session.dart';
 
 import '../../features/auth/presentation/controllers/auth_controller.dart';
-
-import '../../features/session/presentation/controllers/session_controller.dart';
 
 import '../routes/app_routes.dart';
 
@@ -35,13 +35,16 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   /// Minimum time the splash is shown so the brand lands, even on fast loads.
   static const Duration _minimumDisplay = Duration(milliseconds: 1400);
 
+  /// A restore that has not settled by then must not strand the splash.
+  static const Duration _restoreTimeout = Duration(seconds: 10);
+
   /// Session restore starts with the animation so the network round trip
   /// overlaps the animation instead of being added to it.
   late final Future<AuthSession?> _restore;
 
-  /// True when `/auth/me` failed transiently. The tokens are kept, so the
-  /// resident can retry without entering credentials again.
-  bool _restoreFailed = false;
+  /// Guards the destination so the timeout and the real result cannot both
+  /// navigate.
+  bool _settled = false;
 
   @override
   void initState() {
@@ -91,65 +94,51 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   }
 
   Future<void> _continue() async {
-    final results = await Future.wait<Object?>(<Future<Object?>>[
-      Future<void>.delayed(_minimumDisplay),
-      _restore,
-    ]);
+    List<Object?>? results;
+    try {
+      results = await Future.wait<Object?>(<Future<Object?>>[
+        Future<void>.delayed(_minimumDisplay),
+        _restore,
+      ]).timeout(_restoreTimeout);
+    } on Object {
+      // A failing or never-settling restore must not leave the splash loading
+      // forever. A cached session was already adopted before this point; with
+      // none, sign-in is the secure destination.
+      results = null;
+    }
 
-    if (!mounted) {
+    if (!mounted || _settled) {
       return;
     }
-    final restored = results.last as AuthSession?;
-    _finishRestore(restored);
+    _settled = true;
+    _finishRestore(results == null ? null : results.last as AuthSession?);
   }
 
   /// Routes away from the splash once the restore attempt settles.
-  ///
-  /// A transient failure keeps the splash visible with a retry action instead of
-  /// sending the resident to sign in: their tokens were never proven invalid.
   void _finishRestore(AuthSession? restored) {
     // The splash may have been replaced while a restore was settling; its old
     // result must not navigate the new flow.
     if (!mounted || Get.currentRoute != AppRoutes.splash) {
       return;
     }
-    if (restored == null) {
-      Get.offNamed(AppRoutes.login);
-      return;
-    }
-    if (restored.unverified && !_hasSession) {
-      setState(() => _restoreFailed = true);
-      return;
-    }
-    Get.offNamed(AppRoutes.home);
-  }
-
-
-  bool get _hasSession {
-    if (!Get.isRegistered<SessionController>()) {
-      return false;
-    }
-    return Get.find<SessionController>().isAuthenticated;
-  }
-
-  Future<void> _retryRestore() async {
-    setState(() => _restoreFailed = false);
-    final restored = await _restoreSession();
-    if (!mounted) {
-      return;
-    }
-    _finishRestore(restored);
+    Get.offNamed(restored == null ? AppRoutes.login : AppRoutes.home);
   }
 
   Future<AuthSession?> _restoreSession() async {
     final auth = Get.find<AuthController>();
     final restored = await auth.restoreSession();
     superPrint(restored, title: "Restore Session");
-    if (!mounted || restored == null) {
+    if (!mounted || restored == null || Get.currentRoute != AppRoutes.splash) {
       return null;
     }
     superPrint(restored.displayName, title: "Restore Session Display Name");
     await auth.adoptIntoSession(restored);
+    if (restored.unverified) {
+      // The cached profile is enough to enter the app. Confirm it in the
+      // background; a temporary failure leaves it unverified, and a rejected
+      // session follows the normal sign-out flow.
+      unawaited(auth.revalidateSession());
+    }
     return restored;
   }
 
@@ -215,18 +204,12 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                   ),
                 ),
                 40.h.heightBox(),
-                if (_restoreFailed)
-                  _RestoreRetry(
-                    onRetry: _retryRestore,
-                    onSignIn: () => Get.offNamed(AppRoutes.login),
-                  )
-                else
-                  _BrandDotsLoader(
-                    color: tokens.brand,
-                    controller: _loaderController,
-                    dotScales: _dotScales,
-                    dotOpacities: _dotOpacities,
-                  ),
+                _BrandDotsLoader(
+                  color: tokens.brand,
+                  controller: _loaderController,
+                  dotScales: _dotScales,
+                  dotOpacities: _dotOpacities,
+                ),
               ],
             ),
           ),
@@ -270,40 +253,6 @@ class _BrandDotsLoader extends StatelessWidget {
           );
         }),
       ),
-    );
-  }
-}
-
-class _RestoreRetry extends StatelessWidget {
-  const _RestoreRetry({required this.onRetry, required this.onSignIn});
-
-  final VoidCallback onRetry;
-  final VoidCallback onSignIn;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = AppThemeTokens.of(context);
-    return Column(
-      children: [
-        Text(
-          'We could not reach the server.',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: tokens.ink,
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        6.h.heightBox(),
-        Text(
-          'Your session is still saved. Check your connection and try again.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: tokens.muted, fontSize: 12.5.sp, height: 1.4),
-        ),
-        14.h.heightBox(),
-        FilledButton(onPressed: onRetry, child: const Text('Try again')),
-        TextButton(onPressed: onSignIn, child: const Text('Sign in')),
-      ],
     );
   }
 }

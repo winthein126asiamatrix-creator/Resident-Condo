@@ -234,42 +234,10 @@ class AuthRepositoryImpl implements AuthRepository {
       return null;
     }
 
-    try {
-      // Validates the session. If the access token has expired, the refresh
-      // interceptor renews it and replays this request before it returns, so an
-      // expiry is invisible here and only a genuine failure surfaces.
-      final session = await fetchCurrentUser();
-      if (epoch != _sessionEpoch) {
-        return null;
-      }
-      await _local.persistSession(session);
-      return session;
-    } on AppException catch (error) {
-      if (epoch != _sessionEpoch) {
-        return null;
-      }
-      // A network-level failure, timeout, or server error says nothing about the
-      // tokens: the resident must not be signed out because the backend is
-      // temporarily unreachable. The tokens are kept and the cached AuthUser, if
-      // present, is restored as an unverified session so the resident can use
-      // the app offline. Only a failure that proves the session is invalid ends
-      // it.
-      final transient =
-          error is ApiException &&
-          (error.isRetryable || error.kind == ApiFailureKind.server);
-      if (transient) {
-        return _restoreFromCacheOrStorage(epoch);
-      }
-      return await _endSession(epoch);
-    }
-  }
-
-  /// Builds an unverified result, preferring the cached AuthUser.
-  ///
-  /// Used only when the server is temporarily unreachable. A cached profile is
-  /// enough to populate the shared session in an unverified state; remembered
-  /// details are only a fallback when no profile was cached.
-  Future<AuthSession?> _restoreFromCacheOrStorage(int epoch) async {
+    // Cache-first: tokens plus a profile cached by an earlier `/auth/me` are
+    // enough to open the app immediately. The session stays explicitly
+    // unverified; the caller revalidates in the background, so a slow or
+    // unreachable backend never holds the splash screen.
     final cachedUser = await _cachedAuthUser();
     if (epoch != _sessionEpoch) {
       return null;
@@ -283,28 +251,53 @@ class AuthRepositoryImpl implements AuthRepository {
         unverified: true,
       );
     }
-    final remembered = await _local.restoreSession();
-    if (epoch != _sessionEpoch) {
+
+    // No cached profile to show, so validation has to happen before a session
+    // exists. The caller bounds this with its own timeout.
+    try {
+      final session = await fetchCurrentUser();
+      if (epoch != _sessionEpoch) {
+        return null;
+      }
+      try {
+        await _local.persistSession(session);
+      } on Object {
+        // Remembering the name is a convenience; it must not fail restoration.
+      }
+      return session;
+    } on AppException catch (error) {
+      if (epoch != _sessionEpoch) {
+        return null;
+      }
+      // A network-level failure, timeout, or server error says nothing about the
+      // tokens, so they are kept. But without a cached profile there is no
+      // trusted resident to show, and the caller sends them to sign in.
+      if (_isTransientFailure(error)) {
+        return null;
+      }
+      return await _endSession(epoch);
+    } on Object {
+      // A local read or decode failure is not proof the session is invalid.
       return null;
     }
-    if (remembered != null) {
-      return remembered.copyWith(unverified: true);
-    }
-    // The tokens persisted but no profile was cached. Still better than signing
-    // the resident out over a connectivity problem, but there is no user to show.
-    return const AuthSession(
-      username: '',
-      displayName: 'Resident',
-      rememberMe: true,
-      unverified: true,
-    );
   }
 
+  /// True when the failure only says the server could not answer right now.
+  ///
+  /// Such a failure keeps the stored credentials but is not evidence that they
+  /// were rejected. Only a response that proves rejection ends the session.
+  static bool _isTransientFailure(AppException error) =>
+      error is ApiException &&
+      (error.isRetryable || error.kind == ApiFailureKind.server);
+
   /// Reads the cached AuthUser written by a successful `/auth/me`.
+  ///
+  /// Never throws: a missing, unreadable, or malformed cache entry simply means
+  /// there is no cached profile to show.
   Future<AuthUser?> _cachedAuthUser() async {
-    final entry = await _cache?.read('auth.me');
-    if (entry == null) return null;
     try {
+      final entry = await _cache?.read('auth.me');
+      if (entry == null) return null;
       final decoded = jsonDecode(entry.payloadJson);
       if (decoded is! Map) return null;
       final user = AuthUser.fromJson(Map<String, dynamic>.from(decoded));
