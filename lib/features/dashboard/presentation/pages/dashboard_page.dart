@@ -289,7 +289,7 @@ class _GreetingHeader extends StatelessWidget {
                 ),
               ),
             ),
-            if (resident!.user.unreadNotificationCount > 0)
+            if ((resident?.user.unreadNotificationCount ?? 0) > 0)
               Positioned(
                 top: -2,
                 right: -2,

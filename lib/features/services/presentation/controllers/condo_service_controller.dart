@@ -1,6 +1,9 @@
 import 'package:get/get.dart';
 
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../../../core/network/connectivity_service.dart';
+import '../../../../core/network/refresh_registry.dart';
 import '../../../../core/utils/app_dates.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../domain/entities/condo_service.dart';
@@ -19,6 +22,9 @@ class CondoServiceController extends GetxController {
   static const _activeStatus = 'active';
   static const _historyStatus = 'history';
 
+  /// The registry key this controller re-fetches under.
+  static const String screen = 'services';
+
   final CondoServiceUseCases useCases;
   final services = <CondoService>[].obs;
   final activeRequests = <ServiceRequest>[].obs;
@@ -31,12 +37,22 @@ class CondoServiceController extends GetxController {
   final isLoadingMoreHistory = false.obs;
   final isSubmitting = false.obs;
   final errorMessage = RxnString();
+
+  /// True while what is on screen came from the device rather than the API.
+  final isShowingCachedData = false.obs;
+
   final historyPage = 1.obs;
   final historyLimit = 20.obs;
   final historyTotal = 0.obs;
 
   Worker? _sessionWorker;
   int? _loadedForUserId;
+
+  /// Whether a cache snapshot or a server response exists for this account,
+  /// even when that snapshot happens to be empty.
+  bool _hasUsableData = false;
+
+  Future<void>? _loadAllInFlight;
 
   List<ServiceRequest> get requests => <ServiceRequest>[
     ...activeRequests,
@@ -50,9 +66,22 @@ class CondoServiceController extends GetxController {
       ? Get.find<SessionController>()
       : null;
 
+  /// The connectivity layer's registry, when it is registered.
+  ///
+  /// Nullable so the controller still works in a test that pumps services
+  /// without the full app graph.
+  RefreshRegistry? get _registry =>
+      Get.isRegistered<RefreshRegistry>() ? Get.find<RefreshRegistry>() : null;
+
+  ConnectivityService? get _connectivity =>
+      Get.isRegistered<ConnectivityService>()
+      ? Get.find<ConnectivityService>()
+      : null;
+
   @override
   void onInit() {
     super.onInit();
+    _registry?.register(screen, loadAll);
     final session = _session;
     if (session == null) {
       // No session graph (e.g. a unit test): keep the previous eager behaviour.
@@ -67,12 +96,18 @@ class CondoServiceController extends GetxController {
       final userId = resident?.user.id;
       if (userId == null) {
         _loadedForUserId = null;
+        _resetForAccount();
         return;
       }
       if (_loadedForUserId == userId) {
         return;
       }
+      final switchingAccount =
+          _loadedForUserId != null && _loadedForUserId != userId;
       _loadedForUserId = userId;
+      if (switchingAccount) {
+        _resetForAccount();
+      }
       loadAll();
     });
     final userId = session.currentUser?.id;
@@ -85,6 +120,7 @@ class CondoServiceController extends GetxController {
   @override
   void onClose() {
     _sessionWorker?.dispose();
+    _registry?.unregister(screen);
     super.onClose();
   }
 
@@ -123,9 +159,42 @@ class CondoServiceController extends GetxController {
     selectedRequest.value = request;
   }
 
-  Future<void> loadAll() async {
+  /// Loads both lists, cache first, then the API.
+  ///
+  /// Concurrent callers share the request already in flight so a reconnect and
+  /// a pull-to-refresh cannot issue the same three GETs twice.
+  Future<void> loadAll() {
+    final existing = _loadAllInFlight;
+    if (existing != null) {
+      return existing;
+    }
+    final future = _loadAll();
+    _loadAllInFlight = future;
+    return future.whenComplete(() {
+      if (identical(_loadAllInFlight, future)) {
+        _loadAllInFlight = null;
+      }
+    });
+  }
+
+  Future<void> _loadAll() async {
     isLoading.value = true;
     errorMessage.value = null;
+
+    if (!_hasUsableData) {
+      await _hydrateFromCache();
+    }
+
+    // The radio can already say the device is offline. With a cached snapshot
+    // there is nothing useful to ask the API, so keep what is on screen and
+    // let the reconnect worker refresh it later.
+    if (_connectivity?.isOnline.value == false && _hasUsableData) {
+      isShowingCachedData.value = true;
+      _registry?.markStale(screen);
+      isLoading.value = false;
+      return;
+    }
+
     try {
       final results = await Future.wait<Object>([
         useCases.getServices(),
@@ -142,20 +211,30 @@ class CondoServiceController extends GetxController {
       historyPage.value = history.page;
       historyLimit.value = history.limit;
       historyTotal.value = history.total;
+      _hasUsableData = true;
+      isShowingCachedData.value = false;
+      _registry?.markFresh(screen);
       _refreshSelection();
     } on AppException catch (error) {
-      errorMessage.value = error.message;
+      _handleLoadFailure(error);
     } catch (_) {
-      errorMessage.value = 'Unable to load condo services.';
+      _handleLoadFailure(null, fallback: 'Unable to load condo services.');
     } finally {
       isLoading.value = false;
     }
   }
 
   Future<void> loadMoreHistory() async {
-    if (isLoadingMoreHistory.value || !hasMoreHistory) {
+    if (isLoading.value || isLoadingMoreHistory.value || !hasMoreHistory) {
       return;
     }
+
+    if (_connectivity?.isOnline.value == false && _hasUsableData) {
+      isShowingCachedData.value = true;
+      _registry?.markStale(screen);
+      return;
+    }
+
     isLoadingMoreHistory.value = true;
     errorMessage.value = null;
     try {
@@ -172,10 +251,19 @@ class CondoServiceController extends GetxController {
       historyPage.value = history.page;
       historyLimit.value = history.limit;
       historyTotal.value = history.total;
+      _hasUsableData = true;
+      isShowingCachedData.value = false;
+      _registry?.markFresh(screen);
     } on AppException catch (error) {
-      errorMessage.value = error.message;
+      _handleLoadFailure(
+        error,
+        fallback: 'Unable to load older service requests.',
+      );
     } catch (_) {
-      errorMessage.value = 'Unable to load older service requests.';
+      _handleLoadFailure(
+        null,
+        fallback: 'Unable to load older service requests.',
+      );
     } finally {
       isLoadingMoreHistory.value = false;
     }
@@ -263,6 +351,64 @@ class CondoServiceController extends GetxController {
     } finally {
       isSubmitting.value = false;
     }
+  }
+
+  /// Puts the device's copy on screen before the API answers.
+  Future<void> _hydrateFromCache() async {
+    try {
+      final cachedServices = await useCases.getCachedServices();
+      final active = await useCases.getCachedRequests(status: _activeStatus);
+      final history = await useCases.getCachedRequests(status: _historyStatus);
+
+      if (cachedServices != null) {
+        services.assignAll(cachedServices);
+        _hasUsableData = true;
+      }
+      if (active != null) {
+        activeRequests.assignAll(_sortedActive(active.items));
+        _hasUsableData = true;
+      }
+      if (history != null) {
+        historyRequests.assignAll(_sortedHistory(history.items));
+        historyPage.value = history.page;
+        historyLimit.value = history.limit;
+        historyTotal.value = history.total;
+        _hasUsableData = true;
+      }
+      _refreshSelection();
+    } catch (_) {
+      // The cache is only a head start; a broken row must not stop the request.
+    }
+  }
+
+  void _handleLoadFailure(Object? error, {String? fallback}) {
+    if (_hasUsableData) {
+      // Older data is better than an error screen, and the notice on the page
+      // says where it came from.
+      isShowingCachedData.value = true;
+    } else {
+      errorMessage.value = error is AppException
+          ? error.message
+          : (fallback ?? 'Unable to load condo services.');
+    }
+    if (error is ApiException && error.isRetryable) {
+      _registry?.markStale(screen);
+    }
+  }
+
+  /// Clears everything that belonged to the previous resident.
+  void _resetForAccount() {
+    services.clear();
+    activeRequests.clear();
+    historyRequests.clear();
+    selectedService.value = null;
+    selectedRequest.value = null;
+    historyPage.value = 1;
+    historyLimit.value = 20;
+    historyTotal.value = 0;
+    _hasUsableData = false;
+    isShowingCachedData.value = false;
+    errorMessage.value = null;
   }
 
   void _refreshSelection() {

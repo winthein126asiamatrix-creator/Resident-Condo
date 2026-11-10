@@ -16,6 +16,30 @@ class CondoServiceModel extends CondoService {
 }
 
 class ServiceRequestModel extends ServiceRequest {
+  factory ServiceRequestModel.fromEntity(ServiceRequest request) {
+    return ServiceRequestModel(
+      id: request.id,
+      serviceId: request.serviceId,
+      serviceName: request.serviceName,
+      category: request.category,
+      scheduledDate: request.scheduledDate,
+      scheduledSlot: request.scheduledSlot,
+      status: request.status,
+      price: request.price,
+      requestedOn: request.requestedOn,
+      provider: request.provider,
+      code: request.code,
+      currency: request.currency,
+      statusLabel: request.statusLabel,
+      qty: request.qty,
+      notes: request.notes,
+      feedback: request.feedback,
+      rating: request.rating,
+      slotId: request.slotId,
+      bookingDetails: request.bookingDetails,
+    );
+  }
+
   const ServiceRequestModel({
     required super.id,
     required super.serviceId,

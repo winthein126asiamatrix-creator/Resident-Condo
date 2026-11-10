@@ -130,10 +130,12 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
     if (field.type == ServiceBookingFieldType.quantity && value != null) {
       final number = value is num ? value : num.tryParse('$value');
       if (number == null) return 'Enter a valid number';
-      if (field.min != null && number < field.min!)
+      if (field.min != null && number < field.min!) {
         return 'Minimum ${field.min}';
-      if (field.max != null && number > field.max!)
+      }
+      if (field.max != null && number > field.max!) {
         return 'Maximum ${field.max}';
+      }
     }
     return null;
   }

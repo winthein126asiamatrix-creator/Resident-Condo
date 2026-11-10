@@ -236,13 +236,11 @@ class _LoginForm extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // A rejected sign-in is reported once, above the fields, rather than
-          // being duplicated against whichever field the resident guesses.
-          Obx(
-            () => auth.errorMessage.value == null
-                ? SizedBox.shrink()
-                : _ErrorBanner(message: auth.errorMessage.value!),
-          ),
+          // Obx(
+          //   () => auth.errorMessage.value == null
+          //       ? SizedBox.shrink()
+          //       : _ErrorBanner(message: auth.errorMessage.value!),
+          // ),
           Obx(
             () => AppTextField(
               fieldKey: Key('login-username'),
@@ -320,8 +318,7 @@ class _LoginForm extends StatelessWidget {
           AppSpacing.fieldGap.heightBox(),
           _RememberMeAndForgot(auth: auth),
           AppSpacing.sectionGap.heightBox(),
-          Obx(
-            () => AppPrimaryAction(
+          Obx(() => AppPrimaryAction(
               key: Key('login-submit'),
               onPressed: auth.isSubmitting.value ? null : onSubmit,
               isLoading: auth.isSubmitting.value,

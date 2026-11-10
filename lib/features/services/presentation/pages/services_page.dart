@@ -6,8 +6,6 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 
-import '../../../../core/theme/app_palette.dart';
-
 import '../../../../core/theme/app_text_styles.dart';
 
 import '../../../../core/theme/app_theme_tokens.dart';
@@ -72,6 +70,10 @@ class ServicesPage extends GetView<CondoServiceController> {
             padding: EdgeInsets.fromLTRB(20, 8, 20, 32),
             children: [
               _ServicesHero(controller: controller),
+              if (controller.isShowingCachedData.value) ...[
+                12.h.heightBox(),
+                const _OfflineNotice(),
+              ],
               18.h.heightBox(),
               _TabRow(controller: controller),
               18.h.heightBox(),
@@ -106,6 +108,40 @@ class ServicesPage extends GetView<CondoServiceController> {
   }
 }
 
+/// Says the services and requests on screen came from this device.
+///
+/// Same tokens as the cards below so it reads as part of the page rather than
+/// an alert. The reconnect worker refreshes the data when the API is reachable
+/// again; pulling down also retries.
+class _OfflineNotice extends StatelessWidget {
+  const _OfflineNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: tokens.surface,
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: tokens.border),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.cloud_off_rounded, size: 18.r, color: tokens.muted),
+          10.w.widthBox(),
+          Expanded(
+            child: Text(
+              'Showing your saved services and requests. Pull down to try again.',
+              style: TextStyle(color: tokens.muted, fontSize: 12.sp),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ServicesHero extends StatelessWidget {
   const _ServicesHero({required this.controller});
   final CondoServiceController controller;
@@ -117,7 +153,7 @@ class _ServicesHero extends StatelessWidget {
       icon: Icons.room_service_rounded,
       title: 'Book a service',
       subtitle:
-          '${controller.services.length} services Â· ${controller.openRequestCount} open requests',
+          '${controller.services.length} services · ${controller.openRequestCount} open requests',
       footnote: 'Services are handled by the concierge team, separately from maintenance repairs.',
       // trailing: IconButton(
       //   tooltip: 'Refresh services',
@@ -335,7 +371,8 @@ class _Requests extends StatelessWidget {
               child: _RequestCard(controller: controller, request: request),
             ),
         18.h.heightBox(),
-        if (history.isNotEmpty) AppSectionHeader(title: 'History', count: historyCount)
+        if (history.isNotEmpty)
+          AppSectionHeader(title: 'History', count: historyCount)
         else
           for (final group in groups) ...[
             _HistoryMonthHeader(label: group.label),
@@ -463,16 +500,16 @@ class _RequestCard extends StatelessWidget {
                     Text(
                       request.serviceName,
                       style: TextStyle(fontWeight: FontWeight.w800),
-                    ),Column(
-            mainAxisAlignment: .end,
-            children: [
-              Text(
-                '${request.currency} ${AppFormatters.currency(request.price)}',
-                style: TextStyle(fontWeight: FontWeight.w800),
-              ),
-             
-            ],
-          ),
+                    ),
+                    Column(
+                      mainAxisAlignment: .end,
+                      children: [
+                        Text(
+                          '${request.currency} ${AppFormatters.currency(request.price)}',
+                          style: TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
                 4.h.heightBox(),
@@ -488,14 +525,12 @@ class _RequestCard extends StatelessWidget {
                       status: request.status,
                       label: request.displayStatus,
                     ),
-                     Icon(Icons.chevron_right_rounded, color: tokens.faint),
+                    Icon(Icons.chevron_right_rounded, color: tokens.faint),
                   ],
                 ),
               ],
             ),
           ),
-          
-         
         ],
       ),
     );

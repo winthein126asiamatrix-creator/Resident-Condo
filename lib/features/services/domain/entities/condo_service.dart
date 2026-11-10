@@ -90,6 +90,25 @@ extension ServiceRequestStatusGroup on ServiceRequestStatus {
       this == ServiceRequestStatus.cancelled;
 }
 
+extension ServiceRequestStatusWire on ServiceRequestStatus {
+  /// The backend spelling, used when this status is written to the cache and
+  /// read back through [ServiceRequestStatus.fromApi].
+  String get apiValue {
+    switch (this) {
+      case ServiceRequestStatus.requested:
+        return 'requested';
+      case ServiceRequestStatus.scheduled:
+        return 'scheduled';
+      case ServiceRequestStatus.inProgress:
+        return 'in_progress';
+      case ServiceRequestStatus.completed:
+        return 'completed';
+      case ServiceRequestStatus.cancelled:
+        return 'cancelled';
+    }
+  }
+}
+
 extension ServiceRequestStatusLabel on ServiceRequestStatus {
   String get label {
     switch (this) {
@@ -266,6 +285,7 @@ class ServiceBookingField {
     'min': min,
     'max': max,
     'options': options,
+    'default': defaultValue,
   };
 }
 
@@ -420,7 +440,7 @@ class CondoService {
       final priceJson = json['price'];
       final amount = priceJson is Map && priceJson['amount'] is num
           ? (priceJson['amount'] as num)
-          : (priceJson is num ? priceJson as num : null);
+          : (priceJson is num ? priceJson : null);
       final currency = priceJson is Map
           ? priceJson['currency']?.toString()
           : null;
@@ -509,7 +529,12 @@ class CondoService {
 
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,
-    'category': <String, dynamic>{'id': null, 'name': category.label},
+    'category': <String, dynamic>{
+      'id': categoryId,
+      'code': categoryCode,
+      'name': categoryLabel ?? category.label,
+      'label': categoryLabel ?? category.label,
+    },
     'name': name,
     'provider_name': providerName,
     'description': description,
@@ -518,6 +543,8 @@ class CondoService {
     'booking_fields': bookingFields.map((f) => f.toJson()).toList(),
     'available_dates': availableDates.map((d) => d.toJson()).toList(),
     'is_active': isActive,
+    'icon': icon,
+    'notice_days': noticeDays,
   };
 }
 
@@ -708,6 +735,31 @@ class ServiceRequest {
       bookingDetails: bookingDetails,
     );
   }
+
+  /// The shape written to the device cache.
+  ///
+  /// Uses the same keys [ServiceRequest.fromJson] reads, so a cached request is
+  /// rebuilt with every field the detail screen relies on.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'id': id,
+    if (code.isNotEmpty) 'code': code,
+    'service_id': serviceId,
+    'service_name': serviceName,
+    'category': <String, dynamic>{'name': category.label},
+    'date': scheduledDate,
+    'scheduled_slot': scheduledSlot,
+    'status': status.apiValue,
+    if (statusLabel != null) 'status_label': statusLabel,
+    'amount': <String, dynamic>{'amount': price, 'currency': currency},
+    'qty': qty,
+    'requested_on': requestedOn,
+    'provider': provider,
+    if (notes.isNotEmpty) 'note': notes,
+    if (feedback != null) 'feedback': feedback,
+    if (rating != null) 'rating': rating,
+    if (slotId != null) 'slot_id': slotId,
+    'booking_details': bookingDetails,
+  };
 
   ServiceRequest copyWith({
     ServiceRequestStatus? status,

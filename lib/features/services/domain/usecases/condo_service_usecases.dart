@@ -8,12 +8,19 @@ class CondoServiceUseCases {
 
   Future<List<CondoService>> getServices() => repository.getServices();
 
+  Future<List<CondoService>?> getCachedServices() =>
+      repository.getCachedServices();
+
   Future<CondoService> getService(int id) => repository.getService(id);
 
   Future<ServiceRequestPageResult> getRequests({
     required String status,
     int page = 1,
   }) => repository.getRequests(status: status, page: page);
+
+  Future<ServiceRequestPageResult?> getCachedRequests({
+    required String status,
+  }) => repository.getCachedRequests(status: status);
 
   Future<ServiceRequest> createRequest(ServiceRequest request) =>
       repository.createRequest(request);

@@ -14,11 +14,18 @@ class CondoServiceRepositoryImpl implements CondoServiceRepository {
 
   @override
   Future<List<CondoService>> getServices() async {
-    return remoteDataSource.getServices();
+    final services = await remoteDataSource.getServices();
+    await localDataSource.saveServices(services);
+    return services;
   }
 
   @override
-  Future<CondoService> getService(int id) async {
+  Future<List<CondoService>?> getCachedServices() {
+    return localDataSource.readServices();
+  }
+
+  @override
+  Future<CondoService> getService(int id) {
     return remoteDataSource.getService(id);
   }
 
@@ -26,11 +33,28 @@ class CondoServiceRepositoryImpl implements CondoServiceRepository {
   Future<ServiceRequestPageResult> getRequests({
     required String status,
     int page = 1,
-  }) => remoteDataSource.getRequests(status: status, page: page);
+  }) async {
+    final requests = await remoteDataSource.getRequests(
+      status: status,
+      page: page,
+    );
+    await localDataSource.saveRequests(status, requests);
+    return requests;
+  }
 
   @override
-  Future<ServiceRequest> createRequest(ServiceRequest request) =>
-      remoteDataSource.createRequest(request);
+  Future<ServiceRequestPageResult?> getCachedRequests({
+    required String status,
+  }) {
+    return localDataSource.readRequests(status);
+  }
+
+  @override
+  Future<ServiceRequest> createRequest(ServiceRequest request) async {
+    final created = await remoteDataSource.createRequest(request);
+    await localDataSource.addRequest(created);
+    return created;
+  }
 
   @override
   Future<ServiceRequest> updateStatus(

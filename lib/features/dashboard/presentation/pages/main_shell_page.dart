@@ -102,11 +102,11 @@ class _MainShellPageState extends State<MainShellPage> {
       final session = Get.isRegistered<SessionController>()
           ? Get.find<SessionController>().session.value
           : null;
-      if (session == null) {
-        // Login has saved the tokens, but the complete AuthUser from `/auth/me`
-        // has not arrived yet. Keep every protected screen off stage.
-        return _buildSessionInitialization(auth);
-      }
+      // if (session == null) {
+      //   // Login has saved the tokens, but the complete AuthUser from `/auth/me`
+      //   // has not arrived yet. Keep every protected screen off stage.
+      //   return _buildSessionInitialization(auth);
+      // }
       // Read once, so the whole shell rebuilds on a change. This is the same
       // ConnectivityService observable the banner already uses; no second
       // controller, Rx variable or listener is introduced.
@@ -188,7 +188,7 @@ class _MainShellPageState extends State<MainShellPage> {
     final error = auth?.sessionInitializationError.value;
     if (error == null) {
       return const Scaffold(
-        body: BrandedLoadingView(message: 'Preparing your residence...'),
+        body: BrandedLoadingView(message: 'Preparing your residence'),
       );
     }
     return Scaffold(

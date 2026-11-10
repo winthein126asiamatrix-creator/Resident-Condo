@@ -9,10 +9,13 @@ class CondoServiceRemoteDataSource {
 
   Future<List<CondoService>> getServices() async {
     final response = await _service.get<dynamic>(ApiEndPoints.services);
-    if (response is! Map) return const <CondoService>[];
-    final items = response['items'];
-    if (items is! List) return const <CondoService>[];
-    return items
+    // A response that does not carry an item list is not an empty catalogue.
+    // Throwing keeps the repository from overwriting a good cached snapshot
+    // with "no services" because of an unexpected envelope.
+    if (response is! Map || response['items'] is! List) {
+      throw const FormatException('Unexpected services response.');
+    }
+    return (response['items'] as List)
         .whereType<Map>()
         .map((e) => CondoService.fromJson(Map<String, dynamic>.from(e)))
         .toList();
@@ -33,24 +36,18 @@ class CondoServiceRemoteDataSource {
       ApiEndPoints.serviceRequests,
       query: <String, dynamic>{'status': status, 'page': page},
     );
-    if (response is! Map) {
-      return ServiceRequestPageResult(
-        items: const <ServiceRequest>[],
-        page: page,
-        limit: 20,
-        total: 0,
-      );
+    if (response is! Map || response['items'] is! List) {
+      // Same rule as the catalogue: an unexpected shape must not replace the
+      // requests already cached for this account with an empty page.
+      throw const FormatException('Unexpected service requests response.');
     }
-    final itemsJson = response['items'];
-    final items = itemsJson is List
-        ? itemsJson
-              .whereType<Map>()
-              .map((e) => ServiceRequest.fromJson(Map<String, dynamic>.from(e)))
-              .toList()
-        : <ServiceRequest>[];
+    final items = (response['items'] as List)
+        .whereType<Map>()
+        .map((e) => ServiceRequest.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
     final currentPage = _asInt(response['page']) ?? page;
     final limit =
-        _asInt(response['limit']) ?? (items.length == 0 ? 20 : items.length);
+        _asInt(response['limit']) ?? (items.isEmpty ? 20 : items.length);
     final total =
         _asInt(response['total']) ?? (currentPage - 1) * limit + items.length;
     return ServiceRequestPageResult(
@@ -78,7 +75,7 @@ class CondoServiceRemoteDataSource {
         'start_time': times.$1,
         'end_time': times.$2,
         if (request.slotId != null) 'slot_id': request.slotId,
-        if (quantity != null) 'qty': quantity,
+        'qty': ?quantity,
         if (request.notes.trim().isNotEmpty) 'note': request.notes.trim(),
       },
       parse: (json) {

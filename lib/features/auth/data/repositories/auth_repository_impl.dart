@@ -106,9 +106,6 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<AuthSession> updateMe() => fetchCurrentUser();
 
   Future<AuthSession> _fetchCurrentUser(int epoch) async {
-    // `/auth/me` is the only source of an authenticated profile. A cached copy
-    // is written for other features, but it is never read back here to stand in
-    // for a successful validation.
     final user = await _remote.updateMe();
     final mergedUser = await _mergePreferences(user, epoch);
     await _cacheUser(mergedUser, epoch);

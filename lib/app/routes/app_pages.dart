@@ -69,9 +69,6 @@ abstract final class AppPages {
     GetPage<dynamic>(
       name: AppRoutes.splash,
       page: () => SplashPage(),
-      // AuthBinding is on both entries: the splash needs it to restore the
-      // remembered session, and the home shell needs it for logout. The binding
-      // is idempotent, so hitting it twice is safe.
       bindings: [AppBinding(), AuthBinding()],
     ),
     GetPage<dynamic>(
