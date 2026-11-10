@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -383,7 +383,6 @@ class AuthController extends GetxController {
     }
     isChangingPassword.value = true;
     changePasswordError.value = null;
-    superPrint(currentPassword, title: "Hello W");
     try {
       await useCases.changePassword(
         oldPassword: currentPassword,

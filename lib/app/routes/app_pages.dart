@@ -29,6 +29,7 @@ import '../../features/parking/presentation/pages/parking_page.dart';
 import '../../features/payments/domain/entities/invoice.dart';
 import '../../features/payments/domain/entities/payment.dart';
 import '../../features/payments/presentation/pages/invoice_detail_page.dart';
+import '../../features/payments/presentation/pages/invoice_list_page.dart';
 import '../../features/payments/presentation/pages/payment_failure_page.dart';
 import '../../features/payments/presentation/pages/payment_history_page.dart';
 import '../../features/payments/presentation/pages/payment_method_page.dart';
@@ -96,8 +97,21 @@ abstract final class AppPages {
       binding: UnitBinding(),
     ),
     GetPage<dynamic>(
+      name: AppRoutes.invoiceList,
+      page: () => const InvoiceListPage(),
+    ),
+    GetPage<dynamic>(
       name: AppRoutes.paymentDetail,
-      page: () => InvoiceDetailPage(invoice: Get.arguments as Invoice),
+      page: () {
+        final arguments = Get.arguments;
+        if (arguments is int) {
+          return InvoiceDetailPage(invoiceId: arguments);
+        }
+        if (arguments is Invoice) {
+          return InvoiceDetailPage(invoice: arguments);
+        }
+        return const InvoiceDetailPage();
+      },
     ),
     GetPage<dynamic>(
       name: AppRoutes.paymentSummary,

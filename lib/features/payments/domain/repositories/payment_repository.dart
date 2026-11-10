@@ -1,4 +1,6 @@
 import '../entities/invoice.dart';
+import '../entities/invoice_detail.dart';
+import '../entities/invoice_list.dart';
 import '../entities/payment.dart';
 import '../entities/payment_dashboard.dart';
 
@@ -15,6 +17,29 @@ abstract interface class PaymentRepository {
 
   /// Drops every cached payment dashboard on this device.
   Future<void> clearDashboardCache();
+
+  /// One page of the resident's invoices from the API.
+  Future<InvoiceListResponse> getInvoiceList({
+    int page = 1,
+    int limit = 20,
+    String status = 'all',
+  });
+
+  /// One invoice, with its unit and line items, from the API.
+  Future<InvoiceDetail> getInvoiceDetail(int id);
+
+  /// The cached first page for [userId] and [status], when one exists.
+  Future<CachedInvoiceList?> getCachedInvoiceList(int userId, String status);
+
+  /// Stores the first page, truncated to the newest ten invoices.
+  Future<void> cacheInvoiceList(
+    int userId,
+    String status,
+    InvoiceListResponse response,
+  );
+
+  /// Drops every cached invoice list on this device.
+  Future<void> clearInvoiceListCache();
 
   Future<List<Invoice>> getInvoices();
 

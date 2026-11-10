@@ -10,6 +10,8 @@ import 'package:test/core/network/refresh_registry.dart';
 import 'package:test/features/auth/data/models/auth_user.dart';
 import 'package:test/features/payments/data/datasources/payment_dashboard_local_data_source.dart';
 import 'package:test/features/payments/domain/entities/invoice.dart';
+import 'package:test/features/payments/domain/entities/invoice_detail.dart';
+import 'package:test/features/payments/domain/entities/invoice_list.dart';
 import 'package:test/features/payments/domain/entities/payment.dart';
 import 'package:test/features/payments/domain/entities/payment_dashboard.dart';
 import 'package:test/features/payments/domain/repositories/payment_repository.dart';
@@ -309,6 +311,38 @@ class _FakeRepository implements PaymentRepository {
     clearCalls++;
     cached = null;
   }
+
+  @override
+  Future<InvoiceListResponse> getInvoiceList({
+    int page = 1,
+    int limit = 20,
+    String status = 'all',
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<InvoiceDetail> getInvoiceDetail(int id) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<CachedInvoiceList?> getCachedInvoiceList(
+    int userId,
+    String status,
+  ) async {
+    return null;
+  }
+
+  @override
+  Future<void> cacheInvoiceList(
+    int userId,
+    String status,
+    InvoiceListResponse response,
+  ) async {}
+
+  @override
+  Future<void> clearInvoiceListCache() async {}
 
   @override
   Future<List<Invoice>> getInvoices() async => const <Invoice>[];

@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -388,10 +388,14 @@ class ProfileController extends GetxController {
 
   /// Re-reads `/auth/me` only when the resident explicitly refreshes.
   Future<void> refreshProfile() async {
-    if (!Get.isRegistered<AuthController>()) {
+    final auth = authController ??
+        (Get.isRegistered<AuthController>()
+            ? Get.find<AuthController>()
+            : null);
+    if (auth == null) {
       return;
     }
-    await Get.find<AuthController>().revalidateSession();
+    await auth.fetchCurrentUser(force: true);
   }
 
   Future<bool> changePassword({

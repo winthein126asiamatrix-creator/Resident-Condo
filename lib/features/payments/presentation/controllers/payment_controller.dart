@@ -7,6 +7,8 @@ import '../../../../core/network/refresh_registry.dart';
 import '../../../../core/utils/app_dates.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../domain/entities/invoice.dart';
+import '../../domain/entities/invoice_detail.dart';
+import '../../domain/entities/invoice_list.dart';
 import '../../domain/entities/payment.dart';
 import '../../domain/entities/payment_dashboard.dart';
 import '../../domain/usecases/payment_usecases.dart';
@@ -25,6 +27,23 @@ class PaymentController extends GetxController {
 
   /// The registry key this controller re-fetches under.
   static const String screen = 'payments';
+
+  /// Reconnect keys for the invoice screens. They are separate from the
+  /// payments tab so a reconnect refreshes whichever screen is actually open.
+  static const String invoiceListScreen = 'payments:invoices';
+  static const String invoiceDetailScreen = 'payments:invoice-detail';
+
+  /// The first page size used by the list and by the cache snapshot.
+  static const int invoicePageSize = 20;
+
+  /// Status values the Invoice List filter offers.
+  static const List<String> invoiceStatusFilters = <String>[
+    'all',
+    'unpaid',
+    'partial',
+    'paid',
+    'overdue',
+  ];
 
   final PaymentUseCases useCases;
   final dashboard = Rxn<PaymentDashboard>();
@@ -45,6 +64,27 @@ class PaymentController extends GetxController {
   /// When the dashboard currently on screen was last refreshed from the API.
   final lastUpdatedAt = Rxn<DateTime>();
 
+  // ----------------------------------------------------------- invoice list
+
+  final invoiceList = <InvoiceListItem>[].obs;
+  final invoiceListPage = 1.obs;
+  final invoiceListLimit = invoicePageSize.obs;
+  final invoiceListTotal = 0.obs;
+  final invoiceListStatus = 'all'.obs;
+  final isLoadingInvoiceList = false.obs;
+  final isLoadingMoreInvoices = false.obs;
+  final invoiceListError = RxnString();
+  final isShowingCachedInvoices = false.obs;
+  final invoiceListUpdatedAt = Rxn<DateTime>();
+
+  // --------------------------------------------------------- invoice detail
+
+  /// The API detail currently on screen. This is never populated from cache.
+  final invoiceDetail = Rxn<InvoiceDetail>();
+  final invoiceDetailId = Rxn<int>();
+  final isLoadingInvoiceDetail = false.obs;
+  final invoiceDetailError = RxnString();
+
   final SessionController? _sessionController;
   final RefreshRegistry? _registryOverride;
   final ConnectivityService? _connectivityOverride;
@@ -54,6 +94,15 @@ class PaymentController extends GetxController {
   int? _ownerUserId;
   int _requestSeq = 0;
   Future<void>? _loadInFlight;
+
+  int? _invoiceListOwnerUserId;
+  bool _hasInvoiceListData = false;
+  int _invoiceListSeq = 0;
+  Future<void>? _invoiceListInFlight;
+
+  int _invoiceDetailSeq = 0;
+  Future<void>? _invoiceDetailInFlight;
+  int? _invoiceDetailInFlightId;
 
   var _transactionSequence = 1;
 
@@ -85,10 +134,20 @@ class PaymentController extends GetxController {
     return value == null ? '' : AppDates.format(value);
   }
 
+  bool get hasMoreInvoices =>
+      invoiceListPage.value * invoiceListLimit.value < invoiceListTotal.value;
+
+  String get invoiceListUpdatedLabel {
+    final value = invoiceListUpdatedAt.value;
+    return value == null ? '' : AppDates.format(value);
+  }
+
   @override
   void onInit() {
     super.onInit();
     _registry?.register(screen, loadPayments);
+    _registry?.register(invoiceListScreen, loadInvoices);
+    _registry?.register(invoiceDetailScreen, _refreshActiveInvoiceDetail);
 
     final session = _session;
     if (session == null) {
@@ -129,6 +188,8 @@ class PaymentController extends GetxController {
   void onClose() {
     _sessionWorker?.dispose();
     _registry?.unregister(screen);
+    _registry?.unregister(invoiceListScreen);
+    _registry?.unregister(invoiceDetailScreen);
     super.onClose();
   }
 
@@ -409,6 +470,11 @@ class PaymentController extends GetxController {
     } catch (_) {
       // Sign-out must still complete if the cache cannot be cleared.
     }
+    try {
+      await useCases.clearInvoiceListCache();
+    } catch (_) {
+      // The invoice cache is equally optional at sign-out time.
+    }
   }
 
   void _resetForAccount() {
@@ -428,6 +494,28 @@ class PaymentController extends GetxController {
     isShowingCachedData.value = false;
     lastUpdatedAt.value = null;
     _ownerUserId = null;
+
+    _invoiceListSeq++;
+    _invoiceListInFlight = null;
+    _hasInvoiceListData = false;
+    _invoiceListOwnerUserId = null;
+    invoiceList.clear();
+    invoiceListPage.value = 1;
+    invoiceListTotal.value = 0;
+    invoiceListStatus.value = 'all';
+    isLoadingInvoiceList.value = false;
+    isLoadingMoreInvoices.value = false;
+    invoiceListError.value = null;
+    isShowingCachedInvoices.value = false;
+    invoiceListUpdatedAt.value = null;
+
+    _invoiceDetailSeq++;
+    _invoiceDetailInFlight = null;
+    _invoiceDetailInFlightId = null;
+    invoiceDetail.value = null;
+    invoiceDetailId.value = null;
+    isLoadingInvoiceDetail.value = false;
+    invoiceDetailError.value = null;
   }
 
   Future<void> applyRole(String roleKey) async {
@@ -438,6 +526,319 @@ class PaymentController extends GetxController {
     } on AppException catch (error) {
       errorMessage.value = error.message;
     }
+  }
+
+  // ----------------------------------------------------------- invoice list
+
+  /// Loads the first invoice page, cache first, then refreshes it from the API.
+  ///
+  /// Concurrent callers share one request, so opening the screen while a
+  /// reconnect refresh is already running cannot issue the same GET twice.
+  Future<void> loadInvoices({bool refresh = false}) {
+    final existing = _invoiceListInFlight;
+    if (existing != null) {
+      return existing;
+    }
+    final future = _loadInvoices(refresh: refresh);
+    _invoiceListInFlight = future;
+    return future.whenComplete(() {
+      if (identical(_invoiceListInFlight, future)) {
+        _invoiceListInFlight = null;
+      }
+    });
+  }
+
+  Future<void> _loadInvoices({required bool refresh}) async {
+    final session = _session;
+    final userId = _currentUserId;
+    if (session != null && userId == null) {
+      return;
+    }
+
+    final status = invoiceListStatus.value;
+    final seq = ++_invoiceListSeq;
+    final hadData = _hasInvoiceListData && _invoiceListOwnerUserId == userId;
+    isLoadingInvoiceList.value = !hadData;
+    // A first-page reload supersedes any page request that was still running.
+    isLoadingMoreInvoices.value = false;
+    invoiceListError.value = null;
+
+    if (userId != null && !refresh && !hadData) {
+      await _hydrateInvoiceListFromCache(userId, status, seq);
+      if (seq != _invoiceListSeq ||
+          userId != _currentUserId ||
+          status != invoiceListStatus.value) {
+        return;
+      }
+    }
+
+    // A cached snapshot is enough while offline; the registry refreshes it when
+    // connectivity returns.
+    if (_hasInvoiceListData && _connectivity?.isOnline.value == false) {
+      isShowingCachedInvoices.value = true;
+      _registry?.markStale(invoiceListScreen);
+      isLoadingInvoiceList.value = false;
+      return;
+    }
+
+    try {
+      final response = await useCases.getInvoiceList(
+        page: 1,
+        limit: invoiceListLimit.value <= 0
+            ? invoicePageSize
+            : invoiceListLimit.value,
+        status: status,
+      );
+      if (seq != _invoiceListSeq ||
+          userId != _currentUserId ||
+          status != invoiceListStatus.value) {
+        return;
+      }
+
+      invoiceList.assignAll(response.items);
+      invoiceListPage.value = response.page <= 0 ? 1 : response.page;
+      invoiceListLimit.value = response.limit <= 0
+          ? invoicePageSize
+          : response.limit;
+      invoiceListTotal.value = response.total < response.items.length
+          ? response.items.length
+          : response.total;
+      _hasInvoiceListData = true;
+      _invoiceListOwnerUserId = userId;
+      isShowingCachedInvoices.value = false;
+      invoiceListUpdatedAt.value = DateTime.now();
+      invoiceListError.value = null;
+      _registry?.markFresh(invoiceListScreen);
+
+      // Only a fully parsed first page reaches this point, so it is safe to
+      // keep. Later pages are deliberately never cached.
+      if (userId != null) {
+        try {
+          await useCases.cacheInvoiceList(userId, status, response);
+        } catch (_) {
+          // A cache write is a convenience; the API response is still usable.
+        }
+      }
+    } on AppException catch (error) {
+      if (seq != _invoiceListSeq ||
+          userId != _currentUserId ||
+          status != invoiceListStatus.value) {
+        return;
+      }
+      _handleInvoiceListFailure(error);
+    } catch (_) {
+      if (seq != _invoiceListSeq ||
+          userId != _currentUserId ||
+          status != invoiceListStatus.value) {
+        return;
+      }
+      _handleInvoiceListFailure(null);
+    } finally {
+      if (seq == _invoiceListSeq) {
+        isLoadingInvoiceList.value = false;
+      }
+    }
+  }
+
+  Future<void> loadMoreInvoices() async {
+    if (isLoadingInvoiceList.value ||
+        isLoadingMoreInvoices.value ||
+        !hasMoreInvoices) {
+      return;
+    }
+    if (_connectivity?.isOnline.value == false && _hasInvoiceListData) {
+      isShowingCachedInvoices.value = true;
+      _registry?.markStale(invoiceListScreen);
+      return;
+    }
+
+    final status = invoiceListStatus.value;
+    final userId = _currentUserId;
+    final seq = _invoiceListSeq;
+    final nextPage = invoiceListPage.value + 1;
+    isLoadingMoreInvoices.value = true;
+    invoiceListError.value = null;
+    try {
+      final response = await useCases.getInvoiceList(
+        page: nextPage,
+        limit: invoiceListLimit.value,
+        status: status,
+      );
+      if (seq != _invoiceListSeq ||
+          userId != _currentUserId ||
+          status != invoiceListStatus.value) {
+        return;
+      }
+      final knownIds = invoiceList.map((invoice) => invoice.id).toSet();
+      invoiceList.addAll(
+        response.items.where((invoice) => !knownIds.contains(invoice.id)),
+      );
+      invoiceListPage.value = response.page <= 0 ? nextPage : response.page;
+      invoiceListLimit.value = response.limit <= 0
+          ? invoiceListLimit.value
+          : response.limit;
+      invoiceListTotal.value = response.total < invoiceList.length
+          ? invoiceList.length
+          : response.total;
+      _hasInvoiceListData = true;
+      _invoiceListOwnerUserId = userId;
+      isShowingCachedInvoices.value = false;
+      _registry?.markFresh(invoiceListScreen);
+    } on AppException catch (error) {
+      if (seq == _invoiceListSeq && userId == _currentUserId) {
+        _handleInvoiceListFailure(error);
+      }
+    } catch (_) {
+      if (seq == _invoiceListSeq && userId == _currentUserId) {
+        _handleInvoiceListFailure(null);
+      }
+    } finally {
+      if (seq == _invoiceListSeq) {
+        isLoadingMoreInvoices.value = false;
+      }
+    }
+  }
+
+  /// Switches the status filter and reloads its own cache snapshot.
+  Future<void> selectInvoiceListStatus(String status) async {
+    final normalized = status.trim().isEmpty
+        ? 'all'
+        : status.trim().toLowerCase();
+    if (normalized == invoiceListStatus.value && _hasInvoiceListData) {
+      return;
+    }
+    invoiceListStatus.value = normalized;
+    _invoiceListSeq++;
+    _invoiceListInFlight = null;
+    _hasInvoiceListData = false;
+    _invoiceListOwnerUserId = null;
+    invoiceList.clear();
+    invoiceListPage.value = 1;
+    invoiceListTotal.value = 0;
+    invoiceListError.value = null;
+    isShowingCachedInvoices.value = false;
+    invoiceListUpdatedAt.value = null;
+    isLoadingMoreInvoices.value = false;
+    await loadInvoices();
+  }
+
+  Future<void> _hydrateInvoiceListFromCache(
+    int userId,
+    String status,
+    int seq,
+  ) async {
+    try {
+      final cached = await useCases.getCachedInvoiceList(userId, status);
+      if (cached == null ||
+          seq != _invoiceListSeq ||
+          userId != _currentUserId ||
+          status != invoiceListStatus.value) {
+        return;
+      }
+      invoiceList.assignAll(cached.response.items);
+      invoiceListPage.value = cached.response.page;
+      invoiceListLimit.value = cached.response.limit;
+      invoiceListTotal.value = cached.response.total;
+      _hasInvoiceListData = true;
+      _invoiceListOwnerUserId = userId;
+      isShowingCachedInvoices.value = true;
+      invoiceListUpdatedAt.value = cached.updatedAt;
+      invoiceListError.value = null;
+    } catch (_) {
+      // A broken cache read must not stop the API request.
+    }
+  }
+
+  void _handleInvoiceListFailure(Object? error) {
+    if (_hasInvoiceListData) {
+      isShowingCachedInvoices.value = true;
+    } else {
+      invoiceListError.value = error is AppException
+          ? error.message
+          : 'Unable to load invoices.';
+    }
+    if (error is ApiException && error.isRetryable) {
+      _registry?.markStale(invoiceListScreen);
+    }
+  }
+
+  // --------------------------------------------------------- invoice detail
+
+  /// Loads one invoice detail from the API.
+  ///
+  /// There is intentionally no cache read here: an invoice is server
+  /// authoritative, and a stale list row must never stand in for a detail.
+  Future<void> loadInvoiceDetail(int id, {bool force = false}) {
+    final existing = _invoiceDetailInFlight;
+    if (existing != null && _invoiceDetailInFlightId == id) {
+      return existing;
+    }
+    final future = _fetchInvoiceDetail(id);
+    _invoiceDetailInFlight = future;
+    _invoiceDetailInFlightId = id;
+    return future.whenComplete(() {
+      if (identical(_invoiceDetailInFlight, future)) {
+        _invoiceDetailInFlight = null;
+        _invoiceDetailInFlightId = null;
+      }
+    });
+  }
+
+  Future<void> _fetchInvoiceDetail(int id) async {
+    final session = _session;
+    final userId = _currentUserId;
+    if (session != null && userId == null) {
+      return;
+    }
+
+    final seq = ++_invoiceDetailSeq;
+    if (invoiceDetailId.value != id) {
+      invoiceDetail.value = null;
+    }
+    invoiceDetailId.value = id;
+    invoiceDetailError.value = null;
+    isLoadingInvoiceDetail.value = invoiceDetail.value == null;
+
+    try {
+      final detail = await useCases.getInvoiceDetail(id);
+      if (seq != _invoiceDetailSeq ||
+          userId != _currentUserId ||
+          invoiceDetailId.value != id) {
+        return;
+      }
+      invoiceDetail.value = detail;
+      invoiceDetailError.value = null;
+      _registry?.markFresh(invoiceDetailScreen);
+    } on AppException catch (error) {
+      if (seq != _invoiceDetailSeq ||
+          userId != _currentUserId ||
+          invoiceDetailId.value != id) {
+        return;
+      }
+      invoiceDetailError.value = error.message;
+      if (error is ApiException && error.isRetryable) {
+        _registry?.markStale(invoiceDetailScreen);
+      }
+    } catch (_) {
+      if (seq != _invoiceDetailSeq ||
+          userId != _currentUserId ||
+          invoiceDetailId.value != id) {
+        return;
+      }
+      invoiceDetailError.value = 'Unable to load invoice details.';
+    } finally {
+      if (seq == _invoiceDetailSeq) {
+        isLoadingInvoiceDetail.value = false;
+      }
+    }
+  }
+
+  Future<void> _refreshActiveInvoiceDetail() async {
+    final id = invoiceDetailId.value;
+    if (id == null || id <= 0) {
+      return;
+    }
+    await loadInvoiceDetail(id, force: true);
   }
 
   // -------------------------------------------------------------- selection

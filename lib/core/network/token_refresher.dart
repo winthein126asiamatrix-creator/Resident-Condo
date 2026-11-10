@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+﻿import 'package:dio/dio.dart';
 
 import '../utils/super_print.dart';
 import 'api_config.dart';
@@ -38,6 +38,7 @@ class TokenRefresher {
   /// A failure is null rather than an exception: every caller wants the same
   /// thing from it, which is to end the session.
   Future<AuthTokens?> refresh(String refreshToken) async {
+    Object? body;
     try {
       superPrint({
         'path': ApiEndPoints.refreshToken,
@@ -49,11 +50,15 @@ class TokenRefresher {
           // 'expiresInMins': ApiConfig.tokenExpiresInMins,
         },
       );
+      body = response.data;
       superPrint({
         'path': ApiEndPoints.refreshToken,
         'status': response.statusCode,
       }, title: 'Token Refresh: Response');
-      return TokenParser.tokensFrom(response.data);
+      // A backend that only mints a new access token keeps the refresh token
+      // already in storage; otherwise a perfectly good rotation would be
+      // treated as an incomplete response and sign the resident out.
+      return TokenParser.tokensFrom(body, fallbackRefreshToken: refreshToken);
     } on DioException catch (error) {
       final status = error.response?.statusCode;
       superPrint({
@@ -69,10 +74,15 @@ class TokenRefresher {
       throw TokenRefreshException(error);
     } on ApiException {
       // A 2xx with an unusable body is a malformed refresh response, not proof
-      // of a temporary network problem.
+      // of a temporary network problem. Log the shape, never the credential, so
+      // a backend that changes its response can be diagnosed from one run.
       superPrint({
         'path': ApiEndPoints.refreshToken,
-        'error': 'request failed',
+        'error': 'unusable response body',
+        'bodyType': body.runtimeType,
+        'keys': body is Map
+            ? body.keys.map((key) => key.toString()).toList()
+            : null,
       }, title: 'Token Refresh: Failed');
       return null;
     } catch (error) {

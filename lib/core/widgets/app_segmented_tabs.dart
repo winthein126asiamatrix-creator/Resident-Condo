@@ -63,13 +63,23 @@ class AppSegmentedTabs extends StatefulWidget {
 
 class _AppSegmentedTabsState extends State<AppSegmentedTabs>
     with SingleTickerProviderStateMixin {
+  /// The highest index the pill can rest on.
+  ///
+  /// An [AnimationController] bounds its value to `[lowerBound, upperBound]`,
+  /// which defaults to `[0, 1]`. Without raising the upper bound every target
+  /// past the second tab was clamped, so All and Unpaid moved but Partial and
+  /// Paid never did.
+  double get _lastPosition =>
+      widget.tabs.length <= 1 ? 1.0 : (widget.tabs.length - 1).toDouble();
+
   /// Where the pill sits, in tab units, for a screen with no page view to read.
   /// A whole number is a resting tab and a fraction is one caught mid slide.
   /// Created on demand, so a screen driven by a page view never builds it.
   late final AnimationController _position = AnimationController(
     vsync: this,
     duration: AppSegmentedTabs.slideDuration,
-    value: widget.selectedIndex.toDouble(),
+    upperBound: _lastPosition,
+    value: widget.selectedIndex.toDouble().clamp(0.0, _lastPosition),
   );
 
   @override
@@ -80,7 +90,7 @@ class _AppSegmentedTabsState extends State<AppSegmentedTabs>
       return;
     }
     _position.animateTo(
-      widget.selectedIndex.toDouble(),
+      widget.selectedIndex.toDouble().clamp(0.0, _lastPosition),
       curve: AppSegmentedTabs.slideCurve,
     );
   }
@@ -134,6 +144,7 @@ class _AppSegmentedTabsState extends State<AppSegmentedTabs>
                 child: Stack(
                   children: [
                     Positioned(
+                      key: Key('${widget.keyPrefix}-selection'),
                       left: position * segmentWidth,
                       top: 0,
                       bottom: 0,

@@ -1,21 +1,29 @@
 import '../../domain/entities/invoice.dart';
+import '../../domain/entities/invoice_detail.dart';
+import '../../domain/entities/invoice_list.dart';
 import '../../domain/entities/payment.dart';
 import '../../domain/entities/payment_dashboard.dart';
 import '../../domain/repositories/payment_repository.dart';
 import '../datasources/payment_dashboard_local_data_source.dart';
 import '../datasources/payment_dashboard_remote_data_source.dart';
+import '../datasources/payment_invoice_local_data_source.dart';
+import '../datasources/payment_invoice_remote_data_source.dart';
 import '../datasources/payment_local_data_source.dart';
 
 class PaymentRepositoryImpl implements PaymentRepository {
   const PaymentRepositoryImpl(
     this.localDataSource,
     this.dashboardDataSource,
-    this.dashboardLocalDataSource,
-  );
+    this.dashboardLocalDataSource, {
+    this.invoiceDataSource,
+    this.invoiceLocalDataSource,
+  });
 
   final PaymentLocalDataSource localDataSource;
   final PaymentDashboardRemoteDataSource dashboardDataSource;
   final PaymentDashboardLocalDataSource dashboardLocalDataSource;
+  final PaymentInvoiceRemoteDataSource? invoiceDataSource;
+  final PaymentInvoiceLocalDataSource? invoiceLocalDataSource;
 
   @override
   Future<PaymentDashboard> getDashboard() => dashboardDataSource.getDashboard();
@@ -32,6 +40,55 @@ class PaymentRepositoryImpl implements PaymentRepository {
 
   @override
   Future<void> clearDashboardCache() => dashboardLocalDataSource.clear();
+
+  @override
+  Future<InvoiceListResponse> getInvoiceList({
+    int page = 1,
+    int limit = 20,
+    String status = 'all',
+  }) {
+    final remote = invoiceDataSource;
+    if (remote == null) {
+      throw StateError('Invoice remote data source is not configured.');
+    }
+    return remote.getInvoices(page: page, limit: limit, status: status);
+  }
+
+  @override
+  Future<InvoiceDetail> getInvoiceDetail(int id) {
+    final remote = invoiceDataSource;
+    if (remote == null) {
+      throw StateError('Invoice remote data source is not configured.');
+    }
+    return remote.getInvoice(id);
+  }
+
+  @override
+  Future<CachedInvoiceList?> getCachedInvoiceList(
+    int userId,
+    String status,
+  ) async {
+    final local = invoiceLocalDataSource;
+    if (local == null) {
+      return null;
+    }
+    return local.read(userId, status);
+  }
+
+  @override
+  Future<void> cacheInvoiceList(
+    int userId,
+    String status,
+    InvoiceListResponse response,
+  ) {
+    return invoiceLocalDataSource?.save(userId, status, response) ??
+        Future<void>.value();
+  }
+
+  @override
+  Future<void> clearInvoiceListCache() {
+    return invoiceLocalDataSource?.clear() ?? Future<void>.value();
+  }
 
   @override
   Future<List<Invoice>> getInvoices() async {

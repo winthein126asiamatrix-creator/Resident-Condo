@@ -124,7 +124,10 @@ void main() {
     expect(dashboard.outstandingBalance.amount, 10.5);
     expect(dashboard.feeFor(PaymentFeeType.monthlyRent), isNull);
     expect(dashboard.feeFor(PaymentFeeType.otherFees)?.amount, 5.0);
-    expect(dashboard.recentInvoices.single.invoiceStatus, InvoiceStatus.pending);
+    expect(
+      dashboard.recentInvoices.single.invoiceStatus,
+      InvoiceStatus.pending,
+    );
     expect(dashboard.recentPayments, isEmpty);
     expect(dashboard.invoiceSummary.total, 0);
   });

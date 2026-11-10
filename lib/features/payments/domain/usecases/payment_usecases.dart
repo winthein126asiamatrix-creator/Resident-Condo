@@ -1,4 +1,6 @@
 import '../entities/invoice.dart';
+import '../entities/invoice_detail.dart';
+import '../entities/invoice_list.dart';
 import '../entities/payment.dart';
 import '../entities/payment_dashboard.dart';
 import '../repositories/payment_repository.dart';
@@ -22,6 +24,34 @@ class PaymentUseCases {
 
   Future<void> clearDashboardCache() {
     return repository.clearDashboardCache();
+  }
+
+  Future<InvoiceListResponse> getInvoiceList({
+    int page = 1,
+    int limit = 20,
+    String status = 'all',
+  }) {
+    return repository.getInvoiceList(page: page, limit: limit, status: status);
+  }
+
+  Future<InvoiceDetail> getInvoiceDetail(int id) {
+    return repository.getInvoiceDetail(id);
+  }
+
+  Future<CachedInvoiceList?> getCachedInvoiceList(int userId, String status) {
+    return repository.getCachedInvoiceList(userId, status);
+  }
+
+  Future<void> cacheInvoiceList(
+    int userId,
+    String status,
+    InvoiceListResponse response,
+  ) {
+    return repository.cacheInvoiceList(userId, status, response);
+  }
+
+  Future<void> clearInvoiceListCache() {
+    return repository.clearInvoiceListCache();
   }
 
   Future<List<Invoice>> getInvoices() {

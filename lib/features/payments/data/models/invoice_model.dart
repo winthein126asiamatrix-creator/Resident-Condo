@@ -11,5 +11,6 @@ class InvoiceModel extends Invoice {
     required super.status,
     required super.items,
     super.paidDate,
+    super.currency,
   });
 }

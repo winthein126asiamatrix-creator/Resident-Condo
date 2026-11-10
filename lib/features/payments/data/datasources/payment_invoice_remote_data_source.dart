@@ -1,0 +1,48 @@
+import '../../../../core/network/api_end_points.dart';
+import '../../../../core/network/dio_api_service.dart';
+import '../models/invoice_detail_model.dart';
+import '../models/invoice_list_model.dart';
+
+class PaymentInvoiceRemoteDataSource {
+  const PaymentInvoiceRemoteDataSource(this._service);
+
+  final DioApiService _service;
+
+  Future<InvoiceListResponseModel> getInvoices({
+    int page = 1,
+    int limit = 20,
+    String status = 'all',
+  }) async {
+    final response = await _service.get<dynamic>(
+      ApiEndPoints.invoices,
+      query: <String, dynamic>{'page': page, 'limit': limit, 'status': status},
+    );
+    final map = _responseMap(response);
+    if (map == null || map['items'] is! List) {
+      throw const FormatException('Unexpected invoice list response.');
+    }
+    return InvoiceListResponseModel.fromJson(map);
+  }
+
+  Future<InvoiceDetailModel> getInvoice(int id) async {
+    final response = await _service.get<dynamic>(
+      ApiEndPoints.invoiceDetail(id),
+    );
+    if (_responseMap(response) == null) {
+      throw const FormatException('Unexpected invoice detail response.');
+    }
+    return InvoiceDetailModel.parse(response);
+  }
+
+  static Map<String, dynamic>? _responseMap(Object? response) {
+    if (response is! Map) {
+      return null;
+    }
+    var map = Map<String, dynamic>.from(response);
+    final nested = map['data'] ?? map['result'];
+    if (nested is Map) {
+      map = Map<String, dynamic>.from(nested);
+    }
+    return map;
+  }
+}

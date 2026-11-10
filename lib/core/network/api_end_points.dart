@@ -30,7 +30,12 @@ abstract final class ApiEndPoints {
 
   // --- Payments ------------------------------------------------------------
 
-  static const String invoices = '/api/invoices';
+  /// The resident's invoice list, newest first.
+  static const String invoices = '/payments/invoices';
+
+  /// One invoice with its unit and line items.
+  static String invoiceDetail(int id) => '$invoices/$id';
+
   static const String payments = '/api/payments';
 
   /// The resident's payment dashboard: balance, fee breakdown, invoice counts
@@ -41,7 +46,7 @@ abstract final class ApiEndPoints {
   static const String paymentMethods = '/api/payments/methods';
 
   /// One invoice, with its line items.
-  static String invoice(String reference) => '/api/invoices/$reference';
+  static String invoice(Object reference) => '$invoices/$reference';
 
   /// Pays one or more selected invoice lines.
   static const String payInvoice = '/api/invoices/pay';

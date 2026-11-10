@@ -121,7 +121,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     if (!mounted || Get.currentRoute != AppRoutes.splash) {
       return;
     }
-    Get.offNamed(restored != null ? AppRoutes.login : AppRoutes.home);
+    Get.offNamed(restored == null ? AppRoutes.login : AppRoutes.home);
   }
 
   Future<AuthSession?> _restoreSession() async {

@@ -5,6 +5,8 @@ import '../../../../core/network/dio_api_service.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../data/datasources/payment_dashboard_local_data_source.dart';
 import '../../data/datasources/payment_dashboard_remote_data_source.dart';
+import '../../data/datasources/payment_invoice_local_data_source.dart';
+import '../../data/datasources/payment_invoice_remote_data_source.dart';
 import '../../data/datasources/payment_local_data_source.dart';
 import '../../data/repositories/payment_repository_impl.dart';
 import '../../domain/repositories/payment_repository.dart';
@@ -33,12 +35,31 @@ class PaymentBinding extends Bindings {
         permanent: true,
       );
     }
+    if (!Get.isRegistered<PaymentInvoiceRemoteDataSource>()) {
+      Get.put<PaymentInvoiceRemoteDataSource>(
+        PaymentInvoiceRemoteDataSource(Get.find<DioApiService>()),
+        permanent: true,
+      );
+    }
+    if (!Get.isRegistered<PaymentInvoiceLocalDataSource>()) {
+      Get.put<PaymentInvoiceLocalDataSource>(
+        PaymentInvoiceLocalDataSource(
+          cache: Get.isRegistered<ApiCacheStore>()
+              ? Get.find<ApiCacheStore>()
+              : null,
+          accountKey: _currentAccountKey,
+        ),
+        permanent: true,
+      );
+    }
     if (!Get.isRegistered<PaymentRepository>()) {
       Get.put<PaymentRepository>(
         PaymentRepositoryImpl(
           PaymentLocalDataSource(),
           Get.find<PaymentDashboardRemoteDataSource>(),
           Get.find<PaymentDashboardLocalDataSource>(),
+          invoiceDataSource: Get.find<PaymentInvoiceRemoteDataSource>(),
+          invoiceLocalDataSource: Get.find<PaymentInvoiceLocalDataSource>(),
         ),
         permanent: true,
       );

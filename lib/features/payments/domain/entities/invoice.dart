@@ -33,6 +33,7 @@ enum InvoiceItemType {
   storeFee,
   violation,
   lateFee,
+  other,
 }
 
 extension InvoiceItemTypeLabel on InvoiceItemType {
@@ -56,6 +57,8 @@ extension InvoiceItemTypeLabel on InvoiceItemType {
         return 'Violation Fine';
       case InvoiceItemType.lateFee:
         return 'Late Fee';
+      case InvoiceItemType.other:
+        return 'Other Fee';
     }
   }
 
@@ -79,11 +82,84 @@ extension InvoiceItemTypeLabel on InvoiceItemType {
         return 'Fine';
       case InvoiceItemType.lateFee:
         return 'Late fee';
+      case InvoiceItemType.other:
+        return 'Other';
     }
   }
 
   /// Fee types that belong to the management company rather than the landlord.
   bool get isManagementCharge => this != InvoiceItemType.rent;
+}
+
+/// Maps the backend's invoice status vocabulary onto the app's enum.
+///
+/// Shared by the dashboard and the invoice list/detail, so an unfamiliar status
+/// is treated the same way everywhere instead of crashing or inventing a new
+/// state.
+InvoiceStatus invoiceStatusFromApi(Object? value) {
+  final status = value is String
+      ? value.trim().toLowerCase().replaceAll('-', '_').replaceAll(' ', '_')
+      : '';
+  switch (status) {
+    case 'paid':
+    case 'settled':
+      return InvoiceStatus.paid;
+    case 'partial':
+    case 'partially_paid':
+      return InvoiceStatus.partiallyPaid;
+    case 'unpaid':
+    case 'open':
+      return InvoiceStatus.unpaid;
+    case 'overdue':
+      return InvoiceStatus.overdue;
+    case 'pending':
+      return InvoiceStatus.pending;
+    default:
+      return InvoiceStatus.pending;
+  }
+}
+
+/// Maps a backend `fee_type` onto the app's charge line type.
+InvoiceItemType invoiceItemTypeFromApi(Object? value) {
+  final type = value is String
+      ? value.trim().toLowerCase().replaceAll('-', '_').replaceAll(' ', '_')
+      : '';
+  switch (type) {
+    case 'monthly_rent':
+    case 'rent':
+    case 'rent_fee':
+      return InvoiceItemType.rent;
+    case 'monthly_condo_fee':
+    case 'condo_fee':
+    case 'condominium_fee':
+    case 'maintenance_fee':
+      return InvoiceItemType.condoFee;
+    case 'parking':
+    case 'parking_fee':
+      return InvoiceItemType.parking;
+    case 'utility':
+    case 'utilities':
+    case 'utility_fee':
+      return InvoiceItemType.utility;
+    case 'facility':
+    case 'facility_fee':
+      return InvoiceItemType.facility;
+    case 'service':
+    case 'service_fee':
+      return InvoiceItemType.service;
+    case 'store':
+    case 'store_fee':
+      return InvoiceItemType.storeFee;
+    case 'violation':
+    case 'violation_fine':
+    case 'fine':
+      return InvoiceItemType.violation;
+    case 'late_fee':
+    case 'latefee':
+      return InvoiceItemType.lateFee;
+    default:
+      return InvoiceItemType.other;
+  }
 }
 
 class InvoiceItem {
@@ -94,6 +170,7 @@ class InvoiceItem {
     this.isPaid = false,
     this.paidDate,
     this.mustPaid = false,
+    this.apiPayable,
   });
 
   final InvoiceItemType type;
@@ -106,13 +183,17 @@ class InvoiceItem {
   /// payment: they are pre-selected and cannot be unchecked.
   final bool mustPaid;
 
+  /// The API's explicit `is_payable` answer, when the line came from an API
+  /// response. Null keeps the local ledger's amount-based rule.
+  final bool? apiPayable;
+
   /// Stable identity used when paying a subset of the invoice.
   String get key => '${type.name}|${note.isEmpty ? label : note}';
 
   String get label => type.label;
 
-  /// Only unpaid, non-zero charges can be selected for payment.
-  bool get isPayable => !isPaid && amount > 0;
+  /// Only unpaid, non-zero charges the API allows can be selected for payment.
+  bool get isPayable => !isPaid && (apiPayable ?? amount > 0);
 
   /// A mandatory charge still has to be outstanding to be payable, and it can
   /// never be deselected by the resident.
@@ -124,7 +205,12 @@ class InvoiceItem {
 
   double get paidAmount => isPaid ? amount : 0;
 
-  InvoiceItem copyWith({bool? isPaid, String? paidDate, bool? mustPaid}) {
+  InvoiceItem copyWith({
+    bool? isPaid,
+    String? paidDate,
+    bool? mustPaid,
+    bool? apiPayable,
+  }) {
     return InvoiceItem(
       type: type,
       amount: amount,
@@ -132,6 +218,7 @@ class InvoiceItem {
       isPaid: isPaid ?? this.isPaid,
       paidDate: paidDate ?? this.paidDate,
       mustPaid: mustPaid ?? this.mustPaid,
+      apiPayable: apiPayable ?? this.apiPayable,
     );
   }
 
@@ -143,10 +230,12 @@ class InvoiceItem {
           other.amount == amount &&
           other.note == note &&
           other.isPaid == isPaid &&
-          other.mustPaid == mustPaid;
+          other.mustPaid == mustPaid &&
+          other.apiPayable == apiPayable;
 
   @override
-  int get hashCode => Object.hash(type, amount, note, isPaid, mustPaid);
+  int get hashCode =>
+      Object.hash(type, amount, note, isPaid, mustPaid, apiPayable);
 
   @override
   String toString() =>
@@ -164,6 +253,7 @@ class Invoice {
     required this.status,
     required this.items,
     this.paidDate,
+    this.currency = '',
   });
 
   final String id;
@@ -175,6 +265,9 @@ class Invoice {
   final InvoiceStatus status;
   final List<InvoiceItem> items;
   final String? paidDate;
+
+  /// The API's currency code, when this invoice came from the backend.
+  final String currency;
 
   /// Full value of the invoice including everything already settled.
   double get total => items.fold(0, (sum, item) => sum + item.amount);
@@ -236,6 +329,7 @@ class Invoice {
       status: status ?? this.status,
       items: items ?? this.items,
       paidDate: paidDate ?? this.paidDate,
+      currency: currency,
     );
   }
 }

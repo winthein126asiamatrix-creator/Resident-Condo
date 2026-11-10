@@ -88,7 +88,12 @@ class PaymentsPage extends GetView<PaymentController> {
                   _InvoiceSummaryCard(summary: summary),
                 ],
                 25.h.heightBox(),
-                _SectionHeader(title: 'Invoices', count: invoiceCount),
+                _SectionHeader(
+                  title: 'Invoices',
+                  count: invoiceCount,
+                  actionLabel: 'View all',
+                  onAction: () => Get.toNamed(AppRoutes.invoiceList),
+                ),
                 10.h.heightBox(),
                 if (!hasInvoices)
                   AppStateMessage(
@@ -354,8 +359,15 @@ class _BalanceSummary extends StatelessWidget {
                       vibrateNow();
                       _openOldestInvoice(context);
                     },
-              icon: Icon(Icons.arrow_forward_rounded, size: 18.sp,color: tokens.brandOnDark,),
-              label: Text('Pay Now',style: TextStyle(color: tokens.brandOnDark),),
+              icon: Icon(
+                Icons.arrow_forward_rounded,
+                size: 18.sp,
+                color: tokens.brandOnDark,
+              ),
+              label: Text(
+                'Pay Now',
+                style: TextStyle(color: tokens.brandOnDark),
+              ),
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: tokens.brand,

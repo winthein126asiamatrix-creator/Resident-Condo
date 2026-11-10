@@ -194,6 +194,80 @@ void main() {
   });
 
   test(
+    'an access-only refresh keeps the stored refresh token and retries',
+    () async {
+      final storage = _MemoryTokenStorage(_oldTokens());
+      var refreshCalls = 0;
+      String? retriedBearer;
+      var expired = 0;
+
+      final service = _service(
+        storage: storage,
+        main: (options, _) async {
+          final bearer = _bearer(options);
+          if (bearer == 'Bearer $_oldAccess') {
+            return _json(401, <String, dynamic>{'message': 'expired'});
+          }
+          retriedBearer = bearer;
+          return _json(200, <String, dynamic>{'ok': true});
+        },
+        refresh: (_, _) async {
+          refreshCalls++;
+          return _json(200, <String, dynamic>{'access_token': _newAccess});
+        },
+      )..onSessionExpired = () => expired++;
+
+      final payload = await service.get<Map<String, dynamic>>(
+        '/secure',
+        parse: _asMap,
+      );
+
+      expect(payload['ok'], isTrue);
+      expect(refreshCalls, 1);
+      expect(retriedBearer, 'Bearer $_newAccess');
+      expect(storage.tokens?.accessToken, _newAccess);
+      expect(storage.tokens?.refreshToken, _oldRefresh);
+      expect(storage.clears, 0);
+      expect(expired, 0);
+    },
+  );
+
+  test('a nested camelCase refresh response is accepted', () async {
+    final storage = _MemoryTokenStorage(_oldTokens());
+    String? retriedBearer;
+
+    final service = _service(
+      storage: storage,
+      main: (options, _) async {
+        final bearer = _bearer(options);
+        if (bearer == 'Bearer $_oldAccess') {
+          return _json(401, <String, dynamic>{'message': 'expired'});
+        }
+        retriedBearer = bearer;
+        return _json(200, <String, dynamic>{'ok': true});
+      },
+      refresh: (_, _) async {
+        return _json(200, <String, dynamic>{
+          'result': <String, dynamic>{
+            'accessToken': _newAccess,
+            'refreshToken': _newRefresh,
+          },
+        });
+      },
+    );
+
+    final payload = await service.get<Map<String, dynamic>>(
+      '/secure',
+      parse: _asMap,
+    );
+
+    expect(payload['ok'], isTrue);
+    expect(retriedBearer, 'Bearer $_newAccess');
+    expect(storage.tokens?.accessToken, _newAccess);
+    expect(storage.tokens?.refreshToken, _newRefresh);
+  });
+
+  test(
     'a retried request that gets 401 again is not refreshed twice',
     () async {
       final storage = _MemoryTokenStorage(_oldTokens());

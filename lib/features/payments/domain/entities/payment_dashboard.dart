@@ -119,7 +119,7 @@ class RecentInvoice {
   final String status;
   final DateTime? dueDate;
 
-  InvoiceStatus get invoiceStatus => _invoiceStatusFromApi(status);
+  InvoiceStatus get invoiceStatus => invoiceStatusFromApi(status);
 
   /// `2026-09` renders as `September 2026`, the same way the rest of the
   /// payment screens read a billing period.
@@ -180,31 +180,5 @@ class RecentPayment {
       return 'Unknown';
     }
     return '${raw[0].toUpperCase()}${raw.substring(1)}';
-  }
-}
-
-InvoiceStatus _invoiceStatusFromApi(String status) {
-  switch (status
-      .trim()
-      .toLowerCase()
-      .replaceAll('-', '_')
-      .replaceAll(' ', '_')) {
-    case 'paid':
-    case 'settled':
-      return InvoiceStatus.paid;
-    case 'partial':
-    case 'partially_paid':
-      return InvoiceStatus.partiallyPaid;
-    case 'unpaid':
-    case 'open':
-      return InvoiceStatus.unpaid;
-    case 'overdue':
-      return InvoiceStatus.overdue;
-    case 'pending':
-      return InvoiceStatus.pending;
-    default:
-      // An unfamiliar status must never crash the dashboard. Pending is the
-      // neutral label until the backend adds one the app knows.
-      return InvoiceStatus.pending;
   }
 }

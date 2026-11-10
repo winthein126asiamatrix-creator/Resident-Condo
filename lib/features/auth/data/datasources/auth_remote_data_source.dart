@@ -1,5 +1,4 @@
-import 'package:dio/dio.dart';
-import 'package:test/core/utils/super_print.dart';
+﻿import 'package:dio/dio.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/api_config.dart';
@@ -43,7 +42,6 @@ class AuthRemoteDataSource {
         },
         options: _service.withoutAuth(),
       );
-      superPrint(response, title: "Login");
       return AuthResult(tokens: TokenParser.tokensFrom(response));
     } on ApiException catch (error) {
       throw _translate(error);
@@ -61,7 +59,6 @@ class AuthRemoteDataSource {
         ApiEndPoints.me,
         parse: AuthUser.parse,
       );
-      superPrint(response.toJson(), title: "Update Me");
       return response;
     } on ApiException {
       // Unlike sign-in, a rejected profile request is not a credential problem.
@@ -175,7 +172,6 @@ class AuthRemoteDataSource {
         },
         options: _service.withoutAuth(),
       );
-      superPrint(response, title: "Refresh");
       return TokenParser.tokensFrom(response);
     } on ApiException {
       return null;
@@ -192,7 +188,7 @@ class AuthRemoteDataSource {
   /// A wrong password is the one case with a message the backend chose on
   /// purpose, so it gets the app's own wording. Everything else keeps the
   /// [ApiException] it already is: the message is unchanged, but the caller can
-  /// still tell a network failure — where the server never answered — from a
+  /// still tell a network failure â€” where the server never answered â€” from a
   /// rejected credential. Unwrapping it into a bare [AppException] would lose
   /// that distinction and make every failure look like a sign-out.
   static AppException _translate(ApiException error) {
