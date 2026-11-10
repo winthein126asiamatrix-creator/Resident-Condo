@@ -33,6 +33,10 @@ abstract final class ApiEndPoints {
   static const String invoices = '/api/invoices';
   static const String payments = '/api/payments';
 
+  /// The resident's payment dashboard: balance, fee breakdown, invoice counts
+  /// and recent activity.
+  static const String paymentDashboard = '/payments/dashboard';
+
   /// A payment method already on file.
   static const String paymentMethods = '/api/payments/methods';
 

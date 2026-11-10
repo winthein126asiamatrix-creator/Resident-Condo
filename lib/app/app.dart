@@ -21,6 +21,7 @@ import '../features/auth/presentation/controllers/auth_controller.dart';
 import '../features/dashboard/presentation/controllers/dashboard_controller.dart';
 import '../features/dev_tools/presentation/widgets/api_log_floating_button.dart';
 import '../features/notifications/domain/entities/notification_item.dart';
+import '../features/payments/presentation/controllers/payment_controller.dart';
 import '../features/services/presentation/controllers/condo_service_controller.dart';
 import '../features/session/presentation/controllers/session_controller.dart';
 import 'routes/app_pages.dart';
@@ -198,10 +199,19 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
     }
     if (Get.currentRoute != AppRoutes.home) return;
     if (!Get.isRegistered<DashboardController>()) return;
-    if (Get.find<DashboardController>().selectedTab.value != 0) return;
-    await Get.find<RefreshRegistry>().refreshIfStale(
-      DashboardController.screen,
-    );
+    final tab = Get.find<DashboardController>().selectedTab.value;
+    if (tab == 0) {
+      await Get.find<RefreshRegistry>().refreshIfStale(
+        DashboardController.screen,
+      );
+      return;
+    }
+    if (tab == 1) {
+      if (!Get.isRegistered<PaymentController>()) return;
+      await Get.find<RefreshRegistry>().refreshIfStale(
+        PaymentController.screen,
+      );
+    }
   }
 
   Future<void> _revalidateSession() async {

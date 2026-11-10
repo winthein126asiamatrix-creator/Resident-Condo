@@ -1,11 +1,28 @@
 import '../entities/invoice.dart';
 import '../entities/payment.dart';
+import '../entities/payment_dashboard.dart';
 import '../repositories/payment_repository.dart';
 
 class PaymentUseCases {
   const PaymentUseCases(this.repository);
 
   final PaymentRepository repository;
+
+  Future<PaymentDashboard> getDashboard() {
+    return repository.getDashboard();
+  }
+
+  Future<CachedPaymentDashboard?> getCachedDashboard(int userId) {
+    return repository.getCachedDashboard(userId);
+  }
+
+  Future<void> cacheDashboard(int userId, PaymentDashboard dashboard) {
+    return repository.cacheDashboard(userId, dashboard);
+  }
+
+  Future<void> clearDashboardCache() {
+    return repository.clearDashboardCache();
+  }
 
   Future<List<Invoice>> getInvoices() {
     return repository.getInvoices();

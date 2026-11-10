@@ -1,7 +1,21 @@
 import '../entities/invoice.dart';
 import '../entities/payment.dart';
+import '../entities/payment_dashboard.dart';
 
 abstract interface class PaymentRepository {
+  /// Balance, fee breakdown, invoice counts and recent activity for the
+  /// payments dashboard.
+  Future<PaymentDashboard> getDashboard();
+
+  /// The dashboard snapshot stored for [userId], or null when none exists.
+  Future<CachedPaymentDashboard?> getCachedDashboard(int userId);
+
+  /// Stores a fully parsed dashboard response for [userId].
+  Future<void> cacheDashboard(int userId, PaymentDashboard dashboard);
+
+  /// Drops every cached payment dashboard on this device.
+  Future<void> clearDashboardCache();
+
   Future<List<Invoice>> getInvoices();
 
   Future<Invoice?> getInvoice(String id);

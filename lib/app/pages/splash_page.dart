@@ -121,7 +121,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     if (!mounted || Get.currentRoute != AppRoutes.splash) {
       return;
     }
-    Get.offNamed(restored == null ? AppRoutes.login : AppRoutes.home);
+    Get.offNamed(restored != null ? AppRoutes.login : AppRoutes.home);
   }
 
   Future<AuthSession?> _restoreSession() async {
@@ -134,9 +134,6 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     superPrint(restored.displayName, title: "Restore Session Display Name");
     await auth.adoptIntoSession(restored);
     if (restored.unverified) {
-      // The cached profile is enough to enter the app. Confirm it in the
-      // background; a temporary failure leaves it unverified, and a rejected
-      // session follows the normal sign-out flow.
       unawaited(auth.revalidateSession());
     }
     return restored;

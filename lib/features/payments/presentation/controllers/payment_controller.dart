@@ -1,17 +1,33 @@
 import 'package:get/get.dart';
 
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../../../core/network/connectivity_service.dart';
+import '../../../../core/network/refresh_registry.dart';
+import '../../../../core/utils/app_dates.dart';
+import '../../../session/presentation/controllers/session_controller.dart';
 import '../../domain/entities/invoice.dart';
 import '../../domain/entities/payment.dart';
+import '../../domain/entities/payment_dashboard.dart';
 import '../../domain/usecases/payment_usecases.dart';
 
 class PaymentController extends GetxController {
-  PaymentController(this.useCases);
+  PaymentController(
+    this.useCases, {
+    this._sessionController,
+    RefreshRegistry? registry,
+    ConnectivityService? connectivity,
+  }) : _registryOverride = registry,
+       _connectivityOverride = connectivity;
 
   static const currentBillingPeriod = 'September 2026';
   static const today = 'Sep 25, 2026';
 
+  /// The registry key this controller re-fetches under.
+  static const String screen = 'payments';
+
   final PaymentUseCases useCases;
+  final dashboard = Rxn<PaymentDashboard>();
   final invoices = <Invoice>[].obs;
   final paymentHistory = <Payment>[].obs;
   final selectedInvoice = Rxn<Invoice>();
@@ -23,12 +39,97 @@ class PaymentController extends GetxController {
   final isPaymentProcessing = false.obs;
   final errorMessage = RxnString();
 
+  /// True while what is on screen came from the device rather than the API.
+  final isShowingCachedData = false.obs;
+
+  /// When the dashboard currently on screen was last refreshed from the API.
+  final lastUpdatedAt = Rxn<DateTime>();
+
+  final SessionController? _sessionController;
+  final RefreshRegistry? _registryOverride;
+  final ConnectivityService? _connectivityOverride;
+
+  Worker? _sessionWorker;
+  int? _loadedForUserId;
+  int? _ownerUserId;
+  int _requestSeq = 0;
+  Future<void>? _loadInFlight;
+
   var _transactionSequence = 1;
+
+  SessionController? get _session =>
+      _sessionController ??
+      (Get.isRegistered<SessionController>()
+          ? Get.find<SessionController>()
+          : null);
+
+  RefreshRegistry? get _registry =>
+      _registryOverride ??
+      (Get.isRegistered<RefreshRegistry>()
+          ? Get.find<RefreshRegistry>()
+          : null);
+
+  ConnectivityService? get _connectivity =>
+      _connectivityOverride ??
+      (Get.isRegistered<ConnectivityService>()
+          ? Get.find<ConnectivityService>()
+          : null);
+
+  int? get _currentUserId {
+    final userId = _session?.currentUser?.id;
+    return userId != null && userId > 0 ? userId : null;
+  }
+
+  String get lastUpdatedLabel {
+    final value = lastUpdatedAt.value;
+    return value == null ? '' : AppDates.format(value);
+  }
 
   @override
   void onInit() {
     super.onInit();
-    loadPayments();
+    _registry?.register(screen, loadPayments);
+
+    final session = _session;
+    if (session == null) {
+      // No session graph (e.g. a unit test): keep the previous eager behaviour.
+      loadPayments();
+      return;
+    }
+
+    // The dashboard is personal, so wait for `/me` to publish the authenticated
+    // resident before asking the API or touching the scoped cache.
+    _sessionWorker = ever(session.session, (resident) {
+      final userId = resident?.user.id;
+      if (userId == null || userId <= 0) {
+        _loadedForUserId = null;
+        _resetForAccount();
+        return;
+      }
+      if (_loadedForUserId == userId) {
+        return;
+      }
+      final switchingAccount =
+          _loadedForUserId != null && _loadedForUserId != userId;
+      _loadedForUserId = userId;
+      if (switchingAccount) {
+        _resetForAccount();
+      }
+      loadPayments();
+    });
+
+    final userId = session.currentUser?.id;
+    if (userId != null && userId > 0) {
+      _loadedForUserId = userId;
+      loadPayments();
+    }
+  }
+
+  @override
+  void onClose() {
+    _sessionWorker?.dispose();
+    _registry?.unregister(screen);
+    super.onClose();
   }
 
   // ---------------------------------------------------------------- balances
@@ -102,14 +203,135 @@ class PaymentController extends GetxController {
     return null;
   }
 
+  // -------------------------------------------------------- dashboard values
+
+  String get dashboardCurrency =>
+      dashboard.value?.outstandingBalance.currency ?? '';
+
+  double get outstandingBalanceAmount =>
+      dashboard.value?.outstandingBalance.amount ?? outstandingBalance;
+
+  PaymentStatistics? get paymentStatistics =>
+      dashboard.value?.paymentStatistics;
+
+  InvoiceSummary? get invoiceSummary => dashboard.value?.invoiceSummary;
+
+  List<RecentInvoice> get recentInvoices =>
+      dashboard.value?.recentInvoices ?? const <RecentInvoice>[];
+
+  List<RecentPayment> get recentPayments =>
+      dashboard.value?.recentPayments ?? const <RecentPayment>[];
+
+  FeeSummary? feeSummaryFor(String feeType) => dashboard.value?.feeFor(feeType);
+
+  String get lastDashboardPaymentDate =>
+      recentPayments.isEmpty ? '' : recentPayments.first.paidAtLabel;
+
+  /// Finds the full invoice the API summary refers to, so tapping a recent
+  /// invoice can open the existing detail screen.
+  Invoice? invoiceByNumber(String number) {
+    for (final invoice in invoices) {
+      if (invoice.number == number) {
+        return invoice;
+      }
+    }
+    return null;
+  }
+
   // ------------------------------------------------------------------ loads
 
-  Future<void> loadPayments() async {
-    isLoading.value = true;
+  /// Loads the dashboard cache first, then refreshes it from the API.
+  ///
+  /// Concurrent callers share the request already in flight, so a rebuild, a
+  /// pull-to-refresh and a reconnect cannot issue the same GET twice.
+  Future<void> loadPayments() {
+    final existing = _loadInFlight;
+    if (existing != null) {
+      return existing;
+    }
+    final future = _loadPayments();
+    _loadInFlight = future;
+    return future.whenComplete(() {
+      if (identical(_loadInFlight, future)) {
+        _loadInFlight = null;
+      }
+    });
+  }
+
+  Future<void> _loadPayments() async {
+    final session = _session;
+    final userId = _currentUserId;
+    // With a session graph, a personal dashboard must not be fetched before the
+    // authenticated resident is known.
+    if (session != null && userId == null) {
+      return;
+    }
+
+    final seq = ++_requestSeq;
+    final hadDashboard = dashboard.value != null;
+    isLoading.value = !hadDashboard;
     errorMessage.value = null;
+
+    if (userId != null && (!hadDashboard || _ownerUserId != userId)) {
+      await _hydrateFromCache(userId, seq);
+      if (seq != _requestSeq || userId != _currentUserId) return;
+    }
+
+    await _loadLocalLedger(seq, userId);
+    if (seq != _requestSeq || userId != _currentUserId) return;
+
+    // A cached snapshot is enough to keep the screen useful while offline; the
+    // reconnect worker refreshes it once the radio is back.
+    if (dashboard.value != null && _connectivity?.isOnline.value == false) {
+      isShowingCachedData.value = true;
+      _registry?.markStale(screen);
+      isLoading.value = false;
+      return;
+    }
+
+    try {
+      final fresh = await useCases.getDashboard();
+      // A slower, older response must never replace a newer one or another
+      // resident's dashboard.
+      if (seq != _requestSeq || userId != _currentUserId) return;
+
+      // Only a fully parsed response reaches this point, so it is safe to keep.
+      if (userId != null) {
+        try {
+          await useCases.cacheDashboard(userId, fresh);
+        } catch (_) {
+          // A cache write is a convenience; the API response is still usable.
+        }
+        if (seq != _requestSeq || userId != _currentUserId) return;
+      }
+
+      dashboard.value = fresh;
+      _ownerUserId = userId;
+      isShowingCachedData.value = false;
+      lastUpdatedAt.value = DateTime.now();
+      errorMessage.value = null;
+      _registry?.markFresh(screen);
+    } on AppException catch (error) {
+      if (seq != _requestSeq || userId != _currentUserId) return;
+      _handleDashboardFailure(error);
+    } catch (_) {
+      if (seq != _requestSeq || userId != _currentUserId) return;
+      _handleDashboardFailure(
+        null,
+        fallback: 'Unable to load payment information.',
+      );
+    } finally {
+      if (seq == _requestSeq) {
+        isLoading.value = false;
+      }
+    }
+  }
+
+  Future<void> _loadLocalLedger(int seq, int? userId) async {
     try {
       final loadedInvoices = await useCases.getInvoices();
       final loadedHistory = await useCases.getPaymentHistory();
+      if (seq != _requestSeq || userId != _currentUserId) return;
       invoices.assignAll(loadedInvoices);
       paymentHistory.assignAll(loadedHistory);
       final selected = selectedInvoice.value;
@@ -133,12 +355,79 @@ class PaymentController extends GetxController {
         }
       }
     } on AppException catch (error) {
-      errorMessage.value = error.message;
+      if (seq != _requestSeq || userId != _currentUserId) return;
+      if (dashboard.value == null) {
+        errorMessage.value = error.message;
+      }
     } catch (_) {
-      errorMessage.value = 'Unable to load payment information.';
-    } finally {
-      isLoading.value = false;
+      if (seq != _requestSeq || userId != _currentUserId) return;
+      if (dashboard.value == null) {
+        errorMessage.value = 'Unable to load payment information.';
+      }
     }
+  }
+
+  /// Puts the device's copy on screen before the API answers.
+  Future<void> _hydrateFromCache(int userId, int seq) async {
+    try {
+      final cached = await useCases.getCachedDashboard(userId);
+      if (cached == null || seq != _requestSeq || userId != _currentUserId) {
+        return;
+      }
+      dashboard.value = cached.dashboard;
+      _ownerUserId = userId;
+      isShowingCachedData.value = true;
+      lastUpdatedAt.value = cached.updatedAt;
+      errorMessage.value = null;
+    } catch (_) {
+      // The cache is only a head start; a broken read must not stop the request.
+    }
+  }
+
+  void _handleDashboardFailure(Object? error, {String? fallback}) {
+    if (dashboard.value != null) {
+      // Older data is better than an error screen. The notice on the page says
+      // where it came from.
+      isShowingCachedData.value = true;
+    } else {
+      errorMessage.value = error is AppException
+          ? error.message
+          : (fallback ?? 'Unable to load payment information.');
+    }
+    if (error is ApiException && error.isRetryable) {
+      _registry?.markStale(screen);
+    }
+  }
+
+  /// Drops everything that belonged to the previous resident and clears the
+  /// device copy. Called on sign-out.
+  Future<void> clear() async {
+    _resetForAccount();
+    _loadedForUserId = null;
+    try {
+      await useCases.clearDashboardCache();
+    } catch (_) {
+      // Sign-out must still complete if the cache cannot be cleared.
+    }
+  }
+
+  void _resetForAccount() {
+    _requestSeq++;
+    _loadInFlight = null;
+    dashboard.value = null;
+    invoices.clear();
+    paymentHistory.clear();
+    selectedInvoice.value = null;
+    selectedItems.clear();
+    paymentSuccess.value = null;
+    paymentFailure.value = null;
+    selectedPaymentMethod.value = PaymentMethod.card;
+    isPaymentProcessing.value = false;
+    isLoading.value = false;
+    errorMessage.value = null;
+    isShowingCachedData.value = false;
+    lastUpdatedAt.value = null;
+    _ownerUserId = null;
   }
 
   Future<void> applyRole(String roleKey) async {

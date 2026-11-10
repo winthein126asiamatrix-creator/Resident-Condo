@@ -24,7 +24,11 @@ import '../../domain/entities/invoice.dart';
 
 import '../../domain/entities/payment.dart';
 
+import '../../domain/entities/payment_dashboard.dart';
+
 import '../controllers/payment_controller.dart';
+
+import '../widgets/payment_record_badge.dart';
 
 import '../widgets/payment_status_badge.dart';
 
@@ -36,77 +40,131 @@ class PaymentsPage extends GetView<PaymentController> {
     final tokens = AppThemeTokens.of(context);
     return Scaffold(
       body: SafeArea(
-        child: Obx(
-          () => controller.isLoading.value && controller.invoices.isEmpty
-              ? Center(child: CircularProgressIndicator())
-              : controller.errorMessage.value != null &&
-                    controller.invoices.isEmpty
-              ? AppStateMessage(
-                  title: 'Unable to load payments',
-                  message: controller.errorMessage.value!,
-                  icon: Icons.payments_outlined,
-                  actionLabel: 'Try again',
-                  onAction: controller.loadPayments,
-                )
-              : RefreshIndicator(
-                  onRefresh: controller.loadPayments,
-                  child: ListView(
-                    key: Key('payments-scroll'),
-                    physics: AlwaysScrollableScrollPhysics(),
-                    padding: EdgeInsets.fromLTRB(20, 18, 20, 32),
-                    children: [
-                      _PaymentsHeader(onRefresh: controller.loadPayments),
-                      20.h.heightBox(),
-                      _BalanceSummary(controller: controller),
-                      20.h.heightBox(),
-                      _FeeBreakdown(controller: controller),
-                      25.h.heightBox(),
-                      _SectionHeader(
-                        title: 'Invoices',
-                        count: controller.invoices.length,
+        child: Obx(() {
+          final hasDashboard = controller.dashboard.value != null;
+          if (controller.isLoading.value && !hasDashboard) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (controller.errorMessage.value != null && !hasDashboard) {
+            return AppStateMessage(
+              title: 'Unable to load payments',
+              message: controller.errorMessage.value!,
+              icon: Icons.payments_outlined,
+              actionLabel: 'Try again',
+              onAction: controller.loadPayments,
+            );
+          }
+          final summary = controller.invoiceSummary;
+          final invoiceCount = hasDashboard
+              ? summary?.total ?? controller.recentInvoices.length
+              : controller.invoices.length;
+          final paymentCount = hasDashboard
+              ? controller.recentPayments.length
+              : controller.paymentHistory.length;
+          final hasInvoices = hasDashboard
+              ? controller.recentInvoices.isNotEmpty
+              : controller.invoices.isNotEmpty;
+          final hasPayments = hasDashboard
+              ? controller.recentPayments.isNotEmpty
+              : controller.paymentHistory.isNotEmpty;
+          return RefreshIndicator(
+            onRefresh: controller.loadPayments,
+            child: ListView(
+              key: Key('payments-scroll'),
+              physics: AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(20, 18, 20, 32),
+              children: [
+                _PaymentsHeader(onRefresh: controller.loadPayments),
+                if (controller.isShowingCachedData.value) ...[
+                  10.h.heightBox(),
+                  _CachedDataNotice(updatedAt: controller.lastUpdatedLabel),
+                ],
+                20.h.heightBox(),
+                _BalanceSummary(controller: controller),
+                20.h.heightBox(),
+                _FeeBreakdown(controller: controller),
+                if (summary != null) ...[
+                  20.h.heightBox(),
+                  _InvoiceSummaryCard(summary: summary),
+                ],
+                25.h.heightBox(),
+                _SectionHeader(title: 'Invoices', count: invoiceCount),
+                10.h.heightBox(),
+                if (!hasInvoices)
+                  AppStateMessage(
+                    title: 'No invoices',
+                    message: 'Your invoices will appear here.',
+                    icon: Icons.receipt_long_outlined,
+                  )
+                else if (hasDashboard)
+                  ...controller.recentInvoices.map(
+                    (invoice) => Padding(
+                      padding: EdgeInsets.only(bottom: 10),
+                      child: _RecentInvoiceCard(
+                        invoice: invoice,
+                        currency: controller.dashboardCurrency,
+                        onTap: () => _openRecentInvoice(context, invoice),
                       ),
-                      10.h.heightBox(),
-                      if (controller.invoices.isEmpty)
-                        AppStateMessage(
-                          title: 'No invoices',
-                          message: 'Your invoices will appear here.',
-                          icon: Icons.receipt_long_outlined,
-                        )
-                      else
-                        ...controller.invoices.map(
-                          (invoice) => Padding(
-                            padding: EdgeInsets.only(bottom: 10),
-                            child: _InvoiceCard(invoice: invoice),
-                          ),
-                        ),
-                      16.h.heightBox(),
-                      _SectionHeader(
-                        title: 'Payment history',
-                        count: controller.paymentHistory.length,
-                        actionLabel: 'View all',
-                        onAction: () => Get.toNamed(AppRoutes.paymentHistory),
-                      ),
-                      10.h.heightBox(),
-                      if (controller.paymentHistory.isEmpty)
-                        Text(
-                          'No payment history yet.',
-                          style: TextStyle(color: tokens.muted),
-                        )
-                      else
-                        ...controller.paymentHistory
-                            .take(2)
-                            .map(
-                              (payment) => Padding(
-                                padding: EdgeInsets.only(bottom: 10),
-                                child: _PaymentPreview(payment: payment),
-                              ),
-                            ),
-                    ],
+                    ),
+                  )
+                else
+                  ...controller.invoices.map(
+                    (invoice) => Padding(
+                      padding: EdgeInsets.only(bottom: 10),
+                      child: _InvoiceCard(invoice: invoice),
+                    ),
                   ),
+                16.h.heightBox(),
+                _SectionHeader(
+                  title: 'Payment history',
+                  count: paymentCount,
+                  actionLabel: 'View all',
+                  onAction: () => Get.toNamed(AppRoutes.paymentHistory),
                 ),
-        ),
+                10.h.heightBox(),
+                if (!hasPayments)
+                  Text(
+                    'No payment history yet.',
+                    style: TextStyle(color: tokens.muted),
+                  )
+                else if (hasDashboard)
+                  ...controller.recentPayments
+                      .take(2)
+                      .map(
+                        (payment) => Padding(
+                          padding: EdgeInsets.only(bottom: 10),
+                          child: _RecentPaymentCard(payment: payment),
+                        ),
+                      )
+                else
+                  ...controller.paymentHistory
+                      .take(2)
+                      .map(
+                        (payment) => Padding(
+                          padding: EdgeInsets.only(bottom: 10),
+                          child: _PaymentPreview(payment: payment),
+                        ),
+                      ),
+              ],
+            ),
+          );
+        }),
       ),
     );
+  }
+
+  void _openRecentInvoice(BuildContext context, RecentInvoice invoice) {
+    final local = controller.invoiceByNumber(invoice.invoiceNumber);
+    if (local == null) {
+      showAppFeedback(
+        context,
+        title: 'Invoice not available',
+        message: 'Open the invoice list to view this invoice.',
+        isError: false,
+      );
+      return;
+    }
+    Get.toNamed(AppRoutes.paymentDetail, arguments: local);
   }
 }
 
@@ -147,6 +205,38 @@ class _PaymentsHeader extends StatelessWidget {
   }
 }
 
+class _CachedDataNotice extends StatelessWidget {
+  const _CachedDataNotice({required this.updatedAt});
+  final String updatedAt;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: tokens.surface,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: tokens.border),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.cloud_off_rounded, size: 15, color: tokens.muted),
+          8.w.widthBox(),
+          Expanded(
+            child: Text(
+              updatedAt.isEmpty
+                  ? 'Showing saved data'
+                  : 'Showing saved data · Updated $updatedAt',
+              style: TextStyle(color: tokens.muted, fontSize: 11.sp),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _BalanceSummary extends StatelessWidget {
   const _BalanceSummary({required this.controller});
   final PaymentController controller;
@@ -154,7 +244,17 @@ class _BalanceSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
-    final outstanding = controller.outstandingBalance;
+    final dashboard = controller.dashboard.value;
+    final outstanding = controller.outstandingBalanceAmount;
+    final currency = dashboard?.outstandingBalance.currency ?? '';
+    final statistics = controller.paymentStatistics;
+    final summary = controller.invoiceSummary;
+    final openCount = summary?.open ?? controller.openInvoiceCount;
+
+    String money(double value) => dashboard == null
+        ? AppFormatters.currency(value)
+        : AppFormatters.money(value, currency);
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -183,7 +283,7 @@ class _BalanceSummary extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
-                  '${controller.openInvoiceCount} open',
+                  '$openCount open',
                   style: TextStyle(
                     color: tokens.brand,
                     fontSize: 10.sp,
@@ -195,7 +295,7 @@ class _BalanceSummary extends StatelessWidget {
           ),
           8.h.heightBox(),
           Text(
-            AppFormatters.currency(outstanding),
+            money(outstanding),
             style: TextStyle(
               color: tokens.onBrand,
               fontSize: 31.sp,
@@ -213,22 +313,32 @@ class _BalanceSummary extends StatelessWidget {
               Expanded(
                 child: _SummaryMetric(
                   label: 'Current month',
-                  value: AppFormatters.currency(controller.currentMonthTotal),
-                  detail: PaymentController.currentBillingPeriod,
+                  value: money(
+                    statistics?.currentMonthDue ?? controller.currentMonthTotal,
+                  ),
+                  detail: 'This month',
                 ),
               ),
               Expanded(
                 child: _SummaryMetric(
                   label: 'Last payment',
-                  value: AppFormatters.currency(controller.lastPaymentAmount),
-                  detail: controller.lastPaymentDate,
+                  value: money(
+                    statistics?.lastPayment ?? controller.lastPaymentAmount,
+                  ),
+                  detail: dashboard == null
+                      ? controller.lastPaymentDate
+                      : (controller.lastDashboardPaymentDate.isEmpty
+                            ? 'Most recent'
+                            : controller.lastDashboardPaymentDate),
                 ),
               ),
               Expanded(
                 child: _SummaryMetric(
                   label: 'Paid this year',
-                  value: AppFormatters.currency(controller.totalPaidThisYear),
-                  detail: '2026 total',
+                  value: money(
+                    statistics?.paidThisYear ?? controller.totalPaidThisYear,
+                  ),
+                  detail: '${DateTime.now().year} total',
                 ),
               ),
             ],
@@ -244,8 +354,8 @@ class _BalanceSummary extends StatelessWidget {
                       vibrateNow();
                       _openOldestInvoice(context);
                     },
-              icon: Icon(Icons.arrow_forward_rounded, size: 18),
-              label: Text('Pay Now'),
+              icon: Icon(Icons.arrow_forward_rounded, size: 18.sp,color: tokens.brandOnDark,),
+              label: Text('Pay Now',style: TextStyle(color: tokens.brandOnDark),),
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: tokens.brand,
@@ -290,20 +400,39 @@ class _FeeBreakdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    final dashboard = controller.dashboard.value;
+    final currency = dashboard?.outstandingBalance.currency ?? '';
+    final rent = controller.feeSummaryFor(PaymentFeeType.monthlyRent);
+    final condoFee = controller.feeSummaryFor(PaymentFeeType.monthlyCondoFee);
+    final otherFees = controller.feeSummaryFor(PaymentFeeType.otherFees);
+
+    String labelFor(FeeSummary? fee, String fallback) =>
+        fee != null && fee.label.trim().isNotEmpty ? fee.label : fallback;
+    String money(double value) => dashboard == null
+        ? AppFormatters.currency(value)
+        : AppFormatters.money(value, currency);
+
+    // A fee type the API omits is zero, never a local mock amount.
+    double amountFor(FeeSummary? fee, double fallback) =>
+        fee?.amount ?? (dashboard == null ? fallback : 0);
+
     final rows = <({String label, double amount, Color color})>[
       (
-        label: 'Monthly Rent',
-        amount: controller.rentDueTotal,
+        label: labelFor(rent, 'Monthly Rent'),
+        amount: amountFor(rent, controller.rentDueTotal),
         color: AppPalette.info,
       ),
       (
-        label: 'Monthly Condo Fee',
-        amount: controller.condoFeeDueTotal,
+        label: labelFor(condoFee, 'Monthly Condo Fee'),
+        amount: amountFor(condoFee, controller.condoFeeDueTotal),
         color: tokens.brand,
       ),
       (
-        label: 'Parking, utility, facility, service & fines',
-        amount: controller.otherChargesDueTotal,
+        label: labelFor(
+          otherFees,
+          'Parking, utility, facility, service & fines',
+        ),
+        amount: amountFor(otherFees, controller.otherChargesDueTotal),
         color: AppPalette.warning,
       ),
     ];
@@ -352,7 +481,7 @@ class _FeeBreakdown extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    AppFormatters.currency(row.amount),
+                    money(row.amount),
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 13.sp,
@@ -363,6 +492,100 @@ class _FeeBreakdown extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+class _InvoiceSummaryCard extends StatelessWidget {
+  const _InvoiceSummaryCard({required this.summary});
+  final InvoiceSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: tokens.surface,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: tokens.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Invoice summary',
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
+          ),
+          12.h.heightBox(),
+          Row(
+            children: [
+              Expanded(
+                child: _InvoiceCount(
+                  label: 'Total',
+                  value: summary.total,
+                  color: tokens.ink,
+                ),
+              ),
+              Expanded(
+                child: _InvoiceCount(
+                  label: 'Unpaid',
+                  value: summary.unpaid,
+                  color: AppPalette.warning,
+                ),
+              ),
+              Expanded(
+                child: _InvoiceCount(
+                  label: 'Partial',
+                  value: summary.partial,
+                  color: AppPalette.info,
+                ),
+              ),
+              Expanded(
+                child: _InvoiceCount(
+                  label: 'Paid',
+                  value: summary.paid,
+                  color: AppPalette.success,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InvoiceCount extends StatelessWidget {
+  const _InvoiceCount({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+  final String label;
+  final int value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$value',
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.w800,
+            fontSize: 18.sp,
+          ),
+        ),
+        2.h.heightBox(),
+        Text(
+          label,
+          style: TextStyle(color: tokens.muted, fontSize: 11.sp),
+        ),
+      ],
     );
   }
 }
@@ -588,6 +811,186 @@ class _PaymentPreview extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _RecentInvoiceCard extends StatelessWidget {
+  const _RecentInvoiceCard({
+    required this.invoice,
+    required this.currency,
+    required this.onTap,
+  });
+  final RecentInvoice invoice;
+  final String currency;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    final settled = invoice.invoiceStatus == InvoiceStatus.paid;
+    final total = _money(invoice.totalAmount);
+    final paid = _money(invoice.paidAmount);
+    final remaining = _money(invoice.remainingAmount);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18.r),
+      child: Container(
+        padding: EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: tokens.surface,
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(color: tokens.border),
+        ),
+        child: Row(
+          children: [
+            AppIconTile(
+              icon: settled
+                  ? Icons.receipt_long_rounded
+                  : Icons.receipt_long_outlined,
+              color: settled ? AppPalette.success : tokens.brand,
+            ),
+            12.w.widthBox(),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    invoice.invoiceNumber,
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  4.h.heightBox(),
+                  Text(
+                    invoice.billingPeriodLabel,
+                    style: TextStyle(color: tokens.muted, fontSize: 12.sp),
+                  ),
+                  6.h.heightBox(),
+                  Text(
+                    'Total $total · Paid $paid',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: tokens.mutedStrong,
+                      fontSize: 11.sp,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(remaining, style: TextStyle(fontWeight: FontWeight.w800)),
+                4.h.heightBox(),
+                Text(
+                  invoice.dueDateLabel.isEmpty
+                      ? ''
+                      : 'Due ${invoice.dueDateLabel}',
+                  style: TextStyle(color: tokens.muted, fontSize: 10.sp),
+                ),
+                5.h.heightBox(),
+                PaymentStatusBadge(status: invoice.invoiceStatus),
+              ],
+            ),
+            Icon(Icons.chevron_right_rounded, color: tokens.faint),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _money(double value) => currency.trim().isEmpty
+      ? AppFormatters.currency(value)
+      : AppFormatters.money(value, currency);
+}
+
+class _RecentPaymentCard extends StatelessWidget {
+  const _RecentPaymentCard({required this.payment});
+  final RecentPayment payment;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    final status = payment.paymentStatus;
+    final failed = status == PaymentStatus.failed;
+    final color = failed ? AppPalette.danger : AppPalette.success;
+    final amount = payment.currency.trim().isEmpty
+        ? AppFormatters.currency(payment.amount)
+        : AppFormatters.money(payment.amount, payment.currency);
+    final subtitle = payment.paidAtLabel.isEmpty
+        ? payment.statusLabel
+        : '${payment.paidAtLabel} · ${payment.statusLabel}';
+    return Container(
+      padding: EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: tokens.surface,
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(color: tokens.border),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            failed ? Icons.error_rounded : Icons.check_circle_rounded,
+            color: color,
+          ),
+          10.w.widthBox(),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  payment.paymentNumber,
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+                3.h.heightBox(),
+                Text(
+                  subtitle,
+                  style: TextStyle(color: tokens.muted, fontSize: 12.sp),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                amount,
+                style: TextStyle(fontWeight: FontWeight.w800, color: color),
+              ),
+              4.h.heightBox(),
+              if (status != null)
+                PaymentRecordBadge(status: status)
+              else
+                _StatusPill(label: payment.statusLabel, color: tokens.muted),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.label, required this.color});
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }

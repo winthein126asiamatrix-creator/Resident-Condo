@@ -13,6 +13,7 @@ import '../../../../core/widgets/authenticated_avatar.dart';
 import '../../../appearance/presentation/controllers/appearance_controller.dart';
 import '../../../notifications/data/datasources/notification_remote_data_source.dart';
 import '../../../notifications/presentation/controllers/notification_controller.dart';
+import '../../../payments/presentation/controllers/payment_controller.dart';
 import '../../../session/domain/entities/resident_session.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../../unit/presentation/controllers/unit_controller.dart';
@@ -462,6 +463,9 @@ class AuthController extends GetxController {
       }
       if (Get.isRegistered<UnitController>()) {
         Get.find<UnitController>().clear();
+      }
+      if (Get.isRegistered<PaymentController>()) {
+        await Get.find<PaymentController>().clear();
       }
       invalidateAuthenticatedAvatarCache();
       await _resetAppearance();
