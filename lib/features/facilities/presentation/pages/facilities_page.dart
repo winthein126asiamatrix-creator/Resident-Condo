@@ -118,7 +118,7 @@ class _FacilitiesHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Facilities',
+                'FACILITIES',
                 style: TextStyle(
                   fontSize: 25.sp,
                   fontWeight: FontWeight.w800,
