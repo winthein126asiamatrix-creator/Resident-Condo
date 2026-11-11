@@ -83,7 +83,7 @@ class ProfilePage extends GetView<ProfileController> {
           final user = controller.user;
           if (user == null) {
             return AppStateMessage(
-              title: 'NO PROFILE INFORMATION',
+              title: 'No Profile Information',
               message: 'Your resident profile is not available right now.',
               icon: Icons.person_outline_rounded,
               actionLabel: 'Try again',
