@@ -138,7 +138,18 @@ class PaymentsPage extends GetView<PaymentController> {
                       .map(
                         (payment) => Padding(
                           padding: EdgeInsets.only(bottom: 10),
-                          child: _RecentPaymentCard(payment: payment),
+                          child: _RecentPaymentCard(
+                            payment: payment,
+                            onTap: payment.id > 0
+                                ? () {
+                                    vibrateNow();
+                                    Get.toNamed(
+                                      AppRoutes.paymentDetails,
+                                      arguments: payment.id,
+                                    );
+                                  }
+                                : null,
+                          ),
                         ),
                       )
                 else
@@ -918,8 +929,9 @@ class _RecentInvoiceCard extends StatelessWidget {
 }
 
 class _RecentPaymentCard extends StatelessWidget {
-  const _RecentPaymentCard({required this.payment});
+  const _RecentPaymentCard({required this.payment, this.onTap});
   final RecentPayment payment;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -933,51 +945,57 @@ class _RecentPaymentCard extends StatelessWidget {
     final subtitle = payment.paidAtLabel.isEmpty
         ? payment.statusLabel
         : '${payment.paidAtLabel} · ${payment.statusLabel}';
-    return Container(
-      padding: EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: tokens.surface,
-        borderRadius: BorderRadius.circular(18.r),
-        border: Border.all(color: tokens.border),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            failed ? Icons.error_rounded : Icons.check_circle_rounded,
-            color: color,
-          ),
-          10.w.widthBox(),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18.r),
+      child: Container(
+        padding: EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: tokens.surface,
+          borderRadius: BorderRadius.circular(18.r),
+          border: Border.all(color: tokens.border),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              failed ? Icons.error_rounded : Icons.check_circle_rounded,
+              color: color,
+            ),
+            10.w.widthBox(),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    payment.paymentNumber,
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  3.h.heightBox(),
+                  Text(
+                    subtitle,
+                    style: TextStyle(color: tokens.muted, fontSize: 12.sp),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  payment.paymentNumber,
-                  style: TextStyle(fontWeight: FontWeight.w800),
+                  amount,
+                  style: TextStyle(fontWeight: FontWeight.w800, color: color),
                 ),
-                3.h.heightBox(),
-                Text(
-                  subtitle,
-                  style: TextStyle(color: tokens.muted, fontSize: 12.sp),
-                ),
+                4.h.heightBox(),
+                if (status != null)
+                  PaymentRecordBadge(status: status)
+                else
+                  _StatusPill(label: payment.statusLabel, color: tokens.muted),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                amount,
-                style: TextStyle(fontWeight: FontWeight.w800, color: color),
-              ),
-              4.h.heightBox(),
-              if (status != null)
-                PaymentRecordBadge(status: status)
-              else
-                _StatusPill(label: payment.statusLabel, color: tokens.muted),
-            ],
-          ),
-        ],
+            if (onTap != null)
+              Icon(Icons.chevron_right_rounded, color: tokens.faint),
+          ],
+        ),
       ),
     );
   }

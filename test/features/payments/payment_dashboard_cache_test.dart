@@ -14,6 +14,8 @@ import 'package:test/features/payments/domain/entities/invoice_detail.dart';
 import 'package:test/features/payments/domain/entities/invoice_list.dart';
 import 'package:test/features/payments/domain/entities/payment.dart';
 import 'package:test/features/payments/domain/entities/payment_dashboard.dart';
+import 'package:test/features/payments/domain/entities/payment_detail.dart';
+import 'package:test/features/payments/domain/entities/payment_list.dart';
 import 'package:test/features/payments/domain/repositories/payment_repository.dart';
 import 'package:test/features/payments/domain/usecases/payment_usecases.dart';
 import 'package:test/features/payments/presentation/controllers/payment_controller.dart';
@@ -343,6 +345,28 @@ class _FakeRepository implements PaymentRepository {
 
   @override
   Future<void> clearInvoiceListCache() async {}
+
+  @override
+  Future<PaymentListResponse> getPaymentList({int page = 1, int limit = 20}) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<PaymentDetail> getPaymentDetail(int id) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<CachedPaymentList?> getCachedPaymentList(int userId) async => null;
+
+  @override
+  Future<void> cachePaymentList(
+    int userId,
+    PaymentListResponse response,
+  ) async {}
+
+  @override
+  Future<void> clearPaymentListCache() async {}
 
   @override
   Future<List<Invoice>> getInvoices() async => const <Invoice>[];

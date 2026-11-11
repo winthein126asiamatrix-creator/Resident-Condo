@@ -36,7 +36,9 @@ abstract final class ApiEndPoints {
   /// One invoice with its unit and line items.
   static String invoiceDetail(int id) => '$invoices/$id';
 
-  static const String payments = '/api/payments';
+  static const String payments = '/payments';
+
+  static String paymentDetail(int id) => '$payments/$id';
 
   /// The resident's payment dashboard: balance, fee breakdown, invoice counts
   /// and recent activity.

@@ -7,6 +7,7 @@ import '../../data/datasources/payment_dashboard_local_data_source.dart';
 import '../../data/datasources/payment_dashboard_remote_data_source.dart';
 import '../../data/datasources/payment_invoice_local_data_source.dart';
 import '../../data/datasources/payment_invoice_remote_data_source.dart';
+import '../../data/datasources/payment_list_local_data_source.dart';
 import '../../data/datasources/payment_local_data_source.dart';
 import '../../data/repositories/payment_repository_impl.dart';
 import '../../domain/repositories/payment_repository.dart';
@@ -52,6 +53,17 @@ class PaymentBinding extends Bindings {
         permanent: true,
       );
     }
+    if (!Get.isRegistered<PaymentListLocalDataSource>()) {
+      Get.put<PaymentListLocalDataSource>(
+        PaymentListLocalDataSource(
+          cache: Get.isRegistered<ApiCacheStore>()
+              ? Get.find<ApiCacheStore>()
+              : null,
+          accountKey: _currentAccountKey,
+        ),
+        permanent: true,
+      );
+    }
     if (!Get.isRegistered<PaymentRepository>()) {
       Get.put<PaymentRepository>(
         PaymentRepositoryImpl(
@@ -60,6 +72,7 @@ class PaymentBinding extends Bindings {
           Get.find<PaymentDashboardLocalDataSource>(),
           invoiceDataSource: Get.find<PaymentInvoiceRemoteDataSource>(),
           invoiceLocalDataSource: Get.find<PaymentInvoiceLocalDataSource>(),
+          paymentListLocalDataSource: Get.find<PaymentListLocalDataSource>(),
         ),
         permanent: true,
       );

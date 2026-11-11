@@ -30,6 +30,7 @@ import '../../features/payments/domain/entities/invoice.dart';
 import '../../features/payments/domain/entities/payment.dart';
 import '../../features/payments/presentation/pages/invoice_detail_page.dart';
 import '../../features/payments/presentation/pages/invoice_list_page.dart';
+import '../../features/payments/presentation/pages/payment_details_page.dart';
 import '../../features/payments/presentation/pages/payment_failure_page.dart';
 import '../../features/payments/presentation/pages/payment_history_page.dart';
 import '../../features/payments/presentation/pages/payment_method_page.dart';
@@ -136,6 +137,18 @@ abstract final class AppPages {
     GetPage<dynamic>(
       name: AppRoutes.paymentHistory,
       page: () => PaymentHistoryPage(),
+    ),
+    GetPage<dynamic>(
+      name: AppRoutes.paymentDetails,
+      page: () {
+        final arguments = Get.arguments;
+        final id = arguments is int
+            ? arguments
+            : arguments is num
+            ? arguments.toInt()
+            : null;
+        return PaymentDetailsPage(paymentId: id);
+      },
     ),
     GetPage<dynamic>(
       name: AppRoutes.maintenanceDetail,

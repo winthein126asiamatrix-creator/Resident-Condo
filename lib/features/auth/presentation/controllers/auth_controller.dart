@@ -589,8 +589,7 @@ class AuthController extends GetxController {
       error is ApiException &&
       (error.isRetryable || error.kind == ApiFailureKind.server);
 
-  /// Ends a session the backend explicitly rejected and leaves protected
-  /// screens, reusing the normal sign-out path.
+  
   Future<void> _endRejectedSession(int epoch) async {
     if (epoch != _sessionEpoch) {
       return;

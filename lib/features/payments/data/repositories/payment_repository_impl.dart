@@ -3,11 +3,14 @@ import '../../domain/entities/invoice_detail.dart';
 import '../../domain/entities/invoice_list.dart';
 import '../../domain/entities/payment.dart';
 import '../../domain/entities/payment_dashboard.dart';
+import '../../domain/entities/payment_detail.dart';
+import '../../domain/entities/payment_list.dart';
 import '../../domain/repositories/payment_repository.dart';
 import '../datasources/payment_dashboard_local_data_source.dart';
 import '../datasources/payment_dashboard_remote_data_source.dart';
 import '../datasources/payment_invoice_local_data_source.dart';
 import '../datasources/payment_invoice_remote_data_source.dart';
+import '../datasources/payment_list_local_data_source.dart';
 import '../datasources/payment_local_data_source.dart';
 
 class PaymentRepositoryImpl implements PaymentRepository {
@@ -17,6 +20,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
     this.dashboardLocalDataSource, {
     this.invoiceDataSource,
     this.invoiceLocalDataSource,
+    this.paymentListLocalDataSource,
   });
 
   final PaymentLocalDataSource localDataSource;
@@ -24,6 +28,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
   final PaymentDashboardLocalDataSource dashboardLocalDataSource;
   final PaymentInvoiceRemoteDataSource? invoiceDataSource;
   final PaymentInvoiceLocalDataSource? invoiceLocalDataSource;
+  final PaymentListLocalDataSource? paymentListLocalDataSource;
 
   @override
   Future<PaymentDashboard> getDashboard() => dashboardDataSource.getDashboard();
@@ -88,6 +93,44 @@ class PaymentRepositoryImpl implements PaymentRepository {
   @override
   Future<void> clearInvoiceListCache() {
     return invoiceLocalDataSource?.clear() ?? Future<void>.value();
+  }
+
+  @override
+  Future<PaymentListResponse> getPaymentList({int page = 1, int limit = 20}) {
+    final remote = invoiceDataSource;
+    if (remote == null) {
+      throw StateError('Payment remote data source is not configured.');
+    }
+    return remote.getPayments(page: page, limit: limit);
+  }
+
+  @override
+  Future<PaymentDetail> getPaymentDetail(int id) {
+    final remote = invoiceDataSource;
+    if (remote == null) {
+      throw StateError('Payment remote data source is not configured.');
+    }
+    return remote.getPayment(id);
+  }
+
+  @override
+  Future<CachedPaymentList?> getCachedPaymentList(int userId) async {
+    final local = paymentListLocalDataSource;
+    if (local == null) {
+      return null;
+    }
+    return local.read(userId);
+  }
+
+  @override
+  Future<void> cachePaymentList(int userId, PaymentListResponse response) {
+    return paymentListLocalDataSource?.save(userId, response) ??
+        Future<void>.value();
+  }
+
+  @override
+  Future<void> clearPaymentListCache() {
+    return paymentListLocalDataSource?.clear() ?? Future<void>.value();
   }
 
   @override

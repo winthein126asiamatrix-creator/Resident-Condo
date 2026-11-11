@@ -11,6 +11,8 @@ import '../../domain/entities/invoice_detail.dart';
 import '../../domain/entities/invoice_list.dart';
 import '../../domain/entities/payment.dart';
 import '../../domain/entities/payment_dashboard.dart';
+import '../../domain/entities/payment_detail.dart';
+import '../../domain/entities/payment_list.dart';
 import '../../domain/usecases/payment_usecases.dart';
 
 class PaymentController extends GetxController {
@@ -32,9 +34,12 @@ class PaymentController extends GetxController {
   /// payments tab so a reconnect refreshes whichever screen is actually open.
   static const String invoiceListScreen = 'payments:invoices';
   static const String invoiceDetailScreen = 'payments:invoice-detail';
+  static const String paymentListScreen = 'payments:list';
+  static const String paymentDetailScreen = 'payments:payment-detail';
 
   /// The first page size used by the list and by the cache snapshot.
   static const int invoicePageSize = 20;
+  static const int paymentPageSize = 20;
 
   /// Status values the Invoice List filter offers.
   static const List<String> invoiceStatusFilters = <String>[
@@ -85,6 +90,25 @@ class PaymentController extends GetxController {
   final isLoadingInvoiceDetail = false.obs;
   final invoiceDetailError = RxnString();
 
+  // ------------------------------------------------------------ payment list
+
+  final paymentList = <PaymentListItem>[].obs;
+  final paymentListPage = 1.obs;
+  final paymentListLimit = paymentPageSize.obs;
+  final paymentListTotal = 0.obs;
+  final isLoadingPaymentList = false.obs;
+  final isLoadingMorePayments = false.obs;
+  final paymentListError = RxnString();
+  final isShowingCachedPayments = false.obs;
+  final paymentListUpdatedAt = Rxn<DateTime>();
+
+  // ---------------------------------------------------------- payment detail
+
+  final paymentDetail = Rxn<PaymentDetail>();
+  final paymentDetailId = Rxn<int>();
+  final isLoadingPaymentDetail = false.obs;
+  final paymentDetailError = RxnString();
+
   final SessionController? _sessionController;
   final RefreshRegistry? _registryOverride;
   final ConnectivityService? _connectivityOverride;
@@ -103,6 +127,15 @@ class PaymentController extends GetxController {
   int _invoiceDetailSeq = 0;
   Future<void>? _invoiceDetailInFlight;
   int? _invoiceDetailInFlightId;
+
+  int? _paymentListOwnerUserId;
+  bool _hasPaymentListData = false;
+  int _paymentListSeq = 0;
+  Future<void>? _paymentListInFlight;
+
+  int _paymentDetailSeq = 0;
+  Future<void>? _paymentDetailInFlight;
+  int? _paymentDetailInFlightId;
 
   var _transactionSequence = 1;
 
@@ -142,12 +175,22 @@ class PaymentController extends GetxController {
     return value == null ? '' : AppDates.format(value);
   }
 
+  bool get hasMorePayments =>
+      paymentListPage.value * paymentListLimit.value < paymentListTotal.value;
+
+  String get paymentListUpdatedLabel {
+    final value = paymentListUpdatedAt.value;
+    return value == null ? '' : AppDates.format(value);
+  }
+
   @override
   void onInit() {
     super.onInit();
     _registry?.register(screen, loadPayments);
     _registry?.register(invoiceListScreen, loadInvoices);
     _registry?.register(invoiceDetailScreen, _refreshActiveInvoiceDetail);
+    _registry?.register(paymentListScreen, loadPaymentList);
+    _registry?.register(paymentDetailScreen, _refreshActivePaymentDetail);
 
     final session = _session;
     if (session == null) {
@@ -190,6 +233,8 @@ class PaymentController extends GetxController {
     _registry?.unregister(screen);
     _registry?.unregister(invoiceListScreen);
     _registry?.unregister(invoiceDetailScreen);
+    _registry?.unregister(paymentListScreen);
+    _registry?.unregister(paymentDetailScreen);
     super.onClose();
   }
 
@@ -475,6 +520,11 @@ class PaymentController extends GetxController {
     } catch (_) {
       // The invoice cache is equally optional at sign-out time.
     }
+    try {
+      await useCases.clearPaymentListCache();
+    } catch (_) {
+      // The payment cache is equally optional at sign-out time.
+    }
   }
 
   void _resetForAccount() {
@@ -516,6 +566,28 @@ class PaymentController extends GetxController {
     invoiceDetailId.value = null;
     isLoadingInvoiceDetail.value = false;
     invoiceDetailError.value = null;
+
+    _paymentListSeq++;
+    _paymentListInFlight = null;
+    _hasPaymentListData = false;
+    _paymentListOwnerUserId = null;
+    paymentList.clear();
+    paymentListPage.value = 1;
+    paymentListLimit.value = paymentPageSize;
+    paymentListTotal.value = 0;
+    isLoadingPaymentList.value = false;
+    isLoadingMorePayments.value = false;
+    paymentListError.value = null;
+    isShowingCachedPayments.value = false;
+    paymentListUpdatedAt.value = null;
+
+    _paymentDetailSeq++;
+    _paymentDetailInFlight = null;
+    _paymentDetailInFlightId = null;
+    paymentDetail.value = null;
+    paymentDetailId.value = null;
+    isLoadingPaymentDetail.value = false;
+    paymentDetailError.value = null;
   }
 
   Future<void> applyRole(String roleKey) async {
@@ -526,6 +598,272 @@ class PaymentController extends GetxController {
     } on AppException catch (error) {
       errorMessage.value = error.message;
     }
+  }
+
+  // ----------------------------------------------------------- payment list
+
+  Future<void> loadPaymentList({bool refresh = false}) {
+    final existing = _paymentListInFlight;
+    if (existing != null) {
+      return existing;
+    }
+    final future = _loadPaymentList(refresh: refresh);
+    _paymentListInFlight = future;
+    return future.whenComplete(() {
+      if (identical(_paymentListInFlight, future)) {
+        _paymentListInFlight = null;
+      }
+    });
+  }
+
+  Future<void> _loadPaymentList({required bool refresh}) async {
+    final session = _session;
+    final userId = _currentUserId;
+    if (session != null && userId == null) {
+      return;
+    }
+
+    final seq = ++_paymentListSeq;
+    final hadData = _hasPaymentListData && _paymentListOwnerUserId == userId;
+    isLoadingPaymentList.value = !hadData;
+    isLoadingMorePayments.value = false;
+    paymentListError.value = null;
+
+    if (userId != null && !refresh && !hadData) {
+      await _hydratePaymentListFromCache(userId, seq);
+      if (seq != _paymentListSeq || userId != _currentUserId) {
+        return;
+      }
+    }
+
+    if (_hasPaymentListData && _connectivity?.isOnline.value == false) {
+      isShowingCachedPayments.value = true;
+      _registry?.markStale(paymentListScreen);
+      isLoadingPaymentList.value = false;
+      return;
+    }
+
+    try {
+      final response = await useCases.getPaymentList(
+        page: 1,
+        limit: paymentPageSize,
+      );
+      if (seq != _paymentListSeq || userId != _currentUserId) {
+        return;
+      }
+
+      paymentList.assignAll(response.items);
+      paymentListPage.value = response.page <= 0 ? 1 : response.page;
+      paymentListLimit.value = response.limit <= 0
+          ? paymentPageSize
+          : response.limit;
+      paymentListTotal.value = response.total < response.items.length
+          ? response.items.length
+          : response.total;
+      _hasPaymentListData = true;
+      _paymentListOwnerUserId = userId;
+      isShowingCachedPayments.value = false;
+      paymentListUpdatedAt.value = DateTime.now();
+      paymentListError.value = null;
+      _registry?.markFresh(paymentListScreen);
+
+      if (userId != null) {
+        try {
+          await useCases.cachePaymentList(userId, response);
+        } catch (_) {
+          // A cache write is a convenience; the API response is still usable.
+        }
+      }
+    } on AppException catch (error) {
+      if (seq != _paymentListSeq || userId != _currentUserId) {
+        return;
+      }
+      _handlePaymentListFailure(error);
+    } catch (_) {
+      if (seq != _paymentListSeq || userId != _currentUserId) {
+        return;
+      }
+      _handlePaymentListFailure(null);
+    } finally {
+      if (seq == _paymentListSeq) {
+        isLoadingPaymentList.value = false;
+      }
+    }
+  }
+
+  Future<void> loadMorePayments() async {
+    if (isLoadingPaymentList.value ||
+        isLoadingMorePayments.value ||
+        !hasMorePayments) {
+      return;
+    }
+    if (_connectivity?.isOnline.value == false && _hasPaymentListData) {
+      isShowingCachedPayments.value = true;
+      _registry?.markStale(paymentListScreen);
+      return;
+    }
+
+    final userId = _currentUserId;
+    final seq = _paymentListSeq;
+    final nextPage = paymentListPage.value + 1;
+    isLoadingMorePayments.value = true;
+    paymentListError.value = null;
+    try {
+      final response = await useCases.getPaymentList(
+        page: nextPage,
+        limit: paymentListLimit.value,
+      );
+      if (seq != _paymentListSeq || userId != _currentUserId) {
+        return;
+      }
+      final knownIds = paymentList.map((payment) => payment.id).toSet();
+      paymentList.addAll(
+        response.items.where((payment) => !knownIds.contains(payment.id)),
+      );
+      paymentListPage.value = response.page <= 0 ? nextPage : response.page;
+      paymentListLimit.value = response.limit <= 0
+          ? paymentListLimit.value
+          : response.limit;
+      // An empty page means the API has nothing older to return, whatever the
+      // reported total says. Stop asking instead of looping on the same page.
+      paymentListTotal.value = response.items.isEmpty
+          ? paymentList.length
+          : (response.total < paymentList.length
+                ? paymentList.length
+                : response.total);
+      _hasPaymentListData = true;
+      _paymentListOwnerUserId = userId;
+      isShowingCachedPayments.value = false;
+      _registry?.markFresh(paymentListScreen);
+    } on AppException catch (error) {
+      if (seq == _paymentListSeq && userId == _currentUserId) {
+        paymentListError.value = error.message;
+        if (error is ApiException && error.isRetryable) {
+          _registry?.markStale(paymentListScreen);
+        }
+      }
+    } catch (_) {
+      if (seq == _paymentListSeq && userId == _currentUserId) {
+        paymentListError.value = 'Unable to load more payments.';
+      }
+    } finally {
+      if (seq == _paymentListSeq) {
+        isLoadingMorePayments.value = false;
+      }
+    }
+  }
+
+  Future<void> _hydratePaymentListFromCache(int userId, int seq) async {
+    try {
+      final cached = await useCases.getCachedPaymentList(userId);
+      if (cached == null ||
+          seq != _paymentListSeq ||
+          userId != _currentUserId) {
+        return;
+      }
+      paymentList.assignAll(cached.response.items);
+      paymentListPage.value = cached.response.page;
+      paymentListLimit.value = cached.response.limit;
+      paymentListTotal.value = cached.response.total;
+      _hasPaymentListData = true;
+      _paymentListOwnerUserId = userId;
+      isShowingCachedPayments.value = true;
+      paymentListUpdatedAt.value = cached.updatedAt;
+      paymentListError.value = null;
+    } catch (_) {
+      // A broken cache read must not stop the API request.
+    }
+  }
+
+  void _handlePaymentListFailure(Object? error) {
+    if (_hasPaymentListData) {
+      isShowingCachedPayments.value = true;
+    } else {
+      paymentListError.value = error is AppException
+          ? error.message
+          : 'Unable to load payments.';
+    }
+    if (error is ApiException && error.isRetryable) {
+      _registry?.markStale(paymentListScreen);
+    }
+  }
+
+  // --------------------------------------------------------- payment detail
+
+  Future<void> loadPaymentDetail(int id, {bool force = false}) {
+    if (id <= 0) {
+      return Future<void>.value();
+    }
+    final existing = _paymentDetailInFlight;
+    if (existing != null && _paymentDetailInFlightId == id) {
+      return existing;
+    }
+    final future = _fetchPaymentDetail(id);
+    _paymentDetailInFlight = future;
+    _paymentDetailInFlightId = id;
+    return future.whenComplete(() {
+      if (identical(_paymentDetailInFlight, future)) {
+        _paymentDetailInFlight = null;
+        _paymentDetailInFlightId = null;
+      }
+    });
+  }
+
+  Future<void> _fetchPaymentDetail(int id) async {
+    final session = _session;
+    final userId = _currentUserId;
+    if (session != null && userId == null) {
+      return;
+    }
+
+    final seq = ++_paymentDetailSeq;
+    if (paymentDetailId.value != id) {
+      paymentDetail.value = null;
+    }
+    paymentDetailId.value = id;
+    paymentDetailError.value = null;
+    isLoadingPaymentDetail.value = paymentDetail.value == null;
+
+    try {
+      final detail = await useCases.getPaymentDetail(id);
+      if (seq != _paymentDetailSeq ||
+          userId != _currentUserId ||
+          paymentDetailId.value != id) {
+        return;
+      }
+      paymentDetail.value = detail;
+      paymentDetailError.value = null;
+      _registry?.markFresh(paymentDetailScreen);
+    } on AppException catch (error) {
+      if (seq != _paymentDetailSeq ||
+          userId != _currentUserId ||
+          paymentDetailId.value != id) {
+        return;
+      }
+      paymentDetailError.value = error.message;
+      if (error is ApiException && error.isRetryable) {
+        _registry?.markStale(paymentDetailScreen);
+      }
+    } catch (_) {
+      if (seq != _paymentDetailSeq ||
+          userId != _currentUserId ||
+          paymentDetailId.value != id) {
+        return;
+      }
+      paymentDetailError.value = 'Unable to load payment details.';
+    } finally {
+      if (seq == _paymentDetailSeq) {
+        isLoadingPaymentDetail.value = false;
+      }
+    }
+  }
+
+  Future<void> _refreshActivePaymentDetail() async {
+    final id = paymentDetailId.value;
+    if (id == null || id <= 0) {
+      return;
+    }
+    await loadPaymentDetail(id, force: true);
   }
 
   // ----------------------------------------------------------- invoice list

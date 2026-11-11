@@ -70,6 +70,13 @@ abstract final class AppDates {
   static String formatMonthYear(DateTime value) =>
       '${_fullMonths[value.month - 1]} ${value.year}';
 
+  static String formatDateTime(DateTime value) {
+    final hour = value.hour % 12 == 0 ? 12 : value.hour % 12;
+    final minute = value.minute.toString().padLeft(2, '0');
+    final period = value.hour >= 12 ? 'PM' : 'AM';
+    return '${format(value)} · $hour:$minute $period';
+  }
+
   /// `Wednesday, October 1`, used where a date is read out in full.
   static String formatLong(DateTime value) =>
       '${_weekdays[value.weekday - 1]}, ${_months[value.month - 1]} ${value.day}';

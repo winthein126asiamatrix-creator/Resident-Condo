@@ -3,6 +3,8 @@ import '../entities/invoice_detail.dart';
 import '../entities/invoice_list.dart';
 import '../entities/payment.dart';
 import '../entities/payment_dashboard.dart';
+import '../entities/payment_detail.dart';
+import '../entities/payment_list.dart';
 import '../repositories/payment_repository.dart';
 
 class PaymentUseCases {
@@ -52,6 +54,26 @@ class PaymentUseCases {
 
   Future<void> clearInvoiceListCache() {
     return repository.clearInvoiceListCache();
+  }
+
+  Future<PaymentListResponse> getPaymentList({int page = 1, int limit = 20}) {
+    return repository.getPaymentList(page: page, limit: limit);
+  }
+
+  Future<PaymentDetail> getPaymentDetail(int id) {
+    return repository.getPaymentDetail(id);
+  }
+
+  Future<CachedPaymentList?> getCachedPaymentList(int userId) {
+    return repository.getCachedPaymentList(userId);
+  }
+
+  Future<void> cachePaymentList(int userId, PaymentListResponse response) {
+    return repository.cachePaymentList(userId, response);
+  }
+
+  Future<void> clearPaymentListCache() {
+    return repository.clearPaymentListCache();
   }
 
   Future<List<Invoice>> getInvoices() {

@@ -50,9 +50,6 @@ class DashboardController extends GetxController {
       dashboard.value = await useCases.getDashboard();
       _registry?.markFresh(screen);
     } on AppException catch (error) {
-      // Only a network-level failure means the data on screen is stale. The
-      // data itself is kept: replacing it with an error would throw away the
-      // last good reading, and the reconnect refresh replaces it anyway.
       if (error is ApiException && error.isRetryable) {
         _registry?.markStale(screen);
       }

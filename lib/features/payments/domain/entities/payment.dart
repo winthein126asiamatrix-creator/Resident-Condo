@@ -28,6 +28,59 @@ extension PaymentStatusLabel on PaymentStatus {
   }
 }
 
+PaymentStatus? paymentStatusFromApi(String value) {
+  return switch (value.trim().toLowerCase()) {
+    'paid' ||
+    'successful' ||
+    'succeeded' ||
+    'completed' ||
+    'settled' => PaymentStatus.successful,
+    'failed' || 'declined' || 'error' => PaymentStatus.failed,
+    _ => null,
+  };
+}
+
+String paymentStatusLabelFromApi(String value) {
+  final parsed = paymentStatusFromApi(value);
+  if (parsed != null) {
+    return parsed.label;
+  }
+  final raw = value.trim();
+  if (raw.isEmpty) {
+    return 'Unknown';
+  }
+  final normalized = raw.replaceAll(RegExp(r'[_-]+'), ' ');
+  return '${normalized[0].toUpperCase()}${normalized.substring(1)}';
+}
+
+String paymentMethodLabelFromApi(String value) {
+  final raw = value.trim();
+  if (raw.isEmpty) {
+    return '';
+  }
+  return switch (raw.toLowerCase()) {
+    'card' || 'credit_card' || 'debit_card' => 'Credit / Debit Card',
+    'bank_transfer' || 'bank' => 'Bank Transfer',
+    'digital_wallet' || 'wallet' => 'Digital Wallet',
+    'kbz_pay' || 'kbzpay' => 'KBZ Pay',
+    'wave_money' || 'wavemoney' => 'Wave Money',
+    'cash' => 'Cash',
+    _ => _humanizePaymentMethod(raw),
+  };
+}
+
+String _humanizePaymentMethod(String value) {
+  final words = value
+      .replaceAll('_', ' ')
+      .split(RegExp(r'\s+'))
+      .where((word) => word.isNotEmpty);
+  return words
+      .map(
+        (word) => '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
+      )
+      .join(' ');
+}
+
 class Payment {
   const Payment({
     required this.id,

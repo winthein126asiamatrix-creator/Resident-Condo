@@ -211,6 +211,20 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
       );
       return;
     }
+    if (Get.currentRoute == AppRoutes.paymentHistory) {
+      if (!Get.isRegistered<PaymentController>()) return;
+      await Get.find<RefreshRegistry>().refreshIfStale(
+        PaymentController.paymentListScreen,
+      );
+      return;
+    }
+    if (Get.currentRoute == AppRoutes.paymentDetails) {
+      if (!Get.isRegistered<PaymentController>()) return;
+      await Get.find<RefreshRegistry>().refreshIfStale(
+        PaymentController.paymentDetailScreen,
+      );
+      return;
+    }
     if (Get.currentRoute != AppRoutes.home) return;
     if (!Get.isRegistered<DashboardController>()) return;
     final tab = Get.find<DashboardController>().selectedTab.value;

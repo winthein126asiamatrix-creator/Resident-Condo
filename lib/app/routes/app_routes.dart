@@ -7,6 +7,7 @@ abstract final class AppRoutes {
   static const unit = '/unit';
   static const invoiceList = '/payments/invoices';
   static const paymentDetail = '/payments/detail';
+  static const paymentDetails = '/payments/details';
   static const paymentSummary = '/payments/summary';
   static const paymentMethod = '/payments/method';
   static const paymentSuccess = '/payments/success';
