@@ -31,6 +31,16 @@ class _ApiLogFloatingButtonState extends State<ApiLogFloatingButton> {
       return const SizedBox.shrink();
     }
 
+    final store = Get.find<ApiLogStore>();
+    return Obx(() {
+      if (!store.isOverlayVisible.value) {
+        return const SizedBox.shrink();
+      }
+      return _buildButton(context);
+    });
+  }
+
+  Widget _buildButton(BuildContext context) {
     final media = MediaQuery.of(context);
     final current = _currentPosition(media);
     final clamped = _clamp(current, media);
@@ -40,6 +50,7 @@ class _ApiLogFloatingButtonState extends State<ApiLogFloatingButton> {
       top: clamped.dy,
       child: GestureDetector(
         onTap: _openLogs,
+        onDoubleTap: _hideOverlay,
         onPanUpdate: (details) {
           setState(() {
             _position = _clamp((_position ?? current) + details.delta, media);
@@ -132,5 +143,13 @@ class _ApiLogFloatingButtonState extends State<ApiLogFloatingButton> {
       return;
     }
     Get.toNamed<void>(AppRoutes.apiLogs);
+  }
+
+  void _hideOverlay() {
+    vibrateNow();
+    if (!Get.isRegistered<ApiLogStore>()) {
+      return;
+    }
+    Get.find<ApiLogStore>().hideOverlay();
   }
 }

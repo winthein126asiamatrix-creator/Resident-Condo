@@ -8,6 +8,7 @@ import 'package:test/features/auth/data/models/auth_user.dart';
 
 import '../../../../app/routes/app_routes.dart';
 
+import '../../../../core/network/api_log_store.dart';
 import '../../../../core/services/firebase_service.dart';
 import '../../../../core/utils/super_print.dart';
 import '../../../../core/widgets/app_dialogs.dart';
@@ -197,6 +198,13 @@ class _GreetingHeader extends StatelessWidget {
     return trimmed.split(RegExp(r'\s+')).first;
   }
 
+  static void _showApiLogger() {
+    if (!Get.isRegistered<ApiLogStore>()) {
+      return;
+    }
+    Get.find<ApiLogStore>().showOverlay();
+  }
+
   static Future<void> _copyDeviceToken(BuildContext context) async {
     if (!Get.isRegistered<FirebaseService>()) {
       showAppFeedback(
@@ -249,6 +257,7 @@ class _GreetingHeader extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: () => _copyDeviceToken(context),
+                onDoubleTap: _showApiLogger,
                 child: Text(
                   'Good morning, ${_firstName(resident?.name)}',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(

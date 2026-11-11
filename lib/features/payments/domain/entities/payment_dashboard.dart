@@ -27,8 +27,7 @@ class PaymentDashboard {
   final List<RecentInvoice> recentInvoices;
   final List<RecentPayment> recentPayments;
 
-  /// Fee matches by `fee_type`, never by position, because the backend is free
-  /// to return the lines in any order or omit one.
+
   FeeSummary? feeFor(String feeType) {
     for (final fee in feeSummary) {
       if (fee.feeType == feeType) {
@@ -39,7 +38,6 @@ class PaymentDashboard {
   }
 }
 
-/// A dashboard snapshot kept on the device, with the time it was stored.
 class CachedPaymentDashboard {
   const CachedPaymentDashboard({
     required this.dashboard,

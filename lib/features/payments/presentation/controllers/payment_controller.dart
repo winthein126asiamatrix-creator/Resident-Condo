@@ -194,13 +194,10 @@ class PaymentController extends GetxController {
 
     final session = _session;
     if (session == null) {
-      // No session graph (e.g. a unit test): keep the previous eager behaviour.
       loadPayments();
       return;
     }
 
-    // The dashboard is personal, so wait for `/me` to publish the authenticated
-    // resident before asking the API or touching the scoped cache.
     _sessionWorker = ever(session.session, (resident) {
       final userId = resident?.user.id;
       if (userId == null || userId <= 0) {
@@ -243,8 +240,6 @@ class PaymentController extends GetxController {
   double get outstandingBalance =>
       invoices.fold(0, (total, invoice) => total + invoice.amountDue);
 
-  /// Monthly rent is always reported on its own line, never merged with the
-  /// monthly condo fee.
   double get rentDueTotal => _dueFor(InvoiceItemType.rent);
 
   double get condoFeeDueTotal => _dueFor(InvoiceItemType.condoFee);
@@ -261,7 +256,7 @@ class PaymentController extends GetxController {
         }
         total += item.dueAmount;
       }
-    }
+    } 
     return total;
   }
 

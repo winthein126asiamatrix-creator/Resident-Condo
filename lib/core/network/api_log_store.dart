@@ -110,6 +110,11 @@ class ApiLogStore extends GetxService {
 
   final int maxEntries;
   final logs = <ApiLogEntry>[].obs;
+  final isOverlayVisible = true.obs;
+
+  void showOverlay() => isOverlayVisible.value = true;
+
+  void hideOverlay() => isOverlayVisible.value = false;
 
   ApiLogEntry? findById(String id) {
     for (final log in logs) {
