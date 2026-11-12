@@ -21,11 +21,12 @@ import '../../../../core/widgets/app_dialogs.dart';
 
 import '../../../../core/widgets/app_form_field.dart';
 
-import '../../../../core/widgets/app_state_message.dart';
 
 import '../../../../core/widgets/authenticated_avatar.dart';
 
 import '../../../auth/data/models/auth_user.dart';
+
+import '../../../auth/presentation/controllers/auth_controller.dart';
 
 import '../../../dashboard/presentation/controllers/dashboard_controller.dart';
 
@@ -77,19 +78,16 @@ class ProfilePage extends GetView<ProfileController> {
   @override
   Widget build(BuildContext context) {
     final localeController = Get.find<AppLocaleController>();
+    final tokens = AppThemeTokens.of(context);
     return Scaffold(
       body: SafeArea(
         child: Obx(() {
-          final user = controller.user;
-          if (user == null) {
-            return AppStateMessage(
-              title: 'No Profile Information',
-              message: 'Your resident profile is not available right now.',
-              icon: Icons.person_outline_rounded,
-              actionLabel: 'Try again',
-              onAction: controller.refreshProfile,
-            );
-          }
+          final auth = Get.isRegistered<AuthController>()
+              ? Get.find<AuthController>()
+              : null;
+          final hasProfile = controller.user != null;
+          final user = controller.user ?? AuthUser.empty;
+          final isRetrying = auth?.isInitializingSession.value ?? false;
 
           return RefreshIndicator(
             onRefresh: controller.refreshProfile,
@@ -108,9 +106,10 @@ class ProfilePage extends GetView<ProfileController> {
                 _ProfileHero(
                   user: user,
                   unitLabel: controller.unitLabel,
-                  onEdit: () => _editProfile(context, user),
-                  isUploadingAvatar: controller.isUploadingAvatar,
-                  onChangeAvatar: () => _changeAvatar(context),
+                  onEdit: hasProfile ? () => _editProfile(context, user) : () {},
+                  isUploadingAvatar: hasProfile ? controller.isUploadingAvatar : false,
+                  onChangeAvatar:
+                      hasProfile ? () => _changeAvatar(context) : () {},
                 ),
                 AppSpacing.sectionGap.heightBox(),
                 _SectionCard(
@@ -142,6 +141,82 @@ class ProfilePage extends GetView<ProfileController> {
                           ? '—'
                           : controller.unitLabel,
                     ),
+                    if (!hasProfile) ...[
+                      const _RowDivider(),
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: tokens.brandTint,
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.md,
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.cloud_off_rounded,
+                                size: 22,
+                                color: tokens.brand,
+                              ),
+                            ),
+                            12.h.heightBox(),
+                            Text(
+                              'Unable to load your profile',
+                              style: TextStyle(
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w800,
+                                color: tokens.ink,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            4.h.heightBox(),
+                            Text(
+                              'Please try again in a moment.',
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                color: tokens.muted,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            16.h.heightBox(),
+                            if (isRetrying)
+                              SizedBox(
+                                height: 48,
+                                child: Center(
+                                  child: SizedBox.square(
+                                    dimension: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: tokens.brand,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              FilledButton(
+                                onPressed: () {
+                                  vibrateNow();
+                                  controller.refreshProfile();
+                                },
+                                style: FilledButton.styleFrom(
+                                  minimumSize: const Size.fromHeight(48),
+                                  backgroundColor: tokens.brand,
+                                  foregroundColor: tokens.brandOnDark,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      AppRadius.lg,
+                                    ),
+                                  ),
+                                ),
+                                child: const Text('Try Again'),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
                 AppSpacing.sectionGap.heightBox(),
@@ -283,10 +358,12 @@ class ProfilePage extends GetView<ProfileController> {
                     _ActionRow(
                       icon: Icons.edit_outlined,
                       label: 'Edit profile',
-                      onTap: () {
-                        vibrateNow();
-                        _editProfile(context, user);
-                      },
+                       onTap: () {
+                         vibrateNow();
+                         if (hasProfile) {
+                           _editProfile(context, user);
+                         }
+                       },
                     ),
                     const _RowDivider(),
                     _ActionRow(
