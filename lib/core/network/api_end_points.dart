@@ -113,11 +113,6 @@ abstract final class ApiEndPoints {
   static String complaintPhotos(int id) => '/api/complaints/$id/photos';
 
   // --- Announcements and notifications -------------------------------------
-  //
-  // PROVISIONAL. The backend has no notification API yet, so these paths and
-  // the payload around them are a proposal, not a description of something that
-  // exists. They are gathered here rather than inlined in the data source so
-  // that confirming them with the backend team is a change to one file.
 
   static const String announcements = '/api/announcements';
   static const String notifications = '/api/notifications';
@@ -143,10 +138,11 @@ abstract final class ApiEndPoints {
 
   // --- Lease ---------------------------------------------------------------
 
-  static const String lease = '/api/lease';
-  static const String leaseRenewals = '/api/lease/renewals';
+  static const String lease = '/lease';
+  static const String leaseRenewals = '/lease/renewals';
 
-  static String leaseRenewal(int id) => '/api/lease/renewals/$id';
+  static String leaseRenewal(Object id) =>
+      '/lease/renewals/${Uri.encodeComponent('$id')}';
 
   // --- Convenience store ---------------------------------------------------
 

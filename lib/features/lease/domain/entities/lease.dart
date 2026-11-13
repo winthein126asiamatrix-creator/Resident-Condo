@@ -34,6 +34,7 @@ extension LeasePartyRoleLabel on LeasePartyRole {
 
 class LeaseParty {
   const LeaseParty({
+    this.id,
     required this.name,
     required this.role,
     required this.phone,
@@ -41,6 +42,7 @@ class LeaseParty {
     required this.idNumber,
   });
 
+  final String? id;
   final String name;
   final LeasePartyRole role;
   final String phone;
@@ -118,6 +120,7 @@ class Lease {
   const Lease({
     required this.id,
     required this.reference,
+    this.unitId,
     required this.unitLabel,
     required this.status,
     required this.startDate,
@@ -134,6 +137,7 @@ class Lease {
 
   final String id;
   final String reference;
+  final String? unitId;
   final String unitLabel;
   final LeaseStatus status;
   final DateTime startDate;
@@ -152,8 +156,10 @@ class Lease {
     return days <= 0 ? 1 : days;
   }
 
+  DateTime get _today => AppDates.dateOnly(DateTime.now());
+
   int get elapsedDays {
-    final days = AppDates.daysBetween(startDate, DateTime(2026, 9, 25));
+    final days = AppDates.daysBetween(startDate, _today);
     return days.clamp(0, totalDays);
   }
 
@@ -161,7 +167,7 @@ class Lease {
   double get progress => elapsedDays / totalDays;
 
   int get daysRemaining {
-    final days = AppDates.daysBetween(DateTime(2026, 9, 25), endDate);
+    final days = AppDates.daysBetween(_today, endDate);
     return days < 0 ? 0 : days;
   }
 
@@ -176,6 +182,7 @@ class Lease {
     return Lease(
       id: id,
       reference: reference,
+      unitId: unitId,
       unitLabel: unitLabel,
       status: status ?? this.status,
       startDate: startDate,

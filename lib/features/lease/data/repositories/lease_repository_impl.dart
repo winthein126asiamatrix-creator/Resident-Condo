@@ -1,32 +1,53 @@
 import '../../domain/entities/lease.dart';
 import '../../domain/repositories/lease_repository.dart';
 import '../datasources/lease_local_data_source.dart';
+import '../datasources/lease_remote_data_source.dart';
 
 class LeaseRepositoryImpl implements LeaseRepository {
-  const LeaseRepositoryImpl(this.localDataSource);
+  const LeaseRepositoryImpl({
+    required this.remoteDataSource,
+    required this.localDataSource,
+  });
 
+  final LeaseRemoteDataSource remoteDataSource;
   final LeaseLocalDataSource localDataSource;
 
   @override
   Future<List<Lease>> getLeases() async {
-    final leases = await localDataSource.getLeases();
-    return List<Lease>.of(leases);
+    final leases = await remoteDataSource.getLeases();
+    await localDataSource.saveLeases(leases);
+    return leases;
   }
 
   @override
-  Future<Lease?> getLease(String id) => localDataSource.getLease(id);
+  Future<List<Lease>?> getCachedLeases() => localDataSource.readLeases();
+
+  @override
+  Future<Lease?> getLease(String id) async {
+    final cached = await localDataSource.readLeases();
+    if (cached == null) return null;
+    for (final lease in cached) {
+      if (lease.id == id) return lease;
+    }
+    return null;
+  }
 
   @override
   Future<List<LeaseRenewal>> getRenewals() async {
-    final renewals = await localDataSource.getRenewals();
-    return List<LeaseRenewal>.of(renewals);
+    final renewals = await remoteDataSource.getRenewals();
+    await localDataSource.saveRenewals(renewals);
+    return renewals;
   }
 
   @override
-  Future<LeaseRenewal> createRenewal(LeaseRenewal renewal) =>
-      localDataSource.createRenewal(renewal);
+  Future<List<LeaseRenewal>?> getCachedRenewals() =>
+      localDataSource.readRenewals();
 
   @override
-  Future<LeaseRenewal> withdrawRenewal(String id) =>
-      localDataSource.withdrawRenewal(id);
+  Future<LeaseRenewal> createRenewal(LeaseRenewal renewal) =>
+      remoteDataSource.createRenewal(renewal);
+
+  @override
+  Future<LeaseRenewal> withdrawRenewal(LeaseRenewal renewal) =>
+      remoteDataSource.withdrawRenewal(renewal);
 }

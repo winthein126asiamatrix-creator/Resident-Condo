@@ -20,6 +20,7 @@ import '../features/appearance/presentation/controllers/appearance_controller.da
 import '../features/auth/presentation/controllers/auth_controller.dart';
 import '../features/dashboard/presentation/controllers/dashboard_controller.dart';
 import '../features/dev_tools/presentation/widgets/api_log_floating_button.dart';
+import '../features/lease/presentation/controllers/lease_controller.dart';
 import '../features/notifications/domain/entities/notification_item.dart';
 import '../features/payments/presentation/controllers/payment_controller.dart';
 import '../features/services/presentation/controllers/condo_service_controller.dart';
@@ -184,9 +185,9 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
 
   /// Re-fetches the active screen's GET data after a reconnect.
   ///
-  /// Scoped on purpose. Only the Home tab's dashboard and the services screen
-  /// are wired up, and the registry re-fetches them only if their data went
-  /// stale: a screen whose last fetch succeeded is left exactly as it is.
+  /// Scoped on purpose. Only screens that opted into the registry are wired up,
+  /// and it re-fetches them only if their data went stale: a screen whose last
+  /// fetch succeeded is left exactly as it is.
   /// Every other tab and screen is untouched, so a reconnect never re-issues
   /// requests the resident never asked for — and never repeats a write.
   Future<void> _refreshActiveScreen() async {
@@ -223,6 +224,11 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
       await Get.find<RefreshRegistry>().refreshIfStale(
         PaymentController.paymentDetailScreen,
       );
+      return;
+    }
+    if (Get.currentRoute == AppRoutes.lease) {
+      if (!Get.isRegistered<LeaseController>()) return;
+      await Get.find<RefreshRegistry>().refreshIfStale(LeaseController.screen);
       return;
     }
     if (Get.currentRoute != AppRoutes.home) return;

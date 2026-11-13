@@ -8,13 +8,18 @@ class LeaseUseCases {
 
   Future<List<Lease>> getLeases() => repository.getLeases();
 
+  Future<List<Lease>?> getCachedLeases() => repository.getCachedLeases();
+
   Future<Lease?> getLease(String id) => repository.getLease(id);
 
   Future<List<LeaseRenewal>> getRenewals() => repository.getRenewals();
 
+  Future<List<LeaseRenewal>?> getCachedRenewals() =>
+      repository.getCachedRenewals();
+
   Future<LeaseRenewal> createRenewal(LeaseRenewal renewal) =>
       repository.createRenewal(renewal);
 
-  Future<LeaseRenewal> withdrawRenewal(String id) =>
-      repository.withdrawRenewal(id);
+  Future<LeaseRenewal> withdrawRenewal(LeaseRenewal renewal) =>
+      repository.withdrawRenewal(renewal);
 }
