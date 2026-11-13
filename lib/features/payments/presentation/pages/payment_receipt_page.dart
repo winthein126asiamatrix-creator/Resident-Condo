@@ -100,8 +100,15 @@ class PaymentReceiptPage extends StatelessWidget {
                 16.h.heightBox(),
                 _ReceiptLine(
                   label: 'Payment method',
-                  value: payment.method.label,
+                  value: payment.methodLabel,
                 ),
+                if (payment.hasProof)
+                  _ReceiptLine(
+                    label: 'Proof attached',
+                    value: payment.proofFileName?.trim().isNotEmpty == true
+                        ? payment.proofFileName!
+                        : 'Attached',
+                  ),
                 _ReceiptLine(label: 'Payment date', value: payment.date),
                 _ReceiptLine(
                   label: 'Transaction ID',

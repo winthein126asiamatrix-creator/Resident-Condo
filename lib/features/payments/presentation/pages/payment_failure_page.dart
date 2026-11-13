@@ -136,7 +136,7 @@ class PaymentFailurePage extends StatelessWidget {
                   label: 'Attempted amount',
                   value: AppFormatters.currency(payment.amount),
                 ),
-                _Line(label: 'Method', value: payment.method.label),
+                _Line(label: 'Method', value: payment.methodLabel),
                 _Line(label: 'Reference', value: payment.transactionId),
               ],
             ),

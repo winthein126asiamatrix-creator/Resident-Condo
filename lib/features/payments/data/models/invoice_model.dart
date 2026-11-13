@@ -12,5 +12,8 @@ class InvoiceModel extends Invoice {
     required super.items,
     super.paidDate,
     super.currency,
+    super.sourceTotalAmount,
+    super.sourcePaidAmount,
+    super.sourceRemainingAmount,
   });
 }

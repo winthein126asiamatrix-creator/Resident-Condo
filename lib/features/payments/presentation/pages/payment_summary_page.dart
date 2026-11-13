@@ -100,11 +100,13 @@ class PaymentSummaryPage extends GetView<PaymentController> {
                 onChanged: item.isPayable && !item.mustPaid
                     ? (_) => controller.toggleInvoiceItem(item)
                     : null,
+                currency: invoice.currency,
               ),
             18.h.heightBox(),
             _TotalCard(
               total: controller.selectedTotal,
               count: controller.selectedCount,
+              currency: invoice.currency,
             ),
             if (controller.missingMandatoryItems.isNotEmpty) ...[
               12.h.heightBox(),
@@ -157,7 +159,8 @@ class _SummaryIntro extends StatelessWidget {
                 ),
               ),
               Text(
-                AppFormatters.currency(invoice.amountDue),
+                AppFormatters.money(invoice.remainingAmount,invoice.currency),
+                key: Key('payment-summary-remaining-amount'),
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   color: AppPalette.danger,
@@ -183,11 +186,13 @@ class _SelectableItem extends StatelessWidget {
     required this.item,
     required this.selected,
     required this.onChanged,
+    required this.currency,
     super.key,
   });
   final InvoiceItem item;
   final bool selected;
   final ValueChanged<bool?>? onChanged;
+  final String currency;
 
   @override
   Widget build(BuildContext context) {
@@ -233,7 +238,7 @@ class _SelectableItem extends StatelessWidget {
               ),
               if (item.isMandatory) ...[_MandatoryBadge(), 8.w.widthBox()],
               Text(
-                item.isZero ? 'No charge' : AppFormatters.currency(item.amount),
+                item.isZero ? 'No charge' : AppFormatters.money(item.amount,currency),
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   color: item.isPaid ? tokens.muted : tokens.ink,
@@ -335,9 +340,10 @@ class _MandatoryWarning extends StatelessWidget {
 }
 
 class _TotalCard extends StatelessWidget {
-  const _TotalCard({required this.total, required this.count});
+  const _TotalCard({required this.total, required this.count, required this.currency});
   final double total;
   final int count;
+  final String currency;
 
   @override
   Widget build(BuildContext context) {
@@ -370,7 +376,7 @@ class _TotalCard extends StatelessWidget {
           ),
           6.h.heightBox(),
           Text(
-            AppFormatters.currency(total),
+            AppFormatters.money(total,currency),
             style: TextStyle(
               color: tokens.surface,
               fontSize: 26.sp,

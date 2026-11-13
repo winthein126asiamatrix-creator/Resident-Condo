@@ -151,7 +151,7 @@ class _SuccessCard extends StatelessWidget {
             value: AppFormatters.currency(payment.amount),
           ),
           _SuccessLine(label: 'Date', value: payment.date),
-          _SuccessLine(label: 'Payment method', value: payment.method.label),
+          _SuccessLine(label: 'Payment method', value: payment.methodLabel),
           _SuccessLine(label: 'Transaction ID', value: payment.transactionId),
           _SuccessLine(label: 'Invoice', value: payment.invoiceNumber),
           _SuccessLine(label: 'Unit', value: payment.unitLabel),

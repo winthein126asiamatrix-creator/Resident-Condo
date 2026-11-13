@@ -44,8 +44,8 @@ abstract final class ApiEndPoints {
   /// and recent activity.
   static const String paymentDashboard = '/payments/dashboard';
 
-  /// A payment method already on file.
-  static const String paymentMethods = '/api/payments/methods';
+  /// The payment methods residents can choose from.
+  static const String paymentMethods = '/payments/methods';
 
   /// One invoice, with its line items.
   static String invoice(Object reference) => '$invoices/$reference';

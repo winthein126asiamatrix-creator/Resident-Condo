@@ -171,6 +171,8 @@ class InvoiceItem {
     this.paidDate,
     this.mustPaid = false,
     this.apiPayable,
+    this.sourcePaidAmount,
+    this.sourceRemainingAmount,
   });
 
   final InvoiceItemType type;
@@ -187,6 +189,13 @@ class InvoiceItem {
   /// response. Null keeps the local ledger's amount-based rule.
   final bool? apiPayable;
 
+  /// The API's item-level `paid_amount` and `remaining_amount`, when present.
+  ///
+  /// They are kept separately from [amount] because [amount] is the original
+  /// charge, while a partially paid line only owes its remaining balance.
+  final double? sourcePaidAmount;
+  final double? sourceRemainingAmount;
+
   /// Stable identity used when paying a subset of the invoice.
   String get key => '${type.name}|${note.isEmpty ? label : note}';
 
@@ -201,15 +210,17 @@ class InvoiceItem {
 
   bool get isZero => amount <= 0;
 
-  double get dueAmount => isPaid ? 0 : amount;
+  double get dueAmount => isPaid ? 0 : (sourceRemainingAmount ?? amount);
 
-  double get paidAmount => isPaid ? amount : 0;
+  double get paidAmount => sourcePaidAmount ?? (isPaid ? amount : 0);
 
   InvoiceItem copyWith({
     bool? isPaid,
     String? paidDate,
     bool? mustPaid,
     bool? apiPayable,
+    double? sourcePaidAmount,
+    double? sourceRemainingAmount,
   }) {
     return InvoiceItem(
       type: type,
@@ -219,6 +230,9 @@ class InvoiceItem {
       paidDate: paidDate ?? this.paidDate,
       mustPaid: mustPaid ?? this.mustPaid,
       apiPayable: apiPayable ?? this.apiPayable,
+      sourcePaidAmount: sourcePaidAmount ?? this.sourcePaidAmount,
+      sourceRemainingAmount:
+          sourceRemainingAmount ?? this.sourceRemainingAmount,
     );
   }
 
@@ -231,11 +245,21 @@ class InvoiceItem {
           other.note == note &&
           other.isPaid == isPaid &&
           other.mustPaid == mustPaid &&
-          other.apiPayable == apiPayable;
+          other.apiPayable == apiPayable &&
+          other.sourcePaidAmount == sourcePaidAmount &&
+          other.sourceRemainingAmount == sourceRemainingAmount;
 
   @override
-  int get hashCode =>
-      Object.hash(type, amount, note, isPaid, mustPaid, apiPayable);
+  int get hashCode => Object.hash(
+    type,
+    amount,
+    note,
+    isPaid,
+    mustPaid,
+    apiPayable,
+    sourcePaidAmount,
+    sourceRemainingAmount,
+  );
 
   @override
   String toString() =>
@@ -254,6 +278,9 @@ class Invoice {
     required this.items,
     this.paidDate,
     this.currency = '',
+    this.sourceTotalAmount,
+    this.sourcePaidAmount,
+    this.sourceRemainingAmount,
   });
 
   final String id;
@@ -269,13 +296,26 @@ class Invoice {
   /// The API's currency code, when this invoice came from the backend.
   final String currency;
 
+  /// Invoice-level amounts from the API, when this invoice came from a detail
+  /// response. Null keeps the local ledger's item-derived calculations.
+  final double? sourceTotalAmount;
+  final double? sourcePaidAmount;
+  final double? sourceRemainingAmount;
+
   /// Full value of the invoice including everything already settled.
-  double get total => items.fold(0, (sum, item) => sum + item.amount);
+  double get total =>
+      sourceTotalAmount ?? items.fold(0, (sum, item) => sum + item.amount);
+
+  /// Value that is still open. The backend's `remaining_amount` is authoritative
+  /// when present; local ledger invoices fall back to their item balances.
+  double get remainingAmount =>
+      sourceRemainingAmount ??
+      items.fold(0, (sum, item) => sum + item.dueAmount);
 
   /// Value that is still open. This is what the resident has to pay.
-  double get amountDue => items.fold(0, (sum, item) => sum + item.dueAmount);
+  double get amountDue => remainingAmount;
 
-  double get amountPaid => total - amountDue;
+  double get amountPaid => sourcePaidAmount ?? (total - remainingAmount);
 
   List<InvoiceItem> get unpaidItems =>
       items.where((item) => item.isPayable).toList();
@@ -318,6 +358,9 @@ class Invoice {
     InvoiceStatus? status,
     List<InvoiceItem>? items,
     String? paidDate,
+    double? sourceTotalAmount,
+    double? sourcePaidAmount,
+    double? sourceRemainingAmount,
   }) {
     return Invoice(
       id: id,
@@ -330,6 +373,10 @@ class Invoice {
       items: items ?? this.items,
       paidDate: paidDate ?? this.paidDate,
       currency: currency,
+      sourceTotalAmount: sourceTotalAmount ?? this.sourceTotalAmount,
+      sourcePaidAmount: sourcePaidAmount ?? this.sourcePaidAmount,
+      sourceRemainingAmount:
+          sourceRemainingAmount ?? this.sourceRemainingAmount,
     );
   }
 }

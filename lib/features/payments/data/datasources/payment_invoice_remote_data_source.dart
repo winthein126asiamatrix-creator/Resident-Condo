@@ -4,11 +4,17 @@ import '../models/invoice_detail_model.dart';
 import '../models/invoice_list_model.dart';
 import '../models/payment_detail_model.dart';
 import '../models/payment_list_model.dart';
+import '../models/payment_method_option_model.dart';
 
 class PaymentInvoiceRemoteDataSource {
   const PaymentInvoiceRemoteDataSource(this._service);
 
   final DioApiService _service;
+
+  Future<List<PaymentMethodOptionModel>> getPaymentMethods() async {
+    final response = await _service.get<dynamic>(ApiEndPoints.paymentMethods);
+    return PaymentMethodOptionModel.parseList(response);
+  }
 
   Future<PaymentListResponseModel> getPayments({
     int page = 1,

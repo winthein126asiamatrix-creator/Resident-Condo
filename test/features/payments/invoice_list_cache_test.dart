@@ -15,6 +15,7 @@ import 'package:test/features/payments/domain/entities/invoice.dart';
 import 'package:test/features/payments/domain/entities/invoice_detail.dart';
 import 'package:test/features/payments/domain/entities/invoice_list.dart';
 import 'package:test/features/payments/domain/entities/payment.dart';
+import 'package:test/features/payments/domain/entities/payment_method_option.dart';
 import 'package:test/features/payments/domain/entities/payment_dashboard.dart';
 import 'package:test/features/payments/domain/entities/payment_detail.dart';
 import 'package:test/features/payments/domain/entities/payment_list.dart';
@@ -591,4 +592,25 @@ class _InvoiceRepository implements PaymentRepository {
   }) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<List<PaymentMethodOption>> getPaymentMethods() async {
+    return const <PaymentMethodOption>[];
+  }
+
+  @override
+  Future<CachedPaymentMethods?> getCachedPaymentMethods(int userId) async {
+    return null;
+  }
+
+  @override
+  Future<void> cachePaymentMethods(
+    int userId,
+    List<PaymentMethodOption> methods,
+  ) async {}
+
+  @override
+  Future<void> clearPaymentMethodsCache() async {}
+
 }
+

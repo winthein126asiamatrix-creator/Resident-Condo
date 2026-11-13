@@ -5,6 +5,7 @@ import '../entities/payment.dart';
 import '../entities/payment_dashboard.dart';
 import '../entities/payment_detail.dart';
 import '../entities/payment_list.dart';
+import '../entities/payment_method_option.dart';
 import '../repositories/payment_repository.dart';
 
 class PaymentUseCases {
@@ -74,6 +75,25 @@ class PaymentUseCases {
 
   Future<void> clearPaymentListCache() {
     return repository.clearPaymentListCache();
+  }
+
+  Future<List<PaymentMethodOption>> getPaymentMethods() {
+    return repository.getPaymentMethods();
+  }
+
+  Future<CachedPaymentMethods?> getCachedPaymentMethods(int userId) {
+    return repository.getCachedPaymentMethods(userId);
+  }
+
+  Future<void> cachePaymentMethods(
+    int userId,
+    List<PaymentMethodOption> methods,
+  ) {
+    return repository.cachePaymentMethods(userId, methods);
+  }
+
+  Future<void> clearPaymentMethodsCache() {
+    return repository.clearPaymentMethodsCache();
   }
 
   Future<List<Invoice>> getInvoices() {

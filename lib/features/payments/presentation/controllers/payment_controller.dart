@@ -13,6 +13,7 @@ import '../../domain/entities/payment.dart';
 import '../../domain/entities/payment_dashboard.dart';
 import '../../domain/entities/payment_detail.dart';
 import '../../domain/entities/payment_list.dart';
+import '../../domain/entities/payment_method_option.dart';
 import '../../domain/usecases/payment_usecases.dart';
 
 class PaymentController extends GetxController {
@@ -36,6 +37,7 @@ class PaymentController extends GetxController {
   static const String invoiceDetailScreen = 'payments:invoice-detail';
   static const String paymentListScreen = 'payments:list';
   static const String paymentDetailScreen = 'payments:payment-detail';
+  static const String paymentMethodsScreen = 'payments:methods';
 
   /// The first page size used by the list and by the cache snapshot.
   static const int invoicePageSize = 20;
@@ -56,7 +58,8 @@ class PaymentController extends GetxController {
   final paymentHistory = <Payment>[].obs;
   final selectedInvoice = Rxn<Invoice>();
   final selectedItems = <InvoiceItem>[].obs;
-  final selectedPaymentMethod = PaymentMethod.card.obs;
+  final paymentMethods = <PaymentMethodOption>[].obs;
+  final selectedPaymentMethodKey = RxnString();
   final paymentSuccess = Rxn<Payment>();
   final paymentFailure = Rxn<Payment>();
   final isLoading = false.obs;
@@ -109,6 +112,13 @@ class PaymentController extends GetxController {
   final isLoadingPaymentDetail = false.obs;
   final paymentDetailError = RxnString();
 
+  // --------------------------------------------------------- payment methods
+
+  final isLoadingPaymentMethods = false.obs;
+  final paymentMethodsError = RxnString();
+  final isShowingCachedPaymentMethods = false.obs;
+  final paymentMethodsUpdatedAt = Rxn<DateTime>();
+
   final SessionController? _sessionController;
   final RefreshRegistry? _registryOverride;
   final ConnectivityService? _connectivityOverride;
@@ -136,6 +146,11 @@ class PaymentController extends GetxController {
   int _paymentDetailSeq = 0;
   Future<void>? _paymentDetailInFlight;
   int? _paymentDetailInFlightId;
+
+  int? _paymentMethodsOwnerUserId;
+  bool _hasPaymentMethodsData = false;
+  int _paymentMethodsSeq = 0;
+  Future<void>? _paymentMethodsInFlight;
 
   var _transactionSequence = 1;
 
@@ -183,6 +198,27 @@ class PaymentController extends GetxController {
     return value == null ? '' : AppDates.format(value);
   }
 
+  String get paymentMethodsUpdatedLabel {
+    final value = paymentMethodsUpdatedAt.value;
+    return value == null ? '' : AppDates.format(value);
+  }
+
+  PaymentMethodOption? get selectedPaymentMethod {
+    final key = selectedPaymentMethodKey.value;
+    if (key == null || key.isEmpty) {
+      return null;
+    }
+    for (final method in paymentMethods) {
+      if (method.methodKey == key) {
+        return method;
+      }
+    }
+    return null;
+  }
+
+  List<PaymentMethodOption> get activePaymentMethods =>
+      paymentMethods.where((method) => method.isActive).toList(growable: false);
+
   @override
   void onInit() {
     super.onInit();
@@ -191,6 +227,7 @@ class PaymentController extends GetxController {
     _registry?.register(invoiceDetailScreen, _refreshActiveInvoiceDetail);
     _registry?.register(paymentListScreen, loadPaymentList);
     _registry?.register(paymentDetailScreen, _refreshActivePaymentDetail);
+    _registry?.register(paymentMethodsScreen, loadPaymentMethods);
 
     final session = _session;
     if (session == null) {
@@ -232,6 +269,7 @@ class PaymentController extends GetxController {
     _registry?.unregister(invoiceDetailScreen);
     _registry?.unregister(paymentListScreen);
     _registry?.unregister(paymentDetailScreen);
+    _registry?.unregister(paymentMethodsScreen);
     super.onClose();
   }
 
@@ -256,7 +294,7 @@ class PaymentController extends GetxController {
         }
         total += item.dueAmount;
       }
-    } 
+    }
     return total;
   }
 
@@ -520,6 +558,11 @@ class PaymentController extends GetxController {
     } catch (_) {
       // The payment cache is equally optional at sign-out time.
     }
+    try {
+      await useCases.clearPaymentMethodsCache();
+    } catch (_) {
+      // The payment methods cache is equally optional at sign-out time.
+    }
   }
 
   void _resetForAccount() {
@@ -532,7 +575,7 @@ class PaymentController extends GetxController {
     selectedItems.clear();
     paymentSuccess.value = null;
     paymentFailure.value = null;
-    selectedPaymentMethod.value = PaymentMethod.card;
+    selectedPaymentMethodKey.value = null;
     isPaymentProcessing.value = false;
     isLoading.value = false;
     errorMessage.value = null;
@@ -583,6 +626,17 @@ class PaymentController extends GetxController {
     paymentDetailId.value = null;
     isLoadingPaymentDetail.value = false;
     paymentDetailError.value = null;
+
+    _paymentMethodsSeq++;
+    _paymentMethodsInFlight = null;
+    _hasPaymentMethodsData = false;
+    _paymentMethodsOwnerUserId = null;
+    paymentMethods.clear();
+    selectedPaymentMethodKey.value = null;
+    isLoadingPaymentMethods.value = false;
+    paymentMethodsError.value = null;
+    isShowingCachedPaymentMethods.value = false;
+    paymentMethodsUpdatedAt.value = null;
   }
 
   Future<void> applyRole(String roleKey) async {
@@ -859,6 +913,143 @@ class PaymentController extends GetxController {
       return;
     }
     await loadPaymentDetail(id, force: true);
+  }
+
+  // --------------------------------------------------------- payment methods
+
+  Future<void> loadPaymentMethods({bool refresh = false}) {
+    final existing = _paymentMethodsInFlight;
+    if (existing != null) {
+      return existing;
+    }
+    final future = _loadPaymentMethods(refresh: refresh);
+    _paymentMethodsInFlight = future;
+    return future.whenComplete(() {
+      if (identical(_paymentMethodsInFlight, future)) {
+        _paymentMethodsInFlight = null;
+      }
+    });
+  }
+
+  Future<void> _loadPaymentMethods({required bool refresh}) async {
+    final session = _session;
+    final userId = _currentUserId;
+    if (session != null && userId == null) {
+      return;
+    }
+
+    final seq = ++_paymentMethodsSeq;
+    final hadData =
+        _hasPaymentMethodsData && _paymentMethodsOwnerUserId == userId;
+    isLoadingPaymentMethods.value = !hadData;
+    paymentMethodsError.value = null;
+
+    if (userId != null && !refresh && !hadData) {
+      await _hydratePaymentMethodsFromCache(userId, seq);
+      if (seq != _paymentMethodsSeq || userId != _currentUserId) {
+        return;
+      }
+    }
+
+    if (_hasPaymentMethodsData && _connectivity?.isOnline.value == false) {
+      isShowingCachedPaymentMethods.value = true;
+      _registry?.markStale(paymentMethodsScreen);
+      isLoadingPaymentMethods.value = false;
+      return;
+    }
+
+    try {
+      final methods = await useCases.getPaymentMethods();
+      if (seq != _paymentMethodsSeq || userId != _currentUserId) {
+        return;
+      }
+
+      paymentMethods.assignAll(methods);
+      _hasPaymentMethodsData = true;
+      _paymentMethodsOwnerUserId = userId;
+      isShowingCachedPaymentMethods.value = false;
+      paymentMethodsUpdatedAt.value = DateTime.now();
+      paymentMethodsError.value = null;
+      _ensurePaymentMethodSelection();
+      _registry?.markFresh(paymentMethodsScreen);
+
+      if (userId != null) {
+        try {
+          await useCases.cachePaymentMethods(userId, methods);
+        } catch (_) {
+          // A cache write is a convenience; the API response is still usable.
+        }
+      }
+    } on AppException catch (error) {
+      if (seq != _paymentMethodsSeq || userId != _currentUserId) {
+        return;
+      }
+      _handlePaymentMethodsFailure(error);
+    } catch (_) {
+      if (seq != _paymentMethodsSeq || userId != _currentUserId) {
+        return;
+      }
+      _handlePaymentMethodsFailure(null);
+    } finally {
+      if (seq == _paymentMethodsSeq) {
+        isLoadingPaymentMethods.value = false;
+      }
+    }
+  }
+
+  Future<void> _hydratePaymentMethodsFromCache(int userId, int seq) async {
+    try {
+      final cached = await useCases.getCachedPaymentMethods(userId);
+      if (cached == null ||
+          seq != _paymentMethodsSeq ||
+          userId != _currentUserId) {
+        return;
+      }
+      paymentMethods.assignAll(cached.methods);
+      _hasPaymentMethodsData = true;
+      _paymentMethodsOwnerUserId = userId;
+      isShowingCachedPaymentMethods.value = true;
+      paymentMethodsUpdatedAt.value = cached.updatedAt;
+      paymentMethodsError.value = null;
+      _ensurePaymentMethodSelection();
+    } catch (_) {
+      // A broken cache read must not stop the API request.
+    }
+  }
+
+  void _ensurePaymentMethodSelection() {
+    final active = activePaymentMethods;
+    if (active.isEmpty) {
+      selectedPaymentMethodKey.value = null;
+      return;
+    }
+    final key = selectedPaymentMethodKey.value;
+    for (final method in active) {
+      if (method.methodKey == key) {
+        return;
+      }
+    }
+    selectedPaymentMethodKey.value = active.first.methodKey;
+  }
+
+  void _handlePaymentMethodsFailure(Object? error) {
+    if (_hasPaymentMethodsData) {
+      isShowingCachedPaymentMethods.value = true;
+    } else {
+      paymentMethodsError.value = error is AppException
+          ? error.message
+          : 'Unable to load payment methods.';
+    }
+    if (error is ApiException && error.isRetryable) {
+      _registry?.markStale(paymentMethodsScreen);
+    }
+  }
+
+  void selectPaymentMethod(PaymentMethodOption method) {
+    if (!method.isActive) {
+      return;
+    }
+    selectedPaymentMethodKey.value = method.methodKey;
   }
 
   // ----------------------------------------------------------- invoice list
@@ -1184,7 +1375,7 @@ class PaymentController extends GetxController {
     paymentSuccess.value = null;
     paymentFailure.value = null;
     errorMessage.value = null;
-    selectedPaymentMethod.value = PaymentMethod.card;
+    selectedPaymentMethodKey.value = null;
     selectedItems
       ..clear()
       ..addAll(invoice.mandatoryItems);
@@ -1253,12 +1444,8 @@ class PaymentController extends GetxController {
     return 'Mandatory fees must be paid: $labels';
   }
 
-  void selectPaymentMethod(PaymentMethod method) {
-    selectedPaymentMethod.value = method;
-  }
-
   double get selectedTotal =>
-      selectedItems.fold(0, (total, item) => total + item.amount);
+      selectedItems.fold(0, (total, item) => total + item.dueAmount);
 
   int get selectedCount => selectedItems.length;
 
@@ -1284,7 +1471,11 @@ class PaymentController extends GetxController {
 
   /// Submits the selected items only. A declined attempt is stored as failed
   /// and never changes the invoice status.
-  Future<Payment?> confirmPayment({String cardNumber = ''}) async {
+  Future<Payment?> confirmPayment({
+    String cardNumber = '',
+    String? proofPath,
+    String? proofFileName,
+  }) async {
     final invoice = selectedInvoice.value;
     if (invoice == null || !invoice.isPayable) {
       errorMessage.value = 'Select an unpaid invoice first.';
@@ -1296,6 +1487,16 @@ class PaymentController extends GetxController {
     }
     if (missingMandatoryItems.isNotEmpty) {
       errorMessage.value = mandatoryValidationMessage;
+      return null;
+    }
+
+    final method = selectedPaymentMethod;
+    if (method == null || !method.isActive) {
+      errorMessage.value = 'Select an available payment method first.';
+      return null;
+    }
+    if (method.requiresProof && (proofPath?.trim() ?? '').isEmpty) {
+      errorMessage.value = 'Attach proof of payment to continue.';
       return null;
     }
 
@@ -1317,7 +1518,11 @@ class PaymentController extends GetxController {
         items: List<InvoiceItem>.unmodifiable(selectedItems),
         amount: selectedTotal,
         date: today,
-        method: selectedPaymentMethod.value,
+        method: paymentMethodFromCode(method.code),
+        paymentMethodCode: method.code,
+        paymentMethodName: method.displayName,
+        proofPath: proofPath,
+        proofFileName: proofFileName,
         transactionId: transactionId,
         status: declined ? PaymentStatus.failed : PaymentStatus.successful,
         failureReason: declined

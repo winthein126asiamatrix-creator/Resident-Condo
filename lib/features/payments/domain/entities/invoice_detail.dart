@@ -84,6 +84,8 @@ class InvoiceDetailItem {
       paidDate: paidDateLabel.isEmpty ? null : paidDateLabel,
       mustPaid: isMandatory,
       apiPayable: isPayable,
+      sourcePaidAmount: paidAmount,
+      sourceRemainingAmount: remainingAmount,
     );
   }
 }
@@ -159,6 +161,9 @@ class InvoiceDetail {
       currency: currency,
       items: items.map((item) => item.toInvoiceItem()).toList(growable: false),
       paidDate: paidDateLabel.isEmpty ? null : paidDateLabel,
+      sourceTotalAmount: totalAmount,
+      sourcePaidAmount: paidAmount,
+      sourceRemainingAmount: remainingAmount,
     );
   }
 }

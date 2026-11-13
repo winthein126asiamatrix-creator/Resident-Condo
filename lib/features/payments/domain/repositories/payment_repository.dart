@@ -5,6 +5,7 @@ import '../entities/payment.dart';
 import '../entities/payment_dashboard.dart';
 import '../entities/payment_detail.dart';
 import '../entities/payment_list.dart';
+import '../entities/payment_method_option.dart';
 
 abstract interface class PaymentRepository {
   /// Balance, fee breakdown, invoice counts and recent activity for the
@@ -57,6 +58,21 @@ abstract interface class PaymentRepository {
 
   /// Drops every cached payment list on this device.
   Future<void> clearPaymentListCache();
+
+  /// The payment methods residents can choose from.
+  Future<List<PaymentMethodOption>> getPaymentMethods();
+
+  /// The cached payment methods for [userId], when one exists.
+  Future<CachedPaymentMethods?> getCachedPaymentMethods(int userId);
+
+  /// Stores a fully parsed payment methods response for [userId].
+  Future<void> cachePaymentMethods(
+    int userId,
+    List<PaymentMethodOption> methods,
+  );
+
+  /// Drops every cached payment methods list on this device.
+  Future<void> clearPaymentMethodsCache();
 
   Future<List<Invoice>> getInvoices();
 

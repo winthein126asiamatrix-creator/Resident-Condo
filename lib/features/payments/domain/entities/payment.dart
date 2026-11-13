@@ -1,6 +1,6 @@
 import 'invoice.dart';
 
-enum PaymentMethod { card, bankTransfer, digitalWallet }
+enum PaymentMethod { card, bankTransfer, digitalWallet, other }
 
 extension PaymentMethodLabel on PaymentMethod {
   String get label {
@@ -11,8 +11,19 @@ extension PaymentMethodLabel on PaymentMethod {
         return 'Bank Transfer';
       case PaymentMethod.digitalWallet:
         return 'Digital Wallet';
+      case PaymentMethod.other:
+        return 'Other';
     }
   }
+}
+
+PaymentMethod paymentMethodFromCode(String code) {
+  return switch (code.trim().toLowerCase()) {
+    'card' || 'credit_card' || 'debit_card' => PaymentMethod.card,
+    'bank_transfer' || 'bank' => PaymentMethod.bankTransfer,
+    'digital_wallet' || 'wallet' => PaymentMethod.digitalWallet,
+    _ => PaymentMethod.other,
+  };
 }
 
 enum PaymentStatus { successful, failed }
@@ -94,6 +105,10 @@ class Payment {
     required this.transactionId,
     this.status = PaymentStatus.successful,
     this.failureReason,
+    this.paymentMethodCode,
+    this.paymentMethodName,
+    this.proofPath,
+    this.proofFileName,
   });
 
   final String id;
@@ -107,6 +122,17 @@ class Payment {
   final String transactionId;
   final PaymentStatus status;
   final String? failureReason;
+  final String? paymentMethodCode;
+  final String? paymentMethodName;
+  final String? proofPath;
+  final String? proofFileName;
+
+  String get methodLabel {
+    final name = paymentMethodName?.trim() ?? '';
+    return name.isEmpty ? method.label : name;
+  }
+
+  bool get hasProof => (proofPath?.trim() ?? '').isNotEmpty;
 
   bool get isSuccessful => status == PaymentStatus.successful;
 

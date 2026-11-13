@@ -182,6 +182,10 @@ class PaymentLocalDataSource {
       transactionId: payment.transactionId,
       status: payment.status,
       failureReason: payment.failureReason,
+      paymentMethodCode: payment.paymentMethodCode,
+      paymentMethodName: payment.paymentMethodName,
+      proofPath: payment.proofPath,
+      proofFileName: payment.proofFileName,
     );
   }
 

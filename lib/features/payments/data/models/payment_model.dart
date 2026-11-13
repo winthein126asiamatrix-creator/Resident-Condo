@@ -13,5 +13,9 @@ class PaymentModel extends Payment {
     required super.transactionId,
     super.status,
     super.failureReason,
+    super.paymentMethodCode,
+    super.paymentMethodName,
+    super.proofPath,
+    super.proofFileName,
   });
 }
