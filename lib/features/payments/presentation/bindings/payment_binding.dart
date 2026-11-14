@@ -8,7 +8,6 @@ import '../../data/datasources/payment_dashboard_remote_data_source.dart';
 import '../../data/datasources/payment_invoice_local_data_source.dart';
 import '../../data/datasources/payment_invoice_remote_data_source.dart';
 import '../../data/datasources/payment_list_local_data_source.dart';
-import '../../data/datasources/payment_local_data_source.dart';
 import '../../data/datasources/payment_methods_local_data_source.dart';
 import '../../data/repositories/payment_repository_impl.dart';
 import '../../domain/repositories/payment_repository.dart';
@@ -79,7 +78,6 @@ class PaymentBinding extends Bindings {
     if (!Get.isRegistered<PaymentRepository>()) {
       Get.put<PaymentRepository>(
         PaymentRepositoryImpl(
-          PaymentLocalDataSource(),
           Get.find<PaymentDashboardRemoteDataSource>(),
           Get.find<PaymentDashboardLocalDataSource>(),
           invoiceDataSource: Get.find<PaymentInvoiceRemoteDataSource>(),

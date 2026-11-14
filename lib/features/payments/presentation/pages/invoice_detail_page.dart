@@ -14,7 +14,6 @@ import '../../../../core/widgets/app_section.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/invoice.dart';
 import '../../domain/entities/invoice_detail.dart';
-import '../../domain/entities/payment.dart';
 import '../controllers/payment_controller.dart';
 import '../widgets/payment_status_badge.dart';
 
@@ -49,12 +48,7 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      if (widget.invoiceId != null) {
-        return _buildApi(context);
-      }
-      return _buildLegacy(context);
-    });
+    return Obx(() => _buildApi(context));
   }
 
   Widget _buildApi(BuildContext context) {
@@ -93,55 +87,18 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
 
     return _DetailScaffold(
       view: _InvoiceView.fromApi(detail),
-      payment: _paymentFor(detail.invoiceNumber),
       controller: controller,
     );
-  }
-
-  Widget _buildLegacy(BuildContext context) {
-    final invoice = widget.invoice;
-    if (invoice == null) {
-      return Scaffold(
-        appBar: AppDetailAppBar(title: 'Invoice details'),
-        body: AppStateMessage(
-          title: 'Invoice not available',
-          message: 'Choose an invoice from the list.',
-          icon: Icons.receipt_long_outlined,
-          actionLabel: 'Back',
-          onAction: Get.back,
-        ),
-      );
-    }
-    final current = controller.invoices.firstWhere(
-      (item) => item.id == invoice.id,
-      orElse: () => invoice,
-    );
-    return _DetailScaffold(
-      view: _InvoiceView.fromLegacy(current),
-      payment: _paymentFor(current.number),
-      controller: controller,
-    );
-  }
-
-  Payment? _paymentFor(String invoiceNumber) {
-    for (final payment in controller.paymentHistory) {
-      if (payment.invoiceNumber == invoiceNumber && payment.isSuccessful) {
-        return payment;
-      }
-    }
-    return null;
   }
 }
 
 class _DetailScaffold extends StatelessWidget {
   const _DetailScaffold({
     required this.view,
-    required this.payment,
     required this.controller,
   });
 
   final _InvoiceView view;
-  final Payment? payment;
   final PaymentController controller;
 
   @override
@@ -231,7 +188,7 @@ class _DetailScaffold extends StatelessWidget {
               ),
             )
           else
-            _PaidCard(view: view, payment: payment),
+            _PaidCard(view: view),
           if (view.payableInvoice != null) ...[
             8.h.heightBox(),
             Text(
@@ -301,38 +258,6 @@ class _InvoiceView {
               isZero: item.amount <= 0,
               status: item.status,
               paidDateLabel: item.paidDateLabel,
-            ),
-          )
-          .toList(growable: false),
-    );
-  }
-
-  factory _InvoiceView.fromLegacy(Invoice invoice) {
-    return _InvoiceView(
-      invoiceNumber: invoice.number,
-      billingPeriod: invoice.billingPeriod,
-      unitLabel: invoice.unitLabel,
-      invoiceDateLabel: '',
-      dueDateLabel: invoice.dueDate,
-      status: invoice.status,
-      currency: invoice.currency,
-      totalAmount: invoice.total,
-      paidAmount: invoice.amountPaid,
-      remainingAmount: invoice.amountDue,
-      paidDateLabel: invoice.paidDate,
-      payableInvoice: invoice.isPayable ? invoice : null,
-      items: invoice.items
-          .map(
-            (item) => _ItemView(
-              title: item.type.label,
-              description: item.note,
-              amount: item.amount,
-              isPaid: item.isPaid,
-              isMandatory: item.mustPaid,
-              isPayable: item.isPayable,
-              isZero: item.isZero,
-              status: item.isPaid ? 'paid' : '',
-              paidDateLabel: item.paidDate ?? '',
             ),
           )
           .toList(growable: false),
@@ -559,9 +484,8 @@ class _ItemTag extends StatelessWidget {
 }
 
 class _PaidCard extends StatelessWidget {
-  const _PaidCard({required this.view, required this.payment});
+  const _PaidCard({required this.view});
   final _InvoiceView view;
-  final Payment? payment;
 
   @override
   Widget build(BuildContext context) {
@@ -601,15 +525,7 @@ class _PaidCard extends StatelessWidget {
               ],
             ),
           ),
-          if (payment != null)
-            Text(
-              payment!.transactionId,
-              style: TextStyle(
-                color: AppPalette.success,
-                fontSize: 10.sp,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+
         ],
       ),
     );

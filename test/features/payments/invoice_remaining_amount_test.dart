@@ -169,7 +169,6 @@ Map<String, dynamic> _partialInvoiceJson({
 }
 
 class _NoopPaymentRepository implements PaymentRepository {
-  @override
   Future<Invoice> addStoreFee({
     required double amount,
     required String reference,
@@ -177,7 +176,6 @@ class _NoopPaymentRepository implements PaymentRepository {
     throw UnimplementedError();
   }
 
-  @override
   Future<List<Invoice>> applyRole(String roleKey) {
     throw UnimplementedError();
   }
@@ -236,17 +234,14 @@ class _NoopPaymentRepository implements PaymentRepository {
     throw UnimplementedError();
   }
 
-  @override
   Future<Invoice?> getInvoice(String id) {
     throw UnimplementedError();
   }
 
-  @override
   Future<InvoiceDetail> getInvoiceDetail(int id) {
     throw UnimplementedError();
   }
 
-  @override
   Future<InvoiceListResponse> getInvoiceList({
     int page = 1,
     int limit = 20,
@@ -255,7 +250,6 @@ class _NoopPaymentRepository implements PaymentRepository {
     throw UnimplementedError();
   }
 
-  @override
   Future<List<Invoice>> getInvoices() {
     throw UnimplementedError();
   }
@@ -265,7 +259,6 @@ class _NoopPaymentRepository implements PaymentRepository {
     throw UnimplementedError();
   }
 
-  @override
   Future<List<Payment>> getPaymentHistory() {
     throw UnimplementedError();
   }

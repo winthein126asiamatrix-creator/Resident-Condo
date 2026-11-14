@@ -55,18 +55,10 @@ class PaymentsPage extends GetView<PaymentController> {
             );
           }
           final summary = controller.invoiceSummary;
-          final invoiceCount = hasDashboard
-              ? summary?.total ?? controller.recentInvoices.length
-              : controller.invoices.length;
-          final paymentCount = hasDashboard
-              ? controller.recentPayments.length
-              : controller.paymentHistory.length;
-          final hasInvoices = hasDashboard
-              ? controller.recentInvoices.isNotEmpty
-              : controller.invoices.isNotEmpty;
-          final hasPayments = hasDashboard
-              ? controller.recentPayments.isNotEmpty
-              : controller.paymentHistory.isNotEmpty;
+          final invoiceCount = summary?.total ?? controller.recentInvoices.length;
+          final paymentCount = controller.recentPayments.length;
+          final hasInvoices = controller.recentInvoices.isNotEmpty;
+          final hasPayments = controller.recentPayments.isNotEmpty;
           return RefreshIndicator(
             onRefresh: controller.loadPayments,
             child: ListView(
@@ -111,13 +103,6 @@ class PaymentsPage extends GetView<PaymentController> {
                         onTap: () => _openRecentInvoice(context, invoice),
                       ),
                     ),
-                  )
-                else
-                  ...controller.invoices.map(
-                    (invoice) => Padding(
-                      padding: EdgeInsets.only(bottom: 10),
-                      child: _InvoiceCard(invoice: invoice),
-                    ),
                   ),
                 16.h.heightBox(),
                 _SectionHeader(
@@ -152,15 +137,7 @@ class PaymentsPage extends GetView<PaymentController> {
                           ),
                         ),
                       )
-                else
-                  ...controller.paymentHistory
-                      .take(2)
-                      .map(
-                        (payment) => Padding(
-                          padding: EdgeInsets.only(bottom: 10),
-                          child: _PaymentPreview(payment: payment),
-                        ),
-                      ),
+
               ],
             ),
           );
@@ -170,8 +147,7 @@ class PaymentsPage extends GetView<PaymentController> {
   }
 
   void _openRecentInvoice(BuildContext context, RecentInvoice invoice) {
-    final local = controller.invoiceByNumber(invoice.invoiceNumber);
-    if (local == null) {
+    if (invoice.id <= 0) {
       showAppFeedback(
         context,
         title: 'Invoice not available',
@@ -180,7 +156,7 @@ class PaymentsPage extends GetView<PaymentController> {
       );
       return;
     }
-    Get.toNamed(AppRoutes.paymentDetail, arguments: local);
+    Get.toNamed(AppRoutes.paymentDetail, arguments: invoice.id);
   }
 }
 
@@ -265,7 +241,7 @@ class _BalanceSummary extends StatelessWidget {
     final currency = dashboard?.outstandingBalance.currency ?? '';
     final statistics = controller.paymentStatistics;
     final summary = controller.invoiceSummary;
-    final openCount = summary?.open ?? controller.openInvoiceCount;
+    final openCount = summary?.open ?? 0;
 
     String money(double value) => dashboard == null
         ? AppFormatters.currency(value)
@@ -329,31 +305,23 @@ class _BalanceSummary extends StatelessWidget {
               Expanded(
                 child: _SummaryMetric(
                   label: 'Current month',
-                  value: money(
-                    statistics?.currentMonthDue ?? controller.currentMonthTotal,
-                  ),
+                  value: money(statistics?.currentMonthDue ?? 0),
                   detail: 'This month',
                 ),
               ),
               Expanded(
                 child: _SummaryMetric(
                   label: 'Last payment',
-                  value: money(
-                    statistics?.lastPayment ?? controller.lastPaymentAmount,
-                  ),
-                  detail: dashboard == null
-                      ? controller.lastPaymentDate
-                      : (controller.lastDashboardPaymentDate.isEmpty
-                            ? 'Most recent'
-                            : controller.lastDashboardPaymentDate),
+                  value: money(statistics?.lastPayment ?? 0),
+                  detail: controller.lastDashboardPaymentDate.isEmpty
+                      ? 'Most recent'
+                      : controller.lastDashboardPaymentDate,
                 ),
               ),
               Expanded(
                 child: _SummaryMetric(
                   label: 'Paid this year',
-                  value: money(
-                    statistics?.paidThisYear ?? controller.totalPaidThisYear,
-                  ),
+                  value: money(statistics?.paidThisYear ?? 0),
                   detail: '${DateTime.now().year} total',
                 ),
               ),
@@ -402,17 +370,23 @@ class _BalanceSummary extends StatelessWidget {
   }
 
   void _openOldestInvoice(BuildContext context) {
-    final invoice = controller.oldestOpenInvoice;
-    if (invoice == null) {
+    RecentInvoice? open;
+    for (final invoice in controller.recentInvoices) {
+      if (invoice.id > 0 && invoice.remainingAmount > 0) {
+        open = invoice;
+        break;
+      }
+    }
+    if (open == null) {
       showAppFeedback(
         context,
         title: 'Nothing to pay',
-        message: 'You have no open invoices.',
+        message: 'Open the invoice list to choose an invoice.',
         isError: false,
       );
       return;
     }
-    Get.toNamed(AppRoutes.paymentDetail, arguments: invoice);
+    Get.toNamed(AppRoutes.paymentDetail, arguments: open.id);
   }
 }
 
@@ -435,19 +409,18 @@ class _FeeBreakdown extends StatelessWidget {
         ? AppFormatters.currency(value)
         : AppFormatters.money(value, currency);
 
-    // A fee type the API omits is zero, never a local mock amount.
-    double amountFor(FeeSummary? fee, double fallback) =>
-        fee?.amount ?? (dashboard == null ? fallback : 0);
+    // A fee type the API omits is zero.
+    double amountFor(FeeSummary? fee) => fee?.amount ?? 0;
 
     final rows = <({String label, double amount, Color color})>[
       (
         label: labelFor(rent, 'Monthly Rent'),
-        amount: amountFor(rent, controller.rentDueTotal),
+        amount: amountFor(rent),
         color: AppPalette.info,
       ),
       (
         label: labelFor(condoFee, 'Monthly Condo Fee'),
-        amount: amountFor(condoFee, controller.condoFeeDueTotal),
+        amount: amountFor(condoFee),
         color: tokens.brand,
       ),
       (
@@ -455,7 +428,7 @@ class _FeeBreakdown extends StatelessWidget {
           otherFees,
           'Parking, utility, facility, service & fines',
         ),
-        amount: amountFor(otherFees, controller.otherChargesDueTotal),
+        amount: amountFor(otherFees),
         color: AppPalette.warning,
       ),
     ];

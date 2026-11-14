@@ -172,7 +172,6 @@ class _FilteredInvoiceRepository implements PaymentRepository {
   final failures = <String>{};
   String? lastStatus;
 
-  @override
   Future<InvoiceListResponse> getInvoiceList({
     int page = 1,
     int limit = 20,
@@ -185,7 +184,6 @@ class _FilteredInvoiceRepository implements PaymentRepository {
     return responses[status] ?? _page(const <int>[], 'NONE');
   }
 
-  @override
   Future<InvoiceDetail> getInvoiceDetail(int id) async {
     throw StateError('Not used by this test.');
   }
@@ -242,22 +240,17 @@ class _FilteredInvoiceRepository implements PaymentRepository {
   @override
   Future<void> clearDashboardCache() async {}
 
-  @override
   Future<List<Invoice>> getInvoices() async => const <Invoice>[];
 
-  @override
   Future<Invoice?> getInvoice(String id) async => null;
 
-  @override
   Future<List<Payment>> getPaymentHistory() async => const <Payment>[];
 
   @override
   Future<Payment> submitPayment(Payment payment) async => payment;
 
-  @override
   Future<List<Invoice>> applyRole(String roleKey) async => const <Invoice>[];
 
-  @override
   Future<Invoice> addStoreFee({
     required double amount,
     required String reference,

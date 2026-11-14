@@ -38,6 +38,9 @@ abstract final class ApiEndPoints {
 
   static const String payments = '/payments';
 
+  /// Submits a payment for one or more selected invoice lines.
+  static const String payment = '/payment';
+
   static String paymentDetail(int id) => '$payments/$id';
 
   /// The resident's payment dashboard: balance, fee breakdown, invoice counts

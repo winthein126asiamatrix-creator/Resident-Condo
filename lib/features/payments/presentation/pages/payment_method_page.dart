@@ -47,7 +47,8 @@ class PaymentMethodPage extends StatefulWidget {
 
 class _PaymentMethodPageState extends State<PaymentMethodPage> {
   final PaymentController controller = Get.find<PaymentController>();
-  final TextEditingController _cardNumberController = TextEditingController();
+  final TextEditingController _transactionReferenceController =
+      TextEditingController();
   AttachedPhoto? _proof;
   String _error = '';
 
@@ -59,7 +60,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
 
   @override
   void dispose() {
-    _cardNumberController.dispose();
+    _transactionReferenceController.dispose();
     super.dispose();
   }
 
@@ -144,9 +145,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               ),
             18.h.heightBox(),
             if (method != null) ...[
-              if (method.code.trim().toLowerCase() == 'card')
-                _CardForm(controller: _cardNumberController),
-              if (method.hasBankDetails) _BankDetails(method: method),
+            if (method.hasBankDetails) _BankDetails(method: method),
               if (method.hasQrImage) ...[
                 if (method.hasBankDetails) 12.h.heightBox(),
                 _QrImageCard(method: method),
@@ -412,7 +411,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
     }
 
     final payment = await controller.confirmPayment(
-      cardNumber: _cardNumberController.text,
+      transactionId: _transactionReferenceController.text,
       proofPath: _proof?.path,
       proofFileName: _proof?.name,
     );
@@ -426,7 +425,6 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
       return;
     }
     if (payment.isSuccessful) {
-      _cardNumberController.clear();
       Get.offNamed(AppRoutes.paymentSuccess, arguments: payment);
     } else {
       Get.offNamed(AppRoutes.paymentFailure, arguments: payment);

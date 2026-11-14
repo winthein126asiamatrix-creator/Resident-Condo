@@ -14,6 +14,8 @@ class PaymentRecordBadge extends StatelessWidget {
     final (label, color) = switch (status) {
       PaymentStatus.successful => ('Paid', Color(0xFF087F5B)),
       PaymentStatus.failed => ('Failed', Color(0xFFC2410C)),
+      PaymentStatus.pendingVerification => ('Pending', Color(0xFFB45309)),
+      PaymentStatus.unknown => ('Unknown', Color(0xFF6B7280)),
     };
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),

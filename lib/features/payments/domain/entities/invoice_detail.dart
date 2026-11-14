@@ -79,6 +79,7 @@ class InvoiceDetailItem {
     return InvoiceItem(
       type: invoiceItemTypeFromApi(feeType),
       amount: amount,
+      id: id,
       note: note,
       isPaid: isPaid,
       paidDate: paidDateLabel.isEmpty ? null : paidDateLabel,

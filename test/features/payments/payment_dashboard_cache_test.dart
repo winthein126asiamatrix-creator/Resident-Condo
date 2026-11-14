@@ -315,7 +315,6 @@ class _FakeRepository implements PaymentRepository {
     cached = null;
   }
 
-  @override
   Future<InvoiceListResponse> getInvoiceList({
     int page = 1,
     int limit = 20,
@@ -324,7 +323,6 @@ class _FakeRepository implements PaymentRepository {
     throw UnimplementedError();
   }
 
-  @override
   Future<InvoiceDetail> getInvoiceDetail(int id) {
     throw UnimplementedError();
   }
@@ -369,22 +367,17 @@ class _FakeRepository implements PaymentRepository {
   @override
   Future<void> clearPaymentListCache() async {}
 
-  @override
   Future<List<Invoice>> getInvoices() async => const <Invoice>[];
 
-  @override
   Future<Invoice?> getInvoice(String id) async => null;
 
-  @override
   Future<List<Payment>> getPaymentHistory() async => const <Payment>[];
 
   @override
   Future<Payment> submitPayment(Payment payment) async => payment;
 
-  @override
   Future<List<Invoice>> applyRole(String roleKey) async => const <Invoice>[];
 
-  @override
   Future<Invoice> addStoreFee({
     required double amount,
     required String reference,

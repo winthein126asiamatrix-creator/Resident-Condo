@@ -12,12 +12,10 @@ import '../datasources/payment_dashboard_remote_data_source.dart';
 import '../datasources/payment_invoice_local_data_source.dart';
 import '../datasources/payment_invoice_remote_data_source.dart';
 import '../datasources/payment_list_local_data_source.dart';
-import '../datasources/payment_local_data_source.dart';
 import '../datasources/payment_methods_local_data_source.dart';
 
 class PaymentRepositoryImpl implements PaymentRepository {
   const PaymentRepositoryImpl(
-    this.localDataSource,
     this.dashboardDataSource,
     this.dashboardLocalDataSource, {
     this.invoiceDataSource,
@@ -26,7 +24,6 @@ class PaymentRepositoryImpl implements PaymentRepository {
     this.paymentMethodsLocalDataSource,
   });
 
-  final PaymentLocalDataSource localDataSource;
   final PaymentDashboardRemoteDataSource dashboardDataSource;
   final PaymentDashboardLocalDataSource dashboardLocalDataSource;
   final PaymentInvoiceRemoteDataSource? invoiceDataSource;
@@ -146,6 +143,16 @@ class PaymentRepositoryImpl implements PaymentRepository {
     return remote.getPaymentMethods();
   }
 
+   @override
+  Future<Payment> submitPayment(Payment payment) async {
+    final remote = invoiceDataSource;
+    if (remote == null) {
+      throw StateError('Payment methods data source is not configured.');
+    }
+    final response = await remote.submitPayment(payment);
+    return response.toPayment(payment);
+  }
+
   @override
   Future<CachedPaymentMethods?> getCachedPaymentMethods(int userId) async {
     final local = paymentMethodsLocalDataSource;
@@ -169,38 +176,4 @@ class PaymentRepositoryImpl implements PaymentRepository {
     return paymentMethodsLocalDataSource?.clear() ?? Future<void>.value();
   }
 
-  @override
-  Future<List<Invoice>> getInvoices() async {
-    final invoices = await localDataSource.getInvoices();
-    return List<Invoice>.of(invoices);
-  }
-
-  @override
-  Future<Invoice?> getInvoice(String id) {
-    return localDataSource.getInvoice(id);
-  }
-
-  @override
-  Future<List<Payment>> getPaymentHistory() async {
-    final history = await localDataSource.getPaymentHistory();
-    return List<Payment>.of(history);
-  }
-
-  @override
-  Future<Payment> submitPayment(Payment payment) {
-    return localDataSource.submitPayment(payment);
-  }
-
-  @override
-  Future<List<Invoice>> applyRole(String roleKey) {
-    return localDataSource.applyRole(roleKey);
-  }
-
-  @override
-  Future<Invoice> addStoreFee({
-    required double amount,
-    required String reference,
-  }) {
-    return localDataSource.addStoreFee(amount: amount, reference: reference);
-  }
 }

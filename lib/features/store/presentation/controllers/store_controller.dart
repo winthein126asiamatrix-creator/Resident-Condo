@@ -2,7 +2,6 @@ import 'package:get/get.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/app_dates.dart';
-import '../../../payments/presentation/controllers/payment_controller.dart';
 import '../../domain/entities/store_product.dart';
 import '../../domain/usecases/store_usecases.dart';
 
@@ -309,15 +308,6 @@ class StoreController extends GetxController {
   /// An order can only be placed once there is something in the basket.
   bool get canCheckout => cart.isNotEmpty;
 
-  /// The payments controller, when it is registered. Statement-paid store fees
-  /// are written through it so the invoice and the order stay in step.
-  PaymentController? get _paymentController {
-    if (!Get.isRegistered<PaymentController>()) {
-      return null;
-    }
-    return Get.find<PaymentController>();
-  }
-
   /// Places the order, settling the Store Fee first when paying now.
   ///
   /// Passing [method] means the resident is paying at checkout: the order is
@@ -374,23 +364,9 @@ class StoreController extends GetxController {
       // nothing further: the fee is already settled.
       var placed = order;
       if (!payNow) {
-        final paymentController = _paymentController;
-        if (paymentController == null) {
-          placed = await _unwindPlacedOrder(order, StoreOrderStatus.cancelled);
-          errorMessage.value =
-              'Store orders are unavailable right now. Please try again.';
-          return null;
-        }
-        try {
-          await paymentController.addStoreFee(
-            amount: placed.total,
-            reference: placed.id,
-          );
-        } on AppException catch (error) {
-          placed = await _unwindPlacedOrder(order, StoreOrderStatus.cancelled);
-          errorMessage.value = error.message;
-          return null;
-        }
+        // Store fees are no longer written to the resident's payment ledger
+        // through the client. The backend handles statement billing; the order
+        // remains pending until that endpoint is available.
       }
 
       orders.insert(0, placed);

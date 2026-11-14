@@ -486,7 +486,6 @@ class _InvoiceRepository implements PaymentRepository {
   final requests = <Completer<InvoiceListResponse>>[];
   final cacheWrites = <_CacheWrite>[];
 
-  @override
   Future<InvoiceListResponse> getInvoiceList({
     int page = 1,
     int limit = 20,
@@ -504,7 +503,6 @@ class _InvoiceRepository implements PaymentRepository {
     return Future<InvoiceListResponse>.value(fresh);
   }
 
-  @override
   Future<InvoiceDetail> getInvoiceDetail(int id) async {
     detailCalls++;
     final value = detail;
@@ -570,22 +568,17 @@ class _InvoiceRepository implements PaymentRepository {
   @override
   Future<void> clearDashboardCache() async {}
 
-  @override
   Future<List<Invoice>> getInvoices() async => const <Invoice>[];
 
-  @override
   Future<Invoice?> getInvoice(String id) async => null;
 
-  @override
   Future<List<Payment>> getPaymentHistory() async => const <Payment>[];
 
   @override
   Future<Payment> submitPayment(Payment payment) async => payment;
 
-  @override
   Future<List<Invoice>> applyRole(String roleKey) async => const <Invoice>[];
 
-  @override
   Future<Invoice> addStoreFee({
     required double amount,
     required String reference,

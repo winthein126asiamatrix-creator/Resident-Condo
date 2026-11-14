@@ -25,9 +25,6 @@ class PaymentController extends GetxController {
   }) : _registryOverride = registry,
        _connectivityOverride = connectivity;
 
-  static const currentBillingPeriod = 'September 2026';
-  static const today = 'Sep 25, 2026';
-
   /// The registry key this controller re-fetches under.
   static const String screen = 'payments';
 
@@ -54,8 +51,6 @@ class PaymentController extends GetxController {
 
   final PaymentUseCases useCases;
   final dashboard = Rxn<PaymentDashboard>();
-  final invoices = <Invoice>[].obs;
-  final paymentHistory = <Payment>[].obs;
   final selectedInvoice = Rxn<Invoice>();
   final selectedItems = <InvoiceItem>[].obs;
   final paymentMethods = <PaymentMethodOption>[].obs;
@@ -275,80 +270,13 @@ class PaymentController extends GetxController {
 
   // ---------------------------------------------------------------- balances
 
-  double get outstandingBalance =>
-      invoices.fold(0, (total, invoice) => total + invoice.amountDue);
-
-  double get rentDueTotal => _dueFor(InvoiceItemType.rent);
-
-  double get condoFeeDueTotal => _dueFor(InvoiceItemType.condoFee);
-
-  double get otherChargesDueTotal {
-    var total = 0.0;
-    for (final invoice in invoices) {
-      for (final item in invoice.items) {
-        if (!item.type.isManagementCharge) {
-          continue;
-        }
-        if (item.type == InvoiceItemType.condoFee) {
-          continue;
-        }
-        total += item.dueAmount;
-      }
-    }
-    return total;
-  }
-
-  double get currentMonthTotal => invoices
-      .where((invoice) => invoice.billingPeriod == currentBillingPeriod)
-      .fold(0, (total, invoice) => total + invoice.amountDue);
-
-  double get currentCondoFeeDue =>
-      _dueFor(InvoiceItemType.condoFee, period: currentBillingPeriod);
-
-  double get currentRentDue =>
-      _dueFor(InvoiceItemType.rent, period: currentBillingPeriod);
-
-  int get openInvoiceCount =>
-      invoices.where((invoice) => invoice.isPayable).length;
-
-  double get totalPaidThisYear => paymentHistory
-      .where((payment) => payment.isSuccessful && payment.date.endsWith('2026'))
-      .fold(0, (total, payment) => total + payment.amount);
-
-  double get lastPaymentAmount {
-    for (final payment in paymentHistory) {
-      if (payment.isSuccessful) {
-        return payment.amount;
-      }
-    }
-    return 0;
-  }
-
-  String get lastPaymentDate {
-    for (final payment in paymentHistory) {
-      if (payment.isSuccessful) {
-        return payment.date;
-      }
-    }
-    return '';
-  }
-
-  Invoice? get oldestOpenInvoice {
-    for (final invoice in invoices) {
-      if (invoice.isPayable) {
-        return invoice;
-      }
-    }
-    return null;
-  }
-
   // -------------------------------------------------------- dashboard values
 
   String get dashboardCurrency =>
       dashboard.value?.outstandingBalance.currency ?? '';
 
   double get outstandingBalanceAmount =>
-      dashboard.value?.outstandingBalance.amount ?? outstandingBalance;
+      dashboard.value?.outstandingBalance.amount ?? 0;
 
   PaymentStatistics? get paymentStatistics =>
       dashboard.value?.paymentStatistics;
@@ -365,17 +293,6 @@ class PaymentController extends GetxController {
 
   String get lastDashboardPaymentDate =>
       recentPayments.isEmpty ? '' : recentPayments.first.paidAtLabel;
-
-  /// Finds the full invoice the API summary refers to, so tapping a recent
-  /// invoice can open the existing detail screen.
-  Invoice? invoiceByNumber(String number) {
-    for (final invoice in invoices) {
-      if (invoice.number == number) {
-        return invoice;
-      }
-    }
-    return null;
-  }
 
   // ------------------------------------------------------------------ loads
 
@@ -415,9 +332,6 @@ class PaymentController extends GetxController {
       await _hydrateFromCache(userId, seq);
       if (seq != _requestSeq || userId != _currentUserId) return;
     }
-
-    await _loadLocalLedger(seq, userId);
-    if (seq != _requestSeq || userId != _currentUserId) return;
 
     // A cached snapshot is enough to keep the screen useful while offline; the
     // reconnect worker refreshes it once the radio is back.
@@ -462,46 +376,6 @@ class PaymentController extends GetxController {
     } finally {
       if (seq == _requestSeq) {
         isLoading.value = false;
-      }
-    }
-  }
-
-  Future<void> _loadLocalLedger(int seq, int? userId) async {
-    try {
-      final loadedInvoices = await useCases.getInvoices();
-      final loadedHistory = await useCases.getPaymentHistory();
-      if (seq != _requestSeq || userId != _currentUserId) return;
-      invoices.assignAll(loadedInvoices);
-      paymentHistory.assignAll(loadedHistory);
-      final selected = selectedInvoice.value;
-      if (selected != null) {
-        final refreshed = _findInvoice(selected.id);
-        selectedInvoice.value = refreshed;
-        if (refreshed != null) {
-          // Keep only items that are still payable after a refresh so paid
-          // items can never be submitted twice.
-          selectedItems.removeWhere(
-            (item) => !(refreshed.itemByKey(item.key)?.isPayable ?? false),
-          );
-          // Mandatory charges are always part of the payment.
-          selectedItems.addAll(
-            refreshed.mandatoryItems.where(
-              (item) => !selectedItems.contains(item),
-            ),
-          );
-        } else {
-          selectedItems.clear();
-        }
-      }
-    } on AppException catch (error) {
-      if (seq != _requestSeq || userId != _currentUserId) return;
-      if (dashboard.value == null) {
-        errorMessage.value = error.message;
-      }
-    } catch (_) {
-      if (seq != _requestSeq || userId != _currentUserId) return;
-      if (dashboard.value == null) {
-        errorMessage.value = 'Unable to load payment information.';
       }
     }
   }
@@ -569,8 +443,6 @@ class PaymentController extends GetxController {
     _requestSeq++;
     _loadInFlight = null;
     dashboard.value = null;
-    invoices.clear();
-    paymentHistory.clear();
     selectedInvoice.value = null;
     selectedItems.clear();
     paymentSuccess.value = null;
@@ -639,15 +511,6 @@ class PaymentController extends GetxController {
     paymentMethodsUpdatedAt.value = null;
   }
 
-  Future<void> applyRole(String roleKey) async {
-    try {
-      await useCases.applyRole(roleKey);
-      selectedItems.clear();
-      await loadPayments();
-    } on AppException catch (error) {
-      errorMessage.value = error.message;
-    }
-  }
 
   // ----------------------------------------------------------- payment list
 
@@ -1449,32 +1312,17 @@ class PaymentController extends GetxController {
 
   int get selectedCount => selectedItems.length;
 
-  Future<Invoice?> getInvoice(String id) {
-    return useCases.getInvoice(id);
-  }
-
-  /// Adds a Convenience Store `Store Fee` to the open statement and refreshes the
-  /// ledger, so the charge shows up as an outstanding payment straight away.
-  Future<Invoice> addStoreFee({
-    required double amount,
-    required String reference,
-  }) async {
-    final updated = await useCases.addStoreFee(
-      amount: amount,
-      reference: reference,
-    );
-    await loadPayments();
-    return updated;
-  }
-
   // ---------------------------------------------------------------- payment
 
-  /// Submits the selected items only. A declined attempt is stored as failed
-  /// and never changes the invoice status.
+  /// Submits the selected invoice and payment method to the API.
+  ///
+  /// The backend response is authoritative: it supplies the payment id,
+  /// number, amount, status, timestamp and proof image. No local result is
+  /// created when the request fails.
   Future<Payment?> confirmPayment({
-    String cardNumber = '',
     String? proofPath,
     String? proofFileName,
+    required String transactionId,
   }) async {
     final invoice = selectedInvoice.value;
     if (invoice == null || !invoice.isPayable) {
@@ -1491,7 +1339,7 @@ class PaymentController extends GetxController {
     }
 
     final method = selectedPaymentMethod;
-    if (method == null || !method.isActive) {
+    if (method == null || !method.isActive || method.id <= 0) {
       errorMessage.value = 'Select an available payment method first.';
       return null;
     }
@@ -1505,38 +1353,34 @@ class PaymentController extends GetxController {
     paymentSuccess.value = null;
     paymentFailure.value = null;
 
-    final transactionId =
-        'TXN-20260925-${_transactionSequence.toString().padLeft(3, '0')}';
+    final payment = Payment(
+      id: '',
+      invoiceNumber: invoice.number,
+      residentName: _session?.name ?? '',
+      unitLabel: invoice.unitLabel,
+      items: List<InvoiceItem>.unmodifiable(selectedItems),
+      amount: selectedTotal,
+      date: AppDates.format(DateTime.now()),
+      method: paymentMethodFromCode(method.code),
+      status: PaymentStatus.unknown,
+      transactionId: transactionId.trim(),
+      paymentMethodCode: method.code,
+      paymentMethodName: method.displayName,
+      proofPath: proofPath,
+      proofFileName: proofFileName,
+      paymentMethodId: method.id,
+      quoteId: invoice.number,
+      currency: invoice.currency,
+    );
+
     try {
-      await Future<void>.delayed(const Duration(milliseconds: 700));
-      final declined = _shouldDecline(cardNumber);
-      final payment = Payment(
-        id: 'payment-${DateTime.now().microsecondsSinceEpoch}',
-        invoiceNumber: invoice.number,
-        residentName: 'Alex Johnson',
-        unitLabel: invoice.unitLabel,
-        items: List<InvoiceItem>.unmodifiable(selectedItems),
-        amount: selectedTotal,
-        date: today,
-        method: paymentMethodFromCode(method.code),
-        paymentMethodCode: method.code,
-        paymentMethodName: method.displayName,
-        proofPath: proofPath,
-        proofFileName: proofFileName,
-        transactionId: transactionId,
-        status: declined ? PaymentStatus.failed : PaymentStatus.successful,
-        failureReason: declined
-            ? 'Your bank declined the transaction. No amount was charged.'
-            : null,
-      );
       final stored = await useCases.submitPayment(payment);
-      _transactionSequence++;
       if (stored.isSuccessful) {
         paymentSuccess.value = stored;
       } else {
         paymentFailure.value = stored;
       }
-      await loadPayments();
+      await _refreshAfterSubmission(invoice);
       return stored;
     } on AppException catch (error) {
       errorMessage.value = error.message;
@@ -1549,36 +1393,29 @@ class PaymentController extends GetxController {
     }
   }
 
-  /// Mock gateway rule so the failure state can be demonstrated: any card
-  /// number ending in 0000 is declined.
-  bool _shouldDecline(String cardNumber) {
-    final digits = cardNumber.replaceAll(RegExp(r'\D'), '');
-    return digits.length >= 4 && digits.endsWith('0000');
-  }
-
-  // ---------------------------------------------------------------- helpers
-
-  Invoice? _findInvoice(String id) {
-    for (final invoice in invoices) {
-      if (invoice.id == id) {
-        return invoice;
-      }
+  Future<void> _refreshAfterSubmission(Invoice invoice) async {
+    try {
+      await useCases.clearDashboardCache();
+    } catch (_) {
     }
-    return null;
-  }
-
-  double _dueFor(InvoiceItemType type, {String? period}) {
-    var total = 0.0;
-    for (final invoice in invoices) {
-      if (period != null && invoice.billingPeriod != period) {
-        continue;
-      }
-      for (final item in invoice.items) {
-        if (item.type == type) {
-          total += item.dueAmount;
-        }
-      }
+    try {
+      await useCases.clearInvoiceListCache();
+    } catch (_) {
     }
-    return total;
+    try {
+      await useCases.clearPaymentListCache();
+    } catch (_) {
+    }
+
+    await loadPayments();
+
+    final invoiceId = int.tryParse(invoice.id);
+    if (invoiceId != null &&
+        invoiceId > 0 &&
+        invoiceDetailId.value == invoiceId) {
+      await loadInvoiceDetail(invoiceId, force: true);
+    }
+    // Invoice list refresh is handled by the caller when needed.
   }
 }
+

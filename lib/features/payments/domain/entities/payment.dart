@@ -26,7 +26,7 @@ PaymentMethod paymentMethodFromCode(String code) {
   };
 }
 
-enum PaymentStatus { successful, failed }
+enum PaymentStatus { successful, failed, pendingVerification, unknown }
 
 extension PaymentStatusLabel on PaymentStatus {
   String get label {
@@ -35,6 +35,10 @@ extension PaymentStatusLabel on PaymentStatus {
         return 'Paid';
       case PaymentStatus.failed:
         return 'Failed';
+      case PaymentStatus.pendingVerification:
+        return 'Pending verification';
+      case PaymentStatus.unknown:
+        return 'Unknown';
     }
   }
 }
@@ -46,7 +50,12 @@ PaymentStatus? paymentStatusFromApi(String value) {
     'succeeded' ||
     'completed' ||
     'settled' => PaymentStatus.successful,
-    'failed' || 'declined' || 'error' => PaymentStatus.failed,
+    'failed' || 'declined' || 'error' || 'rejected' => PaymentStatus.failed,
+    'pending' ||
+    'pending_verification' ||
+    'processing' ||
+    'submitted' ||
+    'received' => PaymentStatus.pendingVerification,
     _ => null,
   };
 }
@@ -109,6 +118,13 @@ class Payment {
     this.paymentMethodName,
     this.proofPath,
     this.proofFileName,
+    this.paymentMethodId = 0,
+    this.proofImageUrl,
+    this.paymentNumber,
+    this.quoteId,
+    this.currency = '',
+    this.submittedAt,
+    this.rawStatus,
   });
 
   final String id;
@@ -126,6 +142,13 @@ class Payment {
   final String? paymentMethodName;
   final String? proofPath;
   final String? proofFileName;
+  final int paymentMethodId;
+  final String? proofImageUrl;
+  final String? paymentNumber;
+  final String? quoteId;
+  final String currency;
+  final DateTime? submittedAt;
+  final String? rawStatus;
 
   String get methodLabel {
     final name = paymentMethodName?.trim() ?? '';

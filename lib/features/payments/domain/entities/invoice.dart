@@ -166,6 +166,7 @@ class InvoiceItem {
   const InvoiceItem({
     required this.type,
     required this.amount,
+    this.id,
     this.note = '',
     this.isPaid = false,
     this.paidDate,
@@ -177,6 +178,7 @@ class InvoiceItem {
 
   final InvoiceItemType type;
   final double amount;
+  final int? id;
   final String note;
   final bool isPaid;
   final String? paidDate;
@@ -215,6 +217,7 @@ class InvoiceItem {
   double get paidAmount => sourcePaidAmount ?? (isPaid ? amount : 0);
 
   InvoiceItem copyWith({
+    int? id,
     bool? isPaid,
     String? paidDate,
     bool? mustPaid,
@@ -225,6 +228,7 @@ class InvoiceItem {
     return InvoiceItem(
       type: type,
       amount: amount,
+      id: id ?? this.id,
       note: note,
       isPaid: isPaid ?? this.isPaid,
       paidDate: paidDate ?? this.paidDate,
@@ -242,6 +246,7 @@ class InvoiceItem {
       other is InvoiceItem &&
           other.type == type &&
           other.amount == amount &&
+          other.id == id &&
           other.note == note &&
           other.isPaid == isPaid &&
           other.mustPaid == mustPaid &&
@@ -253,6 +258,7 @@ class InvoiceItem {
   int get hashCode => Object.hash(
     type,
     amount,
+    id,
     note,
     isPaid,
     mustPaid,
