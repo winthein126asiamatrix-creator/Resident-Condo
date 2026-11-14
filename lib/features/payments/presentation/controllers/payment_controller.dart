@@ -124,10 +124,8 @@ class PaymentController extends GetxController {
   int _requestSeq = 0;
   Future<void>? _loadInFlight;
 
-  int? _invoiceListOwnerUserId;
-  bool _hasInvoiceListData = false;
-  int _invoiceListSeq = 0;
-  Future<void>? _invoiceListInFlight;
+  final Map<String, _InvoiceListFilterState> _invoiceListStates =
+      <String, _InvoiceListFilterState>{};
 
   int _invoiceDetailSeq = 0;
   Future<void>? _invoiceDetailInFlight;
@@ -455,19 +453,7 @@ class PaymentController extends GetxController {
     lastUpdatedAt.value = null;
     _ownerUserId = null;
 
-    _invoiceListSeq++;
-    _invoiceListInFlight = null;
-    _hasInvoiceListData = false;
-    _invoiceListOwnerUserId = null;
-    invoiceList.clear();
-    invoiceListPage.value = 1;
-    invoiceListTotal.value = 0;
-    invoiceListStatus.value = 'all';
-    isLoadingInvoiceList.value = false;
-    isLoadingMoreInvoices.value = false;
-    invoiceListError.value = null;
-    isShowingCachedInvoices.value = false;
-    invoiceListUpdatedAt.value = null;
+    _resetInvoiceListFilters(resetStatus: true);
 
     _invoiceDetailSeq++;
     _invoiceDetailInFlight = null;
@@ -510,7 +496,6 @@ class PaymentController extends GetxController {
     isShowingCachedPaymentMethods.value = false;
     paymentMethodsUpdatedAt.value = null;
   }
-
 
   // ----------------------------------------------------------- payment list
 
@@ -919,234 +904,351 @@ class PaymentController extends GetxController {
 
   /// Loads the first invoice page, cache first, then refreshes it from the API.
   ///
-  /// Concurrent callers share one request, so opening the screen while a
-  /// reconnect refresh is already running cannot issue the same GET twice.
+  /// Each status filter keeps its own request, so concurrent callers on the same
+  /// filter share one request while a different filter is still free to load.
   Future<void> loadInvoices({bool refresh = false}) {
-    final existing = _invoiceListInFlight;
+    final state = _invoiceListState(invoiceListStatus.value);
+    final existing = state.inFlight;
     if (existing != null) {
       return existing;
     }
-    final future = _loadInvoices(refresh: refresh);
-    _invoiceListInFlight = future;
+    final future = _loadInvoices(state, refresh: refresh);
+    state.inFlight = future;
     return future.whenComplete(() {
-      if (identical(_invoiceListInFlight, future)) {
-        _invoiceListInFlight = null;
+      if (identical(state.inFlight, future)) {
+        state.inFlight = null;
       }
     });
   }
 
-  Future<void> _loadInvoices({required bool refresh}) async {
+  /// Re-publishes the selected filter, loading it only if it has never loaded.
+  ///
+  /// Reopening the screen, or switching back to a filter that already has data,
+  /// must not issue another request.
+  Future<void> ensureInvoiceListLoaded() {
+    final state = _invoiceListStates[invoiceListStatus.value];
+    if (state != null && (state.loaded || state.loading)) {
+      _publishInvoiceListState(state);
+      return state.inFlight ?? Future<void>.value();
+    }
+    return loadInvoices();
+  }
+
+  Future<void> _loadInvoices(
+    _InvoiceListFilterState state, {
+    required bool refresh,
+  }) async {
     final session = _session;
     final userId = _currentUserId;
     if (session != null && userId == null) {
       return;
     }
 
-    final status = invoiceListStatus.value;
-    final seq = ++_invoiceListSeq;
-    final hadData = _hasInvoiceListData && _invoiceListOwnerUserId == userId;
-    isLoadingInvoiceList.value = !hadData;
+    final seq = state.seq + 1;
+    state.seq = seq;
+    final hadData = state.loaded && state.ownerUserId == userId;
+    state.loading = !hadData;
     // A first-page reload supersedes any page request that was still running.
-    isLoadingMoreInvoices.value = false;
-    invoiceListError.value = null;
+    state.loadingMore = false;
+    state.error = null;
+
+    if (_isInvoiceListSelected(state)) {
+      isLoadingInvoiceList.value = state.loading;
+      isLoadingMoreInvoices.value = false;
+      invoiceListError.value = null;
+    }
 
     if (userId != null && !refresh && !hadData) {
-      await _hydrateInvoiceListFromCache(userId, status, seq);
-      if (seq != _invoiceListSeq ||
-          userId != _currentUserId ||
-          status != invoiceListStatus.value) {
+      await _hydrateInvoiceListFromCache(state, userId, seq);
+      if (!_isInvoiceListCurrent(state, seq, userId)) {
         return;
       }
     }
 
     // A cached snapshot is enough while offline; the registry refreshes it when
     // connectivity returns.
-    if (_hasInvoiceListData && _connectivity?.isOnline.value == false) {
-      isShowingCachedInvoices.value = true;
-      _registry?.markStale(invoiceListScreen);
-      isLoadingInvoiceList.value = false;
+    if (state.loaded && _connectivity?.isOnline.value == false) {
+      state.loading = false;
+      state.showingCached = true;
+      if (_isInvoiceListSelected(state)) {
+        _publishInvoiceListState(state);
+        _registry?.markStale(invoiceListScreen);
+      }
       return;
     }
 
     try {
       final response = await useCases.getInvoiceList(
         page: 1,
-        limit: invoiceListLimit.value <= 0
-            ? invoicePageSize
-            : invoiceListLimit.value,
-        status: status,
+        limit: state.limit <= 0 ? invoicePageSize : state.limit,
+        status: state.status,
       );
-      if (seq != _invoiceListSeq ||
-          userId != _currentUserId ||
-          status != invoiceListStatus.value) {
+      if (!_isInvoiceListCurrent(state, seq, userId)) {
         return;
       }
 
-      invoiceList.assignAll(response.items);
-      invoiceListPage.value = response.page <= 0 ? 1 : response.page;
-      invoiceListLimit.value = response.limit <= 0
-          ? invoicePageSize
-          : response.limit;
-      invoiceListTotal.value = response.total < response.items.length
+      state.items
+        ..clear()
+        ..addAll(response.items);
+      state.page = response.page <= 0 ? 1 : response.page;
+      state.limit = response.limit <= 0 ? invoicePageSize : response.limit;
+      state.total = response.total < response.items.length
           ? response.items.length
           : response.total;
-      _hasInvoiceListData = true;
-      _invoiceListOwnerUserId = userId;
-      isShowingCachedInvoices.value = false;
-      invoiceListUpdatedAt.value = DateTime.now();
-      invoiceListError.value = null;
-      _registry?.markFresh(invoiceListScreen);
+      state.loaded = true;
+      state.ownerUserId = userId;
+      state.showingCached = false;
+      state.updatedAt = DateTime.now();
+      state.error = null;
+      state.loading = false;
+
+      if (_isInvoiceListSelected(state)) {
+        _publishInvoiceListState(state);
+        _registry?.markFresh(invoiceListScreen);
+      }
 
       // Only a fully parsed first page reaches this point, so it is safe to
       // keep. Later pages are deliberately never cached.
       if (userId != null) {
         try {
-          await useCases.cacheInvoiceList(userId, status, response);
+          await useCases.cacheInvoiceList(userId, state.status, response);
         } catch (_) {
           // A cache write is a convenience; the API response is still usable.
         }
       }
     } on AppException catch (error) {
-      if (seq != _invoiceListSeq ||
-          userId != _currentUserId ||
-          status != invoiceListStatus.value) {
+      if (!_isInvoiceListCurrent(state, seq, userId)) {
         return;
       }
-      _handleInvoiceListFailure(error);
+      _handleInvoiceListFailure(state, error);
     } catch (_) {
-      if (seq != _invoiceListSeq ||
-          userId != _currentUserId ||
-          status != invoiceListStatus.value) {
+      if (!_isInvoiceListCurrent(state, seq, userId)) {
         return;
       }
-      _handleInvoiceListFailure(null);
+      _handleInvoiceListFailure(state, null);
     } finally {
-      if (seq == _invoiceListSeq) {
-        isLoadingInvoiceList.value = false;
+      if (state.seq == seq) {
+        state.loading = false;
+        if (_isInvoiceListSelected(state)) {
+          isLoadingInvoiceList.value = false;
+        }
       }
     }
   }
 
   Future<void> loadMoreInvoices() async {
-    if (isLoadingInvoiceList.value ||
-        isLoadingMoreInvoices.value ||
-        !hasMoreInvoices) {
+    final state = _invoiceListStates[invoiceListStatus.value];
+    if (state == null || !state.loaded) {
       return;
     }
-    if (_connectivity?.isOnline.value == false && _hasInvoiceListData) {
-      isShowingCachedInvoices.value = true;
-      _registry?.markStale(invoiceListScreen);
+    if (state.loading || state.loadingMore) {
+      return;
+    }
+    if (!_hasMoreInvoicePages(state)) {
+      return;
+    }
+    if (_connectivity?.isOnline.value == false) {
+      state.showingCached = true;
+      if (_isInvoiceListSelected(state)) {
+        isShowingCachedInvoices.value = true;
+        _registry?.markStale(invoiceListScreen);
+      }
       return;
     }
 
-    final status = invoiceListStatus.value;
     final userId = _currentUserId;
-    final seq = _invoiceListSeq;
-    final nextPage = invoiceListPage.value + 1;
-    isLoadingMoreInvoices.value = true;
-    invoiceListError.value = null;
+    final seq = state.seq;
+    final nextPage = state.page + 1;
+    state.loadingMore = true;
+    state.error = null;
+    if (_isInvoiceListSelected(state)) {
+      isLoadingMoreInvoices.value = true;
+      invoiceListError.value = null;
+    }
     try {
       final response = await useCases.getInvoiceList(
         page: nextPage,
-        limit: invoiceListLimit.value,
-        status: status,
+        limit: state.limit,
+        status: state.status,
       );
-      if (seq != _invoiceListSeq ||
-          userId != _currentUserId ||
-          status != invoiceListStatus.value) {
+      if (!_isInvoiceListCurrent(state, seq, userId)) {
         return;
       }
-      final knownIds = invoiceList.map((invoice) => invoice.id).toSet();
-      invoiceList.addAll(
+      final knownIds = state.items.map((invoice) => invoice.id).toSet();
+      state.items.addAll(
         response.items.where((invoice) => !knownIds.contains(invoice.id)),
       );
-      invoiceListPage.value = response.page <= 0 ? nextPage : response.page;
-      invoiceListLimit.value = response.limit <= 0
-          ? invoiceListLimit.value
-          : response.limit;
-      invoiceListTotal.value = response.total < invoiceList.length
-          ? invoiceList.length
+      state.page = response.page <= 0 ? nextPage : response.page;
+      state.limit = response.limit <= 0 ? state.limit : response.limit;
+      state.total = response.total < state.items.length
+          ? state.items.length
           : response.total;
-      _hasInvoiceListData = true;
-      _invoiceListOwnerUserId = userId;
-      isShowingCachedInvoices.value = false;
-      _registry?.markFresh(invoiceListScreen);
+      state.loaded = true;
+      state.ownerUserId = userId;
+      state.showingCached = false;
+      if (_isInvoiceListSelected(state)) {
+        _publishInvoiceListState(state);
+        _registry?.markFresh(invoiceListScreen);
+      }
     } on AppException catch (error) {
-      if (seq == _invoiceListSeq && userId == _currentUserId) {
-        _handleInvoiceListFailure(error);
+      if (_isInvoiceListCurrent(state, seq, userId)) {
+        _handleInvoiceListFailure(state, error);
       }
     } catch (_) {
-      if (seq == _invoiceListSeq && userId == _currentUserId) {
-        _handleInvoiceListFailure(null);
+      if (_isInvoiceListCurrent(state, seq, userId)) {
+        _handleInvoiceListFailure(state, null);
       }
     } finally {
-      if (seq == _invoiceListSeq) {
-        isLoadingMoreInvoices.value = false;
+      if (state.seq == seq) {
+        state.loadingMore = false;
+        if (_isInvoiceListSelected(state)) {
+          isLoadingMoreInvoices.value = false;
+        }
       }
     }
   }
 
-  /// Switches the status filter and reloads its own cache snapshot.
+  /// Switches the status filter.
+  ///
+  /// A filter that already finished loading is shown straight from memory. Only
+  /// a filter that has never loaded (or previously failed) touches the cache and
+  /// the API, so flipping back and forth never repeats a request.
   Future<void> selectInvoiceListStatus(String status) async {
     final normalized = status.trim().isEmpty
         ? 'all'
         : status.trim().toLowerCase();
-    if (normalized == invoiceListStatus.value && _hasInvoiceListData) {
+    if (normalized == invoiceListStatus.value) {
+      final state = _invoiceListStates[normalized];
+      if (state != null && state.loaded) {
+        _publishInvoiceListState(state);
+        return;
+      }
+      await loadInvoices();
       return;
     }
+
     invoiceListStatus.value = normalized;
-    _invoiceListSeq++;
-    _invoiceListInFlight = null;
-    _hasInvoiceListData = false;
-    _invoiceListOwnerUserId = null;
-    invoiceList.clear();
-    invoiceListPage.value = 1;
-    invoiceListTotal.value = 0;
-    invoiceListError.value = null;
-    isShowingCachedInvoices.value = false;
-    invoiceListUpdatedAt.value = null;
-    isLoadingMoreInvoices.value = false;
+    final state = _invoiceListStates[normalized];
+    if (state != null && state.loaded) {
+      _publishInvoiceListState(state);
+      return;
+    }
+    _publishInvoiceListState(state ?? _InvoiceListFilterState(normalized));
     await loadInvoices();
   }
 
   Future<void> _hydrateInvoiceListFromCache(
+    _InvoiceListFilterState state,
     int userId,
-    String status,
     int seq,
   ) async {
     try {
-      final cached = await useCases.getCachedInvoiceList(userId, status);
-      if (cached == null ||
-          seq != _invoiceListSeq ||
-          userId != _currentUserId ||
-          status != invoiceListStatus.value) {
+      final cached = await useCases.getCachedInvoiceList(userId, state.status);
+      if (cached == null || !_isInvoiceListCurrent(state, seq, userId)) {
         return;
       }
-      invoiceList.assignAll(cached.response.items);
-      invoiceListPage.value = cached.response.page;
-      invoiceListLimit.value = cached.response.limit;
-      invoiceListTotal.value = cached.response.total;
-      _hasInvoiceListData = true;
-      _invoiceListOwnerUserId = userId;
-      isShowingCachedInvoices.value = true;
-      invoiceListUpdatedAt.value = cached.updatedAt;
-      invoiceListError.value = null;
+      state.items
+        ..clear()
+        ..addAll(cached.response.items);
+      state.page = cached.response.page;
+      state.limit = cached.response.limit;
+      state.total = cached.response.total;
+      state.loaded = true;
+      state.ownerUserId = userId;
+      state.showingCached = true;
+      state.updatedAt = cached.updatedAt;
+      state.error = null;
+      if (_isInvoiceListSelected(state)) {
+        _publishInvoiceListState(state);
+      }
     } catch (_) {
       // A broken cache read must not stop the API request.
     }
   }
 
-  void _handleInvoiceListFailure(Object? error) {
-    if (_hasInvoiceListData) {
-      isShowingCachedInvoices.value = true;
+  void _handleInvoiceListFailure(_InvoiceListFilterState state, Object? error) {
+    state.loading = false;
+    if (state.loaded) {
+      state.showingCached = true;
     } else {
-      invoiceListError.value = error is AppException
+      state.error = error is AppException
           ? error.message
           : 'Unable to load invoices.';
     }
-    if (error is ApiException && error.isRetryable) {
-      _registry?.markStale(invoiceListScreen);
+    if (_isInvoiceListSelected(state)) {
+      _publishInvoiceListState(state);
+      if (error is ApiException && error.isRetryable) {
+        _registry?.markStale(invoiceListScreen);
+      }
     }
+  }
+
+  _InvoiceListFilterState _invoiceListState(String status) {
+    return _invoiceListStates.putIfAbsent(
+      status,
+      () => _InvoiceListFilterState(status),
+    );
+  }
+
+  bool _isInvoiceListCurrent(
+    _InvoiceListFilterState state,
+    int seq,
+    int? userId,
+  ) {
+    return state.seq == seq &&
+        userId == _currentUserId &&
+        identical(_invoiceListStates[state.status], state);
+  }
+
+  bool _isInvoiceListSelected(_InvoiceListFilterState state) {
+    return state.status == invoiceListStatus.value &&
+        identical(_invoiceListStates[state.status], state);
+  }
+
+  bool _hasMoreInvoicePages(_InvoiceListFilterState state) {
+    return state.loaded && state.page * state.limit < state.total;
+  }
+
+  void _publishInvoiceListState(_InvoiceListFilterState state) {
+    invoiceList.assignAll(state.items);
+    invoiceListPage.value = state.page;
+    invoiceListLimit.value = state.limit;
+    invoiceListTotal.value = state.total;
+    isLoadingInvoiceList.value = state.loading;
+    isLoadingMoreInvoices.value = state.loadingMore;
+    invoiceListError.value = state.error;
+    isShowingCachedInvoices.value = state.showingCached;
+    invoiceListUpdatedAt.value = state.updatedAt;
+  }
+
+  /// Drops every in-memory invoice filter page. In-flight responses are
+  /// invalidated by bumping each filter's sequence number.
+  void _resetInvoiceListFilters({bool resetStatus = false}) {
+    for (final state in _invoiceListStates.values) {
+      state.seq = state.seq + 1;
+      state.inFlight = null;
+      state.loaded = false;
+      state.loading = false;
+      state.loadingMore = false;
+      state.error = null;
+      state.showingCached = false;
+      state.updatedAt = null;
+      state.ownerUserId = null;
+      state.items.clear();
+    }
+    _invoiceListStates.clear();
+    if (resetStatus) {
+      invoiceListStatus.value = 'all';
+    }
+    invoiceList.assignAll(const <InvoiceListItem>[]);
+    invoiceListPage.value = 1;
+    invoiceListLimit.value = invoicePageSize;
+    invoiceListTotal.value = 0;
+    isLoadingInvoiceList.value = false;
+    isLoadingMoreInvoices.value = false;
+    invoiceListError.value = null;
+    isShowingCachedInvoices.value = false;
+    invoiceListUpdatedAt.value = null;
   }
 
   // --------------------------------------------------------- invoice detail
@@ -1394,20 +1496,27 @@ class PaymentController extends GetxController {
   }
 
   Future<void> _refreshAfterSubmission(Invoice invoice) async {
+    final hadInvoiceListData = _invoiceListStates.values.any(
+      (state) => state.loaded,
+    );
     try {
       await useCases.clearDashboardCache();
-    } catch (_) {
-    }
+    } catch (_) {}
     try {
       await useCases.clearInvoiceListCache();
-    } catch (_) {
-    }
+    } catch (_) {}
     try {
       await useCases.clearPaymentListCache();
-    } catch (_) {
-    }
+    } catch (_) {}
 
+    // A payment changes both the dashboard and the status of every filter, so
+    // the in-memory pages are dropped and the visible filter is re-read once.
+    _resetInvoiceListFilters();
+    final invoiceRefresh = hadInvoiceListData
+        ? loadInvoices(refresh: true)
+        : Future<void>.value();
     await loadPayments();
+    await invoiceRefresh;
 
     final invoiceId = int.tryParse(invoice.id);
     if (invoiceId != null &&
@@ -1415,7 +1524,24 @@ class PaymentController extends GetxController {
         invoiceDetailId.value == invoiceId) {
       await loadInvoiceDetail(invoiceId, force: true);
     }
-    // Invoice list refresh is handled by the caller when needed.
   }
 }
 
+class _InvoiceListFilterState {
+  _InvoiceListFilterState(this.status);
+
+  final String status;
+  final List<InvoiceListItem> items = <InvoiceListItem>[];
+  int page = 1;
+  int limit = PaymentController.invoicePageSize;
+  int total = 0;
+  bool loaded = false;
+  bool loading = false;
+  bool loadingMore = false;
+  String? error;
+  bool showingCached = false;
+  DateTime? updatedAt;
+  int? ownerUserId;
+  int seq = 0;
+  Future<void>? inFlight;
+}

@@ -59,7 +59,7 @@ class _InvoiceListPageState extends State<InvoiceListPage> {
   @override
   void initState() {
     super.initState();
-    controller.loadInvoices();
+    controller.ensureInvoiceListLoaded();
   }
 
   @override

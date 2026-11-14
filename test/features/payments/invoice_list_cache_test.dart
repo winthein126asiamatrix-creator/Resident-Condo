@@ -253,6 +253,29 @@ void main() {
       expect(repository.cacheWrites.single.response.items, hasLength(20));
     });
 
+    test('switching back to a loaded filter reuses its page', () async {
+      final repository = _InvoiceRepository()
+        ..fresh = _page(page: 1, startId: 500, count: 20);
+      final controller = PaymentController(
+        PaymentUseCases(repository),
+        sessionController: _sessionFor(1),
+      )..onInit();
+
+      await controller.selectInvoiceListStatus('all');
+      expect(repository.listCalls, 1);
+
+      await controller.selectInvoiceListStatus('paid');
+      expect(repository.listCalls, 2);
+      expect(controller.invoiceList.first.id, 500);
+
+      await controller.selectInvoiceListStatus('all');
+      expect(repository.listCalls, 2);
+      expect(controller.invoiceList.first.id, 500);
+
+      await controller.selectInvoiceListStatus('paid');
+      expect(repository.listCalls, 2);
+    });
+
     test('an older resident response cannot replace the new one', () async {
       final repository = _InvoiceRepository()..manualResponses = true;
       final session = SessionController();
@@ -604,6 +627,4 @@ class _InvoiceRepository implements PaymentRepository {
 
   @override
   Future<void> clearPaymentMethodsCache() async {}
-
 }
-
