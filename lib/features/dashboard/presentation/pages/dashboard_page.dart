@@ -10,6 +10,7 @@ import '../../../../app/routes/app_routes.dart';
 
 import '../../../../core/network/api_log_store.dart';
 import '../../../../core/services/firebase_service.dart';
+import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/utils/super_print.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/app_state_message.dart';
@@ -19,6 +20,9 @@ import '../../../../core/widgets/authenticated_avatar.dart';
 import '../../../../core/widgets/branded_loading_view.dart';
 
 import '../../../notifications/presentation/controllers/notification_controller.dart';
+
+import '../../../payments/domain/entities/payment_dashboard.dart';
+import '../../../payments/presentation/controllers/payment_controller.dart';
 
 import '../../../session/domain/entities/resident_session.dart';
 
@@ -76,6 +80,12 @@ class DashboardPage extends GetView<DashboardController> {
         );
       }
       final data = controller.dashboard.value!;
+      // The balance card reads the payment feature's shared controller instead
+      // of issuing its own request. The controller is registered app-wide and
+      // already owns the API data, its cache and its offline fallback.
+      final paymentController = Get.isRegistered<PaymentController>()
+          ? Get.find<PaymentController>()
+          : null;
       return SafeArea(
         child: Column(
           children: [
@@ -89,7 +99,13 @@ class DashboardPage extends GetView<DashboardController> {
             ),
             Expanded(
               child: RefreshIndicator(
-                onRefresh: controller.loadDashboard,
+                onRefresh: () async {
+                  await Future.wait<void>([
+                    controller.loadDashboard(),
+                    if (paymentController != null)
+                      paymentController.loadPayments(),
+                  ]);
+                },
                 child: ListView(
                   key: Key('dashboard-scroll'),
                   physics: AlwaysScrollableScrollPhysics(),
@@ -103,7 +119,7 @@ class DashboardPage extends GetView<DashboardController> {
                     ),
                     22.h.heightBox(),
                     _BalanceCard(
-                      balance: data.balance,
+                      paymentController: paymentController,
                       onPayNow: () {
                         vibrateNow();
                         onSelectTab(1);
@@ -451,14 +467,60 @@ class _HomeCard extends StatelessWidget {
 }
 
 class _BalanceCard extends StatelessWidget {
-  const _BalanceCard({required this.balance, required this.onPayNow});
+  const _BalanceCard({required this.paymentController, required this.onPayNow});
 
-  final BalanceSummary balance;
+  final PaymentController? paymentController;
   final VoidCallback onPayNow;
 
   @override
   Widget build(BuildContext context) {
+    final controller = paymentController;
+    if (controller == null) {
+      return _buildCard(context, null, false, 'Balance unavailable');
+    }
+    return Obx(
+      () => _buildCard(
+        context,
+        controller.dashboard.value,
+        controller.isLoading.value,
+        controller.errorMessage.value,
+      ),
+    );
+  }
+
+  Widget _buildCard(
+    BuildContext context,
+    PaymentDashboard? dashboard,
+    bool isLoading,
+    String? errorMessage,
+  ) {
     final tokens = AppThemeTokens.of(context);
+    final hasData = dashboard != null;
+    final failed = !hasData && !isLoading && errorMessage != null;
+    final currency = dashboard?.outstandingBalance.currency ?? '';
+    final dueDate = _dueDateLabel(dashboard);
+    final lastPaymentDate = paymentController?.lastDashboardPaymentDate ?? '';
+
+    final balanceText = hasData
+        ? _money(dashboard.outstandingBalance.amount, currency)
+        : failed
+        ? '—'
+        : 'Loading...';
+    final balanceDetail = hasData
+        ? 'Across all open invoices'
+        : failed
+        ? errorMessage
+        : 'Fetching your balance...';
+    final lastPaymentText = hasData
+        ? _lastPaymentText(
+            dashboard.paymentStatistics.lastPayment,
+            lastPaymentDate,
+            currency,
+          )
+        : failed
+        ? '—'
+        : 'Loading...';
+
     return Container(
       padding: EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -478,17 +540,17 @@ class _BalanceCard extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
-              StatusBadge(label: 'Due ${balance.dueDate}'),
+              if (dueDate.isNotEmpty) StatusBadge(label: 'Due $dueDate'),
             ],
           ),
           8.h.heightBox(),
           Text(
-            '\$${balance.outstanding.toStringAsFixed(2)}',
+            balanceText,
             style: Theme.of(context).textTheme.headlineMedium
                 ?.copyWith(color: tokens.ink, fontWeight: FontWeight.w800),
           ),
           Text(
-            'Across all open invoices',
+            balanceDetail,
             style: Theme.of(context).textTheme.bodySmall
                 ?.copyWith(color: tokens.muted),
           ),
@@ -505,7 +567,7 @@ class _BalanceCard extends StatelessWidget {
                     ),
                     3.h.heightBox(),
                     Text(
-                      '\$${balance.lastPayment.toStringAsFixed(2)} Â· ${balance.lastPaymentDate}',
+                      lastPaymentText,
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 12.sp,
@@ -529,6 +591,30 @@ class _BalanceCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _money(double value, String currency) => currency.trim().isEmpty
+      ? AppFormatters.currency(value)
+      : AppFormatters.money(value, currency);
+
+  String _lastPaymentText(double amount, String paidAt, String currency) {
+    final money = _money(amount, currency);
+    return paidAt.isEmpty ? money : '$money · $paidAt';
+  }
+
+  String _dueDateLabel(PaymentDashboard? dashboard) {
+    final invoices = dashboard?.recentInvoices ?? const <RecentInvoice>[];
+    for (final invoice in invoices) {
+      if (invoice.remainingAmount > 0 && invoice.dueDateLabel.isNotEmpty) {
+        return invoice.dueDateLabel;
+      }
+    }
+    for (final invoice in invoices) {
+      if (invoice.dueDateLabel.isNotEmpty) {
+        return invoice.dueDateLabel;
+      }
+    }
+    return '';
   }
 }
 

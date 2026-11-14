@@ -3,6 +3,7 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/routes/app_routes.dart';
 
@@ -301,11 +302,58 @@ class _PartyTile extends StatelessWidget {
         ),
         IconButton(
           tooltip: 'Call ${party.name}',
-          onPressed: () {},
+          onPressed: () => _call(context),
           icon: Icon(Icons.call_outlined, color: tokens.brand),
         ),
       ],
     );
+  }
+
+  Future<void> _call(BuildContext context) async {
+    final number = _dialableNumber(party.phone);
+    if (number == null) {
+      showAppFeedback(
+        context,
+        title: 'Call ${party.name}',
+        message: 'No valid phone number is available.',
+        isError: true,
+      );
+      return;
+    }
+
+    try {
+      final opened = await launchUrl(
+        Uri(scheme: 'tel', path: number),
+        mode: LaunchMode.externalApplication,
+      );
+      if (!opened && context.mounted) {
+        showAppFeedback(
+          context,
+          title: 'Call ${party.name}',
+          message: 'Unable to open the dialer. Please try again.',
+          isError: true,
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        showAppFeedback(
+          context,
+          title: 'Call ${party.name}',
+          message: 'Unable to open the dialer. Please try again.',
+          isError: true,
+        );
+      }
+    }
+  }
+
+  /// Strips the formatting a phone number may carry and returns a `tel:` safe
+  /// value, or null when there is nothing dialable.
+  static String? _dialableNumber(String raw) {
+    final cleaned = raw.trim().replaceAll(RegExp(r'[\s\-().]'), '');
+    if (!RegExp(r'^\+?\d{3,15}$').hasMatch(cleaned)) {
+      return null;
+    }
+    return cleaned;
   }
 }
 

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../../../../core/network/api_end_points.dart';
 import '../../../../core/network/dio_api_service.dart';
 import '../../../../core/utils/app_dates.dart';
@@ -11,6 +13,45 @@ class LeaseRemoteDataSource {
 
   Future<List<Lease>> getLeases() async {
     final response = await _service.get<dynamic>(ApiEndPoints.lease);
+  //    const response = '''
+  // {
+  //   "items": [
+  //     {
+  //       "id": 42,
+  //       "reference": "LSE-2026-0042",
+  //       "status": "expiring_soon",
+  //       "unit": {
+  //         "id": 1,
+  //         "label": "Tower A · 1205",
+  //         "tower": "Tower A",
+  //         "number": "1205"
+  //       },
+  //       "start_date": "2026-01-01",
+  //       "end_date": "2026-10-31",
+  //       "monthly_rent": 2400.0,
+  //       "security_deposit": 2400.0,
+  //       "currency": "USD",
+  //       "rent_due_day": 1,
+  //       "owner": {
+  //         "id": 12,
+  //         "name": "John Smith",
+  //         "phone": "09123456789",
+  //         "email": "john@example.com"
+  //       },
+  //       "tenant": {
+  //         "id": 34,
+  //         "name": "Alex Johnson",
+  //         "phone": "09987654321",
+  //         "email": "alex@example.com"
+  //       },
+  //       "last_rent_payment_date": "2026-09-01"
+  //     }
+  //   ],
+  //   "total": 1
+  // }
+  // ''';
+
+  //final decoded = jsonDecode(response);
     return _items(
       response,
       listKeys: const <String>['items', 'leases'],

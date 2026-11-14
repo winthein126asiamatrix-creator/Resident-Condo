@@ -341,11 +341,11 @@ class _BalanceSummary extends StatelessWidget {
               icon: Icon(
                 Icons.arrow_forward_rounded,
                 size: 18.sp,
-                color: tokens.brandOnDark,
+              //  color: tokens.brandOnDark,
               ),
               label: Text(
                 'Pay Now',
-                style: TextStyle(color: tokens.brandOnDark),
+               // style: TextStyle(color: tokens.brandOnDark),
               ),
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.white,
