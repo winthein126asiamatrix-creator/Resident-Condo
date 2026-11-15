@@ -9,6 +9,7 @@ import 'package:test/features/payments/domain/entities/invoice_detail.dart';
 import 'package:test/features/payments/domain/entities/invoice_list.dart';
 import 'package:test/features/payments/domain/entities/payment.dart';
 import 'package:test/features/payments/domain/entities/payment_method_option.dart';
+import 'package:test/features/payments/domain/entities/payment_quote.dart';
 import 'package:test/features/payments/domain/entities/payment_dashboard.dart';
 import 'package:test/features/payments/domain/entities/payment_detail.dart';
 import 'package:test/features/payments/domain/entities/payment_list.dart';
@@ -247,6 +248,14 @@ class _FilteredInvoiceRepository implements PaymentRepository {
   Future<List<Payment>> getPaymentHistory() async => const <Payment>[];
 
   @override
+  Future<PaymentQuote> getPaymentQuote({
+    required int invoiceId,
+    required List<int> selectedItemIds,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<Payment> submitPayment(Payment payment) async => payment;
 
   Future<List<Invoice>> applyRole(String roleKey) async => const <Invoice>[];
@@ -276,6 +285,4 @@ class _FilteredInvoiceRepository implements PaymentRepository {
 
   @override
   Future<void> clearPaymentMethodsCache() async {}
-
 }
-

@@ -6,6 +6,7 @@ import '../../domain/entities/payment_dashboard.dart';
 import '../../domain/entities/payment_detail.dart';
 import '../../domain/entities/payment_list.dart';
 import '../../domain/entities/payment_method_option.dart';
+import '../../domain/entities/payment_quote.dart';
 import '../../domain/repositories/payment_repository.dart';
 import '../datasources/payment_dashboard_local_data_source.dart';
 import '../datasources/payment_dashboard_remote_data_source.dart';
@@ -143,7 +144,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
     return remote.getPaymentMethods();
   }
 
-   @override
+  @override
   Future<Payment> submitPayment(Payment payment) async {
     final remote = invoiceDataSource;
     if (remote == null) {
@@ -151,6 +152,21 @@ class PaymentRepositoryImpl implements PaymentRepository {
     }
     final response = await remote.submitPayment(payment);
     return response.toPayment(payment);
+  }
+
+  @override
+  Future<PaymentQuote> getPaymentQuote({
+    required int invoiceId,
+    required List<int> selectedItemIds,
+  }) {
+    final remote = invoiceDataSource;
+    if (remote == null) {
+      throw StateError('Payment quote data source is not configured.');
+    }
+    return remote.createQuote(
+      invoiceId: invoiceId,
+      selectedItemIds: selectedItemIds,
+    );
   }
 
   @override
@@ -175,5 +191,4 @@ class PaymentRepositoryImpl implements PaymentRepository {
   Future<void> clearPaymentMethodsCache() {
     return paymentMethodsLocalDataSource?.clear() ?? Future<void>.value();
   }
-
 }

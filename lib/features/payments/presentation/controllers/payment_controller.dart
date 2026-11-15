@@ -857,7 +857,24 @@ class PaymentController extends GetxController {
       if (seq != _paymentMethodsSeq || userId != _currentUserId) {
         return;
       }
+//       final demoMethod = PaymentMethodOption(
+//   id: 999,
+//   code: 'demo_kbz_pay',
+//   name: 'Demo KBZ Pay',
+//   isActive: true,
+//   requiresProof: true,
+//   accountName: 'Demo Account',
+//   accountNumber: '1234567890',
+//   bankName: 'KBZ Bank',
+//   qrImageUrl: '',
+//   instructions: 'Demo payment method for testing',
+//   currency: 'MMK',
+// );
 
+// final updatedMethods = [
+//   ...methods,
+//   demoMethod,
+// ];
       paymentMethods.assignAll(methods);
       _hasPaymentMethodsData = true;
       _paymentMethodsOwnerUserId = userId;
@@ -1715,6 +1732,9 @@ class PaymentController extends GetxController {
     String? proofFileName,
     required String transactionId,
   }) async {
+    if (isPaymentProcessing.value) {
+      return null;
+    }
     final invoice = selectedInvoice.value;
     if (invoice == null || !invoice.isPayable) {
       errorMessage.value = 'Select an unpaid invoice first.';
@@ -1739,32 +1759,62 @@ class PaymentController extends GetxController {
       return null;
     }
 
+    final invoiceId = int.tryParse(invoice.id);
+    if (invoiceId == null || invoiceId <= 0) {
+      errorMessage.value = 'This invoice cannot be paid right now.';
+      return null;
+    }
+    final selectedItemIds = selectedItems
+        .map((item) => item.id)
+        .whereType<int>()
+        .where((id) => id > 0)
+        .toList(growable: false);
+    if (selectedItemIds.length != selectedItems.length ||
+        selectedItemIds.toSet().length != selectedItemIds.length) {
+      errorMessage.value =
+          'Some selected fees cannot be paid right now. Please choose again.';
+      return null;
+    }
+
     isPaymentProcessing.value = true;
     errorMessage.value = null;
     paymentSuccess.value = null;
     paymentFailure.value = null;
 
-    final payment = Payment(
-      id: '',
-      invoiceNumber: invoice.number,
-      residentName: _session?.name ?? '',
-      unitLabel: invoice.unitLabel,
-      items: List<InvoiceItem>.unmodifiable(selectedItems),
-      amount: selectedTotal,
-      date: AppDates.format(DateTime.now()),
-      method: paymentMethodFromCode(method.code),
-      status: PaymentStatus.unknown,
-      transactionId: transactionId.trim(),
-      paymentMethodCode: method.code,
-      paymentMethodName: method.displayName,
-      proofPath: proofPath,
-      proofFileName: proofFileName,
-      paymentMethodId: method.id,
-      quoteId: invoice.number,
-      currency: invoice.currency,
-    );
-
     try {
+      final quote = await useCases.getPaymentQuote(
+        invoiceId: invoiceId,
+        selectedItemIds: selectedItemIds,
+      );
+      final quoteError = quote.validationError(
+        invoiceId: invoiceId,
+        selectedItemIds: selectedItemIds.toSet(),
+      );
+      if (quoteError != null) {
+        errorMessage.value = quoteError;
+        return null;
+      }
+
+      final payment = Payment(
+        id: '',
+        invoiceNumber: invoice.number,
+        residentName: _session?.name ?? '',
+        unitLabel: invoice.unitLabel,
+        items: List<InvoiceItem>.unmodifiable(selectedItems),
+        amount: quote.totalAmount,
+        date: AppDates.format(DateTime.now()),
+        method: paymentMethodFromCode(method.code),
+        status: PaymentStatus.unknown,
+        transactionId: transactionId.trim(),
+        paymentMethodCode: method.code,
+        paymentMethodName: method.displayName,
+        proofPath: proofPath,
+        proofFileName: proofFileName,
+        paymentMethodId: method.id,
+        quoteId: quote.quoteId,
+        currency: quote.currency,
+      );
+
       final stored = await useCases.submitPayment(payment);
       if (stored.isSuccessful) {
         paymentSuccess.value = stored;

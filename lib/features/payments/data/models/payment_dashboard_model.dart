@@ -72,30 +72,6 @@ class PaymentDashboardModel extends PaymentDashboard {
       recentInvoices: _maps(json['recent_invoices'])
           .map(RecentInvoiceModel.fromJson)
           .toList(growable: false),
-//      recentInvoices: () {
-//   final invoices = _maps(json['recent_invoices'])
-//       .map(RecentInvoiceModel.fromJson)
-//       .toList();
-
-//   if (invoices.isNotEmpty) {
-//     final original = invoices.first;
-
-//     invoices.add(
-//       RecentInvoiceModel(
-//         id: original.id + 1,
-//         invoiceNumber: '${original.invoiceNumber}-TEST',
-//         billingPeriod: original.billingPeriod,
-//         totalAmount: original.totalAmount,
-//         paidAmount: original.paidAmount,
-//         remainingAmount: original.remainingAmount,
-//         status: original.status,
-//         dueDate: original.dueDate,
-//       ),
-//     );
-//   }
-
-//   return invoices;
-// }(),
       recentPayments: _maps(json['recent_payments'])
           .map(RecentPaymentModel.fromJson)
           .toList(growable: false),

@@ -5,6 +5,7 @@ import '../entities/payment_dashboard.dart';
 import '../entities/payment_detail.dart';
 import '../entities/payment_list.dart';
 import '../entities/payment_method_option.dart';
+import '../entities/payment_quote.dart';
 import '../repositories/payment_repository.dart';
 
 class PaymentUseCases {
@@ -93,6 +94,16 @@ class PaymentUseCases {
 
   Future<void> clearPaymentMethodsCache() {
     return repository.clearPaymentMethodsCache();
+  }
+
+  Future<PaymentQuote> getPaymentQuote({
+    required int invoiceId,
+    required List<int> selectedItemIds,
+  }) {
+    return repository.getPaymentQuote(
+      invoiceId: invoiceId,
+      selectedItemIds: selectedItemIds,
+    );
   }
 
   Future<Payment> submitPayment(Payment payment) {

@@ -41,6 +41,9 @@ abstract final class ApiEndPoints {
   /// Submits a payment for one or more selected invoice lines.
   static const String payment = '/payment';
 
+  /// Prices the selected invoice lines before the payment is submitted.
+  static const String paymentQuote = '$payments/quote';
+
   static String paymentDetail(int id) => '$payments/$id';
 
   /// The resident's payment dashboard: balance, fee breakdown, invoice counts

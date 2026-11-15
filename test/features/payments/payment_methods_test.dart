@@ -20,6 +20,7 @@ import 'package:test/features/payments/domain/entities/payment_dashboard.dart';
 import 'package:test/features/payments/domain/entities/payment_detail.dart';
 import 'package:test/features/payments/domain/entities/payment_list.dart';
 import 'package:test/features/payments/domain/entities/payment_method_option.dart';
+import 'package:test/features/payments/domain/entities/payment_quote.dart';
 import 'package:test/features/payments/domain/repositories/payment_repository.dart';
 import 'package:test/features/payments/domain/usecases/payment_usecases.dart';
 import 'package:test/features/payments/presentation/controllers/payment_controller.dart';
@@ -604,6 +605,14 @@ class _FakeRepository implements PaymentRepository {
   Future<Invoice?> getInvoice(String id) async => null;
 
   Future<List<Payment>> getPaymentHistory() async => const <Payment>[];
+
+  @override
+  Future<PaymentQuote> getPaymentQuote({
+    required int invoiceId,
+    required List<int> selectedItemIds,
+  }) {
+    throw UnimplementedError();
+  }
 
   @override
   Future<Payment> submitPayment(Payment payment) async => payment;

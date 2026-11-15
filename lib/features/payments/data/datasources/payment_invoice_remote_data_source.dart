@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:test/core/utils/super_print.dart';
+
 import '../../../../core/network/api_end_points.dart';
 import '../../../../core/network/dio_api_service.dart';
 import '../models/invoice_detail_model.dart';
@@ -7,6 +8,7 @@ import '../models/invoice_list_model.dart';
 import '../models/payment_detail_model.dart';
 import '../models/payment_list_model.dart';
 import '../models/payment_method_option_model.dart';
+import '../models/payment_quote_model.dart';
 import '../models/payment_submission_response_model.dart';
 import '../../domain/entities/payment.dart';
 
@@ -15,19 +17,37 @@ class PaymentInvoiceRemoteDataSource {
 
   final DioApiService _service;
 
+  Future<PaymentQuoteModel> createQuote({
+    required int invoiceId,
+    required List<int> selectedItemIds,
+  }) {
+    return _service.post<PaymentQuoteModel>(
+      ApiEndPoints.paymentQuote,
+      data: <String, dynamic>{
+        'invoice_id': invoiceId,
+        'selected_item_ids': selectedItemIds,
+      },
+      parse: PaymentQuoteModel.parse,
+    );
+  }
+
   Future<PaymentSubmissionResponseModel> submitPayment(Payment payment) async {
+    final quoteId = payment.quoteId?.trim() ?? '';
+    if (quoteId.isEmpty) {
+      throw StateError('A payment quote is required to submit a payment.');
+    }
     final selectedItemIds = payment.items
         .map((item) => item.id)
         .whereType<int>()
         .toList();
-    
+
     final fields = <String, dynamic>{
-      'quote_id': payment.quoteId ?? payment.invoiceNumber,
+      'quote_id': quoteId,
       'payment_method_id': payment.paymentMethodId,
       'selected_item_ids': selectedItemIds,
       'transaction_reference': payment.transactionId,
     };
-    superPrint(fields,title: "Request");
+    superPrint(fields, title: "Request");
 
     if (payment.proofPath != null && payment.proofPath!.trim().isNotEmpty) {
       return _service.uploadMultipart<PaymentSubmissionResponseModel>(

@@ -5,6 +5,7 @@ import '../entities/payment_dashboard.dart';
 import '../entities/payment_detail.dart';
 import '../entities/payment_list.dart';
 import '../entities/payment_method_option.dart';
+import '../entities/payment_quote.dart';
 
 abstract interface class PaymentRepository {
   /// Balance, fee breakdown, invoice counts and recent activity for the
@@ -72,6 +73,12 @@ abstract interface class PaymentRepository {
 
   /// Drops every cached payment methods list on this device.
   Future<void> clearPaymentMethodsCache();
+
+  /// Prices the selected invoice lines before the payment is submitted.
+  Future<PaymentQuote> getPaymentQuote({
+    required int invoiceId,
+    required List<int> selectedItemIds,
+  });
 
   /// Submits the payment to the API and returns the backend payment record.
   ///
