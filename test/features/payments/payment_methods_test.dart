@@ -371,11 +371,347 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _scrollToPaymentWidget(
+      tester,
+      find.byKey(const Key('transaction-reference-field')),
+    );
+    await tester.enterText(
+      find.byKey(const Key('transaction-reference-field')),
+      'TXN-1',
+    );
+    await _scrollToPaymentWidget(
+      tester,
+      find.byKey(const Key('confirm-payment')),
+    );
     await tester.tap(find.byKey(const Key('confirm-payment')));
     await tester.pumpAndSettle();
 
     expect(find.text('Attach proof of payment to continue.'), findsOneWidget);
   });
+
+  testWidgets('method details show bank, account, currency and QR', (
+    tester,
+  ) async {
+    Get.testMode = true;
+    addTearDown(Get.reset);
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _FakeRepository()
+      ..methods = <PaymentMethodOption>[
+        _method(
+          id: 1,
+          code: 'kbz_pay',
+          name: 'KBZ Pay',
+          bankName: 'KBZ Bank',
+          accountName: 'ABC Condo',
+          accountNumber: '09123456789',
+          qrImageUrl: 'https://example.com/qr.png',
+        ),
+      ];
+    final controller = PaymentController(
+      PaymentUseCases(repository),
+      sessionController: _sessionFor(1),
+    );
+    controller.selectInvoice(_payableInvoice());
+    Get.put(controller);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, _) => const MaterialApp(home: PaymentMethodPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('KBZ Bank'), findsOneWidget);
+    expect(find.text('ABC Condo'), findsOneWidget);
+    expect(find.text('09123456789'), findsOneWidget);
+    expect(find.text('Currency'), findsOneWidget);
+    expect(find.text('MMK'), findsWidgets);
+    expect(
+      find.byKey(const Key('payment-method-account-copy')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('payment-method-qr')), findsOneWidget);
+
+    await _scrollToPaymentWidget(
+      tester,
+      find.byKey(const Key('transaction-reference-field')),
+    );
+    expect(
+      find.byKey(const Key('transaction-reference-field')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('methods without a QR image hide the QR card', (tester) async {
+    Get.testMode = true;
+    addTearDown(Get.reset);
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _FakeRepository()
+      ..methods = <PaymentMethodOption>[
+        _method(
+          id: 1,
+          code: 'cash',
+          name: 'Cash',
+          accountName: 'ABC Condo',
+          accountNumber: '123456789',
+          currency: 'USD',
+        ),
+      ];
+    final controller = PaymentController(
+      PaymentUseCases(repository),
+      sessionController: _sessionFor(1),
+    );
+    controller.selectInvoice(_payableInvoice());
+    Get.put(controller);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, _) => const MaterialApp(home: PaymentMethodPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cash'), findsWidgets);
+    expect(find.text('USD'), findsWidgets);
+    expect(find.byKey(const Key('payment-method-qr')), findsNothing);
+    expect(find.byKey(const Key('payment-proof-attach')), findsNothing);
+  });
+
+  testWidgets('proof upload shows only when the method requires it', (
+    tester,
+  ) async {
+    Get.testMode = true;
+    addTearDown(Get.reset);
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _FakeRepository()
+      ..methods = <PaymentMethodOption>[
+        _method(id: 1, code: 'bank_transfer', requiresProof: true),
+      ];
+    final controller = PaymentController(
+      PaymentUseCases(repository),
+      sessionController: _sessionFor(1),
+    );
+    controller.selectInvoice(_payableInvoice());
+    Get.put(controller);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, _) => const MaterialApp(home: PaymentMethodPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToPaymentWidget(
+      tester,
+      find.byKey(const Key('payment-proof-attach')),
+    );
+    expect(find.byKey(const Key('payment-proof-attach')), findsOneWidget);
+  });
+
+  testWidgets('confirm rejects a blank transaction reference', (tester) async {
+    Get.testMode = true;
+    addTearDown(Get.reset);
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _FakeRepository()
+      ..methods = <PaymentMethodOption>[_method(id: 1, code: 'cash')];
+    final controller = PaymentController(
+      PaymentUseCases(repository),
+      sessionController: _sessionFor(1),
+    );
+    controller.selectInvoice(_payableInvoice());
+    Get.put(controller);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, _) => const MaterialApp(home: PaymentMethodPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToPaymentWidget(
+      tester,
+      find.byKey(const Key('confirm-payment')),
+    );
+    await tester.tap(find.byKey(const Key('confirm-payment')));
+    await tester.pump();
+
+    expect(
+      find.text(
+        'Enter the transaction reference from your bank or payment app.',
+      ),
+      findsOneWidget,
+    );
+    expect(repository.quoteCalls, 0);
+
+    await _scrollToPaymentWidget(
+      tester,
+      find.byKey(const Key('transaction-reference-field')),
+    );
+    await tester.enterText(
+      find.byKey(const Key('transaction-reference-field')),
+      '   ',
+    );
+    await _scrollToPaymentWidget(
+      tester,
+      find.byKey(const Key('confirm-payment')),
+    );
+    await tester.tap(find.byKey(const Key('confirm-payment')));
+    await tester.pump();
+
+    expect(repository.quoteCalls, 0);
+    expect(find.byType(AlertDialog), findsNothing);
+  });
+
+  testWidgets('cancelling confirmation keeps the entered reference', (
+    tester,
+  ) async {
+    Get.testMode = true;
+    addTearDown(Get.reset);
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _FakeRepository()
+      ..methods = <PaymentMethodOption>[_method(id: 1, code: 'cash')];
+    final controller = PaymentController(
+      PaymentUseCases(repository),
+      sessionController: _sessionFor(1),
+    );
+    controller.selectInvoice(_payableInvoice());
+    Get.put(controller);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, _) => const MaterialApp(home: PaymentMethodPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToPaymentWidget(
+      tester,
+      find.byKey(const Key('transaction-reference-field')),
+    );
+    await tester.enterText(
+      find.byKey(const Key('transaction-reference-field')),
+      '  TXN-42  ',
+    );
+    await _scrollToPaymentWidget(
+      tester,
+      find.byKey(const Key('confirm-payment')),
+    );
+    await tester.tap(find.byKey(const Key('confirm-payment')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    final field = tester.widget<TextFormField>(
+      find.byKey(const Key('transaction-reference-field')),
+    );
+    expect(field.controller?.text, '  TXN-42  ');
+    expect(repository.quoteCalls, 0);
+  });
+
+  testWidgets('a failed quote keeps the form and the reference', (
+    tester,
+  ) async {
+    Get.testMode = true;
+    addTearDown(Get.reset);
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _FakeRepository()
+      ..methods = <PaymentMethodOption>[_method(id: 1, code: 'cash')]
+      ..quoteError = const ApiException(
+        'Quote could not be created.',
+        kind: ApiFailureKind.validation,
+      );
+    final controller = PaymentController(
+      PaymentUseCases(repository),
+      sessionController: _sessionFor(1),
+    );
+    controller.selectInvoice(_payableInvoice());
+    Get.put(controller);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, _) => const MaterialApp(home: PaymentMethodPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToPaymentWidget(
+      tester,
+      find.byKey(const Key('transaction-reference-field')),
+    );
+    await tester.enterText(
+      find.byKey(const Key('transaction-reference-field')),
+      'TXN-42',
+    );
+    await _scrollToPaymentWidget(
+      tester,
+      find.byKey(const Key('confirm-payment')),
+    );
+    await tester.tap(find.byKey(const Key('confirm-payment')));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('Confirm Payment'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Quote could not be created.'), findsOneWidget);
+    await _scrollToPaymentWidget(
+      tester,
+      find.byKey(const Key('transaction-reference-field')),
+    );
+    final field = tester.widget<TextFormField>(
+      find.byKey(const Key('transaction-reference-field')),
+    );
+    expect(field.controller?.text, 'TXN-42');
+    expect(repository.quoteCalls, 1);
+    expect(repository.submitCalls, 0);
+  });
+}
+
+Future<void> _scrollToPaymentWidget(WidgetTester tester, Finder finder) async {
+  final scrollable = find
+      .descendant(
+        of: find.byKey(const Key('payment-method-scroll')),
+        matching: find.byType(Scrollable),
+      )
+      .first;
+  await tester.scrollUntilVisible(finder, 300, scrollable: scrollable);
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
 }
 
 PaymentMethodOption _method({
@@ -417,6 +753,46 @@ Invoice _invoice() {
     status: InvoiceStatus.unpaid,
     items: const <InvoiceItem>[
       InvoiceItem(type: InvoiceItemType.condoFee, amount: 100, mustPaid: true),
+    ],
+  );
+}
+
+Invoice _payableInvoice() {
+  return Invoice(
+    id: '42',
+    number: 'INV-42',
+    title: 'Invoice',
+    billingPeriod: 'November 2026',
+    unitLabel: 'Tower A - 1205',
+    dueDate: 'Nov 30, 2026',
+    status: InvoiceStatus.unpaid,
+    items: const <InvoiceItem>[
+      InvoiceItem(
+        type: InvoiceItemType.condoFee,
+        amount: 100,
+        id: 11,
+        mustPaid: true,
+      ),
+      InvoiceItem(
+        type: InvoiceItemType.parking,
+        amount: 50,
+        id: 12,
+        mustPaid: true,
+      ),
+    ],
+  );
+}
+
+PaymentQuote _paymentQuoteFor(int invoiceId) {
+  return PaymentQuote(
+    quoteId: 'Q-TEST',
+    invoiceId: invoiceId,
+    totalAmount: 150,
+    currency: 'MMK',
+    expiresAt: DateTime.now().toUtc().add(const Duration(minutes: 15)),
+    items: const <PaymentQuoteItem>[
+      PaymentQuoteItem(id: 11, amount: 100),
+      PaymentQuoteItem(id: 12, amount: 50),
     ],
   );
 }
@@ -496,6 +872,10 @@ class _FakeRepository implements PaymentRepository {
   Object? methodsError;
   bool manualResponses = false;
   int clearCalls = 0;
+  Object? quoteError;
+  int quoteCalls = 0;
+  int submitCalls = 0;
+  final List<Payment> submissions = <Payment>[];
 
   final requests = <Completer<List<PaymentMethodOption>>>[];
   final cacheWrites = <int, List<PaymentMethodOption>>{};
@@ -611,11 +991,20 @@ class _FakeRepository implements PaymentRepository {
     required int invoiceId,
     required List<int> selectedItemIds,
   }) {
-    throw UnimplementedError();
+    quoteCalls++;
+    final error = quoteError;
+    if (error != null) {
+      return Future<PaymentQuote>.error(error);
+    }
+    return Future<PaymentQuote>.value(_paymentQuoteFor(invoiceId));
   }
 
   @override
-  Future<Payment> submitPayment(Payment payment) async => payment;
+  Future<Payment> submitPayment(Payment payment) async {
+    submitCalls++;
+    submissions.add(payment);
+    return payment;
+  }
 
   Future<List<Invoice>> applyRole(String roleKey) async => const <Invoice>[];
 

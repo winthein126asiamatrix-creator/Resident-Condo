@@ -24,6 +24,8 @@ import '../../../../core/widgets/app_state_message.dart';
 
 import '../../domain/entities/invoice.dart';
 
+import '../../domain/entities/payment.dart';
+
 import '../../domain/entities/payment_method_option.dart';
 
 import '../controllers/payment_controller.dart';
@@ -145,21 +147,22 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               ),
             18.h.heightBox(),
             if (method != null) ...[
-            if (method.hasBankDetails) _BankDetails(method: method),
+              _MethodDetails(method: method),
               if (method.hasQrImage) ...[
-                if (method.hasBankDetails) 12.h.heightBox(),
+                12.h.heightBox(),
                 _QrImageCard(method: method),
               ],
               if (method.hasInstructions) ...[
-                if (method.hasBankDetails || method.hasQrImage)
-                  12.h.heightBox(),
+                12.h.heightBox(),
                 _InstructionsCard(method: method),
               ],
+              12.h.heightBox(),
+              _TransactionReferenceCard(
+                controller: _transactionReferenceController,
+                enabled: !controller.isPaymentProcessing.value,
+              ),
               if (method.requiresProof) ...[
-                if (method.hasBankDetails ||
-                    method.hasQrImage ||
-                    method.hasInstructions)
-                  12.h.heightBox(),
+                12.h.heightBox(),
                 _ProofSection(
                   proof: _proof,
                   onAttach: _attachProof,
@@ -200,7 +203,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               10.h.heightBox(),
               Text(_error, style: TextStyle(color: AppPalette.danger)),
             ],
-            if (controller.errorMessage.value != null) ...[
+            if (_error.isEmpty && controller.errorMessage.value != null) ...[
               10.h.heightBox(),
               Text(
                 controller.errorMessage.value!,
@@ -309,6 +312,14 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
       setState(() => _error = 'Choose a payment method first.');
       return;
     }
+    final transactionReference = _transactionReferenceController.text.trim();
+    if (transactionReference.isEmpty) {
+      setState(() {
+        _error =
+            'Enter the transaction reference from your bank or payment app.';
+      });
+      return;
+    }
     if (method.requiresProof && _proof == null) {
       setState(() => _error = 'Attach proof of payment to continue.');
       return;
@@ -411,9 +422,9 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
     }
 
     final payment = await controller.confirmPayment(
-      transactionId: _transactionReferenceController.text,
-      proofPath: _proof?.path,
-      proofFileName: _proof?.name,
+      transactionId: transactionReference,
+      proofPath: method.requiresProof ? _proof?.path : null,
+      proofFileName: method.requiresProof ? _proof?.name : null,
     );
     if (!mounted) {
       return;
@@ -424,7 +435,8 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
       });
       return;
     }
-    if (payment.isSuccessful) {
+    if (payment.isSuccessful ||
+        payment.status == PaymentStatus.pendingVerification) {
       Get.offNamed(AppRoutes.paymentSuccess, arguments: payment);
     } else {
       Get.offNamed(AppRoutes.paymentFailure, arguments: payment);
@@ -681,14 +693,16 @@ class _DemoGatewayHint extends StatelessWidget {
   }
 }
 
-class _BankDetails extends StatelessWidget {
-  const _BankDetails({required this.method});
+class _MethodDetails extends StatelessWidget {
+  const _MethodDetails({required this.method});
 
   final PaymentMethodOption method;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    final accountNumber = method.accountNumber.trim();
+    final currency = method.currency.trim();
     return _FormCard(
       children: [
         Icon(Icons.account_balance_rounded, color: tokens.brand, size: 32),
@@ -704,11 +718,76 @@ class _BankDetails extends StatelessWidget {
         ],
         if (method.accountName.trim().isNotEmpty)
           _DetailLine(label: 'Account name', value: method.accountName.trim()),
-        if (method.accountNumber.trim().isNotEmpty)
+        if (accountNumber.isNotEmpty)
           _DetailLine(
             label: 'Account number',
-            value: method.accountNumber.trim(),
+            value: accountNumber,
+            trailing: IconButton(
+              key: const Key('payment-method-account-copy'),
+              tooltip: 'Copy account number',
+              visualDensity: VisualDensity.compact,
+              onPressed: () => _copyAccountNumber(context, accountNumber),
+              icon: Icon(Icons.copy_rounded, size: 16, color: tokens.muted),
+            ),
           ),
+        if (currency.isNotEmpty)
+          _DetailLine(label: 'Currency', value: currency),
+      ],
+    );
+  }
+
+  Future<void> _copyAccountNumber(BuildContext context, String value) async {
+    await Clipboard.setData(ClipboardData(text: value));
+    if (!context.mounted) {
+      return;
+    }
+    showAppFeedback(
+      context,
+      title: 'Account number copied',
+      message: value,
+      isError: false,
+    );
+  }
+}
+
+class _TransactionReferenceCard extends StatelessWidget {
+  const _TransactionReferenceCard({
+    required this.controller,
+    required this.enabled,
+  });
+
+  final TextEditingController controller;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return _FormCard(
+      children: [
+        Icon(Icons.tag_rounded, color: tokens.brand, size: 28),
+        8.h.heightBox(),
+        Text(
+          'Transaction reference',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
+        5.h.heightBox(),
+        Text(
+          'Enter the reference from your bank or payment app after making the '
+          'transfer.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: tokens.muted, height: 1.4),
+        ),
+        12.h.heightBox(),
+        AppTextField(
+          fieldKey: const Key('transaction-reference-field'),
+          label: 'Transaction reference / ID',
+          hint: 'e.g. TXN123456',
+          controller: controller,
+          icon: Icons.confirmation_number_outlined,
+          enabled: enabled,
+          textCapitalization: TextCapitalization.characters,
+          textInputAction: TextInputAction.done,
+        ),
       ],
     );
   }
@@ -878,10 +957,11 @@ class _ProofSection extends StatelessWidget {
 }
 
 class _DetailLine extends StatelessWidget {
-  const _DetailLine({required this.label, required this.value});
+  const _DetailLine({required this.label, required this.value, this.trailing});
 
   final String label;
   final String value;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -905,6 +985,7 @@ class _DetailLine extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.sp),
             ),
           ),
+          if (trailing != null) trailing!,
         ],
       ),
     );

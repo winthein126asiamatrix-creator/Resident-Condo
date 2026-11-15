@@ -29,8 +29,12 @@ class PaymentSuccessPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    final pendingVerification =
+        payment.status == PaymentStatus.pendingVerification;
     return Scaffold(
-      appBar: AppDetailAppBar(title: 'Payment successful'),
+      appBar: AppDetailAppBar(
+        title: pendingVerification ? 'Payment pending' : 'Payment successful',
+      ),
       body: ListView(
         key: Key('payment-success-scroll'),
         padding: EdgeInsets.fromLTRB(
@@ -50,15 +54,19 @@ class PaymentSuccessPage extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.check_rounded,
-                color: AppPalette.success,
+                pendingVerification
+                    ? Icons.hourglass_top_rounded
+                    : Icons.check_rounded,
+                color: pendingVerification
+                    ? AppPalette.warning
+                    : AppPalette.success,
                 size: 48,
               ),
             ),
           ),
           20.h.heightBox(),
           Text(
-            'Payment Successful',
+            pendingVerification ? 'Pending Verification' : 'Payment Successful',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 24.sp,
@@ -68,21 +76,26 @@ class PaymentSuccessPage extends StatelessWidget {
           ),
           8.h.heightBox(),
           Text(
-            'Only the items you selected have been settled.',
+            pendingVerification
+                ? 'Your payment has been submitted and is waiting for the '
+                      'management team to verify it.'
+                : 'Only the items you selected have been settled.',
             textAlign: TextAlign.center,
             style: TextStyle(color: tokens.muted),
           ),
           24.h.heightBox(),
           _SuccessCard(payment: payment),
           20.h.heightBox(),
-          FilledButton.icon(
-            onPressed: () =>
-                Get.toNamed(AppRoutes.paymentReceipt, arguments: payment),
-            icon: Icon(Icons.receipt_long_outlined),
-            label: Text('View Receipt'),
-            style: FilledButton.styleFrom(minimumSize: Size.fromHeight(52)),
-          ),
-          10.h.heightBox(),
+          if (!pendingVerification) ...[
+            FilledButton.icon(
+              onPressed: () =>
+                  Get.toNamed(AppRoutes.paymentReceipt, arguments: payment),
+              icon: Icon(Icons.receipt_long_outlined),
+              label: Text('View Receipt'),
+              style: FilledButton.styleFrom(minimumSize: Size.fromHeight(52)),
+            ),
+            10.h.heightBox(),
+          ],
           OutlinedButton(
             onPressed: () => Get.offAllNamed(AppRoutes.home),
             style: OutlinedButton.styleFrom(minimumSize: Size.fromHeight(50)),
@@ -101,12 +114,15 @@ class _SuccessCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    final pendingVerification =
+        payment.status == PaymentStatus.pendingVerification;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'PAID ITEMS (${payment.items.length})',
+            '${pendingVerification ? 'SUBMITTED' : 'PAID'} ITEMS '
+            '(${payment.items.length})',
             style: TextStyle(
               color: tokens.brandOnDark,
               fontSize: 11.sp,
@@ -147,7 +163,7 @@ class _SuccessCard extends StatelessWidget {
             ),
           Divider(height: 24),
           _SuccessLine(
-            label: 'Amount paid',
+            label: pendingVerification ? 'Amount submitted' : 'Amount paid',
             value: AppFormatters.currency(payment.amount),
           ),
           _SuccessLine(label: 'Date', value: payment.date),

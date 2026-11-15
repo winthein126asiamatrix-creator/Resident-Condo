@@ -201,6 +201,50 @@ void main() {
       },
     );
 
+    test('a blank transaction reference is rejected before quoting', () async {
+      final repository = _QuoteRepository();
+      final controller = _controller(repository);
+
+      final payment = await controller.confirmPayment(transactionId: '   ');
+
+      expect(payment, isNull);
+      expect(repository.quoteCalls, 0);
+      expect(repository.submitCalls, 0);
+      expect(controller.errorMessage.value, contains('transaction reference'));
+      expect(controller.isPaymentProcessing.value, isFalse);
+      expect(controller.selectedItems, hasLength(2));
+    });
+
+    test('a successful submission trims the transaction reference', () async {
+      final repository = _QuoteRepository();
+      final controller = _controller(repository);
+
+      final payment = await controller.confirmPayment(
+        transactionId: '  TX-100  ',
+      );
+
+      expect(payment, isNotNull);
+      expect(repository.submissions.single.transactionId, 'TX-100');
+      expect(controller.paymentSuccess.value?.transactionId, 'TX-100');
+      expect(controller.paymentFailure.value, isNull);
+    });
+
+    test('a pending verification payment is treated as submitted', () async {
+      final repository = _QuoteRepository()
+        ..submitStatus = PaymentStatus.pendingVerification;
+      final controller = _controller(repository);
+
+      final payment = await controller.confirmPayment(transactionId: 'TX-200');
+
+      expect(payment, isNotNull);
+      expect(controller.paymentSuccess.value, isNotNull);
+      expect(
+        controller.paymentSuccess.value?.status,
+        PaymentStatus.pendingVerification,
+      );
+      expect(controller.paymentFailure.value, isNull);
+    });
+
     test('a second confirm while processing does not quote twice', () async {
       final repository = _QuoteRepository()..quotePending = Completer();
       final controller = _controller(repository);
@@ -336,6 +380,7 @@ class _QuoteRepository implements PaymentRepository {
   PaymentQuote? quote;
   Object? quoteError;
   Object? submitError;
+  PaymentStatus submitStatus = PaymentStatus.successful;
   Completer<PaymentQuote>? quotePending;
   int quoteCalls = 0;
   int submitCalls = 0;
@@ -380,7 +425,7 @@ class _QuoteRepository implements PaymentRepository {
         amount: payment.amount,
         date: payment.date,
         method: payment.method,
-        status: PaymentStatus.successful,
+        status: submitStatus,
         transactionId: payment.transactionId,
         paymentMethodCode: payment.paymentMethodCode,
         paymentMethodName: payment.paymentMethodName,

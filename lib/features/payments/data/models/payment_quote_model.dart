@@ -36,7 +36,7 @@ class PaymentQuoteModel extends PaymentQuote {
       items: _itemMaps(json['items'])
           .map(
             (item) => PaymentQuoteItem(
-              id: _asInt(item['item_id']) ?? 0,
+              id: _asInt(item['item_id'] ?? item['id']) ?? 0,
               amount: _asDouble(item['amount']),
             ),
           )

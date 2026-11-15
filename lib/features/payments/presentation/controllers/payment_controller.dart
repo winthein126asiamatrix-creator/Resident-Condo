@@ -857,25 +857,25 @@ class PaymentController extends GetxController {
       if (seq != _paymentMethodsSeq || userId != _currentUserId) {
         return;
       }
-//       final demoMethod = PaymentMethodOption(
-//   id: 999,
-//   code: 'demo_kbz_pay',
-//   name: 'Demo KBZ Pay',
-//   isActive: true,
-//   requiresProof: true,
-//   accountName: 'Demo Account',
-//   accountNumber: '1234567890',
-//   bankName: 'KBZ Bank',
-//   qrImageUrl: '',
-//   instructions: 'Demo payment method for testing',
-//   currency: 'MMK',
-// );
+      final demoMethod = PaymentMethodOption(
+  id: 999,
+  code: 'demo_kbz_pay',
+  name: 'Demo KBZ Pay',
+  isActive: true,
+  requiresProof: true,
+  accountName: 'Demo Account',
+  accountNumber: '1234567890',
+  bankName: 'KBZ Bank',
+  qrImageUrl: '',
+  instructions: 'Demo payment method for testing',
+  currency: 'MMK',
+);
 
-// final updatedMethods = [
-//   ...methods,
-//   demoMethod,
-// ];
-      paymentMethods.assignAll(methods);
+final updatedMethods = [
+  ...methods,
+  demoMethod,
+];
+      paymentMethods.assignAll(updatedMethods);
       _hasPaymentMethodsData = true;
       _paymentMethodsOwnerUserId = userId;
       isShowingCachedPaymentMethods.value = false;
@@ -1758,6 +1758,12 @@ class PaymentController extends GetxController {
       errorMessage.value = 'Attach proof of payment to continue.';
       return null;
     }
+    final transactionReference = transactionId.trim();
+    if (transactionReference.isEmpty) {
+      errorMessage.value =
+          'Enter the transaction reference from your bank or payment app.';
+      return null;
+    }
 
     final invoiceId = int.tryParse(invoice.id);
     if (invoiceId == null || invoiceId <= 0) {
@@ -1805,7 +1811,7 @@ class PaymentController extends GetxController {
         date: AppDates.format(DateTime.now()),
         method: paymentMethodFromCode(method.code),
         status: PaymentStatus.unknown,
-        transactionId: transactionId.trim(),
+        transactionId: transactionReference,
         paymentMethodCode: method.code,
         paymentMethodName: method.displayName,
         proofPath: proofPath,
@@ -1816,7 +1822,8 @@ class PaymentController extends GetxController {
       );
 
       final stored = await useCases.submitPayment(payment);
-      if (stored.isSuccessful) {
+      if (stored.isSuccessful ||
+          stored.status == PaymentStatus.pendingVerification) {
         paymentSuccess.value = stored;
       } else {
         paymentFailure.value = stored;

@@ -36,36 +36,37 @@ class PaymentInvoiceRemoteDataSource {
     if (quoteId.isEmpty) {
       throw StateError('A payment quote is required to submit a payment.');
     }
-    final selectedItemIds = payment.items
-        .map((item) => item.id)
-        .whereType<int>()
-        .toList();
+    final transactionReference = payment.transactionId.trim();
+    if (transactionReference.isEmpty) {
+      throw StateError(
+        'A transaction reference is required to submit a payment.',
+      );
+    }
+    // final selectedItemIds = payment.items
+    //     .map((item) => item.id)
+    //     .whereType<int>()
+    //     .toList();
 
     final fields = <String, dynamic>{
       'quote_id': quoteId,
       'payment_method_id': payment.paymentMethodId,
-      'selected_item_ids': selectedItemIds,
-      'transaction_reference': payment.transactionId,
+     // 'selected_item_ids': selectedItemIds,
+      'transaction_reference': transactionReference,
     };
     superPrint(fields, title: "Request");
 
+    final files = <String, MultipartFile>{};
     if (payment.proofPath != null && payment.proofPath!.trim().isNotEmpty) {
-      return _service.uploadMultipart<PaymentSubmissionResponseModel>(
-        ApiEndPoints.payment,
-        fields: fields,
-        files: <String, MultipartFile>{
-          'proof_image': DioApiService.filePart(
-            filePath: payment.proofPath!,
-            filename: payment.proofFileName,
-          ),
-        },
-        parse: PaymentSubmissionResponseModel.parse,
+      files['proof_image'] = DioApiService.filePart(
+        filePath: payment.proofPath!,
+        filename: payment.proofFileName,
       );
     }
 
-    return _service.post<PaymentSubmissionResponseModel>(
-      ApiEndPoints.payment,
-      data: fields,
+    return _service.uploadMultipart<PaymentSubmissionResponseModel>(
+      ApiEndPoints.payments,
+      fields: fields,
+      files: files,
       parse: PaymentSubmissionResponseModel.parse,
     );
   }
