@@ -128,6 +128,8 @@ void main() {
       dashboard.recentInvoices.single.invoiceStatus,
       InvoiceStatus.pending,
     );
+    expect(dashboard.recentInvoices.single.dueDate, isNull);
+    expect(dashboard.recentInvoices.single.isOverdue, isFalse);
     expect(dashboard.recentPayments, isEmpty);
     expect(dashboard.invoiceSummary.total, 0);
   });
@@ -138,4 +140,71 @@ void main() {
     expect(dashboard.recentInvoices, isEmpty);
     expect(dashboard.recentPayments, isEmpty);
   });
+
+  group('RecentInvoice overdue detection', () {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day, 23, 59);
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+    final yesterday = DateTime(now.year, now.month, now.day - 1);
+
+    test('a future due date is not overdue', () {
+      expect(_invoice(dueDate: tomorrow).isOverdue, isFalse);
+    });
+
+    test('a due date of today is not overdue', () {
+      expect(_invoice(dueDate: today).isOverdue, isFalse);
+    });
+
+    test('a past due date with an outstanding balance is overdue', () {
+      expect(_invoice(dueDate: yesterday).isOverdue, isTrue);
+    });
+
+    test('a past due date on a fully paid invoice is not overdue', () {
+      expect(
+        _invoice(
+          dueDate: yesterday,
+          total: 100,
+          paid: 100,
+          remaining: 0,
+          status: 'paid',
+        ).isOverdue,
+        isFalse,
+      );
+    });
+
+    test('a partially paid invoice past due is overdue', () {
+      expect(
+        _invoice(
+          dueDate: yesterday,
+          total: 100,
+          paid: 40,
+          remaining: 60,
+        ).isOverdue,
+        isTrue,
+      );
+    });
+
+    test('a missing due date is not overdue', () {
+      expect(_invoice(dueDate: null).isOverdue, isFalse);
+    });
+  });
+}
+
+RecentInvoice _invoice({
+  required DateTime? dueDate,
+  double total = 100,
+  double paid = 0,
+  double? remaining,
+  String status = 'unpaid',
+}) {
+  return RecentInvoice(
+    id: 1,
+    invoiceNumber: 'INV-1',
+    billingPeriod: '2026-09',
+    totalAmount: total,
+    paidAmount: paid,
+    remainingAmount: remaining ?? (total - paid),
+    status: status,
+    dueDate: dueDate,
+  );
 }

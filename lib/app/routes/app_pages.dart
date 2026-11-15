@@ -30,6 +30,7 @@ import '../../features/payments/domain/entities/invoice.dart';
 import '../../features/payments/domain/entities/payment.dart';
 import '../../features/payments/presentation/pages/invoice_detail_page.dart';
 import '../../features/payments/presentation/pages/invoice_list_page.dart';
+import '../../features/payments/presentation/pages/invoice_selection_page.dart';
 import '../../features/payments/presentation/pages/payment_details_page.dart';
 import '../../features/payments/presentation/pages/payment_failure_page.dart';
 import '../../features/payments/presentation/pages/payment_history_page.dart';
@@ -100,6 +101,10 @@ abstract final class AppPages {
     GetPage<dynamic>(
       name: AppRoutes.invoiceList,
       page: () => const InvoiceListPage(),
+    ),
+    GetPage<dynamic>(
+      name: AppRoutes.invoiceSelection,
+      page: () => const InvoiceSelectionPage(),
     ),
     GetPage<dynamic>(
       name: AppRoutes.paymentDetail,

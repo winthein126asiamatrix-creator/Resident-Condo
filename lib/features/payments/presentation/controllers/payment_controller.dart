@@ -31,6 +31,7 @@ class PaymentController extends GetxController {
   /// Reconnect keys for the invoice screens. They are separate from the
   /// payments tab so a reconnect refreshes whichever screen is actually open.
   static const String invoiceListScreen = 'payments:invoices';
+  static const String invoiceSelectionScreen = 'payments:invoice-selection';
   static const String invoiceDetailScreen = 'payments:invoice-detail';
   static const String paymentListScreen = 'payments:list';
   static const String paymentDetailScreen = 'payments:payment-detail';
@@ -80,6 +81,16 @@ class PaymentController extends GetxController {
   final isShowingCachedInvoices = false.obs;
   final invoiceListUpdatedAt = Rxn<DateTime>();
 
+  // ------------------------------------------------------ invoice selection
+
+  /// Every payable invoice across all pages, used by Pay Now and the selection
+  /// screen. It is never limited to the first page.
+  final payableInvoices = <InvoiceListItem>[].obs;
+  final isLoadingPayableInvoices = false.obs;
+  final payableInvoicesError = RxnString();
+  final isShowingCachedPayableInvoices = false.obs;
+  final payableInvoicesUpdatedAt = Rxn<DateTime>();
+
   // --------------------------------------------------------- invoice detail
 
   /// The API detail currently on screen. This is never populated from cache.
@@ -126,6 +137,11 @@ class PaymentController extends GetxController {
 
   final Map<String, _InvoiceListFilterState> _invoiceListStates =
       <String, _InvoiceListFilterState>{};
+
+  int? _payableInvoicesOwnerUserId;
+  bool _hasPayableInvoicesData = false;
+  int _payableInvoicesSeq = 0;
+  Future<void>? _payableInvoicesInFlight;
 
   int _invoiceDetailSeq = 0;
   Future<void>? _invoiceDetailInFlight;
@@ -183,6 +199,30 @@ class PaymentController extends GetxController {
     return value == null ? '' : AppDates.format(value);
   }
 
+  String get payableInvoicesUpdatedLabel {
+    final value = payableInvoicesUpdatedAt.value;
+    return value == null ? '' : AppDates.format(value);
+  }
+
+  /// How many invoices the dashboard says still carry a balance.
+  int get openInvoiceCount {
+    final summary = invoiceSummary;
+    if (summary != null) {
+      return summary.open;
+    }
+    return recentInvoices
+        .where((invoice) => invoice.id > 0 && invoice.remainingAmount > 0)
+        .length;
+  }
+
+  /// The single open invoice on the dashboard, when exactly one is visible.
+  RecentInvoice? get singleOpenInvoice {
+    final open = recentInvoices
+        .where((invoice) => invoice.id > 0 && invoice.remainingAmount > 0)
+        .toList(growable: false);
+    return open.length == 1 ? open.first : null;
+  }
+
   bool get hasMorePayments =>
       paymentListPage.value * paymentListLimit.value < paymentListTotal.value;
 
@@ -217,6 +257,10 @@ class PaymentController extends GetxController {
     super.onInit();
     _registry?.register(screen, loadPayments);
     _registry?.register(invoiceListScreen, loadInvoices);
+    _registry?.register(
+      invoiceSelectionScreen,
+      () => loadPayableInvoices(refresh: true),
+    );
     _registry?.register(invoiceDetailScreen, _refreshActiveInvoiceDetail);
     _registry?.register(paymentListScreen, loadPaymentList);
     _registry?.register(paymentDetailScreen, _refreshActivePaymentDetail);
@@ -259,6 +303,7 @@ class PaymentController extends GetxController {
     _sessionWorker?.dispose();
     _registry?.unregister(screen);
     _registry?.unregister(invoiceListScreen);
+    _registry?.unregister(invoiceSelectionScreen);
     _registry?.unregister(invoiceDetailScreen);
     _registry?.unregister(paymentListScreen);
     _registry?.unregister(paymentDetailScreen);
@@ -454,6 +499,7 @@ class PaymentController extends GetxController {
     _ownerUserId = null;
 
     _resetInvoiceListFilters(resetStatus: true);
+    _resetPayableInvoices();
 
     _invoiceDetailSeq++;
     _invoiceDetailInFlight = null;
@@ -1251,6 +1297,249 @@ class PaymentController extends GetxController {
     invoiceListUpdatedAt.value = null;
   }
 
+  // ------------------------------------------------------ invoice selection
+
+  /// Loads every invoice that can still receive a payment.
+  ///
+  /// The selection screen must show invoices from every page, so this walks the
+  /// paginated list instead of trusting the first page. A completed "All"
+  /// filter is reused as-is; otherwise the in-memory rows and the cached
+  /// snapshot only seed the pages that still need fetching.
+  Future<void> loadPayableInvoices({bool refresh = false}) {
+    final existing = _payableInvoicesInFlight;
+    if (existing != null) {
+      return existing;
+    }
+    final future = _loadPayableInvoices(refresh: refresh);
+    _payableInvoicesInFlight = future;
+    return future.whenComplete(() {
+      if (identical(_payableInvoicesInFlight, future)) {
+        _payableInvoicesInFlight = null;
+      }
+    });
+  }
+
+  Future<void> _loadPayableInvoices({required bool refresh}) async {
+    final session = _session;
+    final userId = _currentUserId;
+    if (session != null && userId == null) {
+      return;
+    }
+
+    final seq = ++_payableInvoicesSeq;
+    final hadData =
+        _hasPayableInvoicesData && _payableInvoicesOwnerUserId == userId;
+    isLoadingPayableInvoices.value = !hadData;
+    payableInvoicesError.value = null;
+
+    final allState = _invoiceListStates['all'];
+    final canReuseAllState =
+        allState != null &&
+        allState.loaded &&
+        allState.ownerUserId == userId &&
+        !_hasMoreInvoicePages(allState);
+    if (!refresh && canReuseAllState) {
+      _publishPayableInvoices(
+        allState.items.where((invoice) => invoice.isPayable).toList(),
+        userId,
+        showingCached: allState.showingCached,
+        updatedAt: allState.updatedAt,
+      );
+      if (allState.showingCached) {
+        _registry?.markStale(invoiceSelectionScreen);
+      }
+      return;
+    }
+
+    var collected = <InvoiceListItem>[];
+    var nextPage = 1;
+    var showingCached = false;
+    DateTime? updatedAt;
+
+    if (!refresh &&
+        allState != null &&
+        allState.loaded &&
+        allState.ownerUserId == userId) {
+      collected = allState.items.where((invoice) => invoice.isPayable).toList();
+      nextPage = allState.page + 1;
+      showingCached = allState.showingCached;
+      updatedAt = allState.updatedAt;
+    }
+
+    if (_connectivity?.isOnline.value == false) {
+      if (collected.isEmpty && userId != null && !refresh) {
+        try {
+          final cached = await useCases.getCachedInvoiceList(userId, 'all');
+          if (!_isPayableInvoicesCurrent(seq, userId)) {
+            return;
+          }
+          if (cached != null) {
+            collected = cached.response.items
+                .where((invoice) => invoice.isPayable)
+                .toList();
+            showingCached = true;
+            updatedAt = cached.updatedAt;
+          }
+        } catch (_) {
+          // A broken cache read must not hide the offline state.
+        }
+        if (!_isPayableInvoicesCurrent(seq, userId)) {
+          return;
+        }
+      }
+
+      if (collected.isEmpty) {
+        _handlePayableInvoicesFailure(
+          const <InvoiceListItem>[],
+          userId,
+          'You are offline and no saved invoices are available.',
+          null,
+        );
+        return;
+      }
+      _publishPayableInvoices(
+        collected,
+        userId,
+        showingCached: true,
+        updatedAt: updatedAt,
+      );
+      _registry?.markStale(invoiceSelectionScreen);
+      return;
+    }
+
+    // A cached page keeps only ten rows, so restart at page one when the API
+    // is reachable instead of skipping the rows the cache dropped.
+    if (showingCached) {
+      collected = <InvoiceListItem>[];
+      nextPage = 1;
+    }
+
+    try {
+      var page = nextPage;
+      while (true) {
+        final response = await useCases.getInvoiceList(
+          page: page,
+          limit: invoicePageSize,
+          status: 'all',
+        );
+        if (!_isPayableInvoicesCurrent(seq, userId)) {
+          return;
+        }
+
+        final knownIds = collected.map((invoice) => invoice.id).toSet();
+        collected.addAll(
+          response.items.where(
+            (invoice) => invoice.isPayable && !knownIds.contains(invoice.id),
+          ),
+        );
+
+        if (page == 1 && userId != null) {
+          try {
+            await useCases.cacheInvoiceList(userId, 'all', response);
+          } catch (_) {
+            // A cache write is a convenience; the API response is still usable.
+          }
+        }
+
+        final responsePage = response.page <= 0 ? page : response.page;
+        if (!response.hasMore || response.items.isEmpty) {
+          break;
+        }
+        final next = responsePage + 1;
+        // A backend that ignores `page` would otherwise loop forever.
+        if (next <= page) {
+          break;
+        }
+        page = next;
+      }
+
+      if (!_isPayableInvoicesCurrent(seq, userId)) {
+        return;
+      }
+      _publishPayableInvoices(
+        collected,
+        userId,
+        showingCached: false,
+        updatedAt: DateTime.now(),
+      );
+      _registry?.markFresh(invoiceSelectionScreen);
+    } on AppException catch (error) {
+      if (!_isPayableInvoicesCurrent(seq, userId)) {
+        return;
+      }
+      _handlePayableInvoicesFailure(collected, userId, error.message, error);
+    } catch (_) {
+      if (!_isPayableInvoicesCurrent(seq, userId)) {
+        return;
+      }
+      _handlePayableInvoicesFailure(collected, userId, null, null);
+    } finally {
+      if (_payableInvoicesSeq == seq) {
+        isLoadingPayableInvoices.value = false;
+      }
+    }
+  }
+
+  void _handlePayableInvoicesFailure(
+    List<InvoiceListItem> collected,
+    int? userId,
+    String? message,
+    AppException? error,
+  ) {
+    if (collected.isNotEmpty) {
+      _publishPayableInvoices(
+        collected,
+        userId,
+        showingCached: true,
+        updatedAt: payableInvoicesUpdatedAt.value,
+      );
+    } else if (_hasPayableInvoicesData &&
+        _payableInvoicesOwnerUserId == userId) {
+      isShowingCachedPayableInvoices.value = true;
+      isLoadingPayableInvoices.value = false;
+    } else {
+      payableInvoicesError.value = message ?? 'Unable to load invoices.';
+      isShowingCachedPayableInvoices.value = false;
+      isLoadingPayableInvoices.value = false;
+      _hasPayableInvoicesData = false;
+      _payableInvoicesOwnerUserId = userId;
+    }
+    if (error is ApiException && error.isRetryable) {
+      _registry?.markStale(invoiceSelectionScreen);
+    }
+  }
+
+  bool _isPayableInvoicesCurrent(int seq, int? userId) {
+    return seq == _payableInvoicesSeq && userId == _currentUserId;
+  }
+
+  void _publishPayableInvoices(
+    List<InvoiceListItem> items,
+    int? userId, {
+    required bool showingCached,
+    required DateTime? updatedAt,
+  }) {
+    payableInvoices.assignAll(items);
+    isLoadingPayableInvoices.value = false;
+    payableInvoicesError.value = null;
+    isShowingCachedPayableInvoices.value = showingCached;
+    payableInvoicesUpdatedAt.value = updatedAt;
+    _hasPayableInvoicesData = true;
+    _payableInvoicesOwnerUserId = userId;
+  }
+
+  void _resetPayableInvoices() {
+    _payableInvoicesSeq++;
+    _payableInvoicesInFlight = null;
+    _hasPayableInvoicesData = false;
+    _payableInvoicesOwnerUserId = null;
+    payableInvoices.clear();
+    isLoadingPayableInvoices.value = false;
+    payableInvoicesError.value = null;
+    isShowingCachedPayableInvoices.value = false;
+    payableInvoicesUpdatedAt.value = null;
+  }
+
   // --------------------------------------------------------- invoice detail
 
   /// Loads one invoice detail from the API.
@@ -1499,6 +1788,7 @@ class PaymentController extends GetxController {
     final hadInvoiceListData = _invoiceListStates.values.any(
       (state) => state.loaded,
     );
+    final hadPayableInvoicesData = _hasPayableInvoicesData;
     try {
       await useCases.clearDashboardCache();
     } catch (_) {}
@@ -1512,11 +1802,16 @@ class PaymentController extends GetxController {
     // A payment changes both the dashboard and the status of every filter, so
     // the in-memory pages are dropped and the visible filter is re-read once.
     _resetInvoiceListFilters();
+    _resetPayableInvoices();
     final invoiceRefresh = hadInvoiceListData
         ? loadInvoices(refresh: true)
         : Future<void>.value();
+    final payableRefresh = hadPayableInvoicesData
+        ? loadPayableInvoices(refresh: true)
+        : Future<void>.value();
     await loadPayments();
     await invoiceRefresh;
+    await payableRefresh;
 
     final invoiceId = int.tryParse(invoice.id);
     if (invoiceId != null &&

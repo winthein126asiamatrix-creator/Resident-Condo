@@ -6,6 +6,7 @@ abstract final class AppRoutes {
   static const more = '/more';
   static const unit = '/unit';
   static const invoiceList = '/payments/invoices';
+  static const invoiceSelection = '/payments/select-invoice';
   static const paymentDetail = '/payments/detail';
   static const paymentDetails = '/payments/details';
   static const paymentSummary = '/payments/summary';

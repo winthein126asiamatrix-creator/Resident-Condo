@@ -38,6 +38,8 @@ import '../widgets/section_header.dart';
 
 import '../widgets/status_badge.dart';
 
+import '../../../../core/theme/app_palette.dart';
+
 import '../../../../core/theme/app_theme_tokens.dart';
 
 class DashboardPage extends GetView<DashboardController> {
@@ -498,7 +500,7 @@ class _BalanceCard extends StatelessWidget {
     final hasData = dashboard != null;
     final failed = !hasData && !isLoading && errorMessage != null;
     final currency = dashboard?.outstandingBalance.currency ?? '';
-    final dueDate = _dueDateLabel(dashboard);
+    final due = _dueInfo(dashboard);
     final lastPaymentDate = paymentController?.lastDashboardPaymentDate ?? '';
 
     final balanceText = hasData
@@ -540,7 +542,8 @@ class _BalanceCard extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
-              if (dueDate.isNotEmpty) StatusBadge(label: 'Due $dueDate'),
+              if (due.date.isNotEmpty)
+                _DueDateChip(date: due.date, overdue: due.overdue),
             ],
           ),
           8.h.heightBox(),
@@ -602,19 +605,71 @@ class _BalanceCard extends StatelessWidget {
     return paidAt.isEmpty ? money : '$money · $paidAt';
   }
 
-  String _dueDateLabel(PaymentDashboard? dashboard) {
+  ({String date, bool overdue}) _dueInfo(PaymentDashboard? dashboard) {
     final invoices = dashboard?.recentInvoices ?? const <RecentInvoice>[];
+    RecentInvoice? open;
     for (final invoice in invoices) {
       if (invoice.remainingAmount > 0 && invoice.dueDateLabel.isNotEmpty) {
-        return invoice.dueDateLabel;
+        open = invoice;
+        break;
       }
     }
-    for (final invoice in invoices) {
-      if (invoice.dueDateLabel.isNotEmpty) {
-        return invoice.dueDateLabel;
-      }
+    final selected = open ?? (invoices.isEmpty ? null : invoices.first);
+    if (selected == null) {
+      return (date: '', overdue: false);
     }
-    return '';
+    return (date: selected.dueDateLabel, overdue: selected.isOverdue);
+  }
+}
+
+class _DueDateChip extends StatelessWidget {
+  const _DueDateChip({required this.date, required this.overdue});
+
+  final String date;
+  final bool overdue;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    final color = overdue ? AppPalette.danger : tokens.brand;
+    final background = overdue
+        ? Color.alphaBlend(
+            AppPalette.danger.withValues(alpha: 0.10),
+            tokens.surface,
+          )
+        : tokens.brand.withValues(alpha: 0.12);
+    return Container(
+      key: Key(overdue ? 'dashboard-due-overdue' : 'dashboard-due-date'),
+      padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            overdue
+                ? Icons.warning_amber_rounded
+                : Icons.calendar_today_rounded,
+            size: 12.sp,
+            color: color,
+          ),
+          4.w.widthBox(),
+          Text(
+            overdue ? 'Overdue' : 'Due Date',
+            style: Theme.of(context).textTheme.labelSmall
+                ?.copyWith(color: color, fontWeight: FontWeight.w800),
+          ),
+          5.w.widthBox(),
+          Text(
+            date,
+            style: Theme.of(context).textTheme.labelSmall
+                ?.copyWith(color: color, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
   }
 }
 

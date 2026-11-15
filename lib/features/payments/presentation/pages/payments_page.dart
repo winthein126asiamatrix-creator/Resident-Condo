@@ -55,7 +55,8 @@ class PaymentsPage extends GetView<PaymentController> {
             );
           }
           final summary = controller.invoiceSummary;
-          final invoiceCount = summary?.total ?? controller.recentInvoices.length;
+          final invoiceCount =
+              summary?.total ?? controller.recentInvoices.length;
           final paymentCount = controller.recentPayments.length;
           final hasInvoices = controller.recentInvoices.isNotEmpty;
           final hasPayments = controller.recentPayments.isNotEmpty;
@@ -136,8 +137,7 @@ class PaymentsPage extends GetView<PaymentController> {
                                 : null,
                           ),
                         ),
-                      )
-
+                      ),
               ],
             ),
           );
@@ -332,20 +332,20 @@ class _BalanceSummary extends StatelessWidget {
             width: double.infinity,
             child: FilledButton.icon(
               key: Key('payments-pay-now'),
-              onPressed: outstanding <= 0
+              onPressed: outstanding <= 0 || controller.openInvoiceCount <= 0
                   ? null
                   : () {
                       vibrateNow();
-                      _openOldestInvoice(context);
+                      _startPaymentFlow(context);
                     },
               icon: Icon(
                 Icons.arrow_forward_rounded,
                 size: 18.sp,
-              //  color: tokens.brandOnDark,
+                //  color: tokens.brandOnDark,
               ),
               label: Text(
                 'Pay Now',
-               // style: TextStyle(color: tokens.brandOnDark),
+                // style: TextStyle(color: tokens.brandOnDark),
               ),
               style: FilledButton.styleFrom(
                 backgroundColor: Colors.white,
@@ -356,8 +356,8 @@ class _BalanceSummary extends StatelessWidget {
           ),
           8.h.heightBox(),
           Text(
-            'Pay Now takes you to the item list. Nothing is charged until you '
-            'confirm the items you selected.',
+            'Pay Now opens your invoice. If more than one is open, choose the '
+            'one to pay first. Nothing is charged until you confirm the items.',
             style: TextStyle(
               color: tokens.brandOnDarkMuted,
               fontSize: 10.sp,
@@ -369,24 +369,54 @@ class _BalanceSummary extends StatelessWidget {
     );
   }
 
-  void _openOldestInvoice(BuildContext context) {
-    RecentInvoice? open;
-    for (final invoice in controller.recentInvoices) {
-      if (invoice.id > 0 && invoice.remainingAmount > 0) {
-        open = invoice;
-        break;
-      }
-    }
-    if (open == null) {
+  /// Opens the only open invoice directly, or asks which one to pay when the
+  /// dashboard reports several. When the dashboard cannot identify the single
+  /// invoice, the payable list is resolved first so the count is never guessed.
+  Future<void> _startPaymentFlow(BuildContext context) async {
+    final openCount = controller.openInvoiceCount;
+    if (openCount <= 0) {
       showAppFeedback(
         context,
         title: 'Nothing to pay',
-        message: 'Open the invoice list to choose an invoice.',
+        message: 'All invoices are fully paid.',
         isError: false,
       );
       return;
     }
-    Get.toNamed(AppRoutes.paymentDetail, arguments: open.id);
+
+    if (openCount == 1) {
+      final invoice = controller.singleOpenInvoice;
+      if (invoice != null) {
+        Get.toNamed(AppRoutes.paymentDetail, arguments: invoice.id);
+        return;
+      }
+    }
+
+    if (openCount > 1) {
+      Get.toNamed(AppRoutes.invoiceSelection);
+      return;
+    }
+
+    await controller.loadPayableInvoices();
+    if (!context.mounted) {
+      return;
+    }
+    final payable = controller.payableInvoices;
+    if (payable.length == 1) {
+      Get.toNamed(AppRoutes.paymentDetail, arguments: payable.first.id);
+      return;
+    }
+    if (payable.isEmpty) {
+      final error = controller.payableInvoicesError.value;
+      showAppFeedback(
+        context,
+        title: error == null ? 'Nothing to pay' : 'Unable to load invoices',
+        message: error ?? 'All invoices are fully paid.',
+        isError: error != null,
+      );
+      return;
+    }
+    Get.toNamed(AppRoutes.invoiceSelection);
   }
 }
 

@@ -27,7 +27,6 @@ class PaymentDashboard {
   final List<RecentInvoice> recentInvoices;
   final List<RecentPayment> recentPayments;
 
-
   FeeSummary? feeFor(String feeType) {
     for (final fee in feeSummary) {
       if (fee.feeType == feeType) {
@@ -135,6 +134,18 @@ class RecentInvoice {
   }
 
   String get dueDateLabel => dueDate == null ? '' : AppDates.format(dueDate!);
+
+  /// True when the invoice still owes money and its due date is before today.
+  ///
+  /// The comparison is date-only, so an invoice due today is not overdue. A
+  /// missing due date never counts as overdue.
+  bool get isOverdue {
+    final due = dueDate;
+    if (due == null || remainingAmount <= 0) {
+      return false;
+    }
+    return AppDates.dateOnly(due).isBefore(AppDates.dateOnly(DateTime.now()));
+  }
 }
 
 class RecentPayment {

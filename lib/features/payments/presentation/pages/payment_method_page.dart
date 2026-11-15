@@ -459,7 +459,8 @@ class _ReviewCard extends StatelessWidget {
           ),
           6.h.heightBox(),
           Text(
-            AppFormatters.currency(controller.selectedTotal),
+           // AppFormatters.currency(controller.selectedTotal),
+            AppFormatters.money(controller.selectedTotal, controller.invoiceDetail.value?.currency??""),
             style: TextStyle(
               color: tokens.onBrand,
               fontSize: 27.sp,

@@ -205,6 +205,13 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
       );
       return;
     }
+    if (Get.currentRoute == AppRoutes.invoiceSelection) {
+      if (!Get.isRegistered<PaymentController>()) return;
+      await Get.find<RefreshRegistry>().refreshIfStale(
+        PaymentController.invoiceSelectionScreen,
+      );
+      return;
+    }
     if (Get.currentRoute == AppRoutes.paymentDetail) {
       if (!Get.isRegistered<PaymentController>()) return;
       await Get.find<RefreshRegistry>().refreshIfStale(

@@ -49,6 +49,28 @@ class InvoiceListItem {
 
   bool get isSettled =>
       remainingAmount <= 0 || invoiceStatus == InvoiceStatus.paid;
+
+  /// Cancelled invoices must never be offered for payment, even when the
+  /// backend left an amount on them.
+  bool get isCancelled {
+    final normalized = status.trim().toLowerCase().replaceAll('-', '_');
+    return normalized == 'cancelled' ||
+        normalized == 'canceled' ||
+        normalized == 'void';
+  }
+
+  /// True when this invoice still has an amount the resident can pay.
+  bool get isPayable => id > 0 && !isSettled && !isCancelled;
+
+  /// Date-based, so an invoice due today is not overdue. A missing due date
+  /// never counts as overdue.
+  bool get isOverdue {
+    final due = dueDate;
+    if (due == null || remainingAmount <= 0) {
+      return false;
+    }
+    return AppDates.dateOnly(due).isBefore(AppDates.dateOnly(DateTime.now()));
+  }
 }
 
 /// A page of invoices plus the pagination metadata the list needs to keep
