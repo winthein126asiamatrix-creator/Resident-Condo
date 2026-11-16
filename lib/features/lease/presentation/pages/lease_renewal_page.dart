@@ -112,6 +112,19 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
         );
       }
 
+      if (!controller.canRequestRenewal(lease)) {
+        return Scaffold(
+          appBar: AppDetailAppBar(title: 'Lease renewal'),
+          body: AppStateMessage(
+            title: 'Renewal unavailable',
+            message: 'This lease has expired. Renewal requests are no longer available.',
+            icon: Icons.description_outlined,
+            actionLabel: 'Back to lease',
+            onAction: () => Get.offNamed(AppRoutes.lease),
+          ),
+        );
+      }
+
       _seed(lease);
 
       return Scaffold(
@@ -199,7 +212,6 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
               ],
               hint: '2400',
-              
             ),
             20.h.heightBox(),
             AppTextField(
@@ -209,7 +221,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
               hint: 'Add context for the other party',
             ),
             24.h.heightBox(),
-             if (controller.errorMessage.value != null) ...[
+            if (controller.errorMessage.value != null) ...[
               10.h.heightBox(),
               Text(
                 controller.errorMessage.value!,

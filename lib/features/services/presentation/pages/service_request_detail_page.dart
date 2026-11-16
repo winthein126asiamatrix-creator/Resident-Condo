@@ -49,7 +49,7 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
               footnote: 'Provider: ${current.provider}',
               trailing: ServiceStatusPill(
                 status: current.status,
-                label: current.displayStatus,
+                label: current.status.label,
                 dense: false,
               ),
             ),

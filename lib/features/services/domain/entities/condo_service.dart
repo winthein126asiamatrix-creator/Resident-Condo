@@ -1,3 +1,6 @@
+import '../../../../core/utils/app_timezone.dart';
+
+
 enum ServiceCategory {
   cleaning,
   laundry,
@@ -201,6 +204,54 @@ class ServicePricing {
     );
   }
 
+  static List<ServiceAvailableDate> _localAvailableDates(
+    Object? availableDatesJson,
+    String timezone,
+  ) {
+    if (availableDatesJson is! List) return const <ServiceAvailableDate>[];
+    final grouped = <String, _LocalDateBucket>{};
+    for (final entry in availableDatesJson.whereType<Map>()) {
+      final dateJson = Map<String, dynamic>.from(entry);
+      final sourceDate = dateJson['date']?.toString() ?? '';
+      final slotsJson = dateJson['slots'];
+      if (slotsJson is! List) continue;
+      for (final slotEntry in slotsJson.whereType<Map>()) {
+        final slot = ServiceTimeSlot.fromJson(
+          Map<String, dynamic>.from(slotEntry),
+          date: sourceDate,
+          timezone: timezone,
+        );
+        final localDate = sourceDate.isEmpty
+            ? (slot.startTime.isEmpty
+                ? ''
+                : AppTimezone.localDate(
+                    date: '1970-01-01',
+                    time: slot.startTime,
+                    timeZone: timezone,
+                  ))
+            : AppTimezone.localDate(
+                date: sourceDate,
+                time: slot.startTime,
+                timeZone: timezone,
+              );
+        final bucket = grouped.putIfAbsent(
+          localDate,
+          () => _LocalDateBucket(sourceDate: sourceDate, slots: <ServiceTimeSlot>[]),
+        );
+        bucket.slots.add(slot);
+      }
+    }
+    return grouped.entries
+        .map(
+          (entry) => ServiceAvailableDate(
+            date: entry.key,
+            sourceDate: entry.value.sourceDate,
+            slots: entry.value.slots,
+            timezone: timezone,
+          ),
+        )
+        .toList();
+  }
   Map<String, dynamic> toJson() => <String, dynamic>{
     'type': type.apiValue,
     'price': price,
@@ -277,6 +328,54 @@ class ServiceBookingField {
     );
   }
 
+  static List<ServiceAvailableDate> _localAvailableDates(
+    Object? availableDatesJson,
+    String timezone,
+  ) {
+    if (availableDatesJson is! List) return const <ServiceAvailableDate>[];
+    final grouped = <String, _LocalDateBucket>{};
+    for (final entry in availableDatesJson.whereType<Map>()) {
+      final dateJson = Map<String, dynamic>.from(entry);
+      final sourceDate = dateJson['date']?.toString() ?? '';
+      final slotsJson = dateJson['slots'];
+      if (slotsJson is! List) continue;
+      for (final slotEntry in slotsJson.whereType<Map>()) {
+        final slot = ServiceTimeSlot.fromJson(
+          Map<String, dynamic>.from(slotEntry),
+          date: sourceDate,
+          timezone: timezone,
+        );
+        final localDate = sourceDate.isEmpty
+            ? (slot.startTime.isEmpty
+                ? ''
+                : AppTimezone.localDate(
+                    date: '1970-01-01',
+                    time: slot.startTime,
+                    timeZone: timezone,
+                  ))
+            : AppTimezone.localDate(
+                date: sourceDate,
+                time: slot.startTime,
+                timeZone: timezone,
+              );
+        final bucket = grouped.putIfAbsent(
+          localDate,
+          () => _LocalDateBucket(sourceDate: sourceDate, slots: <ServiceTimeSlot>[]),
+        );
+        bucket.slots.add(slot);
+      }
+    }
+    return grouped.entries
+        .map(
+          (entry) => ServiceAvailableDate(
+            date: entry.key,
+            sourceDate: entry.value.sourceDate,
+            slots: entry.value.slots,
+            timezone: timezone,
+          ),
+        )
+        .toList();
+  }
   Map<String, dynamic> toJson() => <String, dynamic>{
     'key': key,
     'label': label,
@@ -295,6 +394,12 @@ class ServiceTimeSlot {
     required this.startTime,
     required this.endTime,
     required this.status,
+    this.sourceDate = '',
+    this.sourceStartTime,
+    this.sourceEndTime,
+    this.displayStartTime,
+    this.displayEndTime,
+    this.timezone = 'UTC',
   });
 
   final int id;
@@ -302,57 +407,232 @@ class ServiceTimeSlot {
   final String endTime;
   final String status;
 
+  /// Original API date for this slot, retained even when [startTime] is shown
+  /// in the device's local timezone.
+  final String sourceDate;
+
+  /// Original API times, retained for booking requests and cache round trips.
+  final String? sourceStartTime;
+  final String? sourceEndTime;
+
+  /// Device-local times rendered with AM/PM.
+  final String? displayStartTime;
+  final String? displayEndTime;
+
+  final String timezone;
+
   bool get isAvailable => status.toLowerCase() == 'available';
 
-  factory ServiceTimeSlot.fromJson(Map<String, dynamic> json) {
+  String get sourceStart => sourceStartTime ?? startTime;
+  String get sourceEnd => sourceEndTime ?? endTime;
+  String get localStartTime => displayStartTime ?? startTime;
+  String get localEndTime => displayEndTime ?? endTime;
+  String get displayStart => localStartTime;
+  String get displayEnd => localEndTime;
+  String get utcStartTime => sourceStart;
+  String get utcEndTime => sourceEnd;
+  String get originalStartTime => sourceStart;
+  String get originalEndTime => sourceEnd;
+
+  factory ServiceTimeSlot.fromJson(
+    Map<String, dynamic> json, {
+    String? date,
+    String? timezone,
+  }) {
+    final resolvedTimezone = timezone ?? 'UTC';
+    final resolvedDate = date ?? '';
+    final sourceStart = json['start_time']?.toString() ?? '';
+    final sourceEnd = json['end_time']?.toString() ?? '';
     return ServiceTimeSlot(
       id: json['id'] is int
           ? json['id'] as int
           : int.tryParse('${json['id']}') ?? 0,
-      startTime: json['start_time']?.toString() ?? '',
-      endTime: json['end_time']?.toString() ?? '',
+      startTime: sourceStart,
+      endTime: sourceEnd,
       status: json['status']?.toString() ?? '',
+      sourceDate: resolvedDate,
+      sourceStartTime: sourceStart,
+      sourceEndTime: sourceEnd,
+      displayStartTime: json['display_start_time']?.toString() ??
+          (sourceStart.isEmpty
+              ? null
+              : AppTimezone.formatLocalTime(
+                  date: resolvedDate.isEmpty ? '1970-01-01' : resolvedDate,
+                  time: sourceStart,
+                  timeZone: resolvedTimezone,
+                )),
+      displayEndTime: json['display_end_time']?.toString() ??
+          (sourceEnd.isEmpty
+              ? null
+              : AppTimezone.formatLocalTime(
+                  date: resolvedDate.isEmpty ? '1970-01-01' : resolvedDate,
+                  time: sourceEnd,
+                  timeZone: resolvedTimezone,
+                )),
+      timezone: resolvedTimezone,
     );
   }
 
+  static List<ServiceAvailableDate> _localAvailableDates(
+    Object? availableDatesJson,
+    String timezone,
+  ) {
+    if (availableDatesJson is! List) return const <ServiceAvailableDate>[];
+    final grouped = <String, _LocalDateBucket>{};
+    for (final entry in availableDatesJson.whereType<Map>()) {
+      final dateJson = Map<String, dynamic>.from(entry);
+      final sourceDate = dateJson['date']?.toString() ?? '';
+      final slotsJson = dateJson['slots'];
+      if (slotsJson is! List) continue;
+      for (final slotEntry in slotsJson.whereType<Map>()) {
+        final slot = ServiceTimeSlot.fromJson(
+          Map<String, dynamic>.from(slotEntry),
+          date: sourceDate,
+          timezone: timezone,
+        );
+        final localDate = sourceDate.isEmpty
+            ? (slot.startTime.isEmpty
+                ? ''
+                : AppTimezone.localDate(
+                    date: '1970-01-01',
+                    time: slot.startTime,
+                    timeZone: timezone,
+                  ))
+            : AppTimezone.localDate(
+                date: sourceDate,
+                time: slot.startTime,
+                timeZone: timezone,
+              );
+        final bucket = grouped.putIfAbsent(
+          localDate,
+          () => _LocalDateBucket(sourceDate: sourceDate, slots: <ServiceTimeSlot>[]),
+        );
+        bucket.slots.add(slot);
+      }
+    }
+    return grouped.entries
+        .map(
+          (entry) => ServiceAvailableDate(
+            date: entry.key,
+            sourceDate: entry.value.sourceDate,
+            slots: entry.value.slots,
+            timezone: timezone,
+          ),
+        )
+        .toList();
+  }
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,
-    'start_time': startTime,
-    'end_time': endTime,
+    'start_time': sourceStart,
+    'end_time': sourceEnd,
     'status': status,
+    if (sourceDate.isNotEmpty) 'source_date': sourceDate,
+    if (displayStartTime != null) 'display_start_time': displayStartTime,
+    if (displayEndTime != null) 'display_end_time': displayEndTime,
+    'timezone': timezone,
   };
 }
-
 class ServiceAvailableDate {
   const ServiceAvailableDate({
     required this.date,
+    this.sourceDate,
     this.slots = const <ServiceTimeSlot>[],
+    this.timezone = 'UTC',
   });
 
+  /// Device-local date shown in the UI.
   final String date;
-  final List<ServiceTimeSlot> slots;
 
-  factory ServiceAvailableDate.fromJson(Map<String, dynamic> json) {
+  /// Original API date preserved for cache and booking requests.
+  final String? sourceDate;
+
+  final List<ServiceTimeSlot> slots;
+  final String timezone;
+
+  String get localDate => date;
+  String get originalDate => sourceDate ?? date;
+  String get displayDate => date;
+
+  factory ServiceAvailableDate.fromJson(
+    Map<String, dynamic> json, {
+    String? timezone,
+  }) {
+    final resolvedTimezone = timezone ??
+        (json['timezone']?.toString() ?? 'UTC');
     final slotsJson = json['slots'];
     return ServiceAvailableDate(
       date: json['date']?.toString() ?? '',
+      sourceDate: json['source_date']?.toString() ?? json['date']?.toString(),
       slots: slotsJson is List
           ? slotsJson
                 .whereType<Map>()
                 .map(
-                  (e) => ServiceTimeSlot.fromJson(Map<String, dynamic>.from(e)),
+                  (e) => ServiceTimeSlot.fromJson(
+                    Map<String, dynamic>.from(e),
+                    date: json['date']?.toString(),
+                    timezone: resolvedTimezone,
+                  ),
                 )
                 .toList()
           : const <ServiceTimeSlot>[],
+      timezone: resolvedTimezone,
     );
   }
 
+  static List<ServiceAvailableDate> _localAvailableDates(
+    Object? availableDatesJson,
+    String timezone,
+  ) {
+    if (availableDatesJson is! List) return const <ServiceAvailableDate>[];
+    final grouped = <String, _LocalDateBucket>{};
+    for (final entry in availableDatesJson.whereType<Map>()) {
+      final dateJson = Map<String, dynamic>.from(entry);
+      final sourceDate = dateJson['date']?.toString() ?? '';
+      final slotsJson = dateJson['slots'];
+      if (slotsJson is! List) continue;
+      for (final slotEntry in slotsJson.whereType<Map>()) {
+        final slot = ServiceTimeSlot.fromJson(
+          Map<String, dynamic>.from(slotEntry),
+          date: sourceDate,
+          timezone: timezone,
+        );
+        final localDate = sourceDate.isEmpty
+            ? (slot.startTime.isEmpty
+                ? ''
+                : AppTimezone.localDate(
+                    date: '1970-01-01',
+                    time: slot.startTime,
+                    timeZone: timezone,
+                  ))
+            : AppTimezone.localDate(
+                date: sourceDate,
+                time: slot.startTime,
+                timeZone: timezone,
+              );
+        final bucket = grouped.putIfAbsent(
+          localDate,
+          () => _LocalDateBucket(sourceDate: sourceDate, slots: <ServiceTimeSlot>[]),
+        );
+        bucket.slots.add(slot);
+      }
+    }
+    return grouped.entries
+        .map(
+          (entry) => ServiceAvailableDate(
+            date: entry.key,
+            sourceDate: entry.value.sourceDate,
+            slots: entry.value.slots,
+            timezone: timezone,
+          ),
+        )
+        .toList();
+  }
   Map<String, dynamic> toJson() => <String, dynamic>{
-    'date': date,
+    'date': sourceDate ?? date,
     'slots': slots.map((s) => s.toJson()).toList(),
+    'timezone': timezone,
   };
 }
-
 /// Bookable condo service. Service fees are billed on their own invoice line
 /// and never merged with the monthly condo fee.
 class CondoService {
@@ -372,6 +652,7 @@ class CondoService {
     this.categoryLabel,
     this.icon,
     this.noticeDays,
+    this.timezone = 'UTC',
   });
 
   final int id;
@@ -389,7 +670,7 @@ class CondoService {
   final String? categoryLabel;
   final Object? icon;
   final int? noticeDays;
-
+  final String timezone;
   String get provider => providerName;
   double get price => (pricing.price ?? 0).toDouble();
   String get unit => pricing.unit ?? pricing.type.apiValue;
@@ -463,6 +744,9 @@ class CondoService {
 
     final bookingFieldsJson = json['booking_fields'];
     final availabilityJson = json['availability'];
+    final timezone = availabilityJson is Map
+        ? (availabilityJson['timezone']?.toString() ?? 'UTC')
+        : (json['timezone']?.toString() ?? 'UTC');
     final availableDatesJson =
         json['available_dates'] ??
         (availabilityJson is Map ? availabilityJson['dates'] : null);
@@ -508,25 +792,80 @@ class CondoService {
                 )
                 .toList()
           : const <ServiceBookingField>[],
-      availableDates: availableDatesJson is List
-          ? availableDatesJson
-                .whereType<Map>()
-                .map(
-                  (e) => ServiceAvailableDate.fromJson(
-                    Map<String, dynamic>.from(e),
-                  ),
-                )
-                .toList()
-          : const <ServiceAvailableDate>[],
+      availableDates: _localAvailableDates(
+        availableDatesJson,
+        timezone,
+      ),
       isActive: json['is_active'] != false,
       categoryId: categoryId,
       categoryCode: categoryCode,
       categoryLabel: categoryLabel,
       icon: icon == false ? null : icon,
       noticeDays: noticeDays is num ? noticeDays.toInt() : null,
+      timezone: timezone,
     );
   }
 
+  static List<ServiceAvailableDate> _localAvailableDates(
+    Object? availableDatesJson,
+    String timezone,
+  ) {
+    if (availableDatesJson is! List) return const <ServiceAvailableDate>[];
+    final result = <ServiceAvailableDate>[];
+    for (final entry in availableDatesJson.whereType<Map>()) {
+      final dateJson = Map<String, dynamic>.from(entry);
+      final sourceDate = dateJson['date']?.toString() ?? '';
+      final slotsJson = dateJson['slots'];
+      if (slotsJson is! List || (slotsJson as List).isEmpty) {
+        result.add(
+          ServiceAvailableDate(
+            date: sourceDate,
+            sourceDate: sourceDate,
+            slots: const <ServiceTimeSlot>[],
+            timezone: timezone,
+          ),
+        );
+        continue;
+      }
+      final grouped = <String, _LocalDateBucket>{};
+      for (final slotEntry in (slotsJson as List).whereType<Map>()) {
+        final slot = ServiceTimeSlot.fromJson(
+          Map<String, dynamic>.from(slotEntry),
+          date: sourceDate,
+          timezone: timezone,
+        );
+        final localDate = sourceDate.isEmpty
+            ? (slot.startTime.isEmpty
+                ? ''
+                : AppTimezone.localDate(
+                    date: '1970-01-01',
+                    time: slot.startTime,
+                    timeZone: timezone,
+                  ))
+            : AppTimezone.localDate(
+                date: sourceDate,
+                time: slot.startTime,
+                timeZone: timezone,
+              );
+        final bucket = grouped.putIfAbsent(
+          localDate,
+          () => _LocalDateBucket(sourceDate: sourceDate, slots: <ServiceTimeSlot>[]),
+        );
+        bucket.slots.add(slot);
+      }
+      result.addAll(
+        grouped.entries.map(
+          (entry) => ServiceAvailableDate(
+            date: entry.key,
+            sourceDate: entry.value.sourceDate,
+            slots: entry.value.slots,
+            timezone: timezone,
+          ),
+        ),
+      );
+    }
+    return result;
+  }
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,
     'category': <String, dynamic>{
@@ -740,6 +1079,54 @@ class ServiceRequest {
   ///
   /// Uses the same keys [ServiceRequest.fromJson] reads, so a cached request is
   /// rebuilt with every field the detail screen relies on.
+  static List<ServiceAvailableDate> _localAvailableDates(
+    Object? availableDatesJson,
+    String timezone,
+  ) {
+    if (availableDatesJson is! List) return const <ServiceAvailableDate>[];
+    final grouped = <String, _LocalDateBucket>{};
+    for (final entry in availableDatesJson.whereType<Map>()) {
+      final dateJson = Map<String, dynamic>.from(entry);
+      final sourceDate = dateJson['date']?.toString() ?? '';
+      final slotsJson = dateJson['slots'];
+      if (slotsJson is! List) continue;
+      for (final slotEntry in slotsJson.whereType<Map>()) {
+        final slot = ServiceTimeSlot.fromJson(
+          Map<String, dynamic>.from(slotEntry),
+          date: sourceDate,
+          timezone: timezone,
+        );
+        final localDate = sourceDate.isEmpty
+            ? (slot.startTime.isEmpty
+                ? ''
+                : AppTimezone.localDate(
+                    date: '1970-01-01',
+                    time: slot.startTime,
+                    timeZone: timezone,
+                  ))
+            : AppTimezone.localDate(
+                date: sourceDate,
+                time: slot.startTime,
+                timeZone: timezone,
+              );
+        final bucket = grouped.putIfAbsent(
+          localDate,
+          () => _LocalDateBucket(sourceDate: sourceDate, slots: <ServiceTimeSlot>[]),
+        );
+        bucket.slots.add(slot);
+      }
+    }
+    return grouped.entries
+        .map(
+          (entry) => ServiceAvailableDate(
+            date: entry.key,
+            sourceDate: entry.value.sourceDate,
+            slots: entry.value.slots,
+            timezone: timezone,
+          ),
+        )
+        .toList();
+  }
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,
     if (code.isNotEmpty) 'code': code,
@@ -812,4 +1199,10 @@ class ServiceRequestPageResult {
     limit: 20,
     total: 0,
   );
+}
+
+class _LocalDateBucket {
+  _LocalDateBucket({required this.sourceDate, required this.slots});
+  final String sourceDate;
+  final List<ServiceTimeSlot> slots;
 }

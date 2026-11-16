@@ -61,8 +61,10 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
 
   List<String> _dates = <String>[];
   String? _selectedDate;
+  String? _selectedSourceDate;
   int? _selectedSlotId;
   String _selectedSlotLabel = '';
+  String _selectedSlotDisplayLabel = '';
   final Map<String, dynamic> _bookingValues = <String, dynamic>{};
   final Map<String, String> _fieldErrors = <String, String>{};
   String _error = '';
@@ -79,11 +81,17 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
     _initializedServiceId = service.id.toString();
     _dates = service.availableDates
         .where((d) => d.slots.any((s) => s.isAvailable))
-        .map((d) => d.date)
+        .map((d) => d.displayDate)
         .toList();
     _selectedDate = _dates.isNotEmpty ? _dates.first : null;
+    _selectedSourceDate = _selectedDate == null
+        ? null
+        : service.availableDates
+              .firstWhereOrNull((d) => d.date == _selectedDate)
+              ?.sourceDate;
     _selectedSlotId = null;
     _selectedSlotLabel = '';
+    _selectedSlotDisplayLabel = '';
     _bookingValues.clear();
     _fieldErrors.clear();
     for (final field in service.bookingFields) {
@@ -105,10 +113,13 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
         const <ServiceTimeSlot>[];
     if (slots.isNotEmpty) {
       _selectedSlotId = slots.first.id;
-      _selectedSlotLabel = '${slots.first.startTime} - ${slots.first.endTime}';
+      _selectedSlotLabel = ' - ';
+      _selectedSlotDisplayLabel =
+          '${slots.first.displayStartTime} - ${slots.first.displayEndTime} ';
     } else {
       _selectedSlotId = null;
       _selectedSlotLabel = '';
+      _selectedSlotDisplayLabel = '';
     }
   }
 
@@ -171,13 +182,13 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
     final confirmed = await showAppConfirmDialog(
       context,
       title: 'Confirm booking?',
-      message: '${service.name} on $_selectedDate, $_selectedSlotLabel.',
+      message: '${service.name} on $_selectedDate, $_selectedSlotDisplayLabel.',
       confirmLabel: 'Confirm booking',
     );
     if (!confirmed || !mounted) return;
     final request = await controller.bookService(
       service: service,
-      date: _selectedDate!,
+      date: _selectedSourceDate ?? _selectedDate!,
       slot: _selectedSlotLabel,
       slotId: _selectedSlotId,
       bookingDetails: Map<String, dynamic>.from(_bookingValues),
@@ -394,7 +405,11 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                       selected: _selectedDate ?? '',
                       onSelected: (date) => setState(() {
                         _selectedDate = date;
+                        _selectedSourceDate = service.availableDates
+                            .firstWhereOrNull((d) => d.date == date)
+                            ?.sourceDate;
                         _selectFirstAvailableSlot(service);
+
                         _error = '';
                       }),
                     ),
@@ -416,15 +431,17 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                           Padding(
                             padding: EdgeInsets.only(bottom: 10),
                             child: _SelectionTile(
-                              label: '${slot.startTime} - ${slot.endTime}',
+                              label:
+                                  '${slot.displayStartTime} - ${slot.displayEndTime} ',
                               icon: Icons.schedule_rounded,
                               selected: slot.id == _selectedSlotId,
                               enabled: slot.isAvailable,
                               onTap: slot.isAvailable
                                   ? () => setState(() {
                                       _selectedSlotId = slot.id;
-                                      _selectedSlotLabel =
-                                          '${slot.startTime} - ${slot.endTime}';
+                                      _selectedSlotLabel = ' - ';
+                                      _selectedSlotDisplayLabel =
+                                          '${slot.displayStartTime} - ${slot.displayEndTime} ';
                                       _error = '';
                                     })
                                   : () {},
@@ -487,7 +504,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                   AppLabelValueRow(label: 'Date', value: _selectedDate ?? ''),
                   AppLabelValueRow(
                     label: 'Time slot',
-                    value: _selectedSlotLabel,
+                    value: _selectedSlotDisplayLabel,
                   ),
                   AppLabelValueRow(
                     label: 'Service fee',
@@ -499,6 +516,11 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
               ),
             ),
             18.h.heightBox(),
+             if (error != null && error.isNotEmpty) ...[
+              12.h.heightBox(),
+              _InlineError(message: error),
+            ],
+            8.h.heightBox(),
             FilledButton.icon(
               key: Key('confirm-service-booking'),
               onPressed: controller.isSubmitting.value ? null : _submit,
@@ -521,10 +543,6 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                 minimumSize: Size.fromHeight(AppSpacing.buttonHeight),
               ),
             ),
-            if (error != null && error.isNotEmpty) ...[
-              12.h.heightBox(),
-              _InlineError(message: error),
-            ],
           ],
         ),
       );

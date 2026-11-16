@@ -153,7 +153,9 @@ class LeasePage extends GetView<LeaseController> {
                 20.h.heightBox(),
                 FilledButton.icon(
                   key: Key('request-lease-renewal'),
-                  onPressed: controller.pendingRenewal != null
+                  onPressed:
+                      !controller.canRequestRenewal(lease) ||
+                          controller.pendingRenewal != null
                       ? null
                       : () {
                           vibrateNow();
@@ -162,7 +164,9 @@ class LeasePage extends GetView<LeaseController> {
                         },
                   icon: Icon(Icons.autorenew_rounded, size: 18),
                   label: Text(
-                    controller.pendingRenewal == null
+                    !controller.canRequestRenewal(lease)
+                        ? 'Renewal unavailable'
+                        : controller.pendingRenewal == null
                         ? 'Request renewal'
                         : 'Renewal under review',
                   ),
@@ -170,7 +174,8 @@ class LeasePage extends GetView<LeaseController> {
                     minimumSize: Size.fromHeight(52),
                   ),
                 ),
-                if (controller.pendingRenewal == null) ...[
+                if (controller.canRequestRenewal(lease) &&
+                    controller.pendingRenewal == null) ...[
                   8.h.heightBox(),
                   Text(
                     'Rent is billed separately from your monthly condo fee.',
@@ -207,7 +212,9 @@ class _LeaseProgressCard extends StatelessWidget {
       subtitle:
           '${lease.reference} · $perspective '
           '${AppFormatters.money(lease.monthlyRent, lease.currency)} / month',
-      footnote: lease.hasExpired
+      footnote: lease.status == LeaseStatus.expired
+          ? 'This term has ended. Renewal requests are no longer available.'
+          : lease.hasExpired
           ? 'This term has ended. Submit a renewal to continue the tenancy.'
           : 'Ends ${AppDates.format(lease.endDate)} · ${lease.daysRemaining} days left',
       trailing: AppStatusPill(label: lease.status.label, color: color),

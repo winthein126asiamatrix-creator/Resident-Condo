@@ -95,7 +95,7 @@ class PaymentsPage extends GetView<PaymentController> {
                     icon: Icons.receipt_long_outlined,
                   )
                 else if (hasDashboard)
-                  ...controller.recentInvoices.map(
+                  ...controller.recentInvoices.take(5).map(
                     (invoice) => Padding(
                       padding: EdgeInsets.only(bottom: 10),
                       child: _RecentInvoiceCard(
@@ -120,7 +120,7 @@ class PaymentsPage extends GetView<PaymentController> {
                   )
                 else if (hasDashboard)
                   ...controller.recentPayments
-                      .take(2)
+                      .take(5)
                       .map(
                         (payment) => Padding(
                           padding: EdgeInsets.only(bottom: 10),
@@ -946,7 +946,7 @@ class _RecentPaymentCard extends StatelessWidget {
         ? AppFormatters.currency(payment.amount)
         : AppFormatters.money(payment.amount, payment.currency);
     final subtitle = payment.paidAtLabel.isEmpty
-        ? payment.statusLabel
+        ? ""
         : '${payment.paidAtLabel} · ${payment.statusLabel}';
     return InkWell(
       onTap: onTap,

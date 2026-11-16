@@ -103,6 +103,8 @@ class LeaseController extends GetxController {
   List<LeaseRenewal> renewalsFor(Lease lease) =>
       renewals.where((renewal) => renewal.leaseId == lease.id).toList();
 
+  bool canRequestRenewal(Lease lease) => lease.status != LeaseStatus.expired;
+
   /// Tenants see the rent they owe, owners see the rent they collect.
   String get rentPerspectiveLabel =>
       role.value.paysRent ? 'Rent you pay' : 'Rent you collect';
@@ -217,6 +219,11 @@ class LeaseController extends GetxController {
     required double proposedRent,
     String note = '',
   }) async {
+    if (!canRequestRenewal(lease)) {
+      errorMessage.value =
+          'This lease has expired. Renewal requests are not available.';
+      return null;
+    }
     if (isSubmitting.value) {
       return null;
     }

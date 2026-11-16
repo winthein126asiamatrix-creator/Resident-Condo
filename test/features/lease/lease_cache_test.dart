@@ -256,6 +256,70 @@ void main() {
     expect(controller.errorMessage.value, isNull);
   });
 
+  test('renewal submission is blocked for an expired lease', () async {
+    final repository = _FakeRepository();
+    final controller = LeaseController(LeaseUseCases(repository));
+    final lease = _lease('42', status: LeaseStatus.expired);
+
+    final renewal = await controller.requestRenewal(
+      lease: lease,
+      proposedStart: DateTime(2026, 11, 1),
+      proposedEnd: DateTime(2027, 10, 31),
+      proposedRent: 2460,
+    );
+
+    expect(renewal, isNull);
+    expect(repository.createCalls, 0);
+    expect(controller.errorMessage.value, contains('expired'));
+    expect(lease.status, LeaseStatus.expired);
+  });
+
+  test('renewal submission remains available for eligible statuses', () async {
+    for (final status in <LeaseStatus>[
+      LeaseStatus.active,
+      LeaseStatus.expiringSoon,
+      LeaseStatus.renewed,
+    ]) {
+      final lease = _lease('42', status: status);
+      final repository = _FakeRepository()..leases = <Lease>[lease];
+      final controller = LeaseController(LeaseUseCases(repository));
+
+      final renewal = await controller.requestRenewal(
+        lease: lease,
+        proposedStart: DateTime(2026, 11, 1),
+        proposedEnd: DateTime(2027, 10, 31),
+        proposedRent: 2460,
+      );
+
+      expect(renewal, isNotNull, reason: '${status.name} should allow renewal');
+      expect(repository.createCalls, 1);
+      expect(controller.errorMessage.value, isNull);
+    }
+  });
+
+  test('a renewal API error keeps the lease status unchanged', () async {
+    final lease = _lease('42', status: LeaseStatus.expiringSoon);
+    final repository = _FakeRepository()
+      ..leases = <Lease>[lease]
+      ..createError = const ApiException(
+        'Renewal failed.',
+        kind: ApiFailureKind.server,
+      );
+    final controller = LeaseController(LeaseUseCases(repository));
+
+    final renewal = await controller.requestRenewal(
+      lease: lease,
+      proposedStart: DateTime(2026, 11, 1),
+      proposedEnd: DateTime(2027, 10, 31),
+      proposedRent: 2460,
+    );
+
+    expect(renewal, isNull);
+    expect(repository.createCalls, 1);
+    expect(controller.errorMessage.value, 'Renewal failed.');
+    expect(lease.status, LeaseStatus.expiringSoon);
+  });
+
   group('lease page', () {
     testWidgets('shows the lease when the renewal list is empty', (
       tester,
@@ -295,6 +359,57 @@ void main() {
       expect(find.text('LSE-42'), findsOneWidget);
       await _scrollLeaseTo(tester, find.text('Pending review'));
       expect(find.text('Pending review'), findsOneWidget);
+    });
+
+    testWidgets('disables renewal for an expired lease', (tester) async {
+      final repository = _FakeRepository()
+        ..leases = <Lease>[_lease('42', status: LeaseStatus.expired)]
+        ..renewals = <LeaseRenewal>[];
+      await _pumpLeasePage(tester, repository);
+
+      final button = find.byKey(const Key('request-lease-renewal'));
+      await _scrollLeaseTo(tester, button);
+
+      expect(tester.widget<FilledButton>(button).onPressed, isNull);
+      expect(find.text('Renewal unavailable'), findsOneWidget);
+    });
+
+    testWidgets('keeps renewal enabled for an expiring lease', (tester) async {
+      final repository = _FakeRepository()
+        ..leases = <Lease>[_lease('42', status: LeaseStatus.expiringSoon)]
+        ..renewals = <LeaseRenewal>[];
+      await _pumpLeasePage(tester, repository);
+
+      final button = find.byKey(const Key('request-lease-renewal'));
+      await _scrollLeaseTo(tester, button);
+
+      expect(tester.widget<FilledButton>(button).onPressed, isNotNull);
+      expect(find.text('Request renewal'), findsOneWidget);
+    });
+
+    testWidgets('blocks the renewal form for an expired lease', (tester) async {
+      Get.testMode = true;
+      addTearDown(Get.reset);
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final lease = _lease('42', status: LeaseStatus.expired);
+      final repository = _FakeRepository()..leases = <Lease>[lease];
+      final controller = Get.put(LeaseController(LeaseUseCases(repository)));
+      controller.selectLease(lease);
+
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: const Size(390, 844),
+          builder: (_, _) => MaterialApp(home: LeaseRenewalPage()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Renewal unavailable'), findsOneWidget);
+      expect(find.byKey(const Key('submit-renewal')), findsNothing);
     });
 
     testWidgets('formats lease and renewal amounts in the lease currency', (
@@ -529,12 +644,16 @@ Map<String, dynamic> _renewalJson() {
   };
 }
 
-Lease _lease(String id, {String currency = 'USD'}) {
+Lease _lease(
+  String id, {
+  String currency = 'USD',
+  LeaseStatus status = LeaseStatus.active,
+}) {
   return LeaseModel(
     id: id,
     reference: 'LSE-$id',
     unitLabel: 'Tower A · 1205',
-    status: LeaseStatus.active,
+    status: status,
     startDate: DateTime(2026, 1, 1),
     endDate: DateTime(2026, 12, 31),
     currency: currency,
@@ -582,6 +701,8 @@ class _FakeRepository implements LeaseRepository {
   Object? error;
   Object? leaseError;
   Object? renewalError;
+  Object? createError;
+  int createCalls = 0;
 
   @override
   Future<List<Lease>?> getCachedLeases() async => cachedLeases;
@@ -607,7 +728,12 @@ class _FakeRepository implements LeaseRepository {
   Future<Lease?> getLease(String id) async => null;
 
   @override
-  Future<LeaseRenewal> createRenewal(LeaseRenewal renewal) async => renewal;
+  Future<LeaseRenewal> createRenewal(LeaseRenewal renewal) async {
+    createCalls++;
+    final failure = createError;
+    if (failure != null) throw failure;
+    return renewal;
+  }
 
   @override
   Future<LeaseRenewal> withdrawRenewal(LeaseRenewal renewal) async =>

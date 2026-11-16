@@ -124,7 +124,7 @@ class _SuccessCard extends StatelessWidget {
             '${pendingVerification ? 'SUBMITTED' : 'PAID'} ITEMS '
             '(${payment.items.length})',
             style: TextStyle(
-              color: tokens.brandOnDark,
+              color: tokens.brandDark,
               fontSize: 11.sp,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.1,
@@ -152,7 +152,7 @@ class _SuccessCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    AppFormatters.currency(item.amount),
+                    AppFormatters.money(item.amount,payment.currency),
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontWeight: FontWeight.w800,
@@ -164,7 +164,7 @@ class _SuccessCard extends StatelessWidget {
           Divider(height: 24),
           _SuccessLine(
             label: pendingVerification ? 'Amount submitted' : 'Amount paid',
-            value: AppFormatters.currency(payment.amount),
+            value: AppFormatters.money(payment.amount,payment.currency),
           ),
           _SuccessLine(label: 'Date', value: payment.date),
           _SuccessLine(label: 'Payment method', value: payment.methodLabel),

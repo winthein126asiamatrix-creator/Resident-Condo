@@ -527,7 +527,7 @@ class _RequestCard extends StatelessWidget {
                   children: [
                     ServiceStatusPill(
                       status: request.status,
-                      label: request.displayStatus,
+                      label: request.status.label,
                     ),
                     Icon(Icons.chevron_right_rounded, color: tokens.faint),
                   ],

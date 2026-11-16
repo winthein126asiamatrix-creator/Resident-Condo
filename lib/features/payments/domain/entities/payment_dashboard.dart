@@ -188,6 +188,8 @@ class RecentPayment {
     if (raw.isEmpty) {
       return 'Unknown';
     }
-    return '${raw[0].toUpperCase()}${raw.substring(1)}';
+      final normalized = raw.replaceAll(RegExp(r'[_-]+'), ' ');
+
+    return '${normalized[0].toUpperCase()}${normalized.substring(1)}';
   }
 }
