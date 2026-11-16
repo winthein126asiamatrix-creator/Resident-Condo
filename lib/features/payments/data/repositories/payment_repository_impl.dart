@@ -3,6 +3,7 @@ import '../../domain/entities/invoice_detail.dart';
 import '../../domain/entities/invoice_list.dart';
 import '../../domain/entities/payment.dart';
 import '../../domain/entities/payment_dashboard.dart';
+import '../../../../core/network/dio_api_service.dart';
 import '../../domain/entities/payment_detail.dart';
 import '../../domain/entities/payment_list.dart';
 import '../../domain/entities/payment_method_option.dart';
@@ -113,6 +114,15 @@ class PaymentRepositoryImpl implements PaymentRepository {
       throw StateError('Payment remote data source is not configured.');
     }
     return remote.getPayment(id);
+  }
+
+  @override
+  Future<ApiBinaryResponse> downloadReceipt(String downloadUrl) {
+    final remote = invoiceDataSource;
+    if (remote == null) {
+      throw StateError('Payment remote data source is not configured.');
+    }
+    return remote.downloadReceipt(downloadUrl);
   }
 
   @override

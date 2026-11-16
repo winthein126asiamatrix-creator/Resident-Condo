@@ -6,6 +6,7 @@ import '../entities/payment_detail.dart';
 import '../entities/payment_list.dart';
 import '../entities/payment_method_option.dart';
 import '../entities/payment_quote.dart';
+import '../../../../core/network/dio_api_service.dart';
 import '../repositories/payment_repository.dart';
 
 class PaymentUseCases {
@@ -63,6 +64,10 @@ class PaymentUseCases {
 
   Future<PaymentDetail> getPaymentDetail(int id) {
     return repository.getPaymentDetail(id);
+  }
+
+  Future<ApiBinaryResponse> downloadReceipt(String downloadUrl) {
+    return repository.downloadReceipt(downloadUrl);
   }
 
   Future<CachedPaymentList?> getCachedPaymentList(int userId) {

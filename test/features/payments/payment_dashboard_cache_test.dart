@@ -18,6 +18,8 @@ import 'package:test/features/payments/domain/entities/payment_quote.dart';
 import 'package:test/features/payments/domain/entities/payment_dashboard.dart';
 import 'package:test/features/payments/domain/entities/payment_detail.dart';
 import 'package:test/features/payments/domain/entities/payment_list.dart';
+import 'dart:typed_data';
+import 'package:test/core/network/dio_api_service.dart';
 import 'package:test/features/payments/domain/repositories/payment_repository.dart';
 import 'package:test/features/payments/domain/usecases/payment_usecases.dart';
 import 'package:test/features/payments/presentation/controllers/payment_controller.dart';
@@ -276,6 +278,11 @@ class _FakeCache extends ApiCacheStore {
 }
 
 class _FakeRepository implements PaymentRepository {
+  @override
+  Future<ApiBinaryResponse> downloadReceipt(String downloadUrl) async {
+    return ApiBinaryResponse(bytes: Uint8List(0));
+  }
+
   CachedPaymentDashboard? cached;
   PaymentDashboard fresh = _dashboard(0);
   Object? error;

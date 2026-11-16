@@ -13,6 +13,8 @@ import 'package:test/features/payments/domain/entities/payment_quote.dart';
 import 'package:test/features/payments/domain/entities/payment_dashboard.dart';
 import 'package:test/features/payments/domain/entities/payment_detail.dart';
 import 'package:test/features/payments/domain/entities/payment_list.dart';
+import 'dart:typed_data';
+import 'package:test/core/network/dio_api_service.dart';
 import 'package:test/features/payments/domain/repositories/payment_repository.dart';
 import 'package:test/features/payments/domain/usecases/payment_usecases.dart';
 import 'package:test/features/payments/presentation/controllers/payment_controller.dart';
@@ -169,6 +171,11 @@ PaymentDashboard _dashboard() {
 }
 
 class _FilteredInvoiceRepository implements PaymentRepository {
+  @override
+  Future<ApiBinaryResponse> downloadReceipt(String downloadUrl) async {
+    return ApiBinaryResponse(bytes: Uint8List(0));
+  }
+
   final responses = <String, InvoiceListResponse>{};
   final failures = <String>{};
   String? lastStatus;

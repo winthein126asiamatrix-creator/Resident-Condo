@@ -833,6 +833,11 @@ class _CacheWrite {
 }
 
 class _PaymentRepository implements PaymentRepository {
+  @override
+  Future<ApiBinaryResponse> downloadReceipt(String downloadUrl) async {
+    return ApiBinaryResponse(bytes: Uint8List(0));
+  }
+
   CachedPaymentList? cached;
   PaymentListResponse fresh = _page(page: 1, startId: 0, count: 0);
   PaymentDetail? detail;

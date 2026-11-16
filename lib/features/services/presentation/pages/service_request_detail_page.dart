@@ -45,7 +45,7 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
             AppHeroPanel(
               icon: serviceIcon(current.category),
               title: current.serviceName,
-              subtitle: '${current.scheduledDate} · ${current.scheduledSlot}',
+              subtitle: '${current.displayScheduledDate} · ${current.displayScheduledSlot}',
               footnote: 'Provider: ${current.provider}',
               trailing: ServiceStatusPill(
                 status: current.status,
@@ -64,9 +64,9 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                   ),
                   AppLabelValueRow(
                     label: 'Scheduled',
-                    value: current.scheduledDate,
+                     value: current.displayScheduledDate,
                   ),
-                  AppLabelValueRow(label: 'Slot', value: current.scheduledSlot),
+                   AppLabelValueRow(label: 'Slot', value: current.displayScheduledSlot),
                   AppLabelValueRow(
                     label: 'Service fee',
                     value: AppFormatters.money(current.price,current.currency),

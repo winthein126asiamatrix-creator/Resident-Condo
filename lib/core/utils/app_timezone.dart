@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -65,9 +66,6 @@ abstract final class AppTimezone {
     required String timeZone,
   }) {
     final local = toLocalDateTime(date: date, time: time, timeZone: timeZone);
-    final hour = local.hour % 12 == 0 ? 12 : local.hour % 12;
-    final minute = local.minute.toString().padLeft(2, '0');
-    final period = local.hour >= 12 ? 'PM' : 'AM';
-    return '${hour.toString().padLeft(2, '0')}:$minute $period';
+    return DateFormat('hh:mm a').format(local);
   }
 }

@@ -420,8 +420,8 @@ List<({String label, List<ServiceRequest> requests})> _groupHistory(
   List<ServiceRequest> requests,
 ) {
   final groups = <String, ({String label, List<ServiceRequest> requests})>{};
-  for (final request in requests) {
-    final date = AppDates.parse(request.scheduledDate);
+    for (final request in requests) {
+    final date = AppDates.parse(request.displayScheduledDate);
     final key = '${date.year}-${date.month}';
     final group = groups[key];
     if (group == null) {
@@ -518,7 +518,7 @@ class _RequestCard extends StatelessWidget {
                 ),
                 4.h.heightBox(),
                 Text(
-                  '${request.scheduledDate} · ${request.scheduledSlot}',
+                   '${request.displayScheduledDate} · ${request.displayScheduledSlot}',
                   style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                 ),
                 6.h.heightBox(),

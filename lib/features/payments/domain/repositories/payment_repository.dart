@@ -2,6 +2,7 @@ import '../entities/invoice_detail.dart';
 import '../entities/invoice_list.dart';
 import '../entities/payment.dart';
 import '../entities/payment_dashboard.dart';
+import '../../../../core/network/dio_api_service.dart';
 import '../entities/payment_detail.dart';
 import '../entities/payment_list.dart';
 import '../entities/payment_method_option.dart';
@@ -49,6 +50,9 @@ abstract interface class PaymentRepository {
 
   /// One payment, with its receipt, from the API.
   Future<PaymentDetail> getPaymentDetail(int id);
+
+  /// Downloads a payment receipt through the authenticated API client.
+  Future<ApiBinaryResponse> downloadReceipt(String downloadUrl);
 
   /// The cached latest payments for [userId], when one exists.
   Future<CachedPaymentList?> getCachedPaymentList(int userId);

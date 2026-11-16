@@ -79,7 +79,8 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
       return _PaymentDetailView(
         detail: detail,
         onRefresh: () => controller.loadPaymentDetail(id),
-        onOpenReceipt: (url) => _openReceipt(url),
+        onDownloadReceipt: () => _downloadReceipt(detail),
+        isDownloadingReceipt: controller.isDownloadingReceipt.value,
       );
     });
   }
@@ -95,6 +96,48 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
         onAction: Get.back,
       ),
     );
+  }
+
+  Future<void> _downloadReceipt(PaymentDetail detail) async {
+    if (controller.isDownloadingReceipt.value) {
+      return;
+    }
+    try {
+      await controller.downloadReceipt(detail);
+      if (!mounted) {
+        return;
+      }
+      showAppFeedback(
+        context,
+        title: 'Receipt',
+        message: 'Receipt saved to your gallery.',
+        isError: false,
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      showAppFeedback(
+        context,
+        title: 'Receipt',
+        message: _receiptErrorMessage(error),
+        isError: true,
+      );
+    }
+  }
+
+  String _receiptErrorMessage(Object error) {
+    final text = error.toString().toLowerCase();
+    if (text.contains('permission')) {
+      return 'Permission denied. Please allow photo access in settings.';
+    }
+    if (text.contains('unsupported')) {
+      return 'This receipt format is not supported.';
+    }
+    if (text.contains('network') || text.contains('timeout')) {
+      return 'Network error. Please try again.';
+    }
+    return 'Unable to download the receipt. Please try again.';
   }
 
   Future<void> _openReceipt(String rawUrl) async {
@@ -137,12 +180,14 @@ class _PaymentDetailView extends StatelessWidget {
   const _PaymentDetailView({
     required this.detail,
     required this.onRefresh,
-    required this.onOpenReceipt,
+    required this.onDownloadReceipt,
+    required this.isDownloadingReceipt,
   });
 
   final PaymentDetail detail;
   final VoidCallback onRefresh;
-  final Future<void> Function(String url) onOpenReceipt;
+  final Future<void> Function() onDownloadReceipt;
+  final bool isDownloadingReceipt;
 
   @override
   Widget build(BuildContext context) {
@@ -268,7 +313,9 @@ class _PaymentDetailView extends StatelessWidget {
             title: 'Receipt',
             child: _ReceiptSection(
               receipt: detail.receipt,
-              onOpenReceipt: onOpenReceipt,
+              status: detail.status,
+              isDownloading: isDownloadingReceipt,
+              onDownloadReceipt: onDownloadReceipt,
             ),
           ),
         ],
@@ -278,10 +325,17 @@ class _PaymentDetailView extends StatelessWidget {
 }
 
 class _ReceiptSection extends StatelessWidget {
-  const _ReceiptSection({required this.receipt, required this.onOpenReceipt});
+  const _ReceiptSection({
+    required this.receipt,
+    required this.status,
+    required this.isDownloading,
+    required this.onDownloadReceipt,
+  });
 
   final PaymentReceiptInfo? receipt;
-  final Future<void> Function(String url) onOpenReceipt;
+  final String status;
+  final bool isDownloading;
+  final Future<void> Function() onDownloadReceipt;
 
   @override
   Widget build(BuildContext context) {
@@ -301,6 +355,8 @@ class _ReceiptSection extends StatelessWidget {
         ],
       );
     }
+    final isPaid = paymentStatusFromApi(status) == PaymentStatus.successful;
+    final canDownload = isPaid && value.hasDownloadUrl;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -308,24 +364,43 @@ class _ReceiptSection extends StatelessWidget {
           label: 'Receipt number',
           value: _valueOrDash(value.receiptNumber),
         ),
-        if (value.hasDownloadUrl) ...[
+        if (canDownload) ...[
           12.h.heightBox(),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
               key: const Key('payment-receipt-download'),
-              onPressed: () {
-                vibrateNow();
-                onOpenReceipt(value.downloadUrl);
-              },
-              icon: const Icon(Icons.download_rounded, size: 18),
-              label: const Text('Download receipt'),
+              onPressed: isDownloading
+                  ? null
+                  : () {
+                      vibrateNow();
+                      onDownloadReceipt();
+                    },
+              icon: isDownloading
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: tokens.onBrand,
+                      ),
+                    )
+                  : const Icon(Icons.download_rounded, size: 18),
+              label: Text(
+                isDownloading ? 'Downloading...' : 'Download receipt',
+              ),
               style: FilledButton.styleFrom(
                 backgroundColor: tokens.brand,
                 foregroundColor: tokens.onBrand,
                 minimumSize: const Size.fromHeight(48),
               ),
             ),
+          ),
+        ] else if (value.hasDownloadUrl) ...[
+          8.h.heightBox(),
+          Text(
+            'Receipt download is available after payment is confirmed.',
+            style: TextStyle(color: tokens.muted, fontSize: 11.sp),
           ),
         ] else ...[
           8.h.heightBox(),

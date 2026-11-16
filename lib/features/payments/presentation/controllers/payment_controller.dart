@@ -1,4 +1,11 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart';
+import 'package:gal/gal.dart';
 import 'package:get/get.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/api_exception.dart';
@@ -11,6 +18,7 @@ import '../../domain/entities/invoice_detail.dart';
 import '../../domain/entities/invoice_list.dart';
 import '../../domain/entities/payment.dart';
 import '../../domain/entities/payment_dashboard.dart';
+import '../../../../core/network/dio_api_service.dart';
 import '../../domain/entities/payment_detail.dart';
 import '../../domain/entities/payment_list.dart';
 import '../../domain/entities/payment_method_option.dart';
@@ -117,6 +125,7 @@ class PaymentController extends GetxController {
   final paymentDetailId = Rxn<int>();
   final isLoadingPaymentDetail = false.obs;
   final paymentDetailError = RxnString();
+  final isDownloadingReceipt = false.obs;
 
   // --------------------------------------------------------- payment methods
 
@@ -530,6 +539,7 @@ class PaymentController extends GetxController {
     paymentDetailId.value = null;
     isLoadingPaymentDetail.value = false;
     paymentDetailError.value = null;
+    isDownloadingReceipt.value = false;
 
     _paymentMethodsSeq++;
     _paymentMethodsInFlight = null;
@@ -799,6 +809,124 @@ class PaymentController extends GetxController {
         isLoadingPaymentDetail.value = false;
       }
     }
+  }
+
+  Future<void> downloadReceipt(
+    Object? receiptOrDetail, {
+    String? receiptNumber,
+  }) async {
+    if (isDownloadingReceipt.value) {
+      return;
+    }
+    String url = '';
+    String resolvedReceiptNumber = receiptNumber?.trim() ?? '';
+    if (receiptOrDetail is PaymentDetail) {
+      url = receiptOrDetail.receipt?.downloadUrl ?? '';
+      if (resolvedReceiptNumber.isEmpty) {
+        resolvedReceiptNumber = receiptOrDetail.receipt?.receiptNumber ?? '';
+      }
+    } else if (receiptOrDetail is PaymentReceiptInfo) {
+      url = receiptOrDetail.downloadUrl;
+      if (resolvedReceiptNumber.isEmpty) {
+        resolvedReceiptNumber = receiptOrDetail.receiptNumber;
+      }
+    } else if (receiptOrDetail is String) {
+      url = receiptOrDetail;
+    } else if (receiptOrDetail != null) {
+      url = receiptOrDetail.toString();
+    }
+
+    url = url.trim();
+    if (url.isEmpty) {
+      throw const FormatException('Receipt download URL is missing.');
+    }
+
+    isDownloadingReceipt.value = true;
+    try {
+      final response = await useCases.downloadReceipt(url);
+      await _saveReceiptToGallery(
+        response,
+        receiptNumber: resolvedReceiptNumber,
+      );
+    } finally {
+      isDownloadingReceipt.value = false;
+    }
+  }
+
+  Future<void> _saveReceiptToGallery(
+    ApiBinaryResponse response, {
+    required String receiptNumber,
+  }) async {
+    final contentType = (response.contentType ?? '').toLowerCase();
+    final bytes = response.bytes;
+    final baseName = receiptNumber.trim().isEmpty
+        ? 'receipt'
+        : receiptNumber.trim();
+
+    final isImage = contentType.startsWith('image/') || _looksLikeImage(bytes);
+    final isPdf = contentType.contains('pdf') || _looksLikePdf(bytes);
+
+    if (isImage) {
+      await Gal.putImageBytes(bytes, name: baseName);
+      return;
+    }
+    if (isPdf) {
+      final directory =
+          await getDownloadsDirectory() ??
+          await getApplicationDocumentsDirectory();
+      await Directory(directory.path).create(recursive: true);
+      final file = File(p.join(directory.path, '$baseName.pdf'));
+      await file.writeAsBytes(bytes, flush: true);
+      return;
+    }
+    throw const FormatException('Unsupported receipt format.');
+  }
+
+  bool _looksLikeImage(Uint8List bytes) {
+    if (bytes.length < 4) {
+      return false;
+    }
+    if (bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47) {
+      return true;
+    }
+    if (bytes.length >= 3 &&
+        bytes[0] == 0xFF &&
+        bytes[1] == 0xD8 &&
+        bytes[2] == 0xFF) {
+      return true;
+    }
+    if (bytes.length >= 6 &&
+        bytes[0] == 0x47 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46) {
+      return true;
+    }
+    if (bytes.length >= 12 &&
+        bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46 &&
+        bytes[8] == 0x57 &&
+        bytes[9] == 0x45 &&
+        bytes[10] == 0x42 &&
+        bytes[11] == 0x50) {
+      return true;
+    }
+    if (bytes.length >= 2 && bytes[0] == 0x42 && bytes[1] == 0x4D) {
+      return true;
+    }
+    return false;
+  }
+
+  bool _looksLikePdf(Uint8List bytes) {
+    return bytes.length >= 4 &&
+        bytes[0] == 0x25 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x44 &&
+        bytes[3] == 0x46;
   }
 
   Future<void> _refreshActivePaymentDetail() async {

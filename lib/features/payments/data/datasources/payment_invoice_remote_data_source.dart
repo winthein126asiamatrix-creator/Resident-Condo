@@ -100,6 +100,14 @@ class PaymentInvoiceRemoteDataSource {
     return PaymentDetailModel.parse(response);
   }
 
+  Future<ApiBinaryResponse> downloadReceipt(String downloadUrl) async {
+    final path = downloadUrl.trim();
+    if (path.isEmpty) {
+      throw const FormatException('Receipt download URL is missing.');
+    }
+    return _service.getBytes(path);
+  }
+
   Future<InvoiceListResponseModel> getInvoices({
     int page = 1,
     int limit = 20,

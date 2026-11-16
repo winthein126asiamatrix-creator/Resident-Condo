@@ -32,6 +32,7 @@ dependencies:
   flutter_svg: ^2.3.2
   url_launcher: ^6.3.2
   expandable_text: ^2.3.0
+  gal: ^3.0.1
 
 dev_dependencies:
   build_runner: ^2.16.2

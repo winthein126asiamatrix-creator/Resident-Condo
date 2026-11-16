@@ -908,6 +908,7 @@ class ServiceRequest {
     this.rating,
     this.slotId,
     this.bookingDetails = const <String, dynamic>{},
+    this.timezone = 'UTC',
   });
 
   final String id;
@@ -929,8 +930,45 @@ class ServiceRequest {
   final int? rating;
   final int? slotId;
   final Map<String, dynamic> bookingDetails;
+  final String timezone;
 
   String get displayStatus => statusLabel ?? status.label;
+
+  String get displayScheduledDate {
+    final start = scheduledSlot
+        .split(RegExp(r'\s*[-–]\s*'))
+        .first
+        .trim();
+    if (start.isEmpty || scheduledDate.trim().isEmpty) {
+      return scheduledDate;
+    }
+    return AppTimezone.localDate(
+      date: scheduledDate,
+      time: start,
+      timeZone: timezone,
+    );
+  }
+
+  String get displayScheduledSlot {
+    final parts = scheduledSlot.split(RegExp(r'\s*[-–]\s*'));
+    if (parts.isEmpty || parts.first.trim().isEmpty) {
+      return scheduledSlot;
+    }
+    final start = AppTimezone.formatLocalTime(
+      date: scheduledDate,
+      time: parts.first.trim(),
+      timeZone: timezone,
+    );
+    if (parts.length == 1) {
+      return start;
+    }
+    final end = AppTimezone.formatLocalTime(
+      date: scheduledDate,
+      time: parts[1].trim(),
+      timeZone: timezone,
+    );
+    return '$start - $end';
+  }
 
   bool get canCancel =>
       status == ServiceRequestStatus.requested ||
@@ -1024,6 +1062,24 @@ class ServiceRequest {
               fallback?.scheduledSlot ??
               '';
 
+    String? resolvedTimezone;
+    if (map['timezone'] != null) {
+      resolvedTimezone = asString(map['timezone']);
+    } else if (map['booking_details'] is Map) {
+      resolvedTimezone = asString(
+        (map['booking_details'] as Map)['timezone'],
+      );
+    } else if (map['service'] is Map) {
+      final serviceMap = Map<String, dynamic>.from(map['service'] as Map);
+      if (serviceMap['availability'] is Map) {
+        resolvedTimezone = asString(
+          (serviceMap['availability'] as Map)['timezone'],
+        );
+      }
+      resolvedTimezone ??= asString(serviceMap['timezone']);
+    }
+    resolvedTimezone ??= fallback?.timezone;
+
     final rawStatus = asString(map['status']);
     final status = rawStatus == null
         ? (fallback?.status ?? ServiceRequestStatus.requested)
@@ -1072,6 +1128,7 @@ class ServiceRequest {
       rating: asInt(map['rating']) ?? fallback?.rating,
       slotId: asInt(map['slot_id']) ?? fallback?.slotId,
       bookingDetails: bookingDetails,
+      timezone: resolvedTimezone ?? 'UTC',
     );
   }
 
@@ -1146,6 +1203,7 @@ class ServiceRequest {
     if (rating != null) 'rating': rating,
     if (slotId != null) 'slot_id': slotId,
     'booking_details': bookingDetails,
+    'timezone': timezone,
   };
 
   ServiceRequest copyWith({
@@ -1174,6 +1232,7 @@ class ServiceRequest {
       rating: rating ?? this.rating,
       slotId: slotId,
       bookingDetails: bookingDetails,
+      timezone: timezone,
     );
   }
 }
