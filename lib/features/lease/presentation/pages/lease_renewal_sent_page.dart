@@ -15,6 +15,8 @@ import '../../../../core/widgets/app_card.dart';
 
 import '../../domain/entities/lease.dart';
 
+import '../controllers/lease_controller.dart';
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 import '../../../../core/theme/app_spacing.dart';
@@ -27,6 +29,7 @@ class LeaseRenewalSentPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    final currency = _currencyFor(renewal);
     return Scaffold(
       appBar: AppDetailAppBar(title: 'Renewal requested'),
       body: ListView(
@@ -77,7 +80,7 @@ class LeaseRenewalSentPage extends StatelessWidget {
                 _Line(
                   label: 'Proposed rent',
                   value:
-                      '${AppFormatters.currency(renewal.proposedRent)} / month',
+                      '${AppFormatters.money(renewal.proposedRent, currency)} / month',
                 ),
                 _Line(label: 'New start', value: renewal.proposedStart),
                 _Line(label: 'New end', value: renewal.proposedEnd),
@@ -96,6 +99,23 @@ class LeaseRenewalSentPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _currencyFor(LeaseRenewal renewal) {
+    if (!Get.isRegistered<LeaseController>()) {
+      return '';
+    }
+    final controller = Get.find<LeaseController>();
+    final selected = controller.selectedLease.value;
+    if (selected != null && selected.id == renewal.leaseId) {
+      return selected.currency;
+    }
+    for (final lease in controller.leases) {
+      if (lease.id == renewal.leaseId) {
+        return lease.currency;
+      }
+    }
+    return '';
   }
 }
 

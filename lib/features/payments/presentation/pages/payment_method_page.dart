@@ -170,9 +170,12 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                 ),
               ],
             ],
-            12.h.heightBox(),
-            if (method != null && method.code.trim().toLowerCase() == 'card')
-              _DemoGatewayHint(),
+             if (_error.isNotEmpty) ...[
+              10.h.heightBox(),
+              Text(_error, style: TextStyle(color: AppPalette.danger)),
+            ],
+            //if (method != null && method.code.trim().toLowerCase() == 'card')
+             // _DemoGatewayHint(),
             12.h.heightBox(),
             FilledButton.icon(
               key: Key('confirm-payment'),
@@ -199,17 +202,14 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
               ),
               style: FilledButton.styleFrom(minimumSize: Size.fromHeight(52)),
             ),
-            if (_error.isNotEmpty) ...[
-              10.h.heightBox(),
-              Text(_error, style: TextStyle(color: AppPalette.danger)),
-            ],
-            if (_error.isEmpty && controller.errorMessage.value != null) ...[
-              10.h.heightBox(),
-              Text(
-                controller.errorMessage.value!,
-                style: TextStyle(color: AppPalette.danger),
-              ),
-            ],
+           
+            // if (_error.isEmpty && controller.errorMessage.value != null) ...[
+            //   10.h.heightBox(),
+            //   Text(
+            //     controller.errorMessage.value!,
+            //     style: TextStyle(color: AppPalette.danger),
+            //   ),
+            // ],
           ],
         );
       }),
@@ -722,13 +722,12 @@ class _MethodDetails extends StatelessWidget {
           _DetailLine(
             label: 'Account number',
             value: accountNumber,
-            trailing: IconButton(
-              key: const Key('payment-method-account-copy'),
-              tooltip: 'Copy account number',
-              visualDensity: VisualDensity.compact,
-              onPressed: () => _copyAccountNumber(context, accountNumber),
-              icon: Icon(Icons.copy_rounded, size: 16, color: tokens.muted),
-            ),
+            trailing: GestureDetector(
+                onTap: () => _copyAccountNumber(context, accountNumber),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Icon(Icons.copy_rounded, size: 16, color: tokens.muted),
+                )),
           ),
         if (currency.isNotEmpty)
           _DetailLine(label: 'Currency', value: currency),
@@ -980,12 +979,12 @@ class _DetailLine extends StatelessWidget {
           10.w.widthBox(),
           Flexible(
             child: Text(
-              value,
+              value ,
               textAlign: TextAlign.right,
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12.sp),
             ),
           ),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );

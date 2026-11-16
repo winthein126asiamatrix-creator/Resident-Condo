@@ -132,6 +132,7 @@ class Lease {
     required this.status,
     required this.startDate,
     required this.endDate,
+    required this.currency,
     required this.monthlyRent,
     required this.securityDeposit,
     required this.rentDueDay,
@@ -149,6 +150,7 @@ class Lease {
   final LeaseStatus status;
   final DateTime startDate;
   final DateTime endDate;
+  final String currency;
   final double monthlyRent;
   final double securityDeposit;
   final int rentDueDay;
@@ -194,6 +196,7 @@ class Lease {
       status: status ?? this.status,
       startDate: startDate,
       endDate: endDate,
+      currency: currency,
       monthlyRent: monthlyRent,
       securityDeposit: securityDeposit,
       rentDueDay: rentDueDay,

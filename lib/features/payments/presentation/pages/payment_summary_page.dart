@@ -250,7 +250,7 @@ class _SelectableItem extends StatelessWidget {
             item.isPaid
                 ? 'Paid${item.paidDate == null ? '' : ' on ${item.paidDate}'}'
                 : item.isMandatory
-                ? 'Mandatory fee Ã‚Â· always included'
+                ? 'Mandatory fee · always included'
                 : item.isZero
                 ? 'Not charged this period'
                 : item.note.isEmpty

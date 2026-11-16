@@ -1,3 +1,4 @@
+import 'package:expandable_text/expandable_text.dart';
 import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
@@ -277,7 +278,7 @@ class _ServiceCard extends StatelessWidget {
                   ),
                   2.h.heightBox(),
                   Text(
-                    _pricingUnit(service),
+                    _pricingUnit(service).capitalizeFirst??"",
                     style: TextStyle(color: tokens.faint, fontSize: 10.5.sp),
                   ),
                 ],
@@ -285,16 +286,19 @@ class _ServiceCard extends StatelessWidget {
             ],
           ),
           10.h.heightBox(),
-          Text(
-            service.description,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: tokens.mutedStrong,
-              fontSize: 12.5.sp,
-              height: 1.4,
+          ExpandableText(
+              service.description,
+              maxLines: 3,
+              expandText: 'See more',
+              collapseText: 'See less',
+              animation: true,
+              linkColor: tokens.seed,
+              style: TextStyle(
+                color: tokens.mutedStrong,
+                fontSize: 12.5.sp,
+                height: 1.4,
+              ),
             ),
-          ),
           12.h.heightBox(),
           Row(
             children: [
@@ -302,7 +306,7 @@ class _ServiceCard extends StatelessWidget {
               5.w.widthBox(),
               Expanded(
                 child: Text(
-                  'Needs ${service.leadTimeDays} day notice',
+                  'Needs ${service.noticeDays} day notice',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: tokens.faint, fontSize: 11.sp),
@@ -505,7 +509,7 @@ class _RequestCard extends StatelessWidget {
                       mainAxisAlignment: .end,
                       children: [
                         Text(
-                          '${request.currency} ${AppFormatters.currency(request.price)}',
+                          AppFormatters.money(request.price,request.currency),
                           style: TextStyle(fontWeight: FontWeight.w800),
                         ),
                       ],
@@ -514,7 +518,7 @@ class _RequestCard extends StatelessWidget {
                 ),
                 4.h.heightBox(),
                 Text(
-                  '${request.scheduledDate} Â· ${request.scheduledSlot}',
+                  '${request.scheduledDate} · ${request.scheduledSlot}',
                   style: TextStyle(color: tokens.muted, fontSize: 11.sp),
                 ),
                 6.h.heightBox(),
@@ -544,7 +548,7 @@ String _pricingLabel(CondoService service) {
     case ServicePricingType.free:
       return 'Free';
     default:
-      return '${service.pricing.currency} ${AppFormatters.currency(service.price)}';
+      return AppFormatters.money(service.price,service.pricing.currency??"");
   }
 }
 

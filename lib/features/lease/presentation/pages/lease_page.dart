@@ -1,3 +1,4 @@
+import 'package:expandable_text/expandable_text.dart';
 import 'package:test/core/utils/haptics.dart';
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
@@ -128,7 +129,10 @@ class LeasePage extends GetView<LeaseController> {
                       ),
                       AppLabelValueRow(
                         label: 'Security deposit',
-                        value: AppFormatters.currency(lease.securityDeposit),
+                        value: AppFormatters.money(
+                          lease.securityDeposit,
+                          lease.currency,
+                        ),
                       ),
                       AppLabelValueRow(
                         label: 'Last rent payment',
@@ -201,11 +205,11 @@ class _LeaseProgressCard extends StatelessWidget {
       icon: Icons.description_rounded,
       title: lease.unitLabel,
       subtitle:
-          '${lease.reference} Â· $perspective '
-          '${AppFormatters.currency(lease.monthlyRent)} / month',
+          '${lease.reference} · $perspective '
+          '${AppFormatters.money(lease.monthlyRent, lease.currency)} / month',
       footnote: lease.hasExpired
           ? 'This term has ended. Submit a renewal to continue the tenancy.'
-          : 'Ends ${AppDates.format(lease.endDate)} Â· ${lease.daysRemaining} days left',
+          : 'Ends ${AppDates.format(lease.endDate)} · ${lease.daysRemaining} days left',
       trailing: AppStatusPill(label: lease.status.label, color: color),
       leading: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,11 +306,12 @@ class _PartyTile extends StatelessWidget {
             ],
           ),
         ),
-        IconButton(
-          tooltip: 'Call ${party.name}',
-          onPressed: () => _call(context),
-          icon: Icon(Icons.call_outlined, color: tokens.brand),
-        ),
+        if (party.phone.isNotEmpty)
+          IconButton(
+            tooltip: 'Call ${party.name}',
+            onPressed: () => _call(context),
+            icon: Icon(Icons.call_outlined, color: tokens.brand),
+          ),
       ],
     );
   }
@@ -382,7 +387,11 @@ class _RenewalList extends StatelessWidget {
         for (final renewal in items)
           Padding(
             padding: EdgeInsets.only(bottom: 10),
-            child: _RenewalCard(controller: controller, renewal: renewal),
+            child: _RenewalCard(
+              controller: controller,
+              renewal: renewal,
+              currency: lease.currency,
+            ),
           ),
       ],
     );
@@ -390,9 +399,14 @@ class _RenewalList extends StatelessWidget {
 }
 
 class _RenewalCard extends StatelessWidget {
-  const _RenewalCard({required this.controller, required this.renewal});
+  const _RenewalCard({
+    required this.controller,
+    required this.renewal,
+    required this.currency,
+  });
   final LeaseController controller;
   final LeaseRenewal renewal;
+  final String currency;
 
   @override
   Widget build(BuildContext context) {
@@ -420,7 +434,7 @@ class _RenewalCard extends StatelessWidget {
           ),
           12.h.heightBox(),
           Text(
-            '${AppFormatters.currency(renewal.proposedRent)} / month',
+            '${AppFormatters.money(renewal.proposedRent, currency)} / month',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17.sp),
           ),
           4.h.heightBox(),
@@ -430,8 +444,13 @@ class _RenewalCard extends StatelessWidget {
           ),
           if (renewal.note.isNotEmpty) ...[
             8.h.heightBox(),
-            Text(
+            ExpandableText(
               renewal.note,
+              maxLines: 3,
+              expandText: 'See more',
+              collapseText: 'See less',
+              animation: true,
+              linkColor: tokens.seed,
               style: TextStyle(
                 color: tokens.muted,
                 fontSize: 12.sp,

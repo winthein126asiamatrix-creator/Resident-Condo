@@ -147,7 +147,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
                         ),
                         3.h.heightBox(),
                         Text(
-                          '${AppDates.format(lease.startDate)} â†’ '
+                          '${AppDates.format(lease.startDate)} to '
                           '${AppDates.format(lease.endDate)}',
                           style: TextStyle(
                             color: tokens.mutedStrong,
@@ -156,7 +156,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
                         ),
                         3.h.heightBox(),
                         Text(
-                          '${AppFormatters.currency(lease.monthlyRent)} / month Â· '
+                          '${AppFormatters.money(lease.monthlyRent, lease.currency)} / month · '
                           '${lease.daysRemaining} days left',
                           style: TextStyle(
                             color: tokens.muted,
@@ -189,14 +189,9 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
               durationLabel: _durationLabel(),
             ),
             20.h.heightBox(),
-            Text(
-              'Proposed monthly rent',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16.sp),
-            ),
-            10.h.heightBox(),
             AppTextField(
               fieldKey: Key('renewal-rent-field'),
-              label: 'Proposed monthly rent',
+              label: 'Proposed monthly rent  (${lease.currency})',
               controller: _rentController,
               icon: Icons.payments_outlined,
               keyboardType: TextInputType.numberWithOptions(decimal: true),
@@ -204,15 +199,24 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
                 FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
               ],
               hint: '2400',
+              
             ),
             20.h.heightBox(),
             AppTextField(
               label: 'Note (optional)',
               controller: _noteController,
               maxLines: 3,
-              hint: 'Add context for the other partyâ€¦',
+              hint: 'Add context for the other party',
             ),
             24.h.heightBox(),
+             if (controller.errorMessage.value != null) ...[
+              10.h.heightBox(),
+              Text(
+                controller.errorMessage.value!,
+                style: TextStyle(color: AppPalette.danger),
+              ),
+            ],
+            10.h.heightBox(),
             FilledButton.icon(
               key: Key('submit-renewal'),
               onPressed: controller.isSubmitting.value ? null : _submit,
@@ -233,17 +237,6 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
               ),
               style: FilledButton.styleFrom(minimumSize: Size.fromHeight(52)),
             ),
-            if (_error.isNotEmpty) ...[
-              10.h.heightBox(),
-              Text(_error, style: TextStyle(color: AppPalette.danger)),
-            ],
-            if (controller.errorMessage.value != null) ...[
-              10.h.heightBox(),
-              Text(
-                controller.errorMessage.value!,
-                style: TextStyle(color: AppPalette.danger),
-              ),
-            ],
           ],
         ),
       );
@@ -262,21 +255,21 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
       return;
     }
 
+    final lease = controller.selectedLease.value;
+    if (lease == null) {
+      return;
+    }
+
     final confirmed = await showAppConfirmDialog(
       context,
       title: 'Send renewal request?',
       message:
-          'Propose ${AppFormatters.currency(rent)} per month from '
+          'Propose ${AppFormatters.money(rent, lease.currency)} per month from '
           '${AppDates.format(_start)} to ${AppDates.format(_end)} '
           '(${_durationLabel()}).',
       confirmLabel: 'Send request',
     );
     if (!confirmed || !mounted) {
-      return;
-    }
-
-    final lease = controller.selectedLease.value;
-    if (lease == null) {
       return;
     }
 
@@ -362,7 +355,7 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
       parts.add('$months month${months == 1 ? '' : 's'}');
     }
     parts.add('$days day${days == 1 ? '' : 's'}');
-    return parts.join(' Â· ');
+    return parts.join(' · ');
   }
 }
 

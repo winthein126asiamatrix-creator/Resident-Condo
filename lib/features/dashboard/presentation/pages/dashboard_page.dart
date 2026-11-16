@@ -446,15 +446,23 @@ class _HomeCard extends StatelessWidget {
                       ),
                       6.w.widthBox(),
                       Flexible(
-                        child: Text(
-                          '${unitInfo?.parkingSlot ?? 'N/A'}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: tokens.brandOnDarkMuted,
-                            fontSize: 12.sp,
-                          ),
-                        ),
+                        child: 
+                        // Text(
+                        //   '${unitInfo?.parkingSlot ?? 'N/A'}',
+                        //   maxLines: 1,
+                        //   overflow: TextOverflow.ellipsis,
+                        //   style: TextStyle(
+                        //     color: tokens.brandOnDarkMuted,
+                        //     fontSize: 12.sp,
+                        //   ),
+                        // ),
+                        Text(
+                      '${(unitInfo?.myRole  ?? '').capitalizeFirst} · Parking ${unitInfo?.parkingSlot ?? 'N/A'}',
+                      style: TextStyle(
+                        color: tokens.brandOnDarkMuted,
+                        fontSize: 12.sp,
+                      ),
+                    ),
                       ),
                     ],
                   ),

@@ -14,6 +14,8 @@ import 'package:test/features/lease/domain/repositories/lease_repository.dart';
 import 'package:test/features/lease/domain/usecases/lease_usecases.dart';
 import 'package:test/features/lease/presentation/controllers/lease_controller.dart';
 import 'package:test/features/lease/presentation/pages/lease_page.dart';
+import 'package:test/features/lease/presentation/pages/lease_renewal_page.dart';
+import 'package:test/features/lease/presentation/pages/lease_renewal_sent_page.dart';
 
 void main() {
   test('parses the lease fields the screen renders', () {
@@ -25,6 +27,7 @@ void main() {
     expect(lease.status, LeaseStatus.expiringSoon);
     expect(lease.startDate, DateTime(2026, 1, 1));
     expect(lease.endDate, DateTime(2026, 10, 31));
+    expect(lease.currency, 'USD');
     expect(lease.monthlyRent, 2400);
     expect(lease.securityDeposit, 2500);
     expect(lease.rentDueDay, 1);
@@ -59,6 +62,7 @@ void main() {
     expect(restored.owner.id, lease.owner.id);
     expect(restored.startDate, lease.startDate);
     expect(restored.endDate, lease.endDate);
+    expect(restored.currency, lease.currency);
     expect(restored.terms, lease.terms);
 
     expect(renewed.id, renewal.id);
@@ -293,6 +297,96 @@ void main() {
       expect(find.text('Pending review'), findsOneWidget);
     });
 
+    testWidgets('formats lease and renewal amounts in the lease currency', (
+      tester,
+    ) async {
+      final repository = _FakeRepository()
+        ..leases = <Lease>[_lease('42')]
+        ..renewals = <LeaseRenewal>[_renewal('9')];
+      await _pumpLeasePage(tester, repository);
+
+      expect(find.textContaining(r'$2,400.00 / month'), findsOneWidget);
+      await _scrollLeaseTo(tester, find.text(r'$2,500.00'));
+      expect(find.text(r'$2,500.00'), findsOneWidget);
+      await _scrollLeaseTo(tester, find.text(r'$2,460.00 / month'));
+      expect(find.text(r'$2,460.00 / month'), findsOneWidget);
+    });
+
+    testWidgets('uses a non-USD currency from the API', (tester) async {
+      final repository = _FakeRepository()
+        ..leases = <Lease>[_lease('42', currency: 'MMK')]
+        ..renewals = <LeaseRenewal>[_renewal('9')];
+      await _pumpLeasePage(tester, repository);
+
+      expect(find.textContaining('2,400 Ks / month'), findsOneWidget);
+      await _scrollLeaseTo(tester, find.text('2,500 Ks'));
+      expect(find.text('2,500 Ks'), findsOneWidget);
+      await _scrollLeaseTo(tester, find.text('2,460 Ks / month'));
+      expect(find.text('2,460 Ks / month'), findsOneWidget);
+    });
+
+    testWidgets('renewal success shows rent in the lease currency', (
+      tester,
+    ) async {
+      Get.testMode = true;
+      addTearDown(Get.reset);
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final lease = _lease('42', currency: 'MMK');
+      final repository = _FakeRepository()..leases = <Lease>[lease];
+      final controller = Get.put(LeaseController(LeaseUseCases(repository)));
+      controller.selectLease(lease);
+
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: const Size(390, 844),
+          builder: (_, _) =>
+              MaterialApp(home: LeaseRenewalSentPage(renewal: _renewal('9'))),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('2,460 Ks / month'), findsOneWidget);
+    });
+
+    testWidgets('renewal confirmation uses the lease currency', (tester) async {
+      Get.testMode = true;
+      addTearDown(Get.reset);
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final lease = _lease('42', currency: 'MMK');
+      final repository = _FakeRepository()..leases = <Lease>[lease];
+      final controller = Get.put(LeaseController(LeaseUseCases(repository)));
+      controller.selectLease(lease);
+
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: const Size(390, 844),
+          builder: (_, _) => MaterialApp(home: LeaseRenewalPage()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final submit = find.byKey(const Key('submit-renewal'));
+      await tester.scrollUntilVisible(
+        submit,
+        300,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.ensureVisible(submit);
+      await tester.pumpAndSettle();
+      await tester.tap(submit);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('2,472 Ks per month'), findsOneWidget);
+    });
+
     testWidgets('hides the updated date when decide_on is false', (
       tester,
     ) async {
@@ -396,6 +490,7 @@ Map<String, dynamic> _leaseJson() {
     'unit': <String, dynamic>{'id': 7, 'label': 'Tower A · 1205'},
     'start_date': '2026-01-01',
     'end_date': '2026-10-31',
+    'currency': 'USD',
     'monthly_rent': 2400,
     'security_deposit': 2500,
     'rent_due_day': 1,
@@ -434,7 +529,7 @@ Map<String, dynamic> _renewalJson() {
   };
 }
 
-Lease _lease(String id) {
+Lease _lease(String id, {String currency = 'USD'}) {
   return LeaseModel(
     id: id,
     reference: 'LSE-$id',
@@ -442,8 +537,9 @@ Lease _lease(String id) {
     status: LeaseStatus.active,
     startDate: DateTime(2026, 1, 1),
     endDate: DateTime(2026, 12, 31),
+    currency: currency,
     monthlyRent: 2400,
-    securityDeposit: 2400,
+    securityDeposit: 2500,
     rentDueDay: 1,
     owner: const LeaseParty(
       name: 'Alex Johnson',
