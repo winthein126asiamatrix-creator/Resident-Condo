@@ -49,8 +49,8 @@ class LeaseModel extends Lease {
 
     final owner = _map(json['owner']);
     final tenant = _map(json['tenant']);
-    if (owner == null || tenant == null) {
-      throw const FormatException('Lease response is missing owner or tenant.');
+    if (owner == null) {
+      throw const FormatException('Lease response is missing owner.');
     }
 
     return LeaseModel(
@@ -86,7 +86,7 @@ class LeaseModel extends Lease {
         'rent_due_day',
       ),
       owner: _party(owner, LeasePartyRole.owner),
-      tenant: _party(tenant, LeasePartyRole.tenant),
+      tenant: tenant == null ? null : _party(tenant, LeasePartyRole.tenant),
       lastRentPaymentDate: _displayDateOrRaw(
         json['last_rent_payment_date'] ?? json['lastRentPaymentDate'],
       ),
@@ -112,7 +112,7 @@ class LeaseModel extends Lease {
       'security_deposit': securityDeposit,
       'rent_due_day': rentDueDay,
       'owner': _partyJson(owner),
-      'tenant': _partyJson(tenant),
+      if (tenant != null) 'tenant': _partyJson(tenant!),
       'last_rent_payment_date': lastRentPaymentDate,
       'document_names': documentNames,
       'terms': terms,
@@ -132,6 +132,7 @@ class LeaseRenewalModel extends LeaseRenewal {
     required super.requestedBy,
     super.note,
     super.decidedOn,
+    super.decideOn,
   });
 
   factory LeaseRenewalModel.fromEntity(LeaseRenewal renewal) {
@@ -146,10 +147,17 @@ class LeaseRenewalModel extends LeaseRenewal {
       requestedBy: renewal.requestedBy,
       note: renewal.note,
       decidedOn: renewal.decidedOn,
+      decideOn: renewal.decideOn,
     );
   }
 
   factory LeaseRenewalModel.fromJson(Map<String, dynamic> json) {
+    final decideOnValue = json['decide_on'] ?? json['decideOn'];
+    final decidedOnValue = json['decided_on'] ?? json['decidedOn'];
+    final decidedOn = _optionalDisplayDate(
+      decidedOnValue ?? json['updated_on'],
+    );
+    final decideOn = _optionalBool(decideOnValue) ?? false;
     return LeaseRenewalModel(
       id: _requiredId(json['id'], 'id'),
       leaseId: _requiredId(
@@ -175,9 +183,8 @@ class LeaseRenewalModel extends LeaseRenewal {
       requestedBy:
           _requestedBy(json['requested_by'] ?? json['requestedBy']) ?? '',
       note: _text(json['note']) ?? '',
-      decidedOn: _optionalDisplayDate(
-        json['decided_on'] ?? json['decidedOn'] ?? json['updated_on'],
-      ),
+      decidedOn: decidedOn,
+      decideOn: decideOn,
     );
   }
 
@@ -193,6 +200,7 @@ class LeaseRenewalModel extends LeaseRenewal {
       'requested_by': requestedBy,
       'note': note,
       'decided_on': decidedOn,
+      'decide_on': decideOn,
     };
   }
 }
@@ -348,6 +356,22 @@ String? _optionalDisplayDate(Object? value) {
   if (text == null || text.isEmpty) return null;
   final date = _tryDate(text);
   return date == null ? text : AppDates.format(date);
+}
+
+bool? _optionalBool(Object? value) {
+  if (value is bool) return value;
+  if (value is num) return value != 0;
+  if (value is String) {
+    switch (value.trim().toLowerCase()) {
+      case 'true':
+      case '1':
+        return true;
+      case 'false':
+      case '0':
+        return false;
+    }
+  }
+  return null;
 }
 
 DateTime? _tryDate(Object? value) {

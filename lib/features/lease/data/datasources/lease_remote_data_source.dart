@@ -105,6 +105,7 @@ class LeaseRemoteDataSource {
     return renewal.copyWith(
       status: RenewalStatus.withdrawn,
       decidedOn: AppDates.format(DateTime.now()),
+      decideOn: true,
     );
   }
 

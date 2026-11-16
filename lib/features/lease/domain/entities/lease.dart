@@ -87,6 +87,7 @@ class LeaseRenewal {
     required this.requestedBy,
     this.note = '',
     this.decidedOn,
+    this.decideOn = false,
   });
 
   final String id;
@@ -99,8 +100,13 @@ class LeaseRenewal {
   final String requestedBy;
   final String note;
   final String? decidedOn;
+  final bool decideOn;
 
-  LeaseRenewal copyWith({RenewalStatus? status, String? decidedOn}) {
+  LeaseRenewal copyWith({
+    RenewalStatus? status,
+    String? decidedOn,
+    bool? decideOn,
+  }) {
     return LeaseRenewal(
       id: id,
       leaseId: leaseId,
@@ -112,6 +118,7 @@ class LeaseRenewal {
       requestedBy: requestedBy,
       note: note,
       decidedOn: decidedOn ?? this.decidedOn,
+      decideOn: decideOn ?? this.decideOn,
     );
   }
 }
@@ -146,7 +153,7 @@ class Lease {
   final double securityDeposit;
   final int rentDueDay;
   final LeaseParty owner;
-  final LeaseParty tenant;
+  final LeaseParty? tenant;
   final String lastRentPaymentDate;
   final List<String> documentNames;
   final List<String> terms;

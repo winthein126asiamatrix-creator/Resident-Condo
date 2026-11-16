@@ -857,25 +857,7 @@ class PaymentController extends GetxController {
       if (seq != _paymentMethodsSeq || userId != _currentUserId) {
         return;
       }
-      final demoMethod = PaymentMethodOption(
-  id: 999,
-  code: 'demo_kbz_pay',
-  name: 'Demo KBZ Pay',
-  isActive: true,
-  requiresProof: true,
-  accountName: 'Demo Account',
-  accountNumber: '1234567890',
-  bankName: 'KBZ Bank',
-  qrImageUrl: '',
-  instructions: 'Demo payment method for testing',
-  currency: 'MMK',
-);
-
-final updatedMethods = [
-  ...methods,
-  demoMethod,
-];
-      paymentMethods.assignAll(updatedMethods);
+      paymentMethods.assignAll(methods);
       _hasPaymentMethodsData = true;
       _paymentMethodsOwnerUserId = userId;
       isShowingCachedPaymentMethods.value = false;

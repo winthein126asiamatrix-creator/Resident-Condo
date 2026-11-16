@@ -33,6 +33,8 @@ class LeaseController extends GetxController {
   bool _cacheChecked = false;
   bool _hasLeaseSnapshot = false;
   bool _hasRenewalSnapshot = false;
+  bool _leasesFromCache = false;
+  bool _renewalsFromCache = false;
   Future<void>? _loadInFlight;
   int _accountEpoch = 0;
 
@@ -142,30 +144,59 @@ class LeaseController extends GetxController {
       return;
     }
 
+    await Future.wait<void>([_loadLeaseList(epoch), _loadRenewalList(epoch)]);
+    if (epoch == _accountEpoch) {
+      isLoading.value = false;
+    }
+  }
+
+  /// Loads the lease list independently from renewals.
+  ///
+  /// The lease list is the only source of truth for whether the resident has a
+  /// lease. A renewal failure must never prevent an existing lease from being
+  /// shown.
+  Future<void> _loadLeaseList(int epoch) async {
     try {
-      final results = await Future.wait<Object>([
-        useCases.getLeases(),
-        useCases.getRenewals(),
-      ]);
+      final leases = await useCases.getLeases();
       if (epoch != _accountEpoch) return;
-      leases.assignAll(results[0] as List<Lease>);
-      renewals.assignAll(results[1] as List<LeaseRenewal>);
+      this.leases.assignAll(leases);
       _hasLeaseSnapshot = true;
-      _hasRenewalSnapshot = true;
-      isShowingCachedData.value = false;
+      _leasesFromCache = false;
+      _syncCachedFlag();
       _registry?.markFresh(screen);
       _refreshSelection();
     } on AppException catch (error) {
       if (epoch == _accountEpoch) {
-        _handleLoadFailure(error);
+        _handleLeaseFailure(error);
       }
     } catch (_) {
       if (epoch == _accountEpoch) {
-        _handleLoadFailure(null, fallback: 'Unable to load lease information.');
+        _handleLeaseFailure(
+          null,
+          fallback: 'Unable to load lease information.',
+        );
       }
-    } finally {
+    }
+  }
+
+  /// Loads renewal records independently. An empty response only clears the
+  /// renewal state; it never touches [leases].
+  Future<void> _loadRenewalList(int epoch) async {
+    try {
+      final renewals = await useCases.getRenewals();
+      if (epoch != _accountEpoch) return;
+      this.renewals.assignAll(renewals);
+      _hasRenewalSnapshot = true;
+      _renewalsFromCache = false;
+      _syncCachedFlag();
+      _registry?.markFresh(screen);
+    } on AppException catch (error) {
       if (epoch == _accountEpoch) {
-        isLoading.value = false;
+        _handleRenewalFailure(error);
+      }
+    } catch (_) {
+      if (epoch == _accountEpoch) {
+        _handleRenewalFailure(null);
       }
     }
   }
@@ -268,13 +299,15 @@ class LeaseController extends GetxController {
       if (cachedLeases != null) {
         leases.assignAll(cachedLeases);
         _hasLeaseSnapshot = true;
+        _leasesFromCache = true;
       }
       if (cachedRenewals != null) {
         renewals.assignAll(cachedRenewals);
         _hasRenewalSnapshot = true;
+        _renewalsFromCache = true;
       }
       if (_hasUsableData) {
-        isShowingCachedData.value = true;
+        _syncCachedFlag();
         _refreshSelection();
       }
     } catch (_) {
@@ -284,19 +317,38 @@ class LeaseController extends GetxController {
     }
   }
 
-  void _handleLoadFailure(Object? error, {String? fallback}) {
+  void _handleLeaseFailure(Object? error, {String? fallback}) {
     if (_hasLeaseSnapshot) {
-      // Older data is better than an error screen.
-      isShowingCachedData.value = true;
+      // Older lease data is better than an error screen.
+      _leasesFromCache = true;
+      _syncCachedFlag();
     } else {
       errorMessage.value = error is AppException
           ? error.message
           : (fallback ?? 'Unable to load lease information.');
     }
+    _markStaleWhenRetryable(error);
+  }
+
+  void _handleRenewalFailure(Object? error) {
+    if (_hasRenewalSnapshot) {
+      _renewalsFromCache = true;
+      _syncCachedFlag();
+    }
+    // Renewals are secondary: a failure keeps the lease visible and does not
+    // replace the lease empty state with an error.
+    _markStaleWhenRetryable(error);
+  }
+
+  void _markStaleWhenRetryable(Object? error) {
     if ((error is ApiException && error.isRetryable) ||
         _connectivity?.isOnline.value == false) {
       _registry?.markStale(screen);
     }
+  }
+
+  void _syncCachedFlag() {
+    isShowingCachedData.value = _leasesFromCache || _renewalsFromCache;
   }
 
   void _handleSession(Object? value) {
@@ -331,6 +383,8 @@ class LeaseController extends GetxController {
     _cacheChecked = false;
     _hasLeaseSnapshot = false;
     _hasRenewalSnapshot = false;
+    _leasesFromCache = false;
+    _renewalsFromCache = false;
     isShowingCachedData.value = false;
     errorMessage.value = null;
     isLoading.value = false;

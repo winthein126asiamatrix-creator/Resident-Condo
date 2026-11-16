@@ -1,6 +1,9 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get/get.dart';
 import 'package:test/core/cache/api_cache_store.dart';
 import 'package:test/core/cache/app_cache_database.dart';
 import 'package:test/core/network/api_exception.dart';
@@ -10,6 +13,7 @@ import 'package:test/features/lease/domain/entities/lease.dart';
 import 'package:test/features/lease/domain/repositories/lease_repository.dart';
 import 'package:test/features/lease/domain/usecases/lease_usecases.dart';
 import 'package:test/features/lease/presentation/controllers/lease_controller.dart';
+import 'package:test/features/lease/presentation/pages/lease_page.dart';
 
 void main() {
   test('parses the lease fields the screen renders', () {
@@ -26,10 +30,22 @@ void main() {
     expect(lease.rentDueDay, 1);
     expect(lease.owner.id, '10');
     expect(lease.owner.name, 'Alex Johnson');
-    expect(lease.tenant.name, 'Jamie Rivera');
+    expect(lease.tenant?.name, 'Jamie Rivera');
     expect(lease.lastRentPaymentDate, 'Sep 1, 2026');
     expect(lease.documentNames, <String>['lease.pdf']);
     expect(lease.terms, <String>['Rent is due monthly.']);
+  });
+
+  test('parses an existing lease whose tenant is not assigned', () {
+    final json = _leaseJson()..remove('tenant');
+    final lease = LeaseModel.fromJson(json);
+
+    expect(lease.tenant, isNull);
+    expect(lease.status, LeaseStatus.expiringSoon);
+    expect(lease.owner.name, 'Alex Johnson');
+
+    final restored = LeaseModel.fromJson(lease.toJson());
+    expect(restored.tenant, isNull);
   });
 
   test('lease and renewal JSON round-trip through the cache format', () {
@@ -50,6 +66,28 @@ void main() {
     expect(renewed.proposedStart, 'Nov 1, 2026');
     expect(renewed.proposedRent, 2460);
     expect(renewed.status, RenewalStatus.pending);
+  });
+
+  test('decide_on controls whether the updated date is shown', () {
+    final hidden = LeaseRenewalModel.fromJson(
+      _renewalJson()
+        ..['decide_on'] = false
+        ..['updated_on'] = '2026-09-06',
+    );
+    final missing = LeaseRenewalModel.fromJson(
+      _renewalJson()..['decided_on'] = '2026-09-06',
+    );
+    final shown = LeaseRenewalModel.fromJson(
+      _renewalJson()
+        ..['decide_on'] = true
+        ..['decided_on'] = '2026-09-06',
+    );
+
+    expect(hidden.decideOn, isFalse);
+    expect(hidden.decidedOn, 'Sep 6, 2026');
+    expect(missing.decideOn, isFalse);
+    expect(shown.decideOn, isTrue);
+    expect(shown.decidedOn, 'Sep 6, 2026');
   });
 
   test(
@@ -145,6 +183,209 @@ void main() {
     expect(controller.errorMessage.value, isNull);
     expect(controller.isShowingCachedData.value, isFalse);
   });
+
+  test('an empty renewal list keeps the lease visible', () async {
+    final repository = _FakeRepository()
+      ..cachedLeases = null
+      ..cachedRenewals = null
+      ..leases = <Lease>[_lease('42')]
+      ..renewals = <LeaseRenewal>[];
+    final controller = LeaseController(LeaseUseCases(repository));
+
+    await controller.loadLeases();
+
+    expect(controller.leases.single.id, '42');
+    expect(controller.renewals, isEmpty);
+    expect(controller.errorMessage.value, isNull);
+    expect(controller.isShowingCachedData.value, isFalse);
+  });
+
+  test('a renewal failure does not hide an existing lease', () async {
+    final repository = _FakeRepository()
+      ..cachedLeases = null
+      ..cachedRenewals = null
+      ..leases = <Lease>[_lease('42')]
+      ..renewalError = const ApiException(
+        'Renewals unavailable.',
+        kind: ApiFailureKind.network,
+      );
+    final controller = LeaseController(LeaseUseCases(repository));
+
+    await controller.loadLeases();
+
+    expect(controller.leases.single.id, '42');
+    expect(controller.renewals, isEmpty);
+    expect(controller.errorMessage.value, isNull);
+  });
+
+  test('a lease failure is reported instead of an empty lease', () async {
+    final repository = _FakeRepository()
+      ..cachedLeases = null
+      ..cachedRenewals = null
+      ..leaseError = const ApiException(
+        'Lease list unavailable.',
+        kind: ApiFailureKind.network,
+      )
+      ..renewals = <LeaseRenewal>[_renewal('9')];
+    final controller = LeaseController(LeaseUseCases(repository));
+
+    await controller.loadLeases();
+
+    expect(controller.leases, isEmpty);
+    expect(controller.renewals.single.id, '9');
+    expect(controller.errorMessage.value, 'Lease list unavailable.');
+  });
+
+  test('lease and renewal records are kept as separate states', () async {
+    final repository = _FakeRepository()
+      ..cachedLeases = null
+      ..cachedRenewals = null
+      ..leases = <Lease>[_lease('42')]
+      ..renewals = <LeaseRenewal>[_renewal('9')];
+    final controller = LeaseController(LeaseUseCases(repository));
+
+    await controller.loadLeases();
+
+    expect(controller.leases.single.id, '42');
+    expect(controller.renewals.single.id, '9');
+    expect(controller.renewalsFor(controller.leases.single), hasLength(1));
+    expect(controller.errorMessage.value, isNull);
+  });
+
+  group('lease page', () {
+    testWidgets('shows the lease when the renewal list is empty', (
+      tester,
+    ) async {
+      final repository = _FakeRepository()
+        ..leases = <Lease>[_lease('42')]
+        ..renewals = <LeaseRenewal>[];
+      await _pumpLeasePage(tester, repository);
+
+      expect(find.text('No active lease'), findsNothing);
+      expect(find.text('LSE-42'), findsOneWidget);
+      await _scrollLeaseTo(
+        tester,
+        find.textContaining('No renewal request yet'),
+      );
+      expect(find.textContaining('No renewal request yet'), findsOneWidget);
+    });
+
+    testWidgets('shows No active lease only for an empty lease list', (
+      tester,
+    ) async {
+      final repository = _FakeRepository()
+        ..leases = <Lease>[]
+        ..renewals = <LeaseRenewal>[];
+      await _pumpLeasePage(tester, repository);
+
+      expect(find.text('No active lease'), findsOneWidget);
+      expect(find.text('LSE-42'), findsNothing);
+    });
+
+    testWidgets('shows the lease with its renewal records', (tester) async {
+      final repository = _FakeRepository()
+        ..leases = <Lease>[_lease('42')]
+        ..renewals = <LeaseRenewal>[_renewal('9')];
+      await _pumpLeasePage(tester, repository);
+
+      expect(find.text('LSE-42'), findsOneWidget);
+      await _scrollLeaseTo(tester, find.text('Pending review'));
+      expect(find.text('Pending review'), findsOneWidget);
+    });
+
+    testWidgets('hides the updated date when decide_on is false', (
+      tester,
+    ) async {
+      final repository = _FakeRepository()
+        ..leases = <Lease>[_lease('42')]
+        ..renewals = <LeaseRenewal>[
+          _renewal('9').copyWith(decidedOn: 'Sep 6, 2026', decideOn: false),
+        ];
+      await _pumpLeasePage(tester, repository);
+
+      await _scrollLeaseTo(
+        tester,
+        find.textContaining('Requested by Alex Johnson'),
+      );
+      expect(find.textContaining('updated Sep 6, 2026'), findsNothing);
+    });
+
+    testWidgets('shows the updated date when decide_on is true', (
+      tester,
+    ) async {
+      final repository = _FakeRepository()
+        ..leases = <Lease>[_lease('42')]
+        ..renewals = <LeaseRenewal>[
+          _renewal('9').copyWith(decidedOn: 'Sep 6, 2026', decideOn: true),
+        ];
+      await _pumpLeasePage(tester, repository);
+
+      await _scrollLeaseTo(tester, find.textContaining('updated Sep 6, 2026'));
+      expect(find.textContaining('updated Sep 6, 2026'), findsOneWidget);
+    });
+
+    testWidgets('a renewal failure keeps the lease visible', (tester) async {
+      final repository = _FakeRepository()
+        ..leases = <Lease>[_lease('42')]
+        ..renewalError = const ApiException(
+          'Renewals unavailable.',
+          kind: ApiFailureKind.network,
+        );
+      await _pumpLeasePage(tester, repository);
+
+      expect(find.text('LSE-42'), findsOneWidget);
+      expect(find.text('Unable to load lease'), findsNothing);
+      expect(find.text('No active lease'), findsNothing);
+    });
+
+    testWidgets('a lease failure shows an error, not an empty lease', (
+      tester,
+    ) async {
+      final repository = _FakeRepository()
+        ..leaseError = const ApiException(
+          'Lease list unavailable.',
+          kind: ApiFailureKind.network,
+        )
+        ..renewals = <LeaseRenewal>[_renewal('9')];
+      await _pumpLeasePage(tester, repository);
+
+      expect(find.text('Unable to load lease'), findsOneWidget);
+      expect(find.text('No active lease'), findsNothing);
+    });
+  });
+}
+
+Future<void> _scrollLeaseTo(WidgetTester tester, Finder finder) async {
+  final scrollable = find
+      .descendant(
+        of: find.byKey(const Key('lease-scroll')),
+        matching: find.byType(Scrollable),
+      )
+      .first;
+  await tester.scrollUntilVisible(finder, 300, scrollable: scrollable);
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _pumpLeasePage(
+  WidgetTester tester,
+  _FakeRepository repository,
+) async {
+  Get.testMode = true;
+  addTearDown(Get.reset);
+  tester.view.physicalSize = const Size(390, 844);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+
+  Get.put(LeaseController(LeaseUseCases(repository)));
+  await tester.pumpWidget(
+    ScreenUtilInit(
+      designSize: const Size(390, 844),
+      builder: (_, _) => const MaterialApp(home: LeasePage()),
+    ),
+  );
+  await tester.pumpAndSettle();
 }
 
 Map<String, dynamic> _leaseJson() {
@@ -243,6 +484,8 @@ class _FakeRepository implements LeaseRepository {
   List<Lease> leases = <Lease>[];
   List<LeaseRenewal> renewals = <LeaseRenewal>[];
   Object? error;
+  Object? leaseError;
+  Object? renewalError;
 
   @override
   Future<List<Lease>?> getCachedLeases() async => cachedLeases;
@@ -252,13 +495,15 @@ class _FakeRepository implements LeaseRepository {
 
   @override
   Future<List<Lease>> getLeases() async {
-    if (error != null) throw error!;
+    final failure = leaseError ?? error;
+    if (failure != null) throw failure;
     return leases;
   }
 
   @override
   Future<List<LeaseRenewal>> getRenewals() async {
-    if (error != null) throw error!;
+    final failure = renewalError ?? error;
+    if (failure != null) throw failure;
     return renewals;
   }
 

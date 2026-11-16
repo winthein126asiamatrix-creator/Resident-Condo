@@ -98,8 +98,10 @@ class LeasePage extends GetView<LeaseController> {
                   child: Column(
                     children: [
                       _PartyTile(party: lease.owner),
-                      Divider(height: 20),
-                      _PartyTile(party: lease.tenant),
+                      if (lease.tenant != null) ...[
+                        Divider(height: 20),
+                        _PartyTile(party: lease.tenant!),
+                      ],
                     ],
                   ),
                 ),
@@ -423,7 +425,7 @@ class _RenewalCard extends StatelessWidget {
           ),
           4.h.heightBox(),
           Text(
-            '${renewal.proposedStart} â†’ ${renewal.proposedEnd}',
+            '${renewal.proposedStart} | ${renewal.proposedEnd}',
             style: TextStyle(color: tokens.mutedStrong, fontSize: 12.sp),
           ),
           if (renewal.note.isNotEmpty) ...[
@@ -440,7 +442,7 @@ class _RenewalCard extends StatelessWidget {
           8.h.heightBox(),
           Text(
             'Requested by ${renewal.requestedBy}'
-            '${renewal.decidedOn == null ? '' : ' Â· updated ${renewal.decidedOn}'}',
+            '${renewal.decideOn && renewal.decidedOn != null ? ' Â· updated ${renewal.decidedOn}' : ''}',
             style: TextStyle(color: tokens.faint, fontSize: 11.sp),
           ),
           if (renewal.status == RenewalStatus.pending) ...[
