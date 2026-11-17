@@ -172,7 +172,7 @@ class _SummaryIntro extends StatelessWidget {
           Text(invoice.unitLabel, style: TextStyle(color: tokens.muted)),
           4.h.heightBox(),
           Text(
-            'Due ${invoice.dueDate} Ã‚Â· ${invoice.unpaidItems.length} unpaid items',
+            'Due ${invoice.dueDate} · ${invoice.unpaidItems.length} unpaid items',
             style: TextStyle(color: tokens.muted, fontSize: 12.sp),
           ),
         ],

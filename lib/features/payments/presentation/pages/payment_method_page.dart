@@ -343,7 +343,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             ),
             3.h.heightBox(),
             Text(
-              AppFormatters.currency(controller.selectedTotal),
+              AppFormatters.money(controller.selectedTotal,controller.invoiceDetail.value?.currency??""),
               style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.w800),
             ),
             6.h.heightBox(),
@@ -365,7 +365,7 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
                       ),
                     ),
                     Text(
-                      AppFormatters.currency(item.amount),
+                      AppFormatters.money(item.amount,controller.invoiceDetail.value?.currency??""),
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w800,

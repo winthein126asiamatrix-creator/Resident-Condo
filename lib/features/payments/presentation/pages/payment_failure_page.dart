@@ -122,7 +122,7 @@ class PaymentFailurePage extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          AppFormatters.currency(item.amount),
+                          AppFormatters.money(item.amount,payment.currency),
                           style: TextStyle(
                             fontSize: 12.sp,
                             fontWeight: FontWeight.w800,
@@ -134,7 +134,7 @@ class PaymentFailurePage extends StatelessWidget {
                 Divider(height: 24),
                 _Line(
                   label: 'Attempted amount',
-                  value: AppFormatters.currency(payment.amount),
+                  value: AppFormatters.money(payment.amount,payment.currency),
                 ),
                 _Line(label: 'Method', value: payment.methodLabel),
                 _Line(label: 'Reference', value: payment.transactionId),
