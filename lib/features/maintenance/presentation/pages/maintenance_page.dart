@@ -35,16 +35,18 @@ class MaintenancePage extends GetView<MaintenanceController> {
         child: Obx(
           () => controller.isLoading.value && controller.requests.isEmpty
               ? Center(child: CircularProgressIndicator())
-              : controller.errorMessage.value != null &&
-                    controller.requests.isEmpty
-              ? AppStateMessage(
-                  title: 'Unable to load maintenance',
-                  message: controller.errorMessage.value!,
-                  icon: Icons.handyman_outlined,
-                  actionLabel: 'Try again',
-                  onAction: controller.loadRequests,
-                )
-              : RefreshIndicator(
+              // : controller.requests.isEmpty
+              // ? AppStateMessage(
+              //     title: 'No maintenance requests yet',
+              //     message:
+              //         'You haven’t submitted any maintenance requests. '
+              //         'When you do, they’ll appear here.',
+              //     icon: Icons.handyman_outlined,
+              //     actionLabel: 'Try again',
+              //     onAction: controller.loadRequests,
+              //   )
+              // : 
+              :RefreshIndicator(
                   onRefresh: controller.refreshRequests,
                   child: ListView(
                     key: Key('maintenance-scroll'),

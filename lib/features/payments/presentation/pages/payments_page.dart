@@ -97,11 +97,14 @@ class PaymentsPage extends GetView<PaymentController> {
                 else if (hasDashboard)
                   ...controller.recentInvoices.take(5).map(
                     (invoice) => Padding(
-                      padding: EdgeInsets.only(bottom: 10),
+                      padding: EdgeInsets.only(bottom: 10.h),
                       child: _RecentInvoiceCard(
                         invoice: invoice,
                         currency: controller.dashboardCurrency,
-                        onTap: () => _openRecentInvoice(context, invoice),
+                        onTap: () {
+                          vibrateNow();
+                          _openRecentInvoice(context, invoice);
+                        },
                       ),
                     ),
                   ),
