@@ -246,11 +246,18 @@ class DioApiService {
     String path, {
     Map<String, dynamic> fields = const <String, dynamic>{},
     Map<String, MultipartFile> files = const <String, MultipartFile>{},
+    Map<String, List<MultipartFile>> fileGroups =
+        const <String, List<MultipartFile>>{},
     JsonParser<T>? parse,
     ProgressCallback? onSendProgress,
     CancelToken? cancelToken,
   }) {
-    final form = FormData.fromMap(<String, dynamic>{...fields, ...files});
+    final form = FormData.fromMap(<String, dynamic>{
+      ...fields,
+      ...files,
+      for (final entry in fileGroups.entries)
+        if (entry.value.isNotEmpty) entry.key: entry.value,
+    });
     return _send<T>(
       () => _dio.post<dynamic>(
         path,

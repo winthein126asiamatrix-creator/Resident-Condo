@@ -23,7 +23,7 @@ extension LeasePartyRoleLabel on LeasePartyRole {
   String get label {
     switch (this) {
       case LeasePartyRole.owner:
-        return 'Owner / Landlord';
+        return 'Owner';
       case LeasePartyRole.tenant:
         return 'Tenant';
       case LeasePartyRole.agent:

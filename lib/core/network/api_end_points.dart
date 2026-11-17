@@ -56,23 +56,25 @@ abstract final class ApiEndPoints {
   /// One invoice, with its line items.
   static String invoice(Object reference) => '$invoices/$reference';
 
-  /// Pays one or more selected invoice lines.
-  static const String payInvoice = '/api/invoices/pay';
 
-  /// Issues a receipt for a completed payment.
-  static String receipt(String reference) => '/api/payments/$reference/receipt';
 
   // --- Maintenance ---------------------------------------------------------
 
-  static const String maintenanceRequests = '/api/maintenance/requests';
-  static const String maintenanceCategories = '/api/maintenance/categories';
+  static const String maintenanceRequests = '/maintenance/requests';
+  static const String maintenanceCategories = '/maintenance/categories';
 
-  /// One request, with its progress timeline.
-  static String maintenanceRequest(int id) => '/api/maintenance/requests/$id';
+  static String maintenanceRequest(Object id) =>
+      '/maintenance/requests/$id';
 
-  /// Photos attached to a request, uploaded as multipart.
-  static String maintenancePhotos(int id) =>
-      '/api/maintenance/requests/$id/photos';
+  static String maintenancePhotos(Object id) =>
+      '/maintenance/requests/$id/photos';
+
+ 
+  static const String maintenanceSummary = '/maintenance/summary';
+
+
+  static String maintenanceCancel(Object id) =>
+      '/maintenance/requests/$id/cancel';
 
   // --- Facilities ----------------------------------------------------------
 

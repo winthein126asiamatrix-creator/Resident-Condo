@@ -56,10 +56,20 @@ class _CreateMaintenanceRequestPageState
   final _descriptionFocus = FocusNode();
   final _locationFocus = FocusNode();
   final _photos = <AttachedPhoto>[];
-  MaintenanceCategory _category = MaintenanceCategory.plumbing;
+  MaintenanceCategoryOption? _selectedCategory;
   MaintenancePriority _priority = MaintenancePriority.medium;
-  DateTime _preferredDate = DateTime(2026, 9, 30);
+  DateTime _preferredDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay _preferredTime = TimeOfDay(hour: 10, minute: 0);
+
+  MaintenanceCategoryOption get _category {
+    final options = controller.categoryOptions;
+    final selected = _selectedCategory;
+    if (selected != null &&
+        options.any((option) => option.code == selected.code)) {
+      return options.firstWhere((option) => option.code == selected.code);
+    }
+    return options.first;
+  }
 
   MaintenanceController get controller => Get.find<MaintenanceController>();
 
@@ -133,14 +143,15 @@ class _CreateMaintenanceRequestPageState
                   onSubmitted: (_) => _locationFocus.requestFocus(),
                 ),
                 18.h.heightBox(),
-                AppSelectField<MaintenanceCategory>(
+                AppSelectField<MaintenanceCategoryOption>(
                   fieldKey: Key('maintenance-category'),
                   label: 'Category',
                   icon: Icons.category_outlined,
                   value: _category,
-                  items: MaintenanceCategory.values,
+                  items: controller.categoryOptions,
                   itemBuilder: (category) => category.label,
-                  onChanged: (value) => setState(() => _category = value),
+                  onChanged: (value) =>
+                      setState(() => _selectedCategory = value),
                 ),
                 18.h.heightBox(),
                 AppSegmentedControl<MaintenancePriority>(
@@ -343,11 +354,15 @@ class _CreateMaintenanceRequestPageState
   }
 
   Future<void> _pickDate() async {
+    final today = DateTime.now();
+    final firstDate = DateTime(today.year, today.month, today.day);
     final selected = await showDatePicker(
       context: context,
-      initialDate: _preferredDate,
-      firstDate: DateTime(2026),
-      lastDate: DateTime(2027),
+      initialDate: _preferredDate.isBefore(firstDate)
+          ? firstDate
+          : _preferredDate,
+      firstDate: firstDate,
+      lastDate: DateTime(today.year + 1, today.month, today.day),
     );
     if (selected != null) setState(() => _preferredDate = selected);
   }
@@ -360,21 +375,34 @@ class _CreateMaintenanceRequestPageState
     if (selected != null) setState(() => _preferredTime = selected);
   }
 
+  String _wireDate(DateTime value) =>
+      '${value.year.toString().padLeft(4, '0')}-'
+      '${value.month.toString().padLeft(2, '0')}-'
+      '${value.day.toString().padLeft(2, '0')}';
+
+  String _wireTime(TimeOfDay value) =>
+      '${value.hour.toString().padLeft(2, '0')}:'
+      '${value.minute.toString().padLeft(2, '0')}';
+
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final request = await controller.createRequest(
       title: _titleController.text.trim(),
-      category: _category,
+      categoryCode: _category.code,
       description: _descriptionController.text.trim(),
       location: _locationController.text.trim(),
       priority: _priority,
-      preferredDate: AppDates.format(_preferredDate),
-      preferredTime: _preferredTime.format(context),
-      // The request carries the file names and where each photo lives, so the
-      // details screen can show the very image that was picked. The repository
-      // does not upload the images themselves yet.
-      photoNames: _photos.map((photo) => photo.name).toList(),
-      photoPaths: _photos.map((photo) => photo.path).toList(),
+      preferredDate: _wireDate(_preferredDate),
+      preferredTime: _wireTime(_preferredTime),
+      photos: _photos
+          .map(
+            (photo) => MaintenancePhotoUpload(
+              path: photo.path,
+              name: photo.name,
+              mimeType: photo.mimeType,
+            ),
+          )
+          .toList(),
     );
     if (request != null && mounted) {
       Get.back(result: request);

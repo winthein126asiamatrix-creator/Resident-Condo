@@ -4,31 +4,43 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../domain/entities/maintenance_request.dart';
-
 import '../controllers/maintenance_controller.dart';
-
 import '../widgets/maintenance_status_badge.dart';
-
+import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_spacing.dart';
-
 import '../../../../core/theme/app_theme_tokens.dart';
-
 import '../../../../core/widgets/app_detail_app_bar.dart';
-
 import '../../../../core/widgets/app_image_preview.dart';
-
+import '../../../../core/widgets/app_primary_action.dart';
 import '../../../../core/widgets/app_step_progress.dart';
 
-class MaintenanceDetailPage extends GetView<MaintenanceController> {
+class MaintenanceDetailPage extends StatefulWidget {
   const MaintenanceDetailPage({required this.request, super.key});
 
   final MaintenanceRequest request;
 
   @override
+  State<MaintenanceDetailPage> createState() => _MaintenanceDetailPageState();
+}
+
+class _MaintenanceDetailPageState extends State<MaintenanceDetailPage> {
+  MaintenanceController get controller => Get.find<MaintenanceController>();
+
+  @override
+  void initState() {
+    super.initState();
+    controller.selectRequest(widget.request);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.loadSelectedRequestDetail();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final current = _currentRequest();
+      final current = controller.selectedRequest.value ?? widget.request;
       final tokens = AppThemeTokens.of(context);
+
       return Scaffold(
         appBar: AppDetailAppBar(title: 'Request details'),
         body: ListView(
@@ -40,25 +52,51 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
             32,
           ),
           children: [
+            if (controller.isLoadingDetail.value) ...[
+              LinearProgressIndicator(),
+              12.h.heightBox(),
+            ],
+            if (controller.detailError.value != null) ...[
+              Text(
+                controller.detailError.value!,
+                style: TextStyle(color: AppPalette.danger),
+              ),
+              12.h.heightBox(),
+            ],
             _DetailHero(request: current),
             20.h.heightBox(),
             _Section(
               title: 'Request information',
               child: Column(
                 children: [
-                  _Line(label: 'Category', value: current.category.label),
+                  if (current.reference.isNotEmpty)
+                    _Line(label: 'Reference', value: current.reference),
+                  _Line(label: 'Category', value: current.categoryDisplay),
                   _Line(label: 'Location', value: current.location),
+                  if (current.unit.isNotEmpty)
+                    _Line(label: 'Unit', value: current.unit),
                   _Line(label: 'Priority', value: current.priority.label),
-                  _Line(label: 'Submitted', value: current.createdAt),
+                  _Line(label: 'Submitted', value: current.createdAtDisplay),
                   _Line(
                     label: 'Preferred time',
                     value:
-                        '${current.preferredDate} Â· ${current.preferredTime}',
+                        '${current.preferredDateDisplay} '
+                        '${current.preferredTimeDisplay}',
                   ),
                   _Line(
                     label: 'Assigned technician',
                     value: current.technician ?? 'Awaiting assignment',
                   ),
+                  if (current.completedAtDisplay != null)
+                    _Line(
+                      label: 'Completed',
+                      value: current.completedAtDisplay!,
+                    ),
+                  if (current.cancelledAtDisplay != null)
+                    _Line(
+                      label: 'Cancelled',
+                      value: current.cancelledAtDisplay!,
+                    ),
                 ],
               ),
             ),
@@ -72,8 +110,8 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
             ),
             16.h.heightBox(),
             _Section(
-              title: current.photoPaths.isEmpty ? 'Attachments' : 'Attachment',
-              child: current.photoPaths.isEmpty
+              title: current.photos.isEmpty ? 'Attachments' : 'Attachment',
+              child: current.photos.isEmpty
                   ? Text(
                       'No photos attached',
                       style: TextStyle(color: tokens.muted),
@@ -83,18 +121,18 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
                       children: [
                         for (
                           var index = 0;
-                          index < current.photoPaths.length;
+                          index < current.photos.length;
                           index++
                         )
                           Padding(
                             padding: EdgeInsets.only(
-                              bottom: index == current.photoPaths.length - 1
+                              bottom: index == current.photos.length - 1
                                   ? 0
                                   : 12,
                             ),
                             child: AppImagePreview(
                               key: Key('request-photo-$index'),
-                              path: current.photoPaths[index],
+                              path: current.photos[index].url,
                               caption: _photoCaption(current, index),
                             ),
                           ),
@@ -103,36 +141,79 @@ class MaintenanceDetailPage extends GetView<MaintenanceController> {
             ),
             20.h.heightBox(),
             _StatusProgress(request: current),
-            // if (current.status.next != null) ...[
-            //   20.h.heightBox(),
-            //   AppPrimaryAction(
-            //     key: Key('advance-maintenance-request'),
-            //     onPressed: () => controller.advanceRequest(current),
-            //     label: 'Move to ${current.status.next!.label}',
-            //     icon: Icons.arrow_forward_rounded,
-            //     backgroundColor: AppThemeTokens.of(context).brand,
-            //   ),
-            // ],
+            if (current.canCancel) ...[
+              20.h.heightBox(),
+              AppPrimaryAction(
+                key: Key('cancel-maintenance-request'),
+                onPressed: controller.isCancelling.value
+                    ? null
+                    : () => _cancelRequest(current),
+                isLoading: controller.isCancelling.value,
+                label: 'Cancel request',
+                icon: Icons.cancel_outlined,
+                backgroundColor: AppPalette.danger,
+              ),
+            ],
           ],
         ),
       );
     });
   }
 
-  MaintenanceRequest _currentRequest() {
-    return controller.requests.firstWhere(
-      (item) => item.id == request.id,
-      orElse: () => request,
-    );
+  String _photoCaption(MaintenanceRequest request, int index) {
+    final caption = request.photos[index].caption.trim();
+    return caption.isEmpty ? 'Attached photo ${index + 1}' : caption;
   }
 
-  /// File name when the request knows it, otherwise something honest rather
-  /// than a blank box.
-  String _photoCaption(MaintenanceRequest request, int index) {
-    if (index < request.photoNames.length) {
-      return request.photoNames[index];
+  Future<void> _cancelRequest(MaintenanceRequest request) async {
+    final reasonController = TextEditingController();
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Cancel this request?'),
+        content: TextField(
+          controller: reasonController,
+          autofocus: true,
+          minLines: 2,
+          maxLines: 4,
+          decoration: const InputDecoration(
+            labelText: 'Reason',
+            hintText: 'Tell us why this request is no longer needed.',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Keep request'),
+          ),
+          FilledButton(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(reasonController.text.trim()),
+            child: const Text('Cancel request'),
+          ),
+        ],
+      ),
+    );
+    reasonController.dispose();
+
+    if (reason == null) return;
+    if (reason.isEmpty) {
+      Get.snackbar(
+        'Reason required',
+        'Please tell us why the request should be cancelled.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
     }
-    return 'Attached photo ${index + 1}';
+
+    final cancelled = await controller.cancelRequest(request, reason);
+    if (!cancelled) return;
+    if (!mounted) return;
+    Get.snackbar(
+      'Request cancelled',
+      'The maintenance team has been notified.',
+      snackPosition: SnackPosition.BOTTOM,
+    );
   }
 }
 
@@ -181,7 +262,7 @@ class _DetailHero extends StatelessWidget {
           ),
           6.h.heightBox(),
           Text(
-            '${request.category.label} Â· ${request.priority.label}',
+            '${request.categoryDisplay}  ${request.priority.label}',
             style: TextStyle(color: tokens.brandOnDarkMuted, fontSize: 13.sp),
           ),
         ],
@@ -252,10 +333,6 @@ class _Line extends StatelessWidget {
   }
 }
 
-/// Renders the request's real status as a vertical timeline.
-///
-/// The step the request has reached comes from [MaintenanceRequest.status], so
-/// nothing here is hardcoded: moving the request forward moves the timeline.
 class _StatusProgress extends StatelessWidget {
   const _StatusProgress({required this.request});
 
@@ -265,17 +342,50 @@ class _StatusProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     final status = request.status;
-    // The submitted step carries the request's own timestamp; the rest are
-    // shown without a date because the mock data does not track one per step.
-    final steps = <AppProgressStep>[
-      for (final step in MaintenanceStatus.values)
+    final history = request.progressHistory;
+
+    late final List<AppProgressStep> steps;
+    late final int currentIndex;
+
+    if (history.isNotEmpty) {
+      steps = history
+          .map(
+            (entry) => AppProgressStep(
+              title: entry.displayLabel,
+              subtitle: entry.note?.trim().isNotEmpty == true
+                  ? entry.note
+                  : entry.createdAt,
+            ),
+          )
+          .toList();
+      currentIndex = steps.length;
+    } else if (status == MaintenanceStatus.cancelled) {
+      steps = <AppProgressStep>[
         AppProgressStep(
-          title: step.label,
-          subtitle: step == MaintenanceStatus.submitted
-              ? request.createdAt
-              : (step.index < status.index ? 'Completed' : null),
+          title: MaintenanceStatus.submitted.label,
+          subtitle: request.createdAtDisplay,
         ),
-    ];
+        AppProgressStep(
+          title: MaintenanceStatus.cancelled.label,
+          subtitle: request.cancelledAtDisplay,
+        ),
+      ];
+      currentIndex = steps.length;
+    } else {
+      steps = <AppProgressStep>[
+        for (final step in MaintenanceStatus.values)
+          if (step != MaintenanceStatus.cancelled)
+            AppProgressStep(
+              title: step.label,
+              subtitle: step == MaintenanceStatus.submitted
+                  ? request.createdAtDisplay
+                  : (step.index < status.index ? 'Completed' : null),
+            ),
+      ];
+      currentIndex = status == MaintenanceStatus.completed
+          ? steps.length
+          : status.index;
+    }
 
     return Container(
       padding: EdgeInsets.all(16),
@@ -292,14 +402,7 @@ class _StatusProgress extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
           ),
           16.h.heightBox(),
-          AppStepProgress(
-            steps: steps,
-            // A completed request has finished every step, so push the index
-            // past the last one to render them all as completed.
-            currentIndex: status == MaintenanceStatus.completed
-                ? steps.length
-                : status.index,
-          ),
+          AppStepProgress(steps: steps, currentIndex: currentIndex),
         ],
       ),
     );

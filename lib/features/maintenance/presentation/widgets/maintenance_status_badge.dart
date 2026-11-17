@@ -19,6 +19,7 @@ class MaintenanceStatusBadge extends StatelessWidget {
       MaintenanceStatus.assigned => ('Assigned', Color(0xFF5B4CC4)),
       MaintenanceStatus.inProgress => ('In Progress', Color(0xFFB45309)),
       MaintenanceStatus.completed => ('Completed', Color(0xFF087F5B)),
+      MaintenanceStatus.cancelled => ('Cancelled', Color(0xFFB42318)),
     };
 
     return Container(

@@ -52,7 +52,7 @@ class AppImagePreview extends StatelessWidget {
               SizedBox(
                 height: height,
                 width: double.infinity,
-                child: _LocalImage(path: path),
+                child: _PreviewImage(path: path),
               ),
               Padding(
                 padding: EdgeInsets.fromLTRB(12, 9, 12, 10),
@@ -124,7 +124,7 @@ class _AppImageViewer extends StatelessWidget {
             child: InteractiveViewer(
               maxScale: 4,
               child: Center(
-                child: _LocalImage(path: path, fit: BoxFit.contain),
+                child: _PreviewImage(path: path, fit: BoxFit.contain),
               ),
             ),
           ),
@@ -171,6 +171,34 @@ class _AppImageViewer extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _PreviewImage extends StatelessWidget {
+  const _PreviewImage({required this.path, this.fit = BoxFit.cover});
+
+  final String path;
+  final BoxFit fit;
+
+  @override
+  Widget build(BuildContext context) {
+    final uri = Uri.tryParse(path);
+    final isRemote =
+        uri != null &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        uri.host.isNotEmpty;
+    if (isRemote) {
+      return Image.network(
+        path,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) => _ImageFallback(),
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return _ImageFallback(loading: true);
+        },
+      );
+    }
+    return _LocalImage(path: path, fit: fit);
   }
 }
 

@@ -45,19 +45,29 @@ class MaintenancePage extends GetView<MaintenanceController> {
                   onAction: controller.loadRequests,
                 )
               : RefreshIndicator(
-                  onRefresh: controller.loadRequests,
+                  onRefresh: controller.refreshRequests,
                   child: ListView(
                     key: Key('maintenance-scroll'),
                     physics: AlwaysScrollableScrollPhysics(),
                     padding: EdgeInsets.fromLTRB(20, 18, 20, 32),
                     children: [
-                      _MaintenanceHeader(onRefresh: controller.loadRequests),
+                      _MaintenanceHeader(onRefresh: controller.refreshRequests),
                       20.h.heightBox(),
+                      if (controller.isShowingCachedData.value) ...[
+                        Text(
+                          'Showing saved maintenance data. Pull to refresh.',
+                          style: TextStyle(
+                            color: tokens.muted,
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                        12.h.heightBox(),
+                      ],
                       AppHeroPanel(
                         icon: Icons.handyman_rounded,
                         title: 'Maintenance summary',
                         subtitle:
-                            '${controller.inProgressCount} in progress  Â·  '
+                            '${controller.inProgressCount} in progress  '
                             '${controller.completedCount} completed',
                         footnote: 'Our team reviews every request and keeps you posted.',
                         trailing: Icon(
@@ -94,6 +104,23 @@ class MaintenancePage extends GetView<MaintenanceController> {
                             child: _RequestCard(request: request),
                           ),
                         ),
+                      if (controller.hasMore) ...[
+                        12.h.heightBox(),
+                        Center(
+                          child: controller.isLoadingMore.value
+                              ? SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : TextButton(
+                                  onPressed: controller.loadMore,
+                                  child: Text('Load more requests'),
+                                ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -152,6 +179,7 @@ class _RequestCard extends StatelessWidget {
     return AppCard(
       onTap: () {
         vibrateNow();
+        Get.find<MaintenanceController>().selectRequest(request);
         Get.toNamed(AppRoutes.maintenanceDetail, arguments: request);
       },
       borderRadius: 18,
@@ -172,14 +200,23 @@ class _RequestCard extends StatelessWidget {
                 ),
                 4.h.heightBox(),
                 Text(
-                  '${request.category.label} Â· ${request.priority.label}',
+                  '${request.categoryDisplay}  ${request.priority.label}',
                   style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                 ),
                 4.h.heightBox(),
                 Text(
-                  request.createdAt,
+                  request.createdAtDisplay,
                   style: TextStyle(color: tokens.faint, fontSize: 11.sp),
                 ),
+                if (request.resolvedPhotoCount > 0) ...[
+                  4.h.heightBox(),
+                  Text(
+                    request.resolvedPhotoCount == 1
+                        ? '1 photo'
+                        : '${request.resolvedPhotoCount} photos',
+                    style: TextStyle(color: tokens.faint, fontSize: 11.sp),
+                  ),
+                ],
               ],
             ),
           ),

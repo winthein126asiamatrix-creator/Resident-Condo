@@ -21,6 +21,7 @@ import '../features/auth/presentation/controllers/auth_controller.dart';
 import '../features/dashboard/presentation/controllers/dashboard_controller.dart';
 import '../features/dev_tools/presentation/widgets/api_log_floating_button.dart';
 import '../features/lease/presentation/controllers/lease_controller.dart';
+import '../features/maintenance/presentation/controllers/maintenance_controller.dart';
 import '../features/notifications/domain/entities/notification_item.dart';
 import '../features/payments/presentation/controllers/payment_controller.dart';
 import '../features/services/presentation/controllers/condo_service_controller.dart';
@@ -191,6 +192,13 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
   /// Every other tab and screen is untouched, so a reconnect never re-issues
   /// requests the resident never asked for — and never repeats a write.
   Future<void> _refreshActiveScreen() async {
+    if (Get.currentRoute == AppRoutes.maintenanceDetail) {
+      if (!Get.isRegistered<MaintenanceController>()) return;
+      await Get.find<RefreshRegistry>().refreshIfStale(
+        MaintenanceController.detailScreen,
+      );
+      return;
+    }
     if (Get.currentRoute == AppRoutes.services) {
       if (!Get.isRegistered<CondoServiceController>()) return;
       await Get.find<RefreshRegistry>().refreshIfStale(
@@ -251,6 +259,13 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
       if (!Get.isRegistered<PaymentController>()) return;
       await Get.find<RefreshRegistry>().refreshIfStale(
         PaymentController.screen,
+      );
+      return;
+    }
+    if (tab == 2) {
+      if (!Get.isRegistered<MaintenanceController>()) return;
+      await Get.find<RefreshRegistry>().refreshIfStale(
+        MaintenanceController.screen,
       );
     }
   }
