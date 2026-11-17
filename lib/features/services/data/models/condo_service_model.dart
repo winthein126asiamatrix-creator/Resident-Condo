@@ -37,6 +37,7 @@ class ServiceRequestModel extends ServiceRequest {
       rating: request.rating,
       slotId: request.slotId,
       bookingDetails: request.bookingDetails,
+      categoryInfo: request.categoryInfo,
     );
   }
 
@@ -60,5 +61,6 @@ class ServiceRequestModel extends ServiceRequest {
     super.rating,
     super.slotId,
     super.bookingDetails,
+    super.categoryInfo,
   });
 }

@@ -167,13 +167,16 @@ class CondoServiceLocalDataSource {
   }
 
   Future<ServiceRequestModel> cancelRequest(ServiceRequest request) {
-    if (!request.canCancel) {
+    if (request.status != ServiceRequestStatus.requested) {
       throw const AppException(
         'This request can no longer be cancelled. Contact the concierge.',
       );
     }
     return _replace(request.copyWith(status: ServiceRequestStatus.cancelled));
   }
+
+  Future<ServiceRequestModel> replaceRequest(ServiceRequest updated) =>
+      _replace(updated);
 
   Future<ServiceRequestModel> rateRequest(
     ServiceRequest request,

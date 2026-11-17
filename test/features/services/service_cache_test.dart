@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -5,6 +6,7 @@ import 'package:test/core/cache/api_cache_store.dart';
 import 'package:test/core/cache/app_cache_database.dart';
 import 'package:test/core/network/api_exception.dart';
 import 'package:test/features/services/data/datasources/condo_service_local_data_source.dart';
+import 'package:test/features/services/data/datasources/condo_service_remote_data_source.dart';
 import 'package:test/features/services/domain/entities/condo_service.dart';
 import 'package:test/features/services/domain/repositories/condo_service_repository.dart';
 import 'package:test/features/services/domain/usecases/condo_service_usecases.dart';
@@ -282,6 +284,173 @@ void main() {
       expect(controller.errorMessage.value, 'No connection.');
     },
   );
+
+  test('cancellation response uses the API status when present', () {
+    final confirmed = _request('a').copyWith(
+      status: ServiceRequestStatus.cancelled,
+    );
+    final updated = CondoServiceRemoteDataSource.parseCancellation(
+      <String, dynamic>{
+        'data': <String, dynamic>{
+          'id': 'a',
+          'status': 'canceled',
+          'status_label': 'Cancelled',
+        },
+      },
+      confirmed,
+    );
+
+    expect(updated.status, ServiceRequestStatus.cancelled);
+    expect(updated.id, 'a');
+  });
+
+  test('cancellation response without a status keeps the confirmed result', () {
+    final confirmed = _request('a').copyWith(
+      status: ServiceRequestStatus.cancelled,
+    );
+
+    final empty = CondoServiceRemoteDataSource.parseCancellation(null, confirmed);
+    final message = CondoServiceRemoteDataSource.parseCancellation(
+      <String, dynamic>{'message': 'ok'},
+      confirmed,
+    );
+    final unknown = CondoServiceRemoteDataSource.parseCancellation(
+      <String, dynamic>{'status': 'something-new'},
+      confirmed,
+    );
+
+    expect(empty.status, ServiceRequestStatus.cancelled);
+    expect(message.status, ServiceRequestStatus.cancelled);
+    expect(unknown.status, ServiceRequestStatus.cancelled);
+  });
+
+  test('replaceRequest moves only the cancelled request in the cache', () async {
+    final local = CondoServiceLocalDataSource(
+      cache: _FakeCache(),
+      accountKey: () => 'user:1',
+    );
+    final a = _request('a');
+    final b = _request('b');
+    await local.saveRequests(
+      'active',
+      ServiceRequestPageResult(
+        items: <ServiceRequest>[a, b],
+        page: 1,
+        limit: 20,
+        total: 2,
+      ),
+    );
+    await local.saveRequests('history', ServiceRequestPageResult.empty);
+
+    await local.replaceRequest(
+      a.copyWith(status: ServiceRequestStatus.cancelled),
+    );
+
+    final active = await local.readRequests('active');
+    final history = await local.readRequests('history');
+    expect(active?.items.map((item) => item.id), <String>['b']);
+    expect(history?.items.single.id, 'a');
+    expect(history?.items.single.status, ServiceRequestStatus.cancelled);
+    expect(history?.total, 1);
+  });
+
+  test('controller cancel updates request lists and selection', () async {
+    final repository = _FakeRepository()
+      ..active = ServiceRequestPageResult(
+        items: <ServiceRequest>[_request('a')],
+        page: 1,
+        limit: 20,
+        total: 1,
+      )
+      ..history = ServiceRequestPageResult.empty;
+    final controller = CondoServiceController(CondoServiceUseCases(repository));
+    await controller.loadAll();
+    final request = controller.activeRequests.single;
+
+    final updated = await controller.cancelRequest(request);
+
+    expect(repository.cancelCalls, 1);
+    expect(updated?.status, ServiceRequestStatus.cancelled);
+    expect(controller.activeRequests, isEmpty);
+    expect(controller.historyRequests.single.id, 'a');
+    expect(controller.selectedRequest.value?.status, ServiceRequestStatus.cancelled);
+    expect(controller.isCancelling.value, isFalse);
+  });
+
+  test('failed cancellation preserves the original status', () async {
+    final repository = _FakeRepository()
+      ..active = ServiceRequestPageResult(
+        items: <ServiceRequest>[_request('a')],
+        page: 1,
+        limit: 20,
+        total: 1,
+      )
+      ..history = ServiceRequestPageResult.empty
+      ..cancelError = const ApiException(
+        'The request can no longer be cancelled.',
+        kind: ApiFailureKind.server,
+      );
+    final controller = CondoServiceController(CondoServiceUseCases(repository));
+    await controller.loadAll();
+
+    final updated = await controller.cancelRequest(controller.activeRequests.single);
+
+    expect(updated, isNull);
+    expect(controller.activeRequests.single.status, ServiceRequestStatus.requested);
+    expect(controller.historyRequests, isEmpty);
+    expect(controller.errorMessage.value, 'The request can no longer be cancelled.');
+    expect(controller.isCancelling.value, isFalse);
+  });
+
+  test('cancel is not sent for an ineligible status', () async {
+    final repository = _FakeRepository()
+      ..active = ServiceRequestPageResult(
+        items: <ServiceRequest>[
+          _request('a').copyWith(status: ServiceRequestStatus.scheduled),
+        ],
+        page: 1,
+        limit: 20,
+        total: 1,
+      )
+      ..history = ServiceRequestPageResult.empty;
+    final controller = CondoServiceController(CondoServiceUseCases(repository));
+    await controller.loadAll();
+
+    final updated = await controller.cancelRequest(controller.activeRequests.single);
+
+    expect(updated, isNull);
+    expect(repository.cancelCalls, 0);
+    expect(controller.activeRequests.single.status, ServiceRequestStatus.scheduled);
+  });
+
+  test('duplicate cancellation calls are prevented while one is in flight', () async {
+    final repository = _FakeRepository()
+      ..active = ServiceRequestPageResult(
+        items: <ServiceRequest>[_request('a')],
+        page: 1,
+        limit: 20,
+        total: 1,
+      )
+      ..history = ServiceRequestPageResult.empty;
+    final controller = CondoServiceController(CondoServiceUseCases(repository));
+    await controller.loadAll();
+    final request = controller.activeRequests.single;
+    final completer = Completer<ServiceRequest>();
+    repository.cancelCompleter = completer;
+
+    final first = controller.cancelRequest(request);
+    final duplicate = await controller.cancelRequest(request);
+    expect(duplicate, isNull);
+    expect(controller.isCancelling.value, isTrue);
+    expect(repository.cancelCalls, 1);
+
+    completer.complete(
+      request.copyWith(status: ServiceRequestStatus.cancelled),
+    );
+    final updated = await first;
+    expect(updated?.status, ServiceRequestStatus.cancelled);
+    expect(controller.isCancelling.value, isFalse);
+  });
 }
 
 CondoService _service(int id) {
@@ -356,6 +525,9 @@ class _FakeRepository implements CondoServiceRepository {
   ServiceRequestPageResult active = ServiceRequestPageResult.empty;
   ServiceRequestPageResult history = ServiceRequestPageResult.empty;
   Object? error;
+  Object? cancelError;
+  Completer<ServiceRequest>? cancelCompleter;
+  int cancelCalls = 0;
 
   @override
   Future<List<CondoService>?> getCachedServices() async => cachedServices;
@@ -409,6 +581,14 @@ class _FakeRepository implements CondoServiceRepository {
 
   @override
   Future<ServiceRequest> cancelRequest(ServiceRequest request) async {
+    cancelCalls++;
+    final completer = cancelCompleter;
+    if (completer != null) {
+      return completer.future;
+    }
+    if (cancelError != null) {
+      throw cancelError!;
+    }
     return request.copyWith(status: ServiceRequestStatus.cancelled);
   }
 

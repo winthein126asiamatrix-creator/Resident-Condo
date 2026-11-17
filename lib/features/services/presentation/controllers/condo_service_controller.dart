@@ -36,6 +36,7 @@ class CondoServiceController extends GetxController {
   final isLoadingDetail = false.obs;
   final isLoadingMoreHistory = false.obs;
   final isSubmitting = false.obs;
+  final isCancelling = false.obs;
   final errorMessage = RxnString();
 
   /// True while what is on screen came from the device rather than the API.
@@ -319,8 +320,32 @@ class CondoServiceController extends GetxController {
     return _run(request, () => useCases.updateStatus(request, next));
   }
 
-  Future<ServiceRequest?> cancelRequest(ServiceRequest request) {
-    return _run(request, () => useCases.cancelRequest(request));
+  Future<ServiceRequest?> cancelRequest(ServiceRequest request) async {
+    if (isCancelling.value) {
+      return null;
+    }
+    if (request.status != ServiceRequestStatus.requested) {
+      errorMessage.value = 'Only requested service requests can be cancelled.';
+      return null;
+    }
+    isCancelling.value = true;
+    isSubmitting.value = true;
+    errorMessage.value = null;
+    try {
+      final updated = await useCases.cancelRequest(request);
+      _replaceRequest(updated);
+      selectedRequest.value = updated;
+      return updated;
+    } on AppException catch (error) {
+      errorMessage.value = error.message;
+      return null;
+    } catch (_) {
+      errorMessage.value = 'Unable to cancel the service request.';
+      return null;
+    } finally {
+      isCancelling.value = false;
+      isSubmitting.value = false;
+    }
   }
 
   Future<ServiceRequest?> rateRequest(

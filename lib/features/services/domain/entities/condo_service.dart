@@ -66,7 +66,10 @@ enum ServiceRequestStatus {
   completed,
   cancelled;
 
-  static ServiceRequestStatus fromApi(String? value) {
+  static ServiceRequestStatus fromApi(String? value) =>
+      tryFromApi(value) ?? ServiceRequestStatus.requested;
+
+  static ServiceRequestStatus? tryFromApi(String? value) {
     return switch ((value ?? '').trim().toLowerCase().replaceAll('-', '_')) {
       'submitted' || 'requested' => ServiceRequestStatus.requested,
       'scheduled' ||
@@ -77,7 +80,7 @@ enum ServiceRequestStatus {
       'started' => ServiceRequestStatus.inProgress,
       'completed' || 'done' => ServiceRequestStatus.completed,
       'cancelled' || 'canceled' || 'rejected' => ServiceRequestStatus.cancelled,
-      _ => ServiceRequestStatus.requested,
+      _ => null,
     };
   }
 }
@@ -887,6 +890,44 @@ class CondoService {
   };
 }
 
+class ServiceRequestCategory {
+  const ServiceRequestCategory({
+    this.id = 0,
+    this.code,
+    required this.label,
+  });
+
+  final int id;
+  final String? code;
+  final String label;
+
+  static const ServiceRequestCategory empty = ServiceRequestCategory(label: '');
+
+  factory ServiceRequestCategory.fromJson(Object? json) {
+    if (json is! Map) return empty;
+    final map = Map<String, dynamic>.from(json);
+    final rawCode = map['code'];
+    String? code;
+    if (rawCode is String && rawCode.trim().isNotEmpty && rawCode != 'false') {
+      code = rawCode.trim();
+    }
+    final rawLabel = map['label'] ?? map['name'];
+    return ServiceRequestCategory(
+      id: map['id'] is int
+          ? map['id'] as int
+          : (int.tryParse('${map['id']}') ?? 0),
+      code: code,
+      label: rawLabel is String ? rawLabel : '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'id': id,
+    'code': code,
+    'label': label,
+  };
+}
+
 class ServiceRequest {
   const ServiceRequest({
     required this.id,
@@ -909,6 +950,7 @@ class ServiceRequest {
     this.slotId,
     this.bookingDetails = const <String, dynamic>{},
     this.timezone = 'UTC',
+    this.categoryInfo,
   });
 
   final String id;
@@ -924,13 +966,14 @@ class ServiceRequest {
   final String currency;
   final int qty;
   final String requestedOn;
-  final String provider;
+  final String? provider;
   final String notes;
   final String? feedback;
   final int? rating;
   final int? slotId;
   final Map<String, dynamic> bookingDetails;
   final String timezone;
+  final ServiceRequestCategory? categoryInfo;
 
   String get displayStatus => statusLabel ?? status.label;
 
@@ -970,9 +1013,7 @@ class ServiceRequest {
     return '$start - $end';
   }
 
-  bool get canCancel =>
-      status == ServiceRequestStatus.requested ||
-      status == ServiceRequestStatus.scheduled;
+  bool get canCancel => status == ServiceRequestStatus.requested;
 
   bool get canRate =>
       status == ServiceRequestStatus.completed && rating == null;
@@ -1008,25 +1049,30 @@ class ServiceRequest {
       return double.tryParse('$value');
     }
 
-    String providerOf(Object? value) {
+    String? providerOf(Object? value) {
       if (value is String) {
-        return value == 'false' ? '' : value;
+        final text = value.trim();
+        if (text.isEmpty || text == 'false') return null;
+        return text;
       }
       if (value is Map) {
-        return asString(value['name']) ?? '';
+        return asString(value['name']);
       }
-      return '';
+      return null;
     }
 
     final categoryJson = map['category'] ?? serviceJson?['category'];
     var category = fallback?.category ?? ServiceCategory.other;
+    ServiceRequestCategory? categoryInfo;
     if (categoryJson is Map) {
+      categoryInfo = ServiceRequestCategory.fromJson(categoryJson);
       category = ServiceCategory.fromApiCategory(
         Map<String, dynamic>.from(categoryJson),
       );
     } else if (categoryJson is String) {
       category = ServiceCategory.fromApiName(categoryJson);
     }
+    categoryInfo ??= fallback?.categoryInfo;
 
     final amountJson = map['amount'];
     final priceJson = map['price'] ?? map['total_price'];
@@ -1087,10 +1133,7 @@ class ServiceRequest {
 
     final providerValue =
         map['provider'] ?? map['provider_name'] ?? serviceJson?['provider'];
-    final providerName = providerOf(providerValue);
-    final provider = providerName.isNotEmpty
-        ? providerName
-        : fallback?.provider ?? '';
+    final provider = providerOf(providerValue) ?? fallback?.provider;
 
     final bookingDetails = map['booking_details'] is Map
         ? Map<String, dynamic>.from(map['booking_details'] as Map)
@@ -1129,6 +1172,7 @@ class ServiceRequest {
       slotId: asInt(map['slot_id']) ?? fallback?.slotId,
       bookingDetails: bookingDetails,
       timezone: resolvedTimezone ?? 'UTC',
+      categoryInfo: categoryInfo,
     );
   }
 
@@ -1189,7 +1233,9 @@ class ServiceRequest {
     if (code.isNotEmpty) 'code': code,
     'service_id': serviceId,
     'service_name': serviceName,
-    'category': <String, dynamic>{'name': category.label},
+    'category': (categoryInfo ??
+            ServiceRequestCategory(label: category.label))
+        .toJson(),
     'date': scheduledDate,
     'scheduled_slot': scheduledSlot,
     'status': status.apiValue,
@@ -1211,6 +1257,7 @@ class ServiceRequest {
     String? statusLabel,
     String? feedback,
     int? rating,
+    ServiceRequestCategory? categoryInfo,
   }) {
     return ServiceRequest(
       id: id,
@@ -1233,6 +1280,7 @@ class ServiceRequest {
       slotId: slotId,
       bookingDetails: bookingDetails,
       timezone: timezone,
+      categoryInfo: categoryInfo ?? this.categoryInfo,
     );
   }
 }

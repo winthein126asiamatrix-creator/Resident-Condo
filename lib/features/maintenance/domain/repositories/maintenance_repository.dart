@@ -42,6 +42,7 @@ abstract interface class MaintenanceRepository {
     required MaintenancePriority priority,
     required String preferredDate,
     required String preferredTime,
+    required String unitId,
     List<MaintenancePhotoUpload> photos,
   });
 

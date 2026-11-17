@@ -69,6 +69,7 @@ class MaintenanceRemoteDataSource {
     required MaintenancePriority priority,
     required String preferredDate,
     required String preferredTime,
+    required String unitId,
     List<MaintenancePhotoUpload> photos = const <MaintenancePhotoUpload>[],
   }) async {
     final fields = <String, dynamic>{
@@ -79,6 +80,7 @@ class MaintenanceRemoteDataSource {
       'priority': priority.apiValue,
       'preferred_date': preferredDate,
       'preferred_time': preferredTime,
+      'unit_id' : unitId
     };
 
     Object? json;

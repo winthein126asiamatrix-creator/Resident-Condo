@@ -166,35 +166,12 @@ class _MaintenanceDetailPageState extends State<MaintenanceDetailPage> {
   }
 
   Future<void> _cancelRequest(MaintenanceRequest request) async {
-    final reasonController = TextEditingController();
+    if (controller.isCancelling.value) return;
     final reason = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Cancel this request?'),
-        content: TextField(
-          controller: reasonController,
-          autofocus: true,
-          minLines: 2,
-          maxLines: 4,
-          decoration: const InputDecoration(
-            labelText: 'Reason',
-            hintText: 'Tell us why this request is no longer needed.',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Keep request'),
-          ),
-          FilledButton(
-            onPressed: () =>
-                Navigator.of(dialogContext).pop(reasonController.text.trim()),
-            child: const Text('Cancel request'),
-          ),
-        ],
-      ),
+      builder: (dialogContext) =>
+          _CancelReasonDialog(requestTitle: request.title),
     );
-    reasonController.dispose();
 
     if (reason == null) return;
     if (reason.isEmpty) {
@@ -347,7 +324,34 @@ class _StatusProgress extends StatelessWidget {
     late final List<AppProgressStep> steps;
     late final int currentIndex;
 
-    if (history.isNotEmpty) {
+    if (status == MaintenanceStatus.cancelled) {
+      steps = history
+          .where((entry) => entry.status != MaintenanceStatus.cancelled)
+          .map(
+            (entry) => AppProgressStep(
+              title: entry.displayLabel,
+              subtitle: entry.note?.trim().isNotEmpty == true
+                  ? entry.note
+                  : entry.createdAt,
+            ),
+          )
+          .toList();
+      if (steps.isEmpty) {
+        steps.add(
+          AppProgressStep(
+            title: MaintenanceStatus.submitted.label,
+            subtitle: request.createdAtDisplay,
+          ),
+        );
+      }
+      steps.add(
+        AppProgressStep(
+          title: MaintenanceStatus.cancelled.label,
+          subtitle: request.cancelledAtDisplay,
+        ),
+      );
+      currentIndex = steps.length - 1;
+    } else if (history.isNotEmpty) {
       steps = history
           .map(
             (entry) => AppProgressStep(
@@ -358,18 +362,6 @@ class _StatusProgress extends StatelessWidget {
             ),
           )
           .toList();
-      currentIndex = steps.length;
-    } else if (status == MaintenanceStatus.cancelled) {
-      steps = <AppProgressStep>[
-        AppProgressStep(
-          title: MaintenanceStatus.submitted.label,
-          subtitle: request.createdAtDisplay,
-        ),
-        AppProgressStep(
-          title: MaintenanceStatus.cancelled.label,
-          subtitle: request.cancelledAtDisplay,
-        ),
-      ];
       currentIndex = steps.length;
     } else {
       steps = <AppProgressStep>[
@@ -405,6 +397,64 @@ class _StatusProgress extends StatelessWidget {
           AppStepProgress(steps: steps, currentIndex: currentIndex),
         ],
       ),
+    );
+  }
+}
+
+class _CancelReasonDialog extends StatefulWidget {
+  const _CancelReasonDialog({required this.requestTitle});
+
+  final String requestTitle;
+
+  @override
+  State<_CancelReasonDialog> createState() => _CancelReasonDialogState();
+}
+
+class _CancelReasonDialogState extends State<_CancelReasonDialog> {
+  final _reasonController = TextEditingController();
+
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Cancel this request?'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'You are cancelling "${widget.requestTitle}". '
+            'Tell us why it is no longer needed.',
+          ),
+          12.h.heightBox(),
+          TextField(
+            controller: _reasonController,
+            autofocus: true,
+            minLines: 2,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              labelText: 'Reason',
+              hintText: 'Tell us why this request is no longer needed.',
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Keep request'),
+        ),
+        FilledButton(
+          onPressed: () =>
+              Navigator.of(context).pop(_reasonController.text.trim()),
+          child: const Text('Cancel request'),
+        ),
+      ],
     );
   }
 }

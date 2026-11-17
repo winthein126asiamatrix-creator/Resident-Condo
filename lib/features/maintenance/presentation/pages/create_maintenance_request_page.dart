@@ -394,6 +394,7 @@ class _CreateMaintenanceRequestPageState
       priority: _priority,
       preferredDate: _wireDate(_preferredDate),
       preferredTime: _wireTime(_preferredTime),
+      unitId: controller.currentUnitId,
       photos: _photos
           .map(
             (photo) => MaintenancePhotoUpload(

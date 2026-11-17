@@ -63,6 +63,9 @@ class MaintenanceController extends GetxController {
 
   String? get _accountKey => _currentUserId?.toString();
 
+  String get currentUnitId =>
+      _session?.currentUser?.unit?.id.toString() ?? '';
+
   bool get hasMore => page.value * limit.value < total.value;
 
   int get submittedCount =>
@@ -340,6 +343,7 @@ class MaintenanceController extends GetxController {
     required MaintenancePriority priority,
     required String preferredDate,
     required String preferredTime,
+    required String unitId,
     List<MaintenancePhotoUpload> photos = const <MaintenancePhotoUpload>[],
   }) async {
     final accountKey = _accountKey;
@@ -360,6 +364,7 @@ class MaintenanceController extends GetxController {
         priority: priority,
         preferredDate: preferredDate,
         preferredTime: preferredTime,
+        unitId: unitId,
         photos: photos,
       );
       requests.insert(0, created);
@@ -398,14 +403,24 @@ class MaintenanceController extends GetxController {
     isCancelling.value = true;
     errorMessage.value = null;
     try {
-      await useCases.cancelRequest(
+      final cancellation = await useCases.cancelRequest(
         accountKey: accountKey,
         id: request.id,
         reason: reason,
       );
+      final cancelledAt =
+          cancellation.cancelledAt ?? DateTime.now().toUtc().toIso8601String();
       final updated = request.copyWith(
         status: MaintenanceStatus.cancelled,
-        cancelledAt: DateTime.now().toUtc().toIso8601String(),
+        cancelledAt: cancelledAt,
+        progressHistory: <MaintenanceProgressEntry>[
+          ...request.progressHistory,
+          MaintenanceProgressEntry(
+            status: MaintenanceStatus.cancelled,
+            note: reason,
+            createdAt: cancelledAt,
+          ),
+        ],
       );
       _replace(updated);
       if (selectedRequest.value?.id == request.id) {

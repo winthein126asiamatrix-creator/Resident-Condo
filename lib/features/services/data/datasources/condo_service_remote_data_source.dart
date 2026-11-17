@@ -1,3 +1,4 @@
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/api_end_points.dart';
 import '../../../../core/network/dio_api_service.dart';
 import '../../domain/entities/condo_service.dart';
@@ -87,6 +88,45 @@ class CondoServiceRemoteDataSource {
         return ServiceRequest.fromJson(payload, fallback: request);
       },
     );
+  }
+
+  Future<ServiceRequest> cancelRequest(ServiceRequest request) async {
+    if (request.status != ServiceRequestStatus.requested) {
+      throw const AppException(
+        'Only requested service requests can be cancelled.',
+      );
+    }
+    final confirmed = request.copyWith(status: ServiceRequestStatus.cancelled);
+    final json = await _service.post<Object?>(
+      ApiEndPoints.serviceRequestCancel(request.id),
+      parse: (value) => value,
+    );
+    return parseCancellation(json, confirmed);
+  }
+
+  static ServiceRequest parseCancellation(
+    Object? json,
+    ServiceRequest confirmed,
+  ) {
+    Object? payload = json;
+    if (payload is Map) {
+      final envelope = payload;
+      for (final key in const <String>['data', 'request', 'service_request']) {
+        final nested = envelope[key];
+        if (nested is Map) {
+          payload = nested;
+          break;
+        }
+      }
+    }
+    if (payload is! Map) return confirmed;
+    final map = Map<String, dynamic>.from(payload);
+    final rawStatus = map['status'];
+    if (rawStatus != null &&
+        ServiceRequestStatus.tryFromApi(rawStatus.toString()) == null) {
+      return confirmed;
+    }
+    return ServiceRequest.fromJson(map, fallback: confirmed);
   }
 
   (String, String) _splitSlot(String label) {

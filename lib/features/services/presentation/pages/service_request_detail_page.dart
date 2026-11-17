@@ -37,6 +37,8 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
     final tokens = AppThemeTokens.of(context);
     return Obx(() {
       final current = _current();
+      final provider = current.provider?.trim();
+      final hasProvider = provider != null && provider.isNotEmpty;
       return Scaffold(
         appBar: AppDetailAppBar(title: 'Service request'),
         body: ListView(
@@ -46,7 +48,7 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
               icon: serviceIcon(current.category),
               title: current.serviceName,
               subtitle: '${current.displayScheduledDate} · ${current.displayScheduledSlot}',
-              footnote: 'Provider: ${current.provider}',
+              footnote: hasProvider ? 'Provider: $provider' : null,
               trailing: ServiceStatusPill(
                 status: current.status,
                 label: current.status.label,
@@ -60,8 +62,10 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                 children: [
                   AppLabelValueRow(
                     label: 'Category',
-                    value: current.category.label,
+                    value: _categoryLabel(current),
                   ),
+                  if (hasProvider)
+                    AppLabelValueRow(label: 'Provider', value: provider),
                   AppLabelValueRow(
                     label: 'Scheduled',
                      value: current.displayScheduledDate,
@@ -123,11 +127,27 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
             20.h.heightBox(),
             if (current.canCancel)
               OutlinedButton.icon(
-                onPressed: controller.isSubmitting.value
-                    ? null
-                    : () => _cancel(context, current),
-                icon: Icon(Icons.cancel_outlined, size: 18),
-                label: Text('Cancel request'),
+                onPressed:
+                    controller.isSubmitting.value || controller.isCancelling.value
+                        ? null
+                        : () => _cancel(context, current),
+                icon: controller.isCancelling.value
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppPalette.danger,
+                          ),
+                        ),
+                      )
+                    : Icon(Icons.cancel_outlined, size: 18),
+                label: Text(
+                  controller.isCancelling.value
+                      ? 'Cancelling request...'
+                      : 'Cancel request',
+                ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppPalette.danger,
                   side: BorderSide(color: Color(0xFFF0C6C0)),
@@ -165,14 +185,24 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
     );
   }
 
+  String _categoryLabel(ServiceRequest current) {
+    final label = current.categoryInfo?.label.trim();
+    return label == null || label.isEmpty ? current.category.label : label;
+  }
+
   Future<void> _cancel(BuildContext context, ServiceRequest current) async {
+    if (controller.isCancelling.value) {
+      return;
+    }
     final confirmed = await showAppConfirmDialog(
       context,
-      title: 'Cancel this service?',
+      title: 'Cancel service request?',
       message:
-          '${current.serviceName} on ${current.scheduledDate} will be cancelled '
-          'and the slot released.',
-      confirmLabel: 'Cancel service',
+          'You are about to cancel the service request for '
+          '${current.serviceName} on ${current.scheduledDate}. '
+          'The booking slot will be released and this cannot be undone.',
+      confirmLabel: 'Cancel request',
+      cancelLabel: 'Keep request',
       destructive: true,
     );
     if (!confirmed || !context.mounted) {
@@ -184,10 +214,10 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
     }
     showAppFeedback(
       context,
-      title: updated == null ? 'Unable to cancel' : 'Service cancelled',
+      title: updated == null ? 'Unable to cancel' : 'Request cancelled',
       message: updated == null
           ? (controller.errorMessage.value ?? 'Please try again.')
-          : 'The booking slot has been released.',
+          : 'The service request has been cancelled.',
       isError: updated == null,
     );
   }

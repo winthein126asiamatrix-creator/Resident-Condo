@@ -119,4 +119,120 @@ void main() {
     expect(request.provider, 'BrightHome Services');
     expect(request.bookingDetails, <String, dynamic>{'quantity': 2});
   });
+
+  test('parses category with false code and nullable provider', () {
+    final request = ServiceRequest.fromJson(<String, dynamic>{
+      'id': 99,
+      'status': 'requested',
+      'category': <String, dynamic>{
+        'id': 3,
+        'code': false,
+        'label': 'Laundary',
+      },
+      'provider': 'Test 1',
+    });
+
+    expect(request.categoryInfo?.id, 3);
+    expect(request.categoryInfo?.code, isNull);
+    expect(request.categoryInfo?.label, 'Laundary');
+    expect(request.category, ServiceCategory.laundry);
+    expect(request.provider, 'Test 1');
+  });
+
+  test('missing or null category and provider are handled safely', () {
+    final missing = ServiceRequest.fromJson(<String, dynamic>{
+      'id': 1,
+      'status': 'requested',
+    });
+    expect(missing.categoryInfo, isNull);
+    expect(missing.provider, isNull);
+    expect(missing.category, ServiceCategory.other);
+
+    final nulled = ServiceRequest.fromJson(<String, dynamic>{
+      'id': 2,
+      'status': 'requested',
+      'category': null,
+      'provider': null,
+    });
+    expect(nulled.categoryInfo, isNull);
+    expect(nulled.provider, isNull);
+
+    final falseCode = ServiceRequest.fromJson(<String, dynamic>{
+      'id': 3,
+      'category': <String, dynamic>{
+        'id': 3,
+        'code': 'false',
+        'label': 'Laundary',
+      },
+      'provider': false,
+    });
+    expect(falseCode.categoryInfo?.code, isNull);
+    expect(falseCode.provider, isNull);
+  });
+
+  test('cancel is allowed only for the requested backend status', () {
+    ServiceRequest requestFor(
+      ServiceRequestStatus status, {
+      String? statusLabel,
+    }) {
+      return ServiceRequest(
+        id: '42',
+        serviceId: 1,
+        serviceName: 'Clothing',
+        category: ServiceCategory.laundry,
+        scheduledDate: '2026-11-08',
+        scheduledSlot: '09:00 - 11:00',
+        status: status,
+        statusLabel: statusLabel,
+        price: 30000,
+        requestedOn: 'Nov 6, 2026',
+        provider: 'Test 1',
+      );
+    }
+
+    expect(requestFor(ServiceRequestStatus.requested).canCancel, isTrue);
+    expect(
+      requestFor(
+        ServiceRequestStatus.requested,
+        statusLabel: 'Cancelled',
+      ).canCancel,
+      isTrue,
+    );
+    for (final status in [
+      ServiceRequestStatus.scheduled,
+      ServiceRequestStatus.inProgress,
+      ServiceRequestStatus.completed,
+      ServiceRequestStatus.cancelled,
+    ]) {
+      expect(requestFor(status).canCancel, isFalse);
+    }
+    expect(
+      requestFor(
+        ServiceRequestStatus.cancelled,
+        statusLabel: 'Requested',
+      ).canCancel,
+      isFalse,
+    );
+  });
+
+  test('category info and provider survive cache serialization', () {
+    final request = ServiceRequest.fromJson(<String, dynamic>{
+      'id': 7,
+      'status': 'requested',
+      'category': <String, dynamic>{
+        'id': 3,
+        'code': false,
+        'label': 'Laundary',
+      },
+      'provider': 'Test 1',
+    });
+
+    final restored = ServiceRequest.fromJson(request.toJson());
+
+    expect(restored.categoryInfo?.id, 3);
+    expect(restored.categoryInfo?.code, isNull);
+    expect(restored.categoryInfo?.label, 'Laundary');
+    expect(restored.provider, 'Test 1');
+    expect(restored.category, ServiceCategory.laundry);
+  });
 }

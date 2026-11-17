@@ -171,6 +171,9 @@ abstract final class ApiEndPoints {
 
   static const String serviceRequests = '/service-requests';
 
+  static String serviceRequestCancel(Object id) =>
+      '/service-requests/${Uri.encodeComponent('$id')}/cancel';
+
   static const String appearance = '/api/profile/appearance';
 
   // --- My Unit -------------------------------------------------------------

@@ -66,6 +66,7 @@ class MaintenanceUseCases {
     required MaintenancePriority priority,
     required String preferredDate,
     required String preferredTime,
+    required String unitId,
     List<MaintenancePhotoUpload> photos = const <MaintenancePhotoUpload>[],
   }) {
     return repository.createRequest(
@@ -78,6 +79,7 @@ class MaintenanceUseCases {
       preferredDate: preferredDate,
       preferredTime: preferredTime,
       photos: photos,
+      unitId: unitId
     );
   }
 

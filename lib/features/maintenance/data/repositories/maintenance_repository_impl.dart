@@ -124,6 +124,7 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
     required MaintenancePriority priority,
     required String preferredDate,
     required String preferredTime,
+    required String unitId,
     List<MaintenancePhotoUpload> photos = const <MaintenancePhotoUpload>[],
   }) async {
     final created = await remoteDataSource.createRequest(
@@ -134,6 +135,7 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
       priority: priority,
       preferredDate: preferredDate,
       preferredTime: preferredTime,
+      unitId: unitId,
       photos: photos,
     );
     await localDataSource.saveRequest(accountKey, created);

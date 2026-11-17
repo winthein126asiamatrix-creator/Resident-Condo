@@ -1,3 +1,4 @@
+import '../../../../core/utils/super_print.dart';
 import '../../domain/entities/condo_service.dart';
 import '../../domain/repositories/condo_service_repository.dart';
 import '../datasources/condo_service_local_data_source.dart';
@@ -63,8 +64,18 @@ class CondoServiceRepositoryImpl implements CondoServiceRepository {
   ) => localDataSource.updateStatus(request, status);
 
   @override
-  Future<ServiceRequest> cancelRequest(ServiceRequest request) =>
-      localDataSource.cancelRequest(request);
+  Future<ServiceRequest> cancelRequest(ServiceRequest request) async {
+    final cancelled = await remoteDataSource.cancelRequest(request);
+    try {
+      await localDataSource.replaceRequest(cancelled);
+    } catch (error) {
+      superPrint(
+        'Cancellation confirmed but the cache was not updated: $error',
+        title: 'Services',
+      );
+    }
+    return cancelled;
+  }
 
   @override
   Future<ServiceRequest> rateRequest(
