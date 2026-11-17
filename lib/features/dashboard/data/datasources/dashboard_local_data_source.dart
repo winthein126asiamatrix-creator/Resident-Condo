@@ -24,22 +24,6 @@ class DashboardLocalDataSource {
         paidThisYear: 1192.30,
         paidYear: 2026,
       ),
-      maintenance: [
-        MaintenanceRequestSummary(
-          title: 'Leaking kitchen sink',
-          category: 'Plumbing',
-          priority: 'High priority',
-          status: 'In Progress',
-        ),
-        MaintenanceRequestSummary(
-          title: 'AC not cooling',
-          category: 'Air Conditioning',
-          priority: 'Medium priority',
-          status: 'Completed',
-        ),
-      ],
-      inProgressMaintenance: 1,
-      completedMaintenance: 2,
       reservations: [
         ReservationSummary(
           facility: 'Gym',

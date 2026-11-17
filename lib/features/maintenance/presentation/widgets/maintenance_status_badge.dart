@@ -15,7 +15,7 @@ class MaintenanceStatusBadge extends StatelessWidget {
     // Assigned, in progress and completed carry meaning, so those colours stay
     // fixed. Submitted has no colour of its own, so it borrows the neutral one.
     final (label, color) = switch (status) {
-      MaintenanceStatus.submitted => ('Submitted', tokens.mutedStrong),
+      MaintenanceStatus.submitted => ('Requested', tokens.mutedStrong),
       MaintenanceStatus.assigned => ('Assigned', Color(0xFF5B4CC4)),
       MaintenanceStatus.inProgress => ('In Progress', Color(0xFFB45309)),
       MaintenanceStatus.completed => ('Completed', Color(0xFF087F5B)),

@@ -19,6 +19,7 @@ import '../../../../core/widgets/authenticated_avatar.dart';
 
 import '../../../../core/widgets/branded_loading_view.dart';
 
+import '../../../maintenance/presentation/controllers/maintenance_controller.dart';
 import '../../../notifications/presentation/controllers/notification_controller.dart';
 
 import '../../../payments/domain/entities/payment_dashboard.dart';
@@ -34,6 +35,7 @@ import '../../domain/entities/dashboard.dart';
 
 import '../controllers/dashboard_controller.dart';
 
+import '../widgets/dashboard_maintenance_section.dart';
 import '../widgets/section_header.dart';
 
 import '../widgets/status_badge.dart';
@@ -88,6 +90,9 @@ class DashboardPage extends GetView<DashboardController> {
       final paymentController = Get.isRegistered<PaymentController>()
           ? Get.find<PaymentController>()
           : null;
+      final maintenanceController = Get.isRegistered<MaintenanceController>()
+          ? Get.find<MaintenanceController>()
+          : null;
       return SafeArea(
         child: Column(
           children: [
@@ -106,6 +111,8 @@ class DashboardPage extends GetView<DashboardController> {
                     controller.loadDashboard(),
                     if (paymentController != null)
                       paymentController.loadPayments(),
+                    if (maintenanceController != null)
+                      maintenanceController.refreshRequests(),
                   ]);
                 },
                 child: ListView(
@@ -145,19 +152,11 @@ class DashboardPage extends GetView<DashboardController> {
                       ),
                     ),
                     26.h.heightBox(),
-                    SectionHeader(
-                      title: 'Maintenance',
-                      actionLabel: 'View all',
-                      onAction: () {
+                    DashboardMaintenanceSection(
+                      onViewAll: () {
                         vibrateNow();
                         onSelectTab(2);
                       },
-                    ),
-                    10.h.heightBox(),
-                    _MaintenanceCard(
-                      requests: data.maintenance,
-                      inProgress: data.inProgressMaintenance,
-                      completed: data.completedMaintenance,
                     ),
                     26.h.heightBox(),
                     SectionHeader(
@@ -827,83 +826,6 @@ class _QuickAction extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _MaintenanceCard extends StatelessWidget {
-  const _MaintenanceCard({
-    required this.requests,
-    required this.inProgress,
-    required this.completed,
-  });
-
-  final List<MaintenanceRequestSummary> requests;
-  final int inProgress;
-  final int completed;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = AppThemeTokens.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: tokens.surface,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: tokens.border),
-      ),
-      child: Column(
-        children: [
-          ...requests.map(
-            (request) => Padding(
-              padding: EdgeInsets.fromLTRB(16, 15, 16, 15),
-              child: Row(
-                children: [
-                  Icon(Icons.build_circle_outlined, color: tokens.brand),
-                  12.w.widthBox(),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          request.title,
-                          style: TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        3.h.heightBox(),
-                        Text(
-                          '${request.category} Â· ${request.priority}',
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: tokens.muted,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  StatusBadge(label: request.status),
-                ],
-              ),
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: tokens.surfaceMuted,
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(19.r),
-              ),
-            ),
-            child: Text(
-              '$inProgress in progress  Â·  $completed completed',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: tokens.mutedStrong,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

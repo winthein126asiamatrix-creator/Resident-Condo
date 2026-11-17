@@ -42,20 +42,6 @@ class BalanceSummary {
   final int paidYear;
 }
 
-class MaintenanceRequestSummary {
-  const MaintenanceRequestSummary({
-    required this.title,
-    required this.category,
-    required this.priority,
-    required this.status,
-  });
-
-  final String title;
-  final String category;
-  final String priority;
-  final String status;
-}
-
 class ReservationSummary {
   const ReservationSummary({
     required this.facility,
@@ -90,18 +76,12 @@ class DashboardData {
   const DashboardData({
     required this.unit,
     required this.balance,
-    required this.maintenance,
-    required this.inProgressMaintenance,
-    required this.completedMaintenance,
     required this.reservations,
     required this.announcements,
   });
 
   final UnitSummary unit;
   final BalanceSummary balance;
-  final List<MaintenanceRequestSummary> maintenance;
-  final int inProgressMaintenance;
-  final int completedMaintenance;
   final List<ReservationSummary> reservations;
   final List<AnnouncementSummary> announcements;
 }
