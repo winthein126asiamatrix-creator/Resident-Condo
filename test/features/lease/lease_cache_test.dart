@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:test/core/cache/api_cache_store.dart';
 import 'package:test/core/cache/app_cache_database.dart';
 import 'package:test/core/network/api_exception.dart';
+import 'package:test/core/utils/app_dates.dart';
 import 'package:test/features/lease/data/datasources/lease_local_data_source.dart';
 import 'package:test/features/lease/data/models/lease_model.dart';
 import 'package:test/features/lease/domain/entities/lease.dart';
@@ -356,6 +358,7 @@ void main() {
         ..renewals = <LeaseRenewal>[_renewal('9')];
       await _pumpLeasePage(tester, repository);
 
+      await _scrollLeaseTo(tester, find.text('LSE-42'));
       expect(find.text('LSE-42'), findsOneWidget);
       await _scrollLeaseTo(tester, find.text('Pending review'));
       expect(find.text('Pending review'), findsOneWidget);
@@ -562,6 +565,333 @@ void main() {
       expect(find.text('No active lease'), findsNothing);
     });
   });
+
+  group('renewal eligibility and approved term', () {
+    test('rejected and cancelled backend statuses parse and round-trip', () {
+      for (final entry in <String, RenewalStatus>{
+        'rejected': RenewalStatus.rejected,
+        'cancelled': RenewalStatus.cancelled,
+        'canceled': RenewalStatus.cancelled,
+      }.entries) {
+        final json = _renewalJson()..['status'] = entry.key;
+        final renewal = LeaseRenewalModel.fromJson(json);
+        expect(renewal.status, entry.value, reason: entry.key);
+        expect(renewal.status.label, isNotEmpty);
+        expect(
+          LeaseRenewalModel.fromJson(
+            LeaseRenewalModel.fromEntity(renewal).toJson(),
+          ).status,
+          entry.value,
+        );
+      }
+    });
+
+    test('pending or approved renewal blocks a new request', () async {
+      for (final status in <RenewalStatus>[
+        RenewalStatus.pending,
+        RenewalStatus.approved,
+      ]) {
+        final lease = _lease('42');
+        final repository = _FakeRepository()
+          ..leases = <Lease>[lease]
+          ..renewals = <LeaseRenewal>[
+            _renewalWith(
+              id: '9',
+              status: status,
+              start: DateTime.now().add(const Duration(days: 30)),
+              end: DateTime.now().add(const Duration(days: 360)),
+            ),
+          ];
+        final controller = LeaseController(LeaseUseCases(repository));
+        await controller.loadLeases();
+
+        expect(controller.canRequestRenewal(lease), isFalse, reason: status.name);
+        final renewal = await controller.requestRenewal(
+          lease: lease,
+          proposedStart: DateTime(2027, 1, 1),
+          proposedEnd: DateTime(2027, 12, 31),
+          proposedRent: 2460,
+        );
+        expect(renewal, isNull, reason: status.name);
+        expect(repository.createCalls, 0, reason: status.name);
+        expect(
+          controller.errorMessage.value,
+          contains(
+            status == RenewalStatus.approved
+                ? 'approved'
+                : 'awaiting approval',
+          ),
+        );
+      }
+    });
+
+    test('rejected, cancelled, withdrawn and declined allow a new request', () async {
+      for (final status in <RenewalStatus>[
+        RenewalStatus.rejected,
+        RenewalStatus.cancelled,
+        RenewalStatus.withdrawn,
+        RenewalStatus.declined,
+      ]) {
+        final lease = _lease('42');
+        final repository = _FakeRepository()
+          ..leases = <Lease>[lease]
+          ..renewals = <LeaseRenewal>[
+            _renewalWith(
+              id: '9',
+              status: status,
+              start: DateTime(2026, 11, 1),
+              end: DateTime(2027, 10, 31),
+            ),
+          ];
+        final controller = LeaseController(LeaseUseCases(repository));
+        await controller.loadLeases();
+
+        expect(controller.canRequestRenewal(lease), isTrue, reason: status.name);
+        final renewal = await controller.requestRenewal(
+          lease: lease,
+          proposedStart: DateTime(2027, 1, 1),
+          proposedEnd: DateTime(2027, 12, 31),
+          proposedRent: 2460,
+        );
+        expect(renewal, isNotNull, reason: status.name);
+        expect(repository.createCalls, 1, reason: status.name);
+      }
+    });
+
+    test('eligibility is scoped to the lease with the blocking renewal', () async {
+      final leaseA = _lease('42');
+      final leaseB = _lease('43');
+      final repository = _FakeRepository()
+        ..leases = <Lease>[leaseA, leaseB]
+        ..renewals = <LeaseRenewal>[
+          _renewalWith(
+            id: '9',
+            leaseId: '42',
+            status: RenewalStatus.pending,
+            start: DateTime(2026, 11, 1),
+            end: DateTime(2027, 10, 31),
+          ),
+        ];
+      final controller = LeaseController(LeaseUseCases(repository));
+      await controller.loadLeases();
+
+      expect(controller.canRequestRenewal(leaseA), isFalse);
+      expect(controller.canRequestRenewal(leaseB), isTrue);
+      final renewal = await controller.requestRenewal(
+        lease: leaseB,
+        proposedStart: DateTime(2027, 1, 1),
+        proposedEnd: DateTime(2027, 12, 31),
+        proposedRent: 2460,
+      );
+      expect(renewal, isNotNull);
+      expect(repository.createCalls, 1);
+    });
+
+    test('duplicate submissions are prevented while one is in flight', () async {
+      final lease = _lease('42');
+      final gate = Completer<LeaseRenewal>();
+      final repository = _FakeRepository()
+        ..leases = <Lease>[lease]
+        ..renewals = <LeaseRenewal>[]
+        ..createGate = gate;
+      final controller = LeaseController(LeaseUseCases(repository));
+      await controller.loadLeases();
+
+      final first = controller.requestRenewal(
+        lease: lease,
+        proposedStart: DateTime(2027, 1, 1),
+        proposedEnd: DateTime(2027, 12, 31),
+        proposedRent: 2460,
+      );
+      final duplicate = await controller.requestRenewal(
+        lease: lease,
+        proposedStart: DateTime(2027, 1, 1),
+        proposedEnd: DateTime(2027, 12, 31),
+        proposedRent: 2460,
+      );
+
+      expect(duplicate, isNull);
+      expect(repository.createCalls, 1);
+      gate.complete(
+        _renewalWith(
+          id: '10',
+          status: RenewalStatus.pending,
+          start: DateTime(2027, 1, 1),
+          end: DateTime(2027, 12, 31),
+        ),
+      );
+      expect(await first, isNotNull);
+      expect(controller.isSubmitting.value, isFalse);
+    });
+
+    test('a cached pending renewal still blocks requests while offline', () async {
+      final lease = _lease('42');
+      final repository = _FakeRepository()
+        ..cachedLeases = <Lease>[lease]
+        ..cachedRenewals = <LeaseRenewal>[
+          _renewalWith(
+            id: 'cached',
+            status: RenewalStatus.pending,
+            start: DateTime(2026, 11, 1),
+            end: DateTime(2027, 10, 31),
+          ),
+        ]
+        ..error = const ApiException(
+          'No connection.',
+          kind: ApiFailureKind.network,
+        );
+      final controller = LeaseController(LeaseUseCases(repository));
+      await controller.loadLeases();
+
+      expect(controller.isShowingCachedData.value, isTrue);
+      expect(controller.canRequestRenewal(lease), isFalse);
+      final renewal = await controller.requestRenewal(
+        lease: lease,
+        proposedStart: DateTime(2027, 1, 1),
+        proposedEnd: DateTime(2027, 12, 31),
+        proposedRent: 2460,
+      );
+      expect(renewal, isNull);
+      expect(repository.createCalls, 0);
+    });
+
+    test('approved renewal changes the term only from its start date', () async {
+      final lease = _lease('42');
+      final futureStart = DateTime.now().add(const Duration(days: 45));
+      final futureEnd = futureStart.add(const Duration(days: 364));
+      final futureRepository = _FakeRepository()
+        ..leases = <Lease>[lease]
+        ..renewals = <LeaseRenewal>[
+          _renewalWith(
+            id: '10',
+            status: RenewalStatus.approved,
+            start: futureStart,
+            end: futureEnd,
+            rent: 3200,
+          ),
+        ];
+      final futureController = LeaseController(LeaseUseCases(futureRepository));
+      await futureController.loadLeases();
+
+      expect(futureController.displayLeaseFor(lease).startDate, lease.startDate);
+      expect(futureController.displayLeaseFor(lease).endDate, lease.endDate);
+      expect(futureController.upcomingApprovedRenewalFor(lease), isNotNull);
+
+      final today = AppDates.dateOnly(DateTime.now());
+      final effectiveRepository = _FakeRepository()
+        ..leases = <Lease>[lease]
+        ..renewals = <LeaseRenewal>[
+          _renewalWith(
+            id: '11',
+            status: RenewalStatus.approved,
+            start: today,
+            end: today.add(const Duration(days: 365)),
+            rent: 3300,
+          ),
+        ];
+      final effectiveController =
+          LeaseController(LeaseUseCases(effectiveRepository));
+      await effectiveController.loadLeases();
+
+      final displayed = effectiveController.displayLeaseFor(lease);
+      expect(displayed.startDate, today);
+      expect(displayed.endDate, AppDates.dateOnly(today.add(const Duration(days: 365))));
+      expect(displayed.monthlyRent, 3300);
+      expect(effectiveController.upcomingApprovedRenewalFor(lease), isNull);
+    });
+
+    testWidgets('pending renewal disables the action and explains why', (
+      tester,
+    ) async {
+      final repository = _FakeRepository()
+        ..leases = <Lease>[_lease('42')]
+        ..renewals = <LeaseRenewal>[
+          _renewalWith(
+            id: '9',
+            status: RenewalStatus.pending,
+            start: DateTime.now().add(const Duration(days: 30)),
+            end: DateTime.now().add(const Duration(days: 360)),
+          ),
+        ];
+      await _pumpLeasePage(tester, repository);
+
+      final button = find.byKey(const Key('request-lease-renewal'));
+      await _scrollLeaseTo(tester, button);
+      expect(tester.widget<FilledButton>(button).onPressed, isNull);
+      expect(find.text('Renewal under review'), findsOneWidget);
+      expect(
+        find.text('You already have a renewal request awaiting approval.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('approved future renewal shows upcoming term on the card', (
+      tester,
+    ) async {
+      final lease = _lease('42');
+      final start = DateTime.now().add(const Duration(days: 45));
+      final end = start.add(const Duration(days: 364));
+      final repository = _FakeRepository()
+        ..leases = <Lease>[lease]
+        ..renewals = <LeaseRenewal>[
+          _renewalWith(
+            id: '10',
+            status: RenewalStatus.approved,
+            start: start,
+            end: end,
+            rent: 3200,
+          ),
+        ];
+      await _pumpLeasePage(tester, repository);
+
+      await _scrollLeaseTo(tester, find.text('Renewal Approved'));
+      expect(find.text('Upcoming Lease Term'), findsOneWidget);
+      expect(
+        find.text('${AppDates.format(start)} – ${AppDates.format(end)}'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Your new lease term will begin on ${AppDates.format(start)}.'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Ends ${AppDates.format(lease.endDate)}'),
+        findsOneWidget,
+      );
+      final button = find.byKey(const Key('request-lease-renewal'));
+      await _scrollLeaseTo(tester, button);
+      expect(tester.widget<FilledButton>(button).onPressed, isNull);
+    });
+
+    testWidgets('approved renewal effective today switches the card term', (
+      tester,
+    ) async {
+      final start = AppDates.dateOnly(DateTime.now());
+      final end = start.add(const Duration(days: 365));
+      final repository = _FakeRepository()
+        ..leases = <Lease>[_lease('42')]
+        ..renewals = <LeaseRenewal>[
+          _renewalWith(
+            id: '11',
+            status: RenewalStatus.approved,
+            start: start,
+            end: end,
+            rent: 3300,
+          ),
+        ];
+      await _pumpLeasePage(tester, repository);
+
+      expect(find.text('Renewal Approved'), findsNothing);
+      await _scrollLeaseTo(
+        tester,
+        find.textContaining('Ends ${AppDates.format(end)}'),
+      );
+      expect(
+        find.textContaining('Ends ${AppDates.format(end)}'),
+        findsOneWidget,
+      );
+    });
+  });
 }
 
 Future<void> _scrollLeaseTo(WidgetTester tester, Finder finder) async {
@@ -680,6 +1010,26 @@ Lease _lease(
   );
 }
 
+LeaseRenewal _renewalWith({
+  required String id,
+  required RenewalStatus status,
+  required DateTime start,
+  required DateTime end,
+  String leaseId = '42',
+  double rent = 3000,
+}) {
+  return LeaseRenewalModel(
+    id: id,
+    leaseId: leaseId,
+    requestedOn: 'Sep 5, 2026',
+    proposedStart: AppDates.format(start),
+    proposedEnd: AppDates.format(end),
+    proposedRent: rent,
+    status: status,
+    requestedBy: 'Alex Johnson',
+  );
+}
+
 LeaseRenewal _renewal(String id) {
   return LeaseRenewalModel(
     id: id,
@@ -702,6 +1052,7 @@ class _FakeRepository implements LeaseRepository {
   Object? leaseError;
   Object? renewalError;
   Object? createError;
+  Completer<LeaseRenewal>? createGate;
   int createCalls = 0;
 
   @override
@@ -732,6 +1083,8 @@ class _FakeRepository implements LeaseRepository {
     createCalls++;
     final failure = createError;
     if (failure != null) throw failure;
+    final gate = createGate;
+    if (gate != null) return gate.future;
     return renewal;
   }
 

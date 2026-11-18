@@ -253,6 +253,8 @@ RenewalStatus _renewalStatus(Object? value) {
     'approved' => RenewalStatus.approved,
     'declined' => RenewalStatus.declined,
     'withdrawn' => RenewalStatus.withdrawn,
+    'rejected' => RenewalStatus.rejected,
+    'cancelled' || 'canceled' => RenewalStatus.cancelled,
     _ => throw FormatException('Unknown renewal status: $value'),
   };
 }
@@ -280,6 +282,8 @@ String _renewalStatusWire(RenewalStatus status) {
     RenewalStatus.approved => 'approved',
     RenewalStatus.declined => 'declined',
     RenewalStatus.withdrawn => 'withdrawn',
+    RenewalStatus.rejected => 'rejected',
+    RenewalStatus.cancelled => 'cancelled',
   };
 }
 

@@ -90,8 +90,10 @@ class LeasePage extends GetView<LeaseController> {
             children: [
               for (final lease in controller.leases) ...[
                 _LeaseProgressCard(
-                  lease: lease,
+                  lease: controller.displayLeaseFor(lease),
                   perspective: controller.rentPerspectiveLabel,
+                  renewalStatus: controller.blockingRenewalFor(lease)?.status,
+                  upcoming: controller.upcomingApprovedRenewalFor(lease),
                 ),
                 16.h.heightBox(),
                 AppSectionCard(
@@ -117,11 +119,15 @@ class LeasePage extends GetView<LeaseController> {
                       ),
                       AppLabelValueRow(
                         label: 'Start date',
-                        value: AppDates.format(lease.startDate),
+                        value: AppDates.format(
+                          controller.displayLeaseFor(lease).startDate,
+                        ),
                       ),
                       AppLabelValueRow(
                         label: 'End date',
-                        value: AppDates.format(lease.endDate),
+                        value: AppDates.format(
+                          controller.displayLeaseFor(lease).endDate,
+                        ),
                       ),
                       AppLabelValueRow(
                         label: 'Rent due',
@@ -153,9 +159,7 @@ class LeasePage extends GetView<LeaseController> {
                 20.h.heightBox(),
                 FilledButton.icon(
                   key: Key('request-lease-renewal'),
-                  onPressed:
-                      !controller.canRequestRenewal(lease) ||
-                          controller.pendingRenewal != null
+                  onPressed: !controller.canRequestRenewal(lease)
                       ? null
                       : () {
                           vibrateNow();
@@ -163,19 +167,29 @@ class LeasePage extends GetView<LeaseController> {
                           Get.toNamed(AppRoutes.leaseRenewal);
                         },
                   icon: Icon(Icons.autorenew_rounded, size: 18),
-                  label: Text(
-                    !controller.canRequestRenewal(lease)
-                        ? 'Renewal unavailable'
-                        : controller.pendingRenewal == null
-                        ? 'Request renewal'
-                        : 'Renewal under review',
-                  ),
+                  label: Text(switch (controller
+                      .blockingRenewalFor(lease)
+                      ?.status) {
+                    RenewalStatus.approved => 'Renewal approved',
+                    RenewalStatus.pending => 'Renewal under review',
+                    _ =>
+                      controller.canRequestRenewal(lease)
+                          ? 'Request renewal'
+                          : 'Renewal unavailable',
+                  }),
                   style: FilledButton.styleFrom(
                     minimumSize: Size.fromHeight(52),
                   ),
                 ),
-                if (controller.canRequestRenewal(lease) &&
-                    controller.pendingRenewal == null) ...[
+                if (controller.blockingRenewalFor(lease) != null ||
+                    !controller.canRequestRenewal(lease)) ...[
+                  8.h.heightBox(),
+                  Text(
+                    controller.renewalUnavailableMessage(lease),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: tokens.muted, fontSize: 11.sp),
+                  ),
+                ] else ...[
                   8.h.heightBox(),
                   Text(
                     'Rent is billed separately from your monthly condo fee.',
@@ -193,13 +207,21 @@ class LeasePage extends GetView<LeaseController> {
 }
 
 class _LeaseProgressCard extends StatelessWidget {
-  const _LeaseProgressCard({required this.lease, required this.perspective});
+  const _LeaseProgressCard({
+    required this.lease,
+    required this.perspective,
+    this.renewalStatus,
+    this.upcoming,
+  });
   final Lease lease;
   final String perspective;
+  final RenewalStatus? renewalStatus;
+  final LeaseRenewal? upcoming;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    final upcomingRenewal = upcoming;
     final color = switch (lease.status) {
       LeaseStatus.expired => AppPalette.danger,
       LeaseStatus.expiringSoon => AppPalette.warning,
@@ -217,7 +239,10 @@ class _LeaseProgressCard extends StatelessWidget {
           : lease.hasExpired
           ? 'This term has ended. Submit a renewal to continue the tenancy.'
           : 'Ends ${AppDates.format(lease.endDate)} · ${lease.daysRemaining} days left',
-      trailing: AppStatusPill(label: lease.status.label, color: color),
+      trailing: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [AppStatusPill(label: lease.status.label, color: color)],
+      ),
       leading: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -271,6 +296,66 @@ class _LeaseProgressCard extends StatelessWidget {
               ),
             ],
           ),
+          if (upcomingRenewal != null) ...[
+            14.h.heightBox(),
+            Divider(color: Colors.white.withValues(alpha: 0.22), height: 1),
+            12.h.heightBox(),
+            //    if (renewalStatus != null) ...[
+            //   6.h.heightBox(),
+            //   AppStatusPill(
+            //     label: renewalStatus == RenewalStatus.approved
+            //         ? 'Renewal approved'
+            //         : 'Renewal pending',
+            //     color: renewalStatus == RenewalStatus.approved
+            //         ? AppPalette.success
+            //         : AppPalette.warning,
+            //   ),
+            // ],
+            //  AppStatusPill(
+            //     label: 'Renewal Approved',
+            //     color: renewalStatus == RenewalStatus.approved
+            //         ? AppPalette.success
+            //         : AppPalette.warning,
+            //   ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppPalette.success.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Text(
+                'Renewal Approved',
+                style: TextStyle(
+                  color: tokens.brandOnDark,
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            4.h.heightBox(),
+            Text(
+              'Upcoming Lease Term',
+              style: TextStyle(
+                color: tokens.brandOnDarkMuted,
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            2.h.heightBox(),
+            Text(
+              '${upcomingRenewal.proposedStart} – ${upcomingRenewal.proposedEnd}',
+              style: TextStyle(
+                color: tokens.brandOnDark,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            4.h.heightBox(),
+            Text(
+              'Your new lease term will begin on ${upcomingRenewal.proposedStart}.',
+              style: TextStyle(color: tokens.brandOnDarkMuted, fontSize: 11.sp),
+            ),
+          ],
         ],
       ),
     );
@@ -421,7 +506,9 @@ class _RenewalCard extends StatelessWidget {
     final color = switch (renewal.status) {
       RenewalStatus.approved => AppPalette.success,
       RenewalStatus.declined => AppPalette.danger,
+      RenewalStatus.rejected => AppPalette.danger,
       RenewalStatus.withdrawn => tokens.faint,
+      RenewalStatus.cancelled => tokens.faint,
       RenewalStatus.pending => AppPalette.warning,
     };
 

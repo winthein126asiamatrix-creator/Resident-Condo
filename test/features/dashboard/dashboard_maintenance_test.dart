@@ -47,7 +47,7 @@ void main() {
     expect(find.text('Real request three'), findsNothing);
     expect(find.text('Leaking kitchen sink'), findsNothing);
     expect(find.textContaining('MR-1'), findsOneWidget);
-    expect(find.text('Submitted'), findsOneWidget);
+    expect(find.text(MaintenanceStatus.submitted.label), findsOneWidget);
     expect(
       find.byKey(const Key('dashboard-maintenance-request-3')),
       findsNothing,

@@ -235,4 +235,63 @@ void main() {
     expect(restored.provider, 'Test 1');
     expect(restored.category, ServiceCategory.laundry);
   });
+
+  test('parses the paginated service request list payload', () {
+    final response = <String, dynamic>{
+      'items': <dynamic>[
+        <String, dynamic>{
+          'id': 1,
+          'code': 'SRV-2026-003',
+          'service': <String, dynamic>{
+            'id': 1,
+            'name': 'Top',
+            'icon': false,
+            'cancel_minutes': 1440,
+          },
+          'category': <String, dynamic>{
+            'id': 3,
+            'code': false,
+            'label': 'Laundary',
+          },
+          'provider': 'Test 1',
+          'status': 'submitted',
+          'status_label': 'Submitted',
+          'is_active': true,
+          'date': '2026-11-18',
+          'start_time': '08:00',
+          'end_time': '09:00',
+          'start_at': '2026-11-18T08:00:00Z',
+          'end_at': '2026-11-18T09:00:00Z',
+          'amount': <String, dynamic>{'amount': 200.0, 'currency': 'USD'},
+          'qty': 1,
+        },
+      ],
+      'page': 1,
+      'limit': 20,
+      'total': 1,
+    };
+
+    final items = (response['items'] as List)
+        .whereType<Map>()
+        .map((item) => ServiceRequest.fromJson(Map<String, dynamic>.from(item)))
+        .toList();
+
+    expect(items, hasLength(1));
+    final request = items.single;
+    expect(request.id, '1');
+    expect(request.code, 'SRV-2026-003');
+    expect(request.serviceId, 1);
+    expect(request.serviceName, 'Top');
+    expect(request.categoryInfo?.id, 3);
+    expect(request.categoryInfo?.code, isNull);
+    expect(request.categoryInfo?.label, 'Laundary');
+    expect(request.provider, 'Test 1');
+    expect(request.status, ServiceRequestStatus.requested);
+    expect(request.displayStatus, 'Submitted');
+    expect(request.scheduledDate, '2026-11-18');
+    expect(request.scheduledSlot, '08:00 - 09:00');
+    expect(request.price, 200);
+    expect(request.currency, 'USD');
+    expect(request.qty, 1);
+  });
 }

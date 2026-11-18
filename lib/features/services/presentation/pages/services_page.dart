@@ -375,9 +375,9 @@ class _Requests extends StatelessWidget {
               child: _RequestCard(controller: controller, request: request),
             ),
         18.h.heightBox(),
-        if (history.isNotEmpty)
-          AppSectionHeader(title: 'History', count: historyCount)
-        else
+        if (history.isNotEmpty) ...[
+          AppSectionHeader(title: 'History', count: historyCount),
+          10.h.heightBox(),
           for (final group in groups) ...[
             _HistoryMonthHeader(label: group.label),
             8.h.heightBox(),
@@ -387,6 +387,7 @@ class _Requests extends StatelessWidget {
                 child: _RequestCard(controller: controller, request: request),
               ),
           ],
+        ],
         if (controller.hasMoreHistory) ...[
           12.h.heightBox(),
           SizedBox(

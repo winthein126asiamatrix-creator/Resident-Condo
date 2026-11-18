@@ -207,8 +207,8 @@ class CondoServiceController extends GetxController {
       final history = results[2] as ServiceRequestPageResult;
 
       services.assignAll(loadedServices);
-      activeRequests.assignAll(_sortedActive(active.items));
-      historyRequests.assignAll(_sortedHistory(history.items));
+      activeRequests.assignAll(_sortActive(active.items));
+      historyRequests.assignAll(_sortHistory(history.items));
       historyPage.value = history.page;
       historyLimit.value = history.limit;
       historyTotal.value = history.total;
@@ -248,7 +248,7 @@ class CondoServiceController extends GetxController {
       historyRequests.addAll(
         history.items.where((request) => !knownIds.contains(request.id)),
       );
-      historyRequests.assignAll(_sortedHistory(historyRequests));
+      historyRequests.assignAll(_sortHistory(historyRequests));
       historyPage.value = history.page;
       historyLimit.value = history.limit;
       historyTotal.value = history.total;
@@ -390,11 +390,11 @@ class CondoServiceController extends GetxController {
         _hasUsableData = true;
       }
       if (active != null) {
-        activeRequests.assignAll(_sortedActive(active.items));
+        activeRequests.assignAll(_sortActive(active.items));
         _hasUsableData = true;
       }
       if (history != null) {
-        historyRequests.assignAll(_sortedHistory(history.items));
+        historyRequests.assignAll(_sortHistory(history.items));
         historyPage.value = history.page;
         historyLimit.value = history.limit;
         historyTotal.value = history.total;
@@ -454,7 +454,7 @@ class CondoServiceController extends GetxController {
 
     if (updated.status.isHistory) {
       historyRequests.add(updated);
-      historyRequests.assignAll(_sortedHistory(historyRequests));
+      historyRequests.assignAll(_sortHistory(historyRequests));
       if (!wasHistory) {
         historyTotal.value = historyTotal.value + 1;
       }
@@ -462,19 +462,17 @@ class CondoServiceController extends GetxController {
     }
 
     activeRequests.add(updated);
-    activeRequests.assignAll(_sortedActive(activeRequests));
+    activeRequests.assignAll(_sortActive(activeRequests));
     if (wasHistory && historyTotal.value > 0) {
       historyTotal.value = historyTotal.value - 1;
     }
   }
 
-  List<ServiceRequest> _sortedActive(Iterable<ServiceRequest> items) =>
-      items.where((request) => request.status.isActive).toList()
-        ..sort((a, b) => _startOf(a).compareTo(_startOf(b)));
+  List<ServiceRequest> _sortActive(Iterable<ServiceRequest> items) =>
+      items.toList()..sort((a, b) => _startOf(a).compareTo(_startOf(b)));
 
-  List<ServiceRequest> _sortedHistory(Iterable<ServiceRequest> items) =>
-      items.where((request) => request.status.isHistory).toList()
-        ..sort((a, b) => _startOf(b).compareTo(_startOf(a)));
+  List<ServiceRequest> _sortHistory(Iterable<ServiceRequest> items) =>
+      items.toList()..sort((a, b) => _startOf(b).compareTo(_startOf(a)));
 
   DateTime _startOf(ServiceRequest request) {
     final date = AppDates.parse(request.scheduledDate);

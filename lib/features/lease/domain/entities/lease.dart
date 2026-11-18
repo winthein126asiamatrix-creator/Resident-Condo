@@ -58,7 +58,17 @@ class LeaseParty {
   }
 }
 
-enum RenewalStatus { pending, approved, declined, withdrawn }
+enum RenewalStatus {
+  pending,
+  approved,
+  declined,
+  withdrawn,
+  rejected,
+  cancelled;
+
+  bool get blocksNewRequest =>
+      this == RenewalStatus.pending || this == RenewalStatus.approved;
+}
 
 extension RenewalStatusLabel on RenewalStatus {
   String get label {
@@ -71,6 +81,10 @@ extension RenewalStatusLabel on RenewalStatus {
         return 'Declined';
       case RenewalStatus.withdrawn:
         return 'Withdrawn';
+      case RenewalStatus.rejected:
+        return 'Rejected';
+      case RenewalStatus.cancelled:
+        return 'Cancelled';
     }
   }
 }
@@ -187,17 +201,22 @@ class Lease {
   /// Rent already billed for the term at the current monthly rate.
   double get contractedValue => monthlyRent * (totalDays / 30.44).round();
 
-  Lease copyWith({LeaseStatus? status}) {
+  Lease copyWith({
+    LeaseStatus? status,
+    DateTime? startDate,
+    DateTime? endDate,
+    double? monthlyRent,
+  }) {
     return Lease(
       id: id,
       reference: reference,
       unitId: unitId,
       unitLabel: unitLabel,
       status: status ?? this.status,
-      startDate: startDate,
-      endDate: endDate,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
       currency: currency,
-      monthlyRent: monthlyRent,
+      monthlyRent: monthlyRent ?? this.monthlyRent,
       securityDeposit: securityDeposit,
       rentDueDay: rentDueDay,
       owner: owner,

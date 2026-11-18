@@ -1,7 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get/get.dart';
+import 'package:test/app/routes/app_routes.dart';
 import 'package:test/core/cache/api_cache_store.dart';
 import 'package:test/core/cache/app_cache_database.dart';
 import 'package:test/core/network/api_exception.dart';
@@ -11,6 +15,7 @@ import 'package:test/features/services/domain/entities/condo_service.dart';
 import 'package:test/features/services/domain/repositories/condo_service_repository.dart';
 import 'package:test/features/services/domain/usecases/condo_service_usecases.dart';
 import 'package:test/features/services/presentation/controllers/condo_service_controller.dart';
+import 'package:test/features/services/presentation/pages/services_page.dart';
 
 void main() {
   test('service JSON keeps detail fields used by the booking screen', () {
@@ -451,6 +456,101 @@ void main() {
     expect(updated?.status, ServiceRequestStatus.cancelled);
     expect(controller.isCancelling.value, isFalse);
   });
+
+  test('keeps every history record returned by the API', () async {
+    final repository = _FakeRepository()
+      ..services = <CondoService>[_service(1)]
+      ..history = ServiceRequestPageResult(
+        items: <ServiceRequest>[
+          _historyRequest(
+            id: '1',
+            title: 'Past laundry',
+            status: ServiceRequestStatus.completed,
+            date: '2026-10-01',
+          ),
+          _historyRequest(
+            id: '2',
+            title: 'Submitted in history',
+            status: ServiceRequestStatus.requested,
+            date: '2026-09-01',
+          ),
+          _historyRequest(
+            id: '3',
+            title: 'Cancelled laundry',
+            status: ServiceRequestStatus.cancelled,
+            date: '2026-08-01',
+          ),
+        ],
+        page: 1,
+        limit: 20,
+        total: 3,
+      );
+    final controller = CondoServiceController(CondoServiceUseCases(repository));
+
+    await controller.loadAll();
+
+    expect(
+      controller.historyRequests.map((request) => request.id),
+      <String>['1', '2', '3'],
+    );
+    expect(controller.historyTotal.value, 3);
+  });
+
+  testWidgets('My requests renders history cards and opens their details', (
+    tester,
+  ) async {
+    Get.testMode = true;
+    addTearDown(Get.reset);
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _FakeRepository()
+      ..services = <CondoService>[_service(1)]
+      ..history = ServiceRequestPageResult(
+        items: <ServiceRequest>[
+          _historyRequest(
+            id: '1',
+            title: 'Past laundry',
+            status: ServiceRequestStatus.completed,
+            date: '2026-10-01',
+          ),
+        ],
+        page: 1,
+        limit: 20,
+        total: 1,
+      );
+    Get.put(CondoServiceController(CondoServiceUseCases(repository)));
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, _) => GetMaterialApp(
+          getPages: <GetPage<dynamic>>[
+            GetPage<dynamic>(
+              name: AppRoutes.serviceRequestDetail,
+              page: () => const _RequestDetailStub(),
+            ),
+          ],
+          home: const ServicesPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('services-tab-requests')));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Past laundry'), 300);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Past laundry'), findsOneWidget);
+    expect(find.text('History'), findsOneWidget);
+
+    await tester.tap(find.text('Past laundry'));
+    await tester.pumpAndSettle();
+    expect(Get.currentRoute, AppRoutes.serviceRequestDetail);
+  });
 }
 
 CondoService _service(int id) {
@@ -480,6 +580,36 @@ ServiceRequest _request(String id) {
     requestedOn: 'Nov 6, 2026',
     provider: 'Provider',
   );
+}
+
+ServiceRequest _historyRequest({
+  required String id,
+  required String title,
+  required ServiceRequestStatus status,
+  required String date,
+}) {
+  return ServiceRequest(
+    id: id,
+    serviceId: 1,
+    serviceName: title,
+    category: ServiceCategory.laundry,
+    scheduledDate: date,
+    scheduledSlot: '08:00 - 09:00',
+    status: status,
+    price: 100,
+    requestedOn: 'Oct 1, 2026',
+    provider: 'Test 1',
+  );
+}
+
+class _RequestDetailStub extends StatelessWidget {
+  const _RequestDetailStub();
+
+  @override
+  Widget build(BuildContext context) {
+    final request = Get.arguments as ServiceRequest;
+    return Scaffold(body: Text('detail:${request.id}'));
+  }
 }
 
 class _FakeCache extends ApiCacheStore {

@@ -84,11 +84,12 @@ class LeaseController extends GetxController {
 
   Lease? get activeLease {
     for (final lease in leases) {
-      if (!lease.hasExpired) {
-        return lease;
+      final display = displayLeaseFor(lease);
+      if (!display.hasExpired) {
+        return display;
       }
     }
-    return leases.isEmpty ? null : leases.first;
+    return leases.isEmpty ? null : displayLeaseFor(leases.first);
   }
 
   LeaseRenewal? get pendingRenewal {
@@ -103,7 +104,83 @@ class LeaseController extends GetxController {
   List<LeaseRenewal> renewalsFor(Lease lease) =>
       renewals.where((renewal) => renewal.leaseId == lease.id).toList();
 
-  bool canRequestRenewal(Lease lease) => lease.status != LeaseStatus.expired;
+  LeaseRenewal? blockingRenewalFor(Lease lease) {
+    final blocking = renewalsFor(lease)
+        .where((renewal) => renewal.status.blocksNewRequest)
+        .toList();
+    if (blocking.isEmpty) return null;
+    for (final renewal in blocking) {
+      if (renewal.status == RenewalStatus.approved) return renewal;
+    }
+    return blocking.first;
+  }
+
+  bool canRequestRenewal(Lease lease) =>
+      lease.status != LeaseStatus.expired && blockingRenewalFor(lease) == null;
+
+  String renewalUnavailableMessage(Lease lease) {
+    final blocker = blockingRenewalFor(lease);
+    if (blocker?.status == RenewalStatus.approved) {
+      return 'Your renewal is approved. A new request is not needed.';
+    }
+    if (blocker?.status == RenewalStatus.pending) {
+      return 'You already have a renewal request awaiting approval.';
+    }
+    return 'This lease has expired. Renewal requests are no longer available.';
+  }
+
+  DateTime? renewalDate(String value) {
+    final text = value.trim();
+    if (text.isEmpty) return null;
+    final isIso = RegExp(r'^\d{4}-\d{2}-\d{2}').hasMatch(text);
+    final isDisplay = RegExp(r'^[A-Z][a-z]{2}\s+\d{1,2},\s+\d{4}$').hasMatch(text);
+    if (!isIso && !isDisplay) return null;
+    return AppDates.dateOnly(AppDates.parse(text));
+  }
+
+  bool renewalIsEffective(LeaseRenewal renewal) {
+    final start = renewalDate(renewal.proposedStart);
+    if (start == null) return false;
+    return !start.isAfter(AppDates.dateOnly(DateTime.now()));
+  }
+
+  LeaseRenewal? approvedRenewalFor(
+    Lease lease, {
+    required bool effective,
+  }) {
+    LeaseRenewal? best;
+    DateTime? bestStart;
+    for (final renewal in renewalsFor(lease)) {
+      if (renewal.status != RenewalStatus.approved) continue;
+      if (renewalIsEffective(renewal) != effective) continue;
+      final start = renewalDate(renewal.proposedStart);
+      if (start == null) continue;
+      if (!lease.startDate.isBefore(start)) continue;
+      if (bestStart == null ||
+          (effective ? start.isAfter(bestStart) : start.isBefore(bestStart))) {
+        best = renewal;
+        bestStart = start;
+      }
+    }
+    return best;
+  }
+
+  LeaseRenewal? upcomingApprovedRenewalFor(Lease lease) =>
+      approvedRenewalFor(lease, effective: false);
+
+  Lease displayLeaseFor(Lease lease) {
+    final renewal = approvedRenewalFor(lease, effective: true);
+    if (renewal == null) return lease;
+    final start = renewalDate(renewal.proposedStart);
+    final end = renewalDate(renewal.proposedEnd);
+    if (start == null || end == null || !end.isAfter(start)) return lease;
+    return lease.copyWith(
+      startDate: start,
+      endDate: end,
+      monthlyRent: renewal.proposedRent,
+      status: lease.hasExpired ? LeaseStatus.active : lease.status,
+    );
+  }
 
   /// Tenants see the rent they owe, owners see the rent they collect.
   String get rentPerspectiveLabel =>
@@ -219,12 +296,11 @@ class LeaseController extends GetxController {
     required double proposedRent,
     String note = '',
   }) async {
-    if (!canRequestRenewal(lease)) {
-      errorMessage.value =
-          'This lease has expired. Renewal requests are not available.';
+    if (isSubmitting.value) {
       return null;
     }
-    if (isSubmitting.value) {
+    if (!canRequestRenewal(lease)) {
+      errorMessage.value = renewalUnavailableMessage(lease);
       return null;
     }
     if (proposedRent <= 0) {
