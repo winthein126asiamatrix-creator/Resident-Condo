@@ -3,6 +3,7 @@ abstract final class AppRoutes {
   static const login = '/login';
   static const home = '/home';
   static const appearance = '/appearance';
+  static const featureUnavailable = '/unavailable';
   static const more = '/more';
   static const unit = '/unit';
   static const invoiceList = '/payments/invoices';

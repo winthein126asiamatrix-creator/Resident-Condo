@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import '../../features/announcements/presentation/bindings/announcement_binding.dart';
 import '../../features/complaints/presentation/bindings/complaint_binding.dart';
+import '../../features/config/presentation/bindings/config_binding.dart';
 import '../../features/dashboard/presentation/bindings/dashboard_binding.dart';
 import '../../features/facilities/presentation/bindings/facility_binding.dart';
 import '../../features/lease/presentation/bindings/lease_binding.dart';
@@ -32,6 +33,7 @@ class AppBinding extends Bindings {
   void dependencies() {
     final bindings = <Bindings>[
       SessionBinding(),
+      ConfigBinding(),
       DashboardBinding(),
       PaymentBinding(),
       MaintenanceBinding(),
@@ -52,5 +54,3 @@ class AppBinding extends Bindings {
     }
   }
 }
-
-

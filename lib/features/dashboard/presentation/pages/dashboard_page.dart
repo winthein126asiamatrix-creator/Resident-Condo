@@ -19,6 +19,8 @@ import '../../../../core/widgets/authenticated_avatar.dart';
 
 import '../../../../core/widgets/branded_loading_view.dart';
 
+import '../../../config/domain/entities/condo_config.dart';
+import '../../../config/presentation/controllers/condo_config_controller.dart';
 import '../../../maintenance/presentation/controllers/maintenance_controller.dart';
 import '../../../notifications/presentation/controllers/notification_controller.dart';
 
@@ -44,10 +46,29 @@ import '../../../../core/theme/app_palette.dart';
 
 import '../../../../core/theme/app_theme_tokens.dart';
 
-class DashboardPage extends GetView<DashboardController> {
-  const DashboardPage({required this.onSelectTab, super.key});
+List<CondoFeature> selectDashboardQuickActionFeatures(CondoConfig? config) {
+  if (config == null) return const <CondoFeature>[];
+  return CondoFeature.values
+      .where((feature) => feature != CondoFeature.dashboard)
+      .where(config.isFeatureEnabled)
+      .take(6)
+      .toList(growable: false);
+}
 
-  final ValueChanged<int> onSelectTab;
+class DashboardPage extends GetView<DashboardController> {
+  const DashboardPage({required this.onSelectFeature, super.key});
+
+  final ValueChanged<String> onSelectFeature;
+
+  CondoConfigController? get _configController =>
+      Get.isRegistered<CondoConfigController>()
+      ? Get.find<CondoConfigController>()
+      : null;
+
+  bool _enabled(CondoFeature feature) {
+    final config = _configController;
+    return config == null || config.isFeatureEnabled(feature);
+  }
 
   /// Reads the shared notification controller so the badge always matches the
   /// unread count instead of a hardcoded number.
@@ -93,6 +114,10 @@ class DashboardPage extends GetView<DashboardController> {
       final maintenanceController = Get.isRegistered<MaintenanceController>()
           ? Get.find<MaintenanceController>()
           : null;
+      final quickActionFeatures = selectDashboardQuickActionFeatures(
+        _configController?.config.value,
+      );
+      final hasQuickActions = quickActionFeatures.isNotEmpty;
       return SafeArea(
         child: Column(
           children: [
@@ -126,18 +151,25 @@ class DashboardPage extends GetView<DashboardController> {
                           : null,
                       onViewDetails: () => Get.toNamed(AppRoutes.unit),
                     ),
-                    22.h.heightBox(),
-                    _BalanceCard(
-                      paymentController: paymentController,
-                      onPayNow: () {
-                        vibrateNow();
-                        onSelectTab(1);
-                      },
-                    ),
-                    26.h.heightBox(),
-                    SectionHeader(title: 'Quick actions'),
-                    12.h.heightBox(),
-                    _QuickActions(onSelectTab: onSelectTab),
+                    if (_enabled(CondoFeature.payments)) ...[
+                      22.h.heightBox(),
+                      _BalanceCard(
+                        paymentController: paymentController,
+                        onPayNow: () {
+                          vibrateNow();
+                          onSelectFeature(CondoFeature.payments.wire);
+                        },
+                      ),
+                    ],
+                    if (hasQuickActions) ...[
+                      26.h.heightBox(),
+                      SectionHeader(title: 'Quick actions'),
+                      12.h.heightBox(),
+                      _QuickActions(
+                        onSelectFeature: onSelectFeature,
+                        enabledFeatures: quickActionFeatures,
+                      ),
+                    ],
                     10.h.heightBox(),
                     OutlinedButton.icon(
                       key: Key('dashboard-all-services'),
@@ -151,24 +183,28 @@ class DashboardPage extends GetView<DashboardController> {
                         minimumSize: Size.fromHeight(46),
                       ),
                     ),
-                    26.h.heightBox(),
-                    DashboardMaintenanceSection(
-                      onViewAll: () {
-                        vibrateNow();
-                        onSelectTab(2);
-                      },
-                    ),
-                    26.h.heightBox(),
-                    SectionHeader(
-                      title: 'Reservations',
-                      actionLabel: 'Book',
-                      onAction: () {
-                        vibrateNow();
-                        onSelectTab(3);
-                      },
-                    ),
-                    10.h.heightBox(),
-                    _ReservationsCard(reservations: data.reservations),
+                    if (_enabled(CondoFeature.maintenance)) ...[
+                      26.h.heightBox(),
+                      DashboardMaintenanceSection(
+                        onViewAll: () {
+                          vibrateNow();
+                          onSelectFeature(CondoFeature.maintenance.wire);
+                        },
+                      ),
+                    ],
+                    if (_enabled(CondoFeature.facilities)) ...[
+                      26.h.heightBox(),
+                      SectionHeader(
+                        title: 'Reservations',
+                        actionLabel: 'Book',
+                        onAction: () {
+                          vibrateNow();
+                          onSelectFeature(CondoFeature.facilities.wire);
+                        },
+                      ),
+                      10.h.heightBox(),
+                      _ReservationsCard(reservations: data.reservations),
+                    ],
                     26.h.heightBox(),
                     SectionHeader(
                       title: 'Latest announcements',
@@ -445,23 +481,23 @@ class _HomeCard extends StatelessWidget {
                       ),
                       6.w.widthBox(),
                       Flexible(
-                        child: 
-                        // Text(
-                        //   '${unitInfo?.parkingSlot ?? 'N/A'}',
-                        //   maxLines: 1,
-                        //   overflow: TextOverflow.ellipsis,
-                        //   style: TextStyle(
-                        //     color: tokens.brandOnDarkMuted,
-                        //     fontSize: 12.sp,
-                        //   ),
-                        // ),
-                        Text(
-                      '${(unitInfo?.myRole  ?? '').capitalizeFirst} · Parking ${unitInfo?.parkingSlot ?? 'N/A'}',
-                      style: TextStyle(
-                        color: tokens.brandOnDarkMuted,
-                        fontSize: 12.sp,
-                      ),
-                    ),
+                        child:
+                            // Text(
+                            //   '${unitInfo?.parkingSlot ?? 'N/A'}',
+                            //   maxLines: 1,
+                            //   overflow: TextOverflow.ellipsis,
+                            //   style: TextStyle(
+                            //     color: tokens.brandOnDarkMuted,
+                            //     fontSize: 12.sp,
+                            //   ),
+                            // ),
+                            Text(
+                              '${(unitInfo?.myRole ?? '').capitalizeFirst} · Parking ${unitInfo?.parkingSlot ?? 'N/A'}',
+                              style: TextStyle(
+                                color: tokens.brandOnDarkMuted,
+                                fontSize: 12.sp,
+                              ),
+                            ),
                       ),
                     ],
                   ),
@@ -681,102 +717,176 @@ class _DueDateChip extends StatelessWidget {
 }
 
 class _QuickActions extends StatelessWidget {
-  const _QuickActions({required this.onSelectTab});
+  const _QuickActions({
+    required this.onSelectFeature,
+    required this.enabledFeatures,
+  });
 
-  final ValueChanged<int> onSelectTab;
+  final ValueChanged<String> onSelectFeature;
+  final List<CondoFeature> enabledFeatures;
+  static const int _quickActionColumns = 2;
+  static const int _quickActionRows = 3;
+  static const int _quickActionSlots = _quickActionColumns * _quickActionRows;
 
-  /// Six shortcuts, the ones used most often. Every other module is one tap
-  /// away through "All resident services" below the grid.
+  /// Six fixed slots, three across and two down. Disabled features are
+  /// omitted and the remaining shortcuts keep their order. Every other module
+  /// is one tap away through "All resident services" below the grid.
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    final actions = <Widget>[];
+    for (final feature in enabledFeatures) {
+      final action = _actionFor(feature, tokens);
+      if (action != null) actions.add(action);
+    }
+    if (actions.isEmpty) return const SizedBox.shrink();
+    final slots = actions.take(_quickActionSlots).toList();
     return Column(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _QuickAction(
-                icon: Icons.payments_outlined,
-                label: 'Pay fees',
-                color: tokens.brandTint,
-                onTap: () {
-                  vibrateNow();
-                  onSelectTab(1);
-                },
-              ),
-            ),
-            10.w.widthBox(),
-            Expanded(
-              child: _QuickAction(
-                icon: Icons.handyman_outlined,
-                label: 'Maintenance',
-                color: tokens.brandTint,
-                onTap: () {
-                  vibrateNow();
-                  onSelectTab(2);
-                },
-              ),
-            ),
-          ],
-        ),
-        10.h.heightBox(),
-        Row(
-          children: [
-            Expanded(
-              child: _QuickAction(
-                icon: Icons.person_add_alt_1_outlined,
-                label: 'Register visitor',
-                color: tokens.warningTint,
-                onTap: () {
-                  vibrateNow();
-                  Get.toNamed(AppRoutes.visitors);
-                },
-              ),
-            ),
-            10.w.widthBox(),
-            Expanded(
-              child: _QuickAction(
-                icon: Icons.event_available_outlined,
-                label: 'Reserve',
-                color: tokens.infoTint,
-                onTap: () {
-                  vibrateNow();
-                  onSelectTab(3);
-                },
-              ),
-            ),
-          ],
-        ),
-        10.h.heightBox(),
-        Row(
-          children: [
-            Expanded(
-              child: _QuickAction(
-                icon: Icons.storefront_outlined,
-                label: 'Convenience Store',
-                color: tokens.brandTint,
-                onTap: () {
-                  vibrateNow();
-                  Get.toNamed(AppRoutes.store);
-                },
-              ),
-            ),
-            10.w.widthBox(),
-            Expanded(
-              child: _QuickAction(
-                icon: Icons.room_service_outlined,
-                label: 'Services',
-                color: tokens.infoTint,
-                onTap: () {
-                  vibrateNow();
-                  Get.toNamed(AppRoutes.services);
-                },
-              ),
-            ),
-          ],
-        ),
+        for (var row = 0; row < _quickActionRows; row++) ...[
+          if (row > 0) 10.h.heightBox(),
+          Row(
+            children: [
+              for (var column = 0; column < _quickActionColumns; column++) ...[
+                if (column > 0) 10.w.widthBox(),
+                Expanded(
+                  child: row * _quickActionColumns + column < slots.length
+                      ? slots[row * _quickActionColumns + column]
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ],
+          ),
+        ],
       ],
     );
+  }
+
+  Widget? _actionFor(CondoFeature feature, AppThemeTokens tokens) {
+    switch (feature) {
+      case CondoFeature.payments:
+        return _QuickAction(
+          icon: Icons.payments_outlined,
+          label: 'Pay fees',
+          color: tokens.brandTint,
+          onTap: () {
+            vibrateNow();
+            onSelectFeature(CondoFeature.payments.wire);
+          },
+        );
+      case CondoFeature.maintenance:
+        return _QuickAction(
+          icon: Icons.handyman_outlined,
+          label: 'Maintenance',
+          color: tokens.brandTint,
+          onTap: () {
+            vibrateNow();
+            onSelectFeature(CondoFeature.maintenance.wire);
+          },
+        );
+      case CondoFeature.condoServices:
+        return _QuickAction(
+          icon: Icons.room_service_outlined,
+          label: 'Services',
+          color: tokens.infoTint,
+          onTap: () {
+            vibrateNow();
+            Get.toNamed(AppRoutes.services);
+          },
+        );
+      case CondoFeature.facilities:
+        return _QuickAction(
+          icon: Icons.event_available_outlined,
+          label: 'Reserve',
+          color: tokens.infoTint,
+          onTap: () {
+            vibrateNow();
+            onSelectFeature(CondoFeature.facilities.wire);
+          },
+        );
+      case CondoFeature.complaints:
+        return _QuickAction(
+          icon: Icons.report_problem_outlined,
+          label: CondoFeature.complaints.label,
+          color: tokens.infoTint,
+          onTap: () {
+            vibrateNow();
+            Get.toNamed(AppRoutes.complaints);
+          },
+        );
+      case CondoFeature.visitors:
+        return _QuickAction(
+          icon: Icons.person_add_alt_1_outlined,
+          label: 'Register visitor',
+          color: tokens.warningTint,
+          onTap: () {
+            vibrateNow();
+            Get.toNamed(AppRoutes.visitors);
+          },
+        );
+      case CondoFeature.parking:
+        return _QuickAction(
+          icon: Icons.local_parking_outlined,
+          label: CondoFeature.parking.label,
+          color: tokens.brandTint,
+          onTap: () {
+            vibrateNow();
+            Get.toNamed(AppRoutes.parking);
+          },
+        );
+      case CondoFeature.rulesViolations:
+        return _QuickAction(
+          icon: Icons.gavel_outlined,
+          label: CondoFeature.rulesViolations.label,
+          color: tokens.warningTint,
+          onTap: () {
+            vibrateNow();
+            Get.toNamed(AppRoutes.rules);
+          },
+        );
+      case CondoFeature.violationAppeals:
+        return _QuickAction(
+          icon: Icons.rule_outlined,
+          label: CondoFeature.violationAppeals.label,
+          color: tokens.warningTint,
+          onTap: () {
+            vibrateNow();
+            Get.toNamed(AppRoutes.rules);
+          },
+        );
+      case CondoFeature.partialPayment:
+        return _QuickAction(
+          icon: Icons.pie_chart_outline,
+          label: CondoFeature.partialPayment.label,
+          color: tokens.infoTint,
+          onTap: () {
+            vibrateNow();
+            onSelectFeature(CondoFeature.payments.wire);
+          },
+        );
+      case CondoFeature.lease:
+        return _QuickAction(
+          icon: Icons.description_outlined,
+          label: CondoFeature.lease.label,
+          color: tokens.infoTint,
+          onTap: () {
+            vibrateNow();
+            Get.toNamed(AppRoutes.lease);
+          },
+        );
+      case CondoFeature.convenienceStore:
+        return _QuickAction(
+          icon: Icons.storefront_outlined,
+          label: 'Convenience Store',
+          color: tokens.brandTint,
+          onTap: () {
+            vibrateNow();
+            Get.toNamed(AppRoutes.store);
+          },
+        );
+      case CondoFeature.dashboard:
+        return null;
+    }
   }
 }
 
@@ -821,6 +931,8 @@ class _QuickAction extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w700),
               ),
             ),

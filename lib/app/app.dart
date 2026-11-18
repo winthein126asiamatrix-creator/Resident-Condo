@@ -18,6 +18,9 @@ import '../core/utils/super_print.dart';
 import '../features/appearance/presentation/bindings/appearance_binding.dart';
 import '../features/appearance/presentation/controllers/appearance_controller.dart';
 import '../features/auth/presentation/controllers/auth_controller.dart';
+import '../features/config/presentation/bindings/config_binding.dart';
+import '../features/config/presentation/controllers/app_config_controller.dart';
+import '../features/config/presentation/pages/app_config_gate.dart';
 import '../features/dashboard/presentation/controllers/dashboard_controller.dart';
 import '../features/dev_tools/presentation/widgets/api_log_floating_button.dart';
 import '../features/lease/presentation/controllers/lease_controller.dart';
@@ -70,6 +73,8 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
     // idempotent and the routes that need them run it again harmlessly.
     ApiBinding.register();
     AppearanceBinding().dependencies();
+    ConfigBinding().dependencies();
+    unawaited(Get.find<AppConfigController>().load());
     _appearance = Get.find<AppearanceController>();
 
     Get.put<AppLocaleController>(
@@ -248,21 +253,21 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
     }
     if (Get.currentRoute != AppRoutes.home) return;
     if (!Get.isRegistered<DashboardController>()) return;
-    final tab = Get.find<DashboardController>().selectedTab.value;
-    if (tab == 0) {
+    final feature = Get.find<DashboardController>().selectedFeature.value;
+    if (feature == 'dashboard') {
       await Get.find<RefreshRegistry>().refreshIfStale(
         DashboardController.screen,
       );
       return;
     }
-    if (tab == 1) {
+    if (feature == 'payments') {
       if (!Get.isRegistered<PaymentController>()) return;
       await Get.find<RefreshRegistry>().refreshIfStale(
         PaymentController.screen,
       );
       return;
     }
-    if (tab == 2) {
+    if (feature == 'maintenance') {
       if (!Get.isRegistered<MaintenanceController>()) return;
       await Get.find<RefreshRegistry>().refreshIfStale(
         MaintenanceController.screen,
@@ -299,7 +304,7 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
           darkTheme: _appearance.darkTheme,
           themeMode: _appearance.themeMode,
           builder: (context, child) {
-            final app = child ?? const SizedBox.shrink();
+            final app = AppConfigGate(child: child ?? const SizedBox.shrink());
             // The builder wraps the app's navigator, so one stack here is
             // above every route, dialog and bottom sheet. Production never
             // registers the store, so neither branch below adds anything.

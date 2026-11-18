@@ -31,19 +31,21 @@ class PaymentSummaryPage extends GetView<PaymentController> {
       appBar: AppDetailAppBar(
         title: 'Payment summary',
         actions: [
-          Obx(
-            () => TextButton(
+          Obx(() {
+            if (controller.requiresFullPayment) return const SizedBox.shrink();
+            return TextButton(
               onPressed: controller.selectedItems.isEmpty
                   ? null
                   : controller.clearSelection,
               child: Text('Clear'),
-            ),
-          ),
+            );
+          }),
         ],
       ),
       body: Obx(() {
         final invoice = controller.selectedInvoice.value;
         final tokens = AppThemeTokens.of(context);
+        final fullPayment = controller.requiresFullPayment;
         if (invoice == null) {
           return AppStateMessage(
             title: 'No invoice selected',
@@ -75,29 +77,36 @@ class PaymentSummaryPage extends GetView<PaymentController> {
                     ),
                   ),
                 ),
-                TextButton.icon(
-                  key: Key('select-all-unpaid'),
-                  onPressed: invoice.unpaidItems.isEmpty
-                      ? null
-                      : controller.selectAllUnpaidItems,
-                  icon: Icon(Icons.done_all_rounded, size: 18),
-                  label: Text('Select all unpaid'),
-                ),
+                if (!fullPayment)
+                  TextButton.icon(
+                    key: Key('select-all-unpaid'),
+                    onPressed: invoice.unpaidItems.isEmpty
+                        ? null
+                        : controller.selectAllUnpaidItems,
+                    icon: Icon(Icons.done_all_rounded, size: 18),
+                    label: Text('Select all unpaid'),
+                  ),
               ],
             ),
             4.h.heightBox(),
             Text(
-              'Pick one or several fees. Mandatory fees are always included '
-              'and settled items are locked.',
+              fullPayment
+                  ? 'All unpaid fees must be paid together for this condominium.'
+                  : 'Pick one or several fees. Mandatory fees are always '
+                        'included and settled items are locked.',
               style: TextStyle(color: tokens.muted, fontSize: 12.sp),
             ),
+            if (fullPayment) ...[
+              10.h.heightBox(),
+              _FullPaymentNotice(tokens: tokens),
+            ],
             10.h.heightBox(),
             for (final item in invoice.items)
               _SelectableItem(
                 key: Key('invoice-item-${item.key}'),
                 item: item,
                 selected: controller.isItemSelected(item),
-                onChanged: item.isPayable && !item.mustPaid
+                onChanged: item.isPayable && !item.mustPaid && !fullPayment
                     ? (_) => controller.toggleInvoiceItem(item)
                     : null,
                 currency: invoice.currency,
@@ -134,6 +143,40 @@ class PaymentSummaryPage extends GetView<PaymentController> {
   }
 }
 
+class _FullPaymentNotice extends StatelessWidget {
+  const _FullPaymentNotice({required this.tokens});
+
+  final AppThemeTokens tokens;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: tokens.brandTint,
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.lock_outline_rounded, size: 16, color: tokens.brand),
+          8.w.widthBox(),
+          Expanded(
+            child: Text(
+              'Partial payment is not enabled. Every fee is selected '
+              'automatically.',
+              style: TextStyle(
+                color: tokens.mutedStrong,
+                fontSize: 11.5.sp,
+                height: 1.3,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SummaryIntro extends StatelessWidget {
   const _SummaryIntro({required this.invoice});
   final Invoice invoice;
@@ -159,7 +202,7 @@ class _SummaryIntro extends StatelessWidget {
                 ),
               ),
               Text(
-                AppFormatters.money(invoice.remainingAmount,invoice.currency),
+                AppFormatters.money(invoice.remainingAmount, invoice.currency),
                 key: Key('payment-summary-remaining-amount'),
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
@@ -238,7 +281,9 @@ class _SelectableItem extends StatelessWidget {
               ),
               if (item.isMandatory) ...[_MandatoryBadge(), 8.w.widthBox()],
               Text(
-                item.isZero ? 'No charge' : AppFormatters.money(item.amount,currency),
+                item.isZero
+                    ? 'No charge'
+                    : AppFormatters.money(item.amount, currency),
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   color: item.isPaid ? tokens.muted : tokens.ink,
@@ -340,7 +385,11 @@ class _MandatoryWarning extends StatelessWidget {
 }
 
 class _TotalCard extends StatelessWidget {
-  const _TotalCard({required this.total, required this.count, required this.currency});
+  const _TotalCard({
+    required this.total,
+    required this.count,
+    required this.currency,
+  });
   final double total;
   final int count;
   final String currency;
@@ -376,7 +425,7 @@ class _TotalCard extends StatelessWidget {
           ),
           6.h.heightBox(),
           Text(
-            AppFormatters.money(total,currency),
+            AppFormatters.money(total, currency),
             style: TextStyle(
               color: tokens.surface,
               fontSize: 26.sp,

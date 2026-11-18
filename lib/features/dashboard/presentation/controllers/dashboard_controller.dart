@@ -17,6 +17,7 @@ class DashboardController extends GetxController {
   final isLoading = false.obs;
   final errorMessage = RxnString();
   final selectedTab = 0.obs;
+  final selectedFeature = 'dashboard'.obs;
 
   /// The connectivity layer's registry, when it is registered.
   ///
@@ -63,5 +64,9 @@ class DashboardController extends GetxController {
 
   void selectTab(int index) {
     selectedTab.value = index;
+  }
+
+  void selectFeature(String feature) {
+    selectedFeature.value = feature;
   }
 }

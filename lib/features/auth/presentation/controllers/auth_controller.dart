@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +11,7 @@ import '../../../../core/services/firebase_service.dart';
 import '../../../../core/utils/super_print.dart';
 import '../../../../core/widgets/authenticated_avatar.dart';
 import '../../../appearance/presentation/controllers/appearance_controller.dart';
+import '../../../config/presentation/controllers/condo_config_controller.dart';
 import '../../../notifications/data/datasources/notification_remote_data_source.dart';
 import '../../../notifications/presentation/controllers/notification_controller.dart';
 import '../../../payments/presentation/controllers/payment_controller.dart';
@@ -158,6 +159,9 @@ class AuthController extends GetxController {
     }
     if (Get.isRegistered<UnitController>()) {
       Get.find<UnitController>().clear();
+    }
+    if (Get.isRegistered<CondoConfigController>()) {
+      Get.find<CondoConfigController>().clear();
     }
     try {
       final session = await useCases.signIn(
@@ -466,6 +470,9 @@ class AuthController extends GetxController {
       if (Get.isRegistered<PaymentController>()) {
         await Get.find<PaymentController>().clear();
       }
+      if (Get.isRegistered<CondoConfigController>()) {
+        Get.find<CondoConfigController>().clear();
+      }
       invalidateAuthenticatedAvatarCache();
       await _resetAppearance();
     }
@@ -589,7 +596,6 @@ class AuthController extends GetxController {
       error is ApiException &&
       (error.isRetryable || error.kind == ApiFailureKind.server);
 
-  
   Future<void> _endRejectedSession(int epoch) async {
     if (epoch != _sessionEpoch) {
       return;
@@ -624,6 +630,13 @@ class AuthController extends GetxController {
         );
         if (Get.isRegistered<UnitController>()) {
           unawaited(Get.find<UnitController>().prefetch());
+        }
+        if (Get.isRegistered<CondoConfigController>()) {
+          unawaited(
+            Get.find<CondoConfigController>().loadForSession(
+              refresh: !session.unverified,
+            ),
+          );
         }
       } else if (!session.unverified) {
         // A transient restore is not proof that the current session is invalid.

@@ -9,6 +9,9 @@ import '../../features/complaints/domain/entities/complaint.dart';
 import '../../features/complaints/presentation/pages/complaint_detail_page.dart';
 import '../../features/complaints/presentation/pages/complaints_page.dart';
 import '../../features/complaints/presentation/pages/create_complaint_page.dart';
+import '../../features/config/domain/entities/condo_config.dart';
+import '../../features/config/presentation/middlewares/feature_gate_middleware.dart';
+import '../../features/config/presentation/pages/feature_unavailable_page.dart';
 import '../../features/dashboard/presentation/pages/main_shell_page.dart';
 import '../../features/dev_tools/presentation/pages/api_log_viewer_page.dart';
 import '../../features/facilities/domain/entities/facility.dart';
@@ -101,10 +104,12 @@ abstract final class AppPages {
     GetPage<dynamic>(
       name: AppRoutes.invoiceList,
       page: () => const InvoiceListPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.payments)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.invoiceSelection,
       page: () => const InvoiceSelectionPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.payments)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.paymentDetail,
@@ -142,6 +147,7 @@ abstract final class AppPages {
     GetPage<dynamic>(
       name: AppRoutes.paymentHistory,
       page: () => PaymentHistoryPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.payments)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.paymentDetails,
@@ -159,114 +165,161 @@ abstract final class AppPages {
       name: AppRoutes.maintenanceDetail,
       page: () =>
           MaintenanceDetailPage(request: Get.arguments as MaintenanceRequest),
+      middlewares: [FeatureGateMiddleware(CondoFeature.maintenance)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.maintenanceCreate,
       page: () => CreateMaintenanceRequestPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.maintenance)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.facilityDetail,
       page: () => FacilityDetailPage(facility: Get.arguments as Facility),
+      middlewares: [FeatureGateMiddleware(CondoFeature.facilities)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.facilityReserve,
       page: () => FacilityReservationPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.facilities)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.bookingConfirmed,
       page: () => BookingConfirmedPage(
         reservation: Get.arguments as FacilityReservation,
       ),
+      middlewares: [FeatureGateMiddleware(CondoFeature.facilities)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.myReservations,
       page: () => MyReservationsPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.facilities)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.reservationDetail,
       page: () => ReservationDetailPage(
         reservation: Get.arguments as FacilityReservation,
       ),
+      middlewares: [FeatureGateMiddleware(CondoFeature.facilities)],
     ),
-    GetPage<dynamic>(name: AppRoutes.lease, page: () => LeasePage()),
+    GetPage<dynamic>(
+      name: AppRoutes.lease,
+      page: () => LeasePage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.lease)],
+    ),
     GetPage<dynamic>(
       name: AppRoutes.leaseRenewal,
       page: () => LeaseRenewalPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.lease)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.leaseRenewalSent,
       page: () => LeaseRenewalSentPage(renewal: Get.arguments as LeaseRenewal),
+      middlewares: [FeatureGateMiddleware(CondoFeature.lease)],
     ),
-    GetPage<dynamic>(name: AppRoutes.visitors, page: () => VisitorsPage()),
+    GetPage<dynamic>(
+      name: AppRoutes.visitors,
+      page: () => VisitorsPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.visitors)],
+    ),
     GetPage<dynamic>(
       name: AppRoutes.visitorRegister,
       page: () => RegisterVisitorPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.visitors)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.visitorPass,
       page: () => VisitorPassPage(visitor: Get.arguments as Visitor),
+      middlewares: [FeatureGateMiddleware(CondoFeature.visitors)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.visitorVerify,
       page: () => VisitorVerifyPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.visitors)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.services,
       page: () => ServicesPage(),
       binding: CondoServiceBinding(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.condoServices)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.serviceRequest,
       page: () => ServiceRequestPage(),
       binding: CondoServiceBinding(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.condoServices)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.serviceRequestDetail,
       page: () =>
           ServiceRequestDetailPage(request: Get.arguments as ServiceRequest),
+      middlewares: [FeatureGateMiddleware(CondoFeature.condoServices)],
     ),
-    GetPage<dynamic>(name: AppRoutes.parking, page: () => ParkingPage()),
-    GetPage<dynamic>(name: AppRoutes.complaints, page: () => ComplaintsPage()),
+    GetPage<dynamic>(
+      name: AppRoutes.parking,
+      page: () => ParkingPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.parking)],
+    ),
+    GetPage<dynamic>(
+      name: AppRoutes.complaints,
+      page: () => ComplaintsPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.complaints)],
+    ),
     GetPage<dynamic>(
       name: AppRoutes.complaintCreate,
       page: () => CreateComplaintPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.complaints)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.complaintDetail,
       page: () => ComplaintDetailPage(complaint: Get.arguments as Complaint),
+      middlewares: [FeatureGateMiddleware(CondoFeature.complaints)],
     ),
-    GetPage<dynamic>(name: AppRoutes.rules, page: () => RulesPage()),
+    GetPage<dynamic>(
+      name: AppRoutes.rules,
+      page: () => RulesPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.rulesViolations)],
+    ),
     GetPage<dynamic>(
       name: AppRoutes.ruleDetail,
       page: () => RuleDetailPage(rule: Get.arguments as CommunityRule),
+      middlewares: [FeatureGateMiddleware(CondoFeature.rulesViolations)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.violationDetail,
       page: () => ViolationDetailPage(violation: Get.arguments as Violation),
+      middlewares: [FeatureGateMiddleware(CondoFeature.rulesViolations)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.violationAppeal,
       page: () => AppealViolationPage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.violationAppeals)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.store,
       page: () => StorePage(),
       binding: StoreBinding(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.convenienceStore)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.storeCheckout,
       page: () => StoreCheckoutPage(),
       binding: StoreBinding(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.convenienceStore)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.storeOrderDetail,
       page: () => StoreOrderDetailPage(order: Get.arguments as StoreOrder),
       binding: StoreBinding(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.convenienceStore)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.appearance,
       page: () => AppearancePage(),
       binding: AppearanceBinding(),
+    ),
+    GetPage<dynamic>(
+      name: AppRoutes.featureUnavailable,
+      page: () => const FeatureUnavailablePage(),
     ),
     GetPage<dynamic>(
       name: AppRoutes.sample,

@@ -21,12 +21,15 @@ import '../../../../core/widgets/app_dialogs.dart';
 
 import '../../../../core/widgets/app_form_field.dart';
 
-
 import '../../../../core/widgets/authenticated_avatar.dart';
 
 import '../../../auth/data/models/auth_user.dart';
 
 import '../../../auth/presentation/controllers/auth_controller.dart';
+
+import '../../../config/domain/entities/condo_config.dart';
+
+import '../../../config/presentation/controllers/condo_config_controller.dart';
 
 import '../../../dashboard/presentation/controllers/dashboard_controller.dart';
 
@@ -88,6 +91,11 @@ class ProfilePage extends GetView<ProfileController> {
           final hasProfile = controller.user != null;
           final user = controller.user ?? AuthUser.empty;
           final isRetrying = auth?.isInitializingSession.value ?? false;
+          final config = Get.isRegistered<CondoConfigController>()
+              ? Get.find<CondoConfigController>()
+              : null;
+          bool enabled(CondoFeature feature) =>
+              config == null || config.isFeatureEnabled(feature);
 
           return RefreshIndicator(
             onRefresh: controller.refreshProfile,
@@ -106,10 +114,15 @@ class ProfilePage extends GetView<ProfileController> {
                 _ProfileHero(
                   user: user,
                   unitLabel: controller.unitLabel,
-                  onEdit: hasProfile ? () => _editProfile(context, user) : () {},
-                  isUploadingAvatar: hasProfile ? controller.isUploadingAvatar : false,
-                  onChangeAvatar:
-                      hasProfile ? () => _changeAvatar(context) : () {},
+                  onEdit: hasProfile
+                      ? () => _editProfile(context, user)
+                      : () {},
+                  isUploadingAvatar: hasProfile
+                      ? controller.isUploadingAvatar
+                      : false,
+                  onChangeAvatar: hasProfile
+                      ? () => _changeAvatar(context)
+                      : () {},
                 ),
                 AppSpacing.sectionGap.heightBox(),
                 _SectionCard(
@@ -279,75 +292,48 @@ class ProfilePage extends GetView<ProfileController> {
                         Get.toNamed(AppRoutes.more);
                       },
                     ),
-                    const _RowDivider(),
-                    _ActionRow(
-                      icon: Icons.description_outlined,
-                      label: 'Rental & lease',
-
-                      onTap: () {
-                        vibrateNow();
-                        Get.toNamed(AppRoutes.lease);
-                      },
-                    ),
-                    const _RowDivider(),
-                    _ActionRow(
-                      icon: Icons.people_alt_outlined,
-                      label: 'Visitors',
-
-                      onTap: () {
-                        vibrateNow();
-                        Get.toNamed(AppRoutes.visitors);
-                      },
-                    ),
-                    const _RowDivider(),
-                    _ActionRow(
-                      icon: Icons.room_service_outlined,
-                      label: 'Condo services',
-
-                      onTap: () {
-                        vibrateNow();
-                        Get.toNamed(AppRoutes.services);
-                      },
-                    ),
-                    const _RowDivider(),
-                    _ActionRow(
-                      icon: Icons.storefront_outlined,
-                      label: 'Convenience Store',
-
-                      onTap: () {
-                        vibrateNow();
-                        Get.toNamed(AppRoutes.store);
-                      },
-                    ),
-                    const _RowDivider(),
-                    _ActionRow(
-                      icon: Icons.directions_car_outlined,
-                      label: 'Parking',
-
-                      onTap: () {
-                        vibrateNow();
-                        Get.toNamed(AppRoutes.parking);
-                      },
-                    ),
-                    const _RowDivider(),
-                    _ActionRow(
-                      icon: Icons.support_agent_outlined,
-                      label: 'Complaints',
-                      onTap: () {
-                        vibrateNow();
-                        Get.toNamed(AppRoutes.complaints);
-                      },
-                    ),
-                    const _RowDivider(),
-                    _ActionRow(
-                      icon: Icons.gavel_outlined,
-                      label: 'Rules & violations',
-
-                      onTap: () {
-                        vibrateNow();
-                        Get.toNamed(AppRoutes.rules);
-                      },
-                    ),
+                    if (enabled(CondoFeature.lease))
+                      _ServiceRow(
+                        icon: Icons.description_outlined,
+                        label: 'Rental & lease',
+                        route: AppRoutes.lease,
+                      ),
+                    if (enabled(CondoFeature.visitors))
+                      _ServiceRow(
+                        icon: Icons.people_alt_outlined,
+                        label: 'Visitors',
+                        route: AppRoutes.visitors,
+                      ),
+                    if (enabled(CondoFeature.condoServices))
+                      _ServiceRow(
+                        icon: Icons.room_service_outlined,
+                        label: 'Condo services',
+                        route: AppRoutes.services,
+                      ),
+                    if (enabled(CondoFeature.convenienceStore))
+                      _ServiceRow(
+                        icon: Icons.storefront_outlined,
+                        label: 'Convenience Store',
+                        route: AppRoutes.store,
+                      ),
+                    if (enabled(CondoFeature.parking))
+                      _ServiceRow(
+                        icon: Icons.directions_car_outlined,
+                        label: 'Parking',
+                        route: AppRoutes.parking,
+                      ),
+                    if (enabled(CondoFeature.complaints))
+                      _ServiceRow(
+                        icon: Icons.support_agent_outlined,
+                        label: 'Complaints',
+                        route: AppRoutes.complaints,
+                      ),
+                    if (enabled(CondoFeature.rulesViolations))
+                      _ServiceRow(
+                        icon: Icons.gavel_outlined,
+                        label: 'Rules & violations',
+                        route: AppRoutes.rules,
+                      ),
                   ],
                 ),
                 AppSpacing.sectionGap.heightBox(),
@@ -358,12 +344,12 @@ class ProfilePage extends GetView<ProfileController> {
                     _ActionRow(
                       icon: Icons.edit_outlined,
                       label: 'Edit profile',
-                       onTap: () {
-                         vibrateNow();
-                         if (hasProfile) {
-                           _editProfile(context, user);
-                         }
-                       },
+                      onTap: () {
+                        vibrateNow();
+                        if (hasProfile) {
+                          _editProfile(context, user);
+                        }
+                      },
                     ),
                     const _RowDivider(),
                     _ActionRow(
@@ -646,7 +632,9 @@ class ProfilePage extends GetView<ProfileController> {
     // later request can reuse the old credentials.
     await controller.signOut();
     if (Get.isRegistered<DashboardController>()) {
-      Get.find<DashboardController>().selectedTab.value = 0;
+      final dashboard = Get.find<DashboardController>();
+      dashboard.selectedTab.value = 0;
+      dashboard.selectedFeature.value = 'dashboard';
     }
     Get.offAllNamed(AppRoutes.login);
   }
@@ -913,6 +901,35 @@ class _SectionCard extends StatelessWidget {
 }
 
 /// A hairline between the rows of a card, inset so it starts after the icon.
+class _ServiceRow extends StatelessWidget {
+  const _ServiceRow({
+    required this.icon,
+    required this.label,
+    required this.route,
+  });
+
+  final IconData icon;
+  final String label;
+  final String route;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const _RowDivider(),
+        _ActionRow(
+          icon: icon,
+          label: label,
+          onTap: () {
+            vibrateNow();
+            Get.toNamed(route);
+          },
+        ),
+      ],
+    );
+  }
+}
+
 class _RowDivider extends StatelessWidget {
   const _RowDivider();
 

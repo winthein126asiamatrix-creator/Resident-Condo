@@ -202,6 +202,10 @@ class _FakeCache extends ApiCacheStore {
   }
 
   @override
+  Future<void> clearAccountData() async =>
+      entries.removeWhere((_, entry) => entry.accountKey != null);
+
+  @override
   Future<void> clearAll() async => entries.clear();
 }
 

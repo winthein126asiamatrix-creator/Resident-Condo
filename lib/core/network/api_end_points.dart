@@ -1,4 +1,9 @@
 abstract final class ApiEndPoints {
+  // --- Configuration -------------------------------------------------------
+
+  static const String appConfig = '/app/config';
+  static const String condoConfig = '/condo/config';
+
   // --- Session -------------------------------------------------------------
 
   static const String login = '/auth/login';
@@ -56,22 +61,17 @@ abstract final class ApiEndPoints {
   /// One invoice, with its line items.
   static String invoice(Object reference) => '$invoices/$reference';
 
-
-
   // --- Maintenance ---------------------------------------------------------
 
   static const String maintenanceRequests = '/maintenance/requests';
   static const String maintenanceCategories = '/maintenance/categories';
 
-  static String maintenanceRequest(Object id) =>
-      '/maintenance/requests/$id';
+  static String maintenanceRequest(Object id) => '/maintenance/requests/$id';
 
   static String maintenancePhotos(Object id) =>
       '/maintenance/requests/$id/photos';
 
- 
   static const String maintenanceSummary = '/maintenance/summary';
-
 
   static String maintenanceCancel(Object id) =>
       '/maintenance/requests/$id/cancel';

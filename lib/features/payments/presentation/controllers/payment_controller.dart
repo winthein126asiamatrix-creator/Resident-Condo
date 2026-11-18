@@ -12,6 +12,7 @@ import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/connectivity_service.dart';
 import '../../../../core/network/refresh_registry.dart';
 import '../../../../core/utils/app_dates.dart';
+import '../../../config/presentation/controllers/condo_config_controller.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../domain/entities/invoice.dart';
 import '../../domain/entities/invoice_detail.dart';
@@ -1748,6 +1749,16 @@ class PaymentController extends GetxController {
 
   // -------------------------------------------------------------- selection
 
+  /// True when the condominium config disables partial payment.
+  ///
+  /// While the config is unresolved the previous behaviour is kept.
+  bool get requiresFullPayment {
+    if (!Get.isRegistered<CondoConfigController>()) return false;
+    final config = Get.find<CondoConfigController>();
+    if (config.config.value == null) return false;
+    return !config.partialPaymentEnabled;
+  }
+
   /// Selecting an invoice clears the selection: nothing optional is auto
   /// selected so "Pay now" can never settle the whole balance by accident.
   /// Mandatory charges are the exception, they are always pre-selected.
@@ -1759,7 +1770,9 @@ class PaymentController extends GetxController {
     selectedPaymentMethodKey.value = null;
     selectedItems
       ..clear()
-      ..addAll(invoice.mandatoryItems);
+      ..addAll(
+        requiresFullPayment ? invoice.unpaidItems : invoice.mandatoryItems,
+      );
   }
 
   /// Clears the optional items. Mandatory charges stay selected.
@@ -1771,7 +1784,9 @@ class PaymentController extends GetxController {
     }
     selectedItems
       ..clear()
-      ..addAll(invoice.mandatoryItems);
+      ..addAll(
+        requiresFullPayment ? invoice.unpaidItems : invoice.mandatoryItems,
+      );
   }
 
   /// Explicit user action, used by the "Select all unpaid" shortcut.
@@ -1790,6 +1805,9 @@ class PaymentController extends GetxController {
   /// Paid and zero-amount items can never be selected again, and mandatory
   /// charges can never be deselected.
   void toggleInvoiceItem(InvoiceItem item) {
+    if (requiresFullPayment) {
+      return;
+    }
     if (!item.isPayable || item.mustPaid) {
       return;
     }

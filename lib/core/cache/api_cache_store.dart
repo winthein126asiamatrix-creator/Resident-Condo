@@ -68,6 +68,12 @@ class ApiCacheStore {
     )..where((t) => t.cacheKey.like('$prefix%'))).go();
   }
 
+  Future<void> clearAccountData() async {
+    await (_database.delete(
+      _database.cacheEntries,
+    )..where((t) => t.accountKey.isNotNull())).go();
+  }
+
   Future<void> clearAll() async {
     await _database.delete(_database.cacheEntries).go();
   }

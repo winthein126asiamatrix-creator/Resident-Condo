@@ -20,6 +20,10 @@ import '../../../../core/widgets/app_status_pill.dart';
 
 import '../../../complaints/presentation/controllers/complaint_controller.dart';
 
+import '../../../config/domain/entities/condo_config.dart';
+
+import '../../../config/presentation/controllers/condo_config_controller.dart';
+
 import '../../../lease/domain/entities/lease.dart';
 
 import '../../../lease/presentation/controllers/lease_controller.dart';
@@ -44,6 +48,11 @@ class MoreServicesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final session = Get.find<SessionController>();
     final tokens = AppThemeTokens.of(context);
+    final config = Get.isRegistered<CondoConfigController>()
+        ? Get.find<CondoConfigController>()
+        : null;
+    bool enabled(CondoFeature feature) =>
+        config == null || config.isFeatureEnabled(feature);
     return Scaffold(
       appBar: AppDetailAppBar(title: 'More services'),
       body: SafeArea(
@@ -63,67 +72,83 @@ class MoreServicesPage extends StatelessWidget {
                     'Some screens change with your role.',
               ),
               20.h.heightBox(),
-              AppSectionHeader(title: 'Home & living'),
-              10.h.heightBox(),
-              _ModuleTile(
-                route: AppRoutes.lease,
-                icon: Icons.description_rounded,
-                color: AppPalette.info,
-                title: 'Rental & lease',
-                subtitle: 'Term progress, expiry and renewal',
-                badge: _leaseSubtitle(),
-              ),
-              _ModuleTile(
-                route: AppRoutes.visitors,
-                icon: Icons.people_alt_rounded,
-                color: tokens.brand,
-                title: 'Visitors',
-                subtitle: 'Access codes, check-in and check-out',
-                badge: _visitorBadge(),
-              ),
-              _ModuleTile(
-                route: AppRoutes.parking,
-                icon: Icons.directions_car_rounded,
-                color: AppPalette.warning,
-                title: 'Parking',
-                subtitle: 'Your bay, access log and guest parking',
-                badge: _parkingBadge(),
-              ),
-              18.h.heightBox(),
-              AppSectionHeader(title: 'Building services'),
-              10.h.heightBox(),
-              _ModuleTile(
-                route: AppRoutes.store,
-                icon: Icons.storefront_rounded,
-                color: tokens.brand,
-                title: 'Convenience Store',
-                subtitle: 'Groceries, snacks and drinks to your door',
-              ),
-              _ModuleTile(
-                route: AppRoutes.services,
-                icon: Icons.room_service_rounded,
-                color: tokens.brand,
-                title: 'Condo services',
-                subtitle: 'Cleaning, laundry, pest control and more',
-                badge: _serviceBadge(),
-              ),
-              _ModuleTile(
-                route: AppRoutes.complaints,
-                icon: Icons.support_agent_rounded,
-                color: tokens.brand,
-                title: 'Complaints',
-                subtitle: 'Report an issue to the community team',
-                badge: _complaintBadge(),
-              ),
-              _ModuleTile(
-                route: AppRoutes.rules,
-                icon: Icons.gavel_rounded,
-                color: AppPalette.danger,
-                title: 'Rules & violations',
-                subtitle: 'Community rules, fines and appeals',
-                badge: _violationBadge(),
-              ),
-              18.h.heightBox(),
+              if (enabled(CondoFeature.lease) ||
+                  enabled(CondoFeature.visitors) ||
+                  enabled(CondoFeature.parking)) ...[
+                AppSectionHeader(title: 'Home & living'),
+                10.h.heightBox(),
+                if (enabled(CondoFeature.lease))
+                  _ModuleTile(
+                    route: AppRoutes.lease,
+                    icon: Icons.description_rounded,
+                    color: AppPalette.info,
+                    title: 'Rental & lease',
+                    subtitle: 'Term progress, expiry and renewal',
+                    badge: _leaseSubtitle(),
+                  ),
+                if (enabled(CondoFeature.visitors))
+                  _ModuleTile(
+                    route: AppRoutes.visitors,
+                    icon: Icons.people_alt_rounded,
+                    color: tokens.brand,
+                    title: 'Visitors',
+                    subtitle: 'Access codes, check-in and check-out',
+                    badge: _visitorBadge(),
+                  ),
+                if (enabled(CondoFeature.parking))
+                  _ModuleTile(
+                    route: AppRoutes.parking,
+                    icon: Icons.directions_car_rounded,
+                    color: AppPalette.warning,
+                    title: 'Parking',
+                    subtitle: 'Your bay, access log and guest parking',
+                    badge: _parkingBadge(),
+                  ),
+                18.h.heightBox(),
+              ],
+              if (enabled(CondoFeature.convenienceStore) ||
+                  enabled(CondoFeature.condoServices) ||
+                  enabled(CondoFeature.complaints) ||
+                  enabled(CondoFeature.rulesViolations)) ...[
+                AppSectionHeader(title: 'Building services'),
+                10.h.heightBox(),
+                if (enabled(CondoFeature.convenienceStore))
+                  _ModuleTile(
+                    route: AppRoutes.store,
+                    icon: Icons.storefront_rounded,
+                    color: tokens.brand,
+                    title: 'Convenience Store',
+                    subtitle: 'Groceries, snacks and drinks to your door',
+                  ),
+                if (enabled(CondoFeature.condoServices))
+                  _ModuleTile(
+                    route: AppRoutes.services,
+                    icon: Icons.room_service_rounded,
+                    color: tokens.brand,
+                    title: 'Condo services',
+                    subtitle: 'Cleaning, laundry, pest control and more',
+                    badge: _serviceBadge(),
+                  ),
+                if (enabled(CondoFeature.complaints))
+                  _ModuleTile(
+                    route: AppRoutes.complaints,
+                    icon: Icons.support_agent_rounded,
+                    color: tokens.brand,
+                    title: 'Complaints',
+                    subtitle: 'Report an issue to the community team',
+                    badge: _complaintBadge(),
+                  ),
+                if (enabled(CondoFeature.rulesViolations))
+                  _ModuleTile(
+                    route: AppRoutes.rules,
+                    icon: Icons.gavel_rounded,
+                    color: AppPalette.danger,
+                    title: 'Rules & violations',
+                    subtitle: 'Community rules, fines and appeals',
+                    badge: _violationBadge(),
+                  ),
+                18.h.heightBox(),
+              ],
               AppSectionHeader(title: 'Account'),
               10.h.heightBox(),
               _ModuleTile(

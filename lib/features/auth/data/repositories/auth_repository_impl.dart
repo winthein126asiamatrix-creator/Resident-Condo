@@ -63,7 +63,7 @@ class AuthRepositoryImpl implements AuthRepository {
     // the previous one is now stale and must not be shared with it.
     _startNewSession();
     // A new session must not inherit profile data from the previous account.
-    await _cache?.clearAll();
+    await _cache?.clearAccountData();
     final result = await _remote.signIn(request);
     await _switchable?.useSession(persistent: request.rememberMe);
 
@@ -213,7 +213,7 @@ class AuthRepositoryImpl implements AuthRepository {
     await _tokens.clearTokens();
     await _local.signOut();
     // Profile cache is private to the signed-out account and must not survive.
-    await _cache?.clearAll();
+    await _cache?.clearAccountData();
   }
 
   @override
