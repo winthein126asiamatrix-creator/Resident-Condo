@@ -108,7 +108,7 @@ class FeatureConfig {
         // feature: feature == CondoFeature.condoServices
         //   ? false
         //   : _bool(json[feature.wire]),
-       feature: _bool(json[feature.wire]),
+        feature: _bool(json[feature.wire]),
     });
   }
 
@@ -253,6 +253,78 @@ class MaintenanceBookingConfig {
     'min_advance_hours': minAdvanceHours,
     'cancel_before_hours': cancelBeforeHours,
   };
+
+  static DateTime? parseAppointment(String? date, String? time) {
+    if (date == null || time == null) return null;
+    final dateParts = date.split('-');
+    final timeParts = time.split(':');
+    if (dateParts.length != 3 || timeParts.length < 2) return null;
+    final year = int.tryParse(dateParts[0]);
+    final month = int.tryParse(dateParts[1]);
+    final day = int.tryParse(dateParts[2]);
+    final hour = int.tryParse(timeParts[0]);
+    final minute = int.tryParse(timeParts[1]);
+    if (year == null ||
+        month == null ||
+        day == null ||
+        hour == null ||
+        minute == null) {
+      return null;
+    }
+    if (month < 1 ||
+        month > 12 ||
+        day < 1 ||
+        day > 31 ||
+        hour < 0 ||
+        hour > 23 ||
+        minute < 0 ||
+        minute > 59) {
+      return null;
+    }
+    final value = DateTime(year, month, day, hour, minute);
+    if (value.year != year || value.month != month || value.day != day) {
+      return null;
+    }
+    return value;
+  }
+
+  DateTime? latestSelectableDate(DateTime now) {
+    final days = maxAdvanceDays;
+    if (days == null || days < 0) return null;
+    return DateTime(now.year, now.month, now.day).add(Duration(days: days));
+  }
+
+  DateTime? earliestAppointment(DateTime now) {
+    final hours = minAdvanceHours;
+    if (hours == null || hours < 0) return null;
+    return now.add(Duration(hours: hours));
+  }
+
+  String? validateAppointment(DateTime now, DateTime appointment) {
+    final latestDate = latestSelectableDate(now);
+    if (latestDate != null) {
+      final appointmentDay = DateTime(
+        appointment.year,
+        appointment.month,
+        appointment.day,
+      );
+      if (appointmentDay.isAfter(latestDate)) {
+        return 'Choose a date no more than $maxAdvanceDays days from today.';
+      }
+    }
+    final earliest = earliestAppointment(now);
+    if (earliest != null && appointment.isBefore(earliest)) {
+      return 'Choose a time at least $minAdvanceHours hours from now.';
+    }
+    return null;
+  }
+
+  bool canCancelAppointment(DateTime now, DateTime appointment) {
+    final hours = cancelBeforeHours;
+    if (hours == null || hours < 0) return true;
+    if (!appointment.isAfter(now)) return false;
+    return !appointment.isBefore(now.add(Duration(hours: hours)));
+  }
 }
 
 class FacilitiesBookingConfig {

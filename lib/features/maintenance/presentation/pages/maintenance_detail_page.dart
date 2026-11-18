@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -25,6 +27,7 @@ class MaintenanceDetailPage extends StatefulWidget {
 
 class _MaintenanceDetailPageState extends State<MaintenanceDetailPage> {
   MaintenanceController get controller => Get.find<MaintenanceController>();
+  Timer? _cancelEligibilityTimer;
 
   @override
   void initState() {
@@ -33,6 +36,15 @@ class _MaintenanceDetailPageState extends State<MaintenanceDetailPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.loadSelectedRequestDetail();
     });
+    _cancelEligibilityTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _cancelEligibilityTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -141,7 +153,7 @@ class _MaintenanceDetailPageState extends State<MaintenanceDetailPage> {
             ),
             20.h.heightBox(),
             _StatusProgress(request: current),
-            if (current.canCancel) ...[
+            if (controller.canCancelRequest(current)) ...[
               20.h.heightBox(),
               AppPrimaryAction(
                 key: Key('cancel-maintenance-request'),
@@ -167,6 +179,14 @@ class _MaintenanceDetailPageState extends State<MaintenanceDetailPage> {
 
   Future<void> _cancelRequest(MaintenanceRequest request) async {
     if (controller.isCancelling.value) return;
+    if (!controller.canCancelRequest(request)) {
+      Get.snackbar(
+        'Cannot cancel',
+        'This request can no longer be cancelled.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
     final reason = await showDialog<String>(
       context: context,
       builder: (dialogContext) =>

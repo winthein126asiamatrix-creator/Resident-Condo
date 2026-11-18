@@ -19,6 +19,9 @@ import '../../../../core/utils/app_dates.dart';
 
 import '../../../../core/utils/app_validators.dart';
 
+import '../../../config/domain/entities/condo_config.dart';
+import '../../../config/presentation/controllers/condo_config_controller.dart';
+
 import '../../../../core/widgets/app_detail_app_bar.dart';
 
 import '../../../../core/widgets/app_dialogs.dart';
@@ -72,6 +75,22 @@ class _CreateMaintenanceRequestPageState
   }
 
   MaintenanceController get controller => Get.find<MaintenanceController>();
+
+  MaintenanceBookingConfig? get _bookingConfig =>
+      Get.isRegistered<CondoConfigController>()
+      ? Get.find<CondoConfigController>().maintenanceBooking
+      : null;
+
+  @override
+  void initState() {
+    super.initState();
+    final config = _bookingConfig;
+    if (config == null) return;
+    final latest = config.latestSelectableDate(DateTime.now());
+    if (latest != null && _preferredDate.isAfter(latest)) {
+      _preferredDate = latest;
+    }
+  }
 
   @override
   void dispose() {
@@ -353,26 +372,74 @@ class _CreateMaintenanceRequestPageState
     setState(() => _photos.removeAt(index));
   }
 
+  DateTime _appointment(DateTime date, TimeOfDay time) =>
+      DateTime(date.year, date.month, date.day, time.hour, time.minute);
+
   Future<void> _pickDate() async {
-    final today = DateTime.now();
-    final firstDate = DateTime(today.year, today.month, today.day);
+    final now = DateTime.now();
+    final firstDate = DateTime(now.year, now.month, now.day);
+    final config = _bookingConfig;
+    final configuredLastDate = config?.latestSelectableDate(now);
+    final lastDate =
+        configuredLastDate != null && configuredLastDate.isBefore(firstDate)
+        ? firstDate
+        : configuredLastDate ?? DateTime(now.year + 1, now.month, now.day);
+    final initialDate = _preferredDate.isBefore(firstDate)
+        ? firstDate
+        : _preferredDate.isAfter(lastDate)
+        ? lastDate
+        : _preferredDate;
     final selected = await showDatePicker(
       context: context,
-      initialDate: _preferredDate.isBefore(firstDate)
-          ? firstDate
-          : _preferredDate,
+      initialDate: initialDate,
       firstDate: firstDate,
-      lastDate: DateTime(today.year + 1, today.month, today.day),
+      lastDate: lastDate,
     );
-    if (selected != null) setState(() => _preferredDate = selected);
+    if (selected == null) return;
+    final error = config?.validateAppointment(
+      DateTime.now(),
+      _appointment(selected, _preferredTime),
+    );
+    if (error != null) {
+      Get.snackbar(
+        'Unavailable date',
+        error,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    setState(() => _preferredDate = selected);
   }
 
   Future<void> _pickTime() async {
+    final now = DateTime.now();
+    final config = _bookingConfig;
+    final earliest = config?.earliestAppointment(now);
+    var initialTime = _preferredTime;
+    if (earliest != null &&
+        _appointment(_preferredDate, _preferredTime).isBefore(earliest)) {
+      initialTime = TimeOfDay.fromDateTime(
+        earliest.add(const Duration(minutes: 1)),
+      );
+    }
     final selected = await showTimePicker(
       context: context,
-      initialTime: _preferredTime,
+      initialTime: initialTime,
     );
-    if (selected != null) setState(() => _preferredTime = selected);
+    if (selected == null) return;
+    final error = config?.validateAppointment(
+      DateTime.now(),
+      _appointment(_preferredDate, selected),
+    );
+    if (error != null) {
+      Get.snackbar(
+        'Unavailable time',
+        error,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    setState(() => _preferredTime = selected);
   }
 
   String _wireDate(DateTime value) =>
@@ -386,6 +453,18 @@ class _CreateMaintenanceRequestPageState
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    final error = _bookingConfig?.validateAppointment(
+      DateTime.now(),
+      _appointment(_preferredDate, _preferredTime),
+    );
+    if (error != null) {
+      Get.snackbar(
+        'Unavailable time',
+        error,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
     final request = await controller.createRequest(
       title: _titleController.text.trim(),
       categoryCode: _category.code,

@@ -4,18 +4,24 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/connectivity_service.dart';
 import '../../../../core/network/refresh_registry.dart';
+import '../../../config/domain/entities/condo_config.dart';
+import '../../../config/presentation/controllers/condo_config_controller.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../domain/entities/maintenance_request.dart';
 import '../../domain/usecases/maintenance_usecases.dart';
 
 class MaintenanceController extends GetxController {
-  MaintenanceController(this.useCases);
+  MaintenanceController(
+    this.useCases, {
+    MaintenanceBookingConfig? bookingConfig,
+  }) : _bookingConfigOverride = bookingConfig;
 
   static const String screen = 'maintenance';
   static const String detailScreen = 'maintenance:detail';
   static const int pageSize = 20;
 
   final MaintenanceUseCases useCases;
+  final MaintenanceBookingConfig? _bookingConfigOverride;
 
   final requests = <MaintenanceRequest>[].obs;
   final categories = <MaintenanceCategoryOption>[].obs;
@@ -48,6 +54,12 @@ class MaintenanceController extends GetxController {
       ? Get.find<SessionController>()
       : null;
 
+  MaintenanceBookingConfig? get _maintenanceBooking =>
+      _bookingConfigOverride ??
+      (Get.isRegistered<CondoConfigController>()
+          ? Get.find<CondoConfigController>().maintenanceBooking
+          : null);
+
   RefreshRegistry? get _registry =>
       Get.isRegistered<RefreshRegistry>() ? Get.find<RefreshRegistry>() : null;
 
@@ -63,8 +75,7 @@ class MaintenanceController extends GetxController {
 
   String? get _accountKey => _currentUserId?.toString();
 
-  String get currentUnitId =>
-      _session?.currentUser?.unit?.id.toString() ?? '';
+  String get currentUnitId => _session?.currentUser?.unit?.id.toString() ?? '';
 
   bool get hasMore => page.value * limit.value < total.value;
 
@@ -352,6 +363,18 @@ class MaintenanceController extends GetxController {
       return null;
     }
 
+    final appointment = MaintenanceBookingConfig.parseAppointment(
+      preferredDate,
+      preferredTime,
+    );
+    final validationError = appointment == null
+        ? 'Choose a valid date and time.'
+        : _maintenanceBooking?.validateAppointment(DateTime.now(), appointment);
+    if (validationError != null) {
+      errorMessage.value = validationError;
+      return null;
+    }
+
     isSubmitting.value = true;
     errorMessage.value = null;
     try {
@@ -393,7 +416,25 @@ class MaintenanceController extends GetxController {
     }
   }
 
+  bool canCancelRequest(MaintenanceRequest request) {
+    if (!request.canCancel) return false;
+    final appointment = MaintenanceBookingConfig.parseAppointment(
+      request.preferredDate,
+      request.preferredTime,
+    );
+    if (appointment == null) return true;
+    return _maintenanceBooking?.canCancelAppointment(
+          DateTime.now(),
+          appointment,
+        ) ??
+        true;
+  }
+
   Future<bool> cancelRequest(MaintenanceRequest request, String reason) async {
+    if (!canCancelRequest(request)) {
+      errorMessage.value = 'This request can no longer be cancelled.';
+      return false;
+    }
     final accountKey = _accountKey;
     if (accountKey == null) {
       errorMessage.value = 'Sign in again to cancel this request.';

@@ -45,6 +45,9 @@ class CondoConfigController extends GetxController {
 
   CondoInfo? get condo => config.value?.condo;
 
+  MaintenanceBookingConfig? get maintenanceBooking =>
+      config.value?.booking?.maintenance;
+
   Future<void> loadForSession({bool refresh = true}) {
     final accountKey = _currentAccountKey;
     if (accountKey == null) {
