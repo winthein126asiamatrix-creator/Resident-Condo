@@ -335,69 +335,41 @@ class _StatusProgress extends StatelessWidget {
 
   final MaintenanceRequest request;
 
+  /// The happy path, in order. Cancelled is a terminal alternative rather than
+  /// a fifth step, so it is never appended after Completed.
+  static const List<MaintenanceStatus> _happyPath = <MaintenanceStatus>[
+    MaintenanceStatus.submitted,
+    MaintenanceStatus.assigned,
+    MaintenanceStatus.inProgress,
+    MaintenanceStatus.completed,
+  ];
+
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     final status = request.status;
-    final history = request.progressHistory;
+    final cancelled = status == MaintenanceStatus.cancelled;
 
-    late final List<AppProgressStep> steps;
-    late final int currentIndex;
+    // The current status owns the step the user sees; history only supplies
+    // supporting subtitles. A cancelled history entry is ignored here because
+    // cancellation is rendered as its own terminal state below.
+    final history = <MaintenanceStatus, MaintenanceProgressEntry>{
+      for (final entry in request.progressHistory)
+        if (entry.status != MaintenanceStatus.cancelled) entry.status: entry,
+    };
 
-    if (status == MaintenanceStatus.cancelled) {
-      steps = history
-          .where((entry) => entry.status != MaintenanceStatus.cancelled)
-          .map(
-            (entry) => AppProgressStep(
-              title: entry.displayLabel,
-              subtitle: entry.note?.trim().isNotEmpty == true
-                  ? entry.note
-                  : entry.createdAt,
-            ),
-          )
-          .toList();
-      if (steps.isEmpty) {
-        steps.add(
-          AppProgressStep(
-            title: MaintenanceStatus.submitted.label,
-            subtitle: request.createdAtDisplay,
-          ),
-        );
-      }
-      steps.add(
+    final steps = <AppProgressStep>[
+      for (final step in _happyPath)
         AppProgressStep(
-          title: MaintenanceStatus.cancelled.label,
-          subtitle: request.cancelledAtDisplay,
+          title: step.label,
+          // A cancelled request has no reached happy-path step, so dated
+          // subtitles would imply progress that did not happen.
+          subtitle: cancelled ? null : _subtitleFor(step, history[step]),
         ),
-      );
-      currentIndex = steps.length - 1;
-    } else if (history.isNotEmpty) {
-      steps = history
-          .map(
-            (entry) => AppProgressStep(
-              title: entry.displayLabel,
-              subtitle: entry.note?.trim().isNotEmpty == true
-                  ? entry.note
-                  : entry.createdAt,
-            ),
-          )
-          .toList();
-      currentIndex = steps.length;
-    } else {
-      steps = <AppProgressStep>[
-        for (final step in MaintenanceStatus.values)
-          if (step != MaintenanceStatus.cancelled)
-            AppProgressStep(
-              title: step.label,
-              subtitle: step == MaintenanceStatus.submitted
-                  ? request.createdAtDisplay
-                  : (step.index < status.index ? 'Completed' : null),
-            ),
-      ];
-      currentIndex = status == MaintenanceStatus.completed
-          ? steps.length
-          : status.index;
-    }
+    ];
+
+    // `-1` leaves every happy-path step upcoming for a cancelled request.
+    final currentIndex = cancelled ? -1 : _indexFor(status);
 
     return Container(
       padding: EdgeInsets.all(16),
@@ -415,9 +387,58 @@ class _StatusProgress extends StatelessWidget {
           ),
           16.h.heightBox(),
           AppStepProgress(steps: steps, currentIndex: currentIndex),
+          if (cancelled) ...[
+            14.h.heightBox(),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppPalette.danger.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.cancel_rounded,
+                    size: 18,
+                    color: AppPalette.danger,
+                  ),
+                  10.w.widthBox(),
+                  Expanded(
+                    child: Text(
+                      MaintenanceStatus.cancelled.label,
+                      style: TextStyle(
+                        color: AppPalette.danger,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  static int _indexFor(MaintenanceStatus status) {
+    final index = _happyPath.indexOf(status);
+    // An unexpected value renders the first step instead of throwing.
+    return index < 0 ? 0 : index;
+  }
+
+  String? _subtitleFor(
+    MaintenanceStatus step,
+    MaintenanceProgressEntry? entry,
+  ) {
+    final note = entry?.note?.trim();
+    if (note != null && note.isNotEmpty) return note;
+    final createdAt = entry?.createdAt?.trim();
+    if (createdAt != null && createdAt.isNotEmpty) return createdAt;
+    return step == MaintenanceStatus.submitted
+        ? request.createdAtDisplay
+        : null;
   }
 }
 

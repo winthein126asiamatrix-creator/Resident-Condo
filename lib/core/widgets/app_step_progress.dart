@@ -33,6 +33,9 @@ class AppStepProgress extends StatelessWidget {
 
   /// Index of the step the request has reached. Steps before it are done, the
   /// step itself is current, and everything after it is upcoming.
+  ///
+  /// A value past the last step finishes every step, and `-1` leaves every step
+  /// upcoming, which is useful when an alternative terminal state applies.
   final int currentIndex;
 
   /// Fixed so every circle in the row is the same size.
@@ -42,7 +45,7 @@ class AppStepProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     // A value past the last step means every step is finished, which is what a
     // completed request needs to render a fully filled ring of ticks.
-    final resolvedIndex = currentIndex.clamp(0, steps.length);
+    final resolvedIndex = currentIndex.clamp(-1, steps.length);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
