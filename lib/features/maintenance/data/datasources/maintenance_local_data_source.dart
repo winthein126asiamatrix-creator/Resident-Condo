@@ -85,6 +85,27 @@ class MaintenanceLocalDataSource {
     return MaintenanceRequestModel.fromJson(Map<String, dynamic>.from(decoded));
   }
 
+  /// Reads a cached request together with the time it was stored.
+  ///
+  /// The timestamp lets the repository decide whether the cache is still fresh
+  /// enough to serve without contacting the network. The account check keeps a
+  /// record from leaking across accounts even if keys ever collide.
+  Future<({MaintenanceRequest request, DateTime updatedAt})?> readRequestEntry(
+    String accountKey,
+    String id,
+  ) async {
+    final entry = await _cache.read(_requestKey(accountKey, id));
+    if (entry == null || entry.accountKey != accountKey) return null;
+    final decoded = _decode(entry.payloadJson);
+    if (decoded is! Map) return null;
+    return (
+      request: MaintenanceRequestModel.fromJson(
+        Map<String, dynamic>.from(decoded),
+      ),
+      updatedAt: entry.updatedAt,
+    );
+  }
+
   Future<void> saveRequest(
     String accountKey,
     MaintenanceRequest request,

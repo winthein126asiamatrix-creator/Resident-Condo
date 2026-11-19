@@ -9,6 +9,12 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
   final MaintenanceRemoteDataSource remoteDataSource;
   final MaintenanceLocalDataSource localDataSource;
 
+  /// How long a cached detail may be served without asking the network.
+  ///
+  /// List fetches refresh the matching detail entries, so this only matters
+  /// when a detail is opened without a recent list load.
+  static const Duration _detailCacheTtl = Duration(minutes: 5);
+
   @override
   Future<List<MaintenanceCategoryOption>> getCategories({
     bool forceRefresh = false,
@@ -70,6 +76,7 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
       );
       if (page == 1) {
         await localDataSource.saveRequests(accountKey, remote);
+        await _syncDetailCache(accountKey, remote.items);
       }
       return remote;
     } catch (_) {
@@ -85,14 +92,19 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
     bool forceRefresh = false,
   }) async {
     final key = id.toString();
-    final cached = await localDataSource.readRequest(accountKey, key);
-    if (!forceRefresh && cached != null) return cached;
+    final cached = await localDataSource.readRequestEntry(accountKey, key);
+    final cachedRequest = cached?.request;
+    final isFresh =
+        cached != null &&
+        DateTime.now().difference(cached.updatedAt) <= _detailCacheTtl;
+    if (!forceRefresh && isFresh) return cachedRequest!;
     try {
       final remote = await remoteDataSource.getRequest(id);
       await localDataSource.saveRequest(accountKey, remote);
       return remote;
     } catch (_) {
-      if (cached != null) return cached;
+      // A failed refresh must never destroy a usable cached detail.
+      if (cachedRequest != null) return cachedRequest;
       rethrow;
     }
   }
@@ -170,4 +182,61 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
     await localDataSource.invalidateSummary(accountKey);
     return cancellation;
   }
+
+  /// Brings already-cached detail entries up to date with a fresh list page.
+  ///
+  /// The list and detail endpoints share one model, but the list may still omit
+  /// detail-only fields (photos, progress history). Entries that are not cached
+  /// are left alone so the next Details open fetches the authoritative record
+  /// instead of seeding the cache with a possibly partial list item.
+  Future<void> _syncDetailCache(
+    String accountKey,
+    List<MaintenanceRequest> items,
+  ) async {
+    for (final item in items) {
+      final cached = await localDataSource.readRequest(accountKey, item.id);
+      if (cached == null) continue;
+      await localDataSource.saveRequest(
+        accountKey,
+        _mergeListIntoDetail(cached, item),
+      );
+    }
+  }
+
+  /// Overlays a list snapshot on a cached detail without erasing detail data.
+  MaintenanceRequest _mergeListIntoDetail(
+    MaintenanceRequest detail,
+    MaintenanceRequest list,
+  ) {
+    return detail.copyWith(
+      // Status and workflow fields are the ones that move between list loads,
+      // so the list wins for them.
+      status: list.status,
+      priority: list.priority,
+      technician: list.technician ?? detail.technician,
+      completedAt: list.completedAt ?? detail.completedAt,
+      cancelledAt: list.cancelledAt ?? detail.cancelledAt,
+      // Descriptive fields only win when the list actually carries a value, so
+      // a summary response cannot blank what the detail endpoint returned.
+      // `description` stays as the detail endpoint wrote it: a list response
+      // may hold a truncated excerpt, and the full text is detail-only.
+      title: _preferText(list.title, detail.title),
+      reference: _preferText(list.reference, detail.reference),
+      location: _preferText(list.location, detail.location),
+      unit: _preferText(list.unit, detail.unit),
+      categoryCode: _preferText(list.categoryCode, detail.categoryCode),
+      categoryLabel: _preferText(list.categoryLabel, detail.categoryLabel),
+      createdAt: _preferText(list.createdAt, detail.createdAt),
+      preferredDate: _preferText(list.preferredDate, detail.preferredDate),
+      preferredTime: _preferText(list.preferredTime, detail.preferredTime),
+      photoCount: list.photoCount > 0 ? list.photoCount : detail.photoCount,
+      photos: list.photos.isEmpty ? detail.photos : list.photos,
+      progressHistory: list.progressHistory.isEmpty
+          ? detail.progressHistory
+          : list.progressHistory,
+    );
+  }
+
+  String _preferText(String value, String fallback) =>
+      value.trim().isEmpty ? fallback : value;
 }
