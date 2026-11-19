@@ -75,6 +75,7 @@ class AppConfigController extends GetxController {
   Future<void> _run({required bool force}) async {
     isLoading.value = true;
     errorMessage.value = null;
+    if (force) _versionLoaded = false;
     await _loadInstalledVersion();
     await _loadDismissal();
     if (!force && config.value == null) {

@@ -1,4 +1,5 @@
 import '../../../../core/utils/app_dates.dart';
+import '../../../../core/utils/super_print.dart';
 import '../../domain/entities/lease.dart';
 
 class LeaseModel extends Lease {
@@ -242,7 +243,11 @@ LeaseStatus _leaseStatus(Object? value) {
     'expiring_soon' || 'expiringsoon' || 'expiring' => LeaseStatus.expiringSoon,
     'expired' => LeaseStatus.expired,
     'renewed' => LeaseStatus.renewed,
-    _ => throw FormatException('Unknown lease status: $value'),
+    'terminated' || 'terminate' || 'termination' => LeaseStatus.terminated,
+    // A status this build does not know must not fail the whole lease list.
+    // [LeaseStatus.active] is the compatibility fallback only; it is not proof
+    // that the backend lease is active, so no permission is derived from it.
+    _ => _unknownLeaseStatus(key),
   };
 }
 
@@ -255,8 +260,30 @@ RenewalStatus _renewalStatus(Object? value) {
     'withdrawn' => RenewalStatus.withdrawn,
     'rejected' => RenewalStatus.rejected,
     'cancelled' || 'canceled' => RenewalStatus.cancelled,
-    _ => throw FormatException('Unknown renewal status: $value'),
+    // A renewal this build does not recognise falls back to the terminal,
+    // non-blocking [RenewalStatus.cancelled] state. It is not treated as
+    // pending or approved, so it never blocks a new request or changes the
+    // displayed term.
+    _ => _unknownRenewalStatus(key),
   };
+}
+
+LeaseStatus _unknownLeaseStatus(String key) {
+  superPrint(
+    'Unknown lease status "${key.isEmpty ? '<empty>' : key}"; '
+    'falling back to active.',
+    title: 'LeaseStatus.fromApi',
+  );
+  return LeaseStatus.active;
+}
+
+RenewalStatus _unknownRenewalStatus(String key) {
+  superPrint(
+    'Unknown renewal status "${key.isEmpty ? '<empty>' : key}"; '
+    'falling back to cancelled.',
+    title: 'RenewalStatus.fromApi',
+  );
+  return RenewalStatus.cancelled;
 }
 
 String _statusKey(Object? value) {
@@ -273,6 +300,7 @@ String _leaseStatusWire(LeaseStatus status) {
     LeaseStatus.expiringSoon => 'expiring_soon',
     LeaseStatus.expired => 'expired',
     LeaseStatus.renewed => 'renewed',
+    LeaseStatus.terminated => 'terminated',
   };
 }
 

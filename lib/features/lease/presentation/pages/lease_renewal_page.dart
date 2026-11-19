@@ -112,18 +112,18 @@ class _LeaseRenewalPageState extends State<LeaseRenewalPage> {
         );
       }
 
-      if (!controller.canRequestRenewal(lease)) {
-        return Scaffold(
-          appBar: AppDetailAppBar(title: 'Lease renewal'),
-          body: AppStateMessage(
-            title: 'Renewal unavailable',
-            message: controller.renewalUnavailableMessage(lease),
-            icon: Icons.description_outlined,
-            actionLabel: 'Back to lease',
-            onAction: () => Get.offNamed(AppRoutes.lease),
-          ),
-        );
-      }
+      // if (!controller.canRequestRenewal(lease)) {
+      //   return Scaffold(
+      //     appBar: AppDetailAppBar(title: 'Lease renewal'),
+      //     body: AppStateMessage(
+      //       title: 'Renewal unavailable',
+      //       message: controller.renewalUnavailableMessage(lease),
+      //       icon: Icons.description_outlined,
+      //       actionLabel: 'Back to lease',
+      //       onAction: () => Get.offNamed(AppRoutes.lease),
+      //     ),
+      //   );
+      // }
 
       _seed(lease);
 

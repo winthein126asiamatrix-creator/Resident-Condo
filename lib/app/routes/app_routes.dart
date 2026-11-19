@@ -4,6 +4,7 @@ abstract final class AppRoutes {
   static const home = '/home';
   static const appearance = '/appearance';
   static const featureUnavailable = '/unavailable';
+  static const appUpdate = '/app-update';
   static const more = '/more';
   static const unit = '/unit';
   static const invoiceList = '/payments/invoices';

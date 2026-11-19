@@ -130,6 +130,7 @@ class PaymentDashboardModel extends PaymentDashboard {
             (payment) => RecentPaymentModel(
               id: payment.id,
               paymentNumber: payment.paymentNumber,
+              invoiceNumber: payment.invoiceNumber,
               amount: payment.amount,
               currency: payment.currency,
               paidAt: payment.paidAt,
@@ -184,6 +185,7 @@ class PaymentDashboardModel extends PaymentDashboard {
           (payment) => <String, dynamic>{
             'id': payment.id,
             'payment_number': payment.paymentNumber,
+            'invoice_number' : payment.invoiceNumber,
             'amount': payment.amount,
             'currency': payment.currency,
             'paid_at': payment.paidAt?.toIso8601String(),
@@ -327,12 +329,14 @@ class RecentPaymentModel extends RecentPayment {
     required super.currency,
     required super.paidAt,
     required super.status,
+    required super.invoiceNumber
   });
 
   factory RecentPaymentModel.fromJson(Map<String, dynamic> json) {
     return RecentPaymentModel(
       id: _asInt(json['id']),
       paymentNumber: _asString(json['payment_number']),
+      invoiceNumber: _asString(json['invoice_number']),
       amount: _asDouble(json['amount']),
       currency: _asString(json['currency']),
       paidAt: _asDate(json['paid_at']),
@@ -343,6 +347,7 @@ class RecentPaymentModel extends RecentPayment {
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,
     'payment_number': paymentNumber,
+    'invoice_number': invoiceNumber,
     'amount': amount,
     'currency': currency,
     'paid_at': paidAt?.toIso8601String(),

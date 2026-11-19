@@ -88,7 +88,7 @@ class LeasePage extends GetView<LeaseController> {
               32,
             ),
             children: [
-              for (final lease in controller.leases) ...[
+              for (final lease in controller.leases.take(1)) ...[
                 _LeaseProgressCard(
                   lease: controller.displayLeaseFor(lease),
                   perspective: controller.rentPerspectiveLabel,
@@ -225,6 +225,7 @@ class _LeaseProgressCard extends StatelessWidget {
     final color = switch (lease.status) {
       LeaseStatus.expired => AppPalette.danger,
       LeaseStatus.expiringSoon => AppPalette.warning,
+      LeaseStatus.terminated => tokens.faint,
       _ => AppPalette.success,
     };
 
@@ -234,7 +235,9 @@ class _LeaseProgressCard extends StatelessWidget {
       subtitle:
           '${lease.reference} · $perspective '
           '${AppFormatters.money(lease.monthlyRent, lease.currency)} / month',
-      footnote: lease.status == LeaseStatus.expired
+      footnote: lease.status == LeaseStatus.terminated
+          ? 'This lease has been terminated. Renewal requests are no longer available.'
+          : lease.status == LeaseStatus.expired
           ? 'This term has ended. Renewal requests are no longer available.'
           : lease.hasExpired
           ? 'This term has ended. Submit a renewal to continue the tenancy.'

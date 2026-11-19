@@ -85,6 +85,9 @@ class LeaseController extends GetxController {
   Lease? get activeLease {
     for (final lease in leases) {
       final display = displayLeaseFor(lease);
+      if (display.status == LeaseStatus.terminated) {
+        continue;
+      }
       if (!display.hasExpired) {
         return display;
       }
@@ -116,9 +119,15 @@ class LeaseController extends GetxController {
   }
 
   bool canRequestRenewal(Lease lease) =>
-      lease.status != LeaseStatus.expired && blockingRenewalFor(lease) == null;
+      lease.status != LeaseStatus.expired &&
+      lease.status != LeaseStatus.terminated &&
+      blockingRenewalFor(lease) == null;
 
   String renewalUnavailableMessage(Lease lease) {
+    if (lease.status == LeaseStatus.terminated) {
+      return 'This lease has been terminated. Renewal requests are no longer '
+          'available.';
+    }
     final blocker = blockingRenewalFor(lease);
     if (blocker?.status == RenewalStatus.approved) {
       return 'Your renewal is approved. A new request is not needed.';

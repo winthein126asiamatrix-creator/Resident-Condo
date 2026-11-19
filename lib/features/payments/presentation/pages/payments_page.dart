@@ -949,7 +949,7 @@ class _RecentPaymentCard extends StatelessWidget {
         ? AppFormatters.currency(payment.amount)
         : AppFormatters.money(payment.amount, payment.currency);
     final subtitle = payment.paidAtLabel.isEmpty
-        ? ""
+        ? payment.invoiceNumber
         : '${payment.paidAtLabel} · ${payment.statusLabel}';
     return InkWell(
       onTap: onTap,

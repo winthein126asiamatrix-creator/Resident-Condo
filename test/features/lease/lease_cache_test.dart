@@ -74,6 +74,30 @@ void main() {
     expect(renewed.status, RenewalStatus.pending);
   });
 
+  test('parses and round-trips the terminated lease status', () {
+    final lease = LeaseModel.fromJson(_leaseJson()..['status'] = 'terminated');
+
+    expect(lease.status, LeaseStatus.terminated);
+    expect(lease.status.label, 'Terminated');
+    expect(LeaseModel.fromJson(lease.toJson()).status, LeaseStatus.terminated);
+  });
+
+  test('an unknown lease status falls back to active without throwing', () {
+    for (final value in <Object?>[null, '', 'cancelled', 'draft', 7]) {
+      final lease = LeaseModel.fromJson(_leaseJson()..['status'] = value);
+      expect(lease.status, LeaseStatus.active, reason: '$value');
+    }
+  });
+
+  test('an unknown renewal status falls back to cancelled without throwing', () {
+    for (final value in <Object?>[null, '', 'in_review', 'expired', 3]) {
+      final renewal = LeaseRenewalModel.fromJson(
+        _renewalJson()..['status'] = value,
+      );
+      expect(renewal.status, RenewalStatus.cancelled, reason: '$value');
+    }
+  });
+
   test('decide_on controls whether the updated date is shown', () {
     final hidden = LeaseRenewalModel.fromJson(
       _renewalJson()
@@ -276,6 +300,26 @@ void main() {
     expect(lease.status, LeaseStatus.expired);
   });
 
+  test('renewal submission is blocked for a terminated lease', () async {
+    final repository = _FakeRepository();
+    final controller = LeaseController(LeaseUseCases(repository));
+    final lease = _lease('42', status: LeaseStatus.terminated);
+
+    expect(controller.canRequestRenewal(lease), isFalse);
+
+    final renewal = await controller.requestRenewal(
+      lease: lease,
+      proposedStart: DateTime(2026, 11, 1),
+      proposedEnd: DateTime(2027, 10, 31),
+      proposedRent: 2460,
+    );
+
+    expect(renewal, isNull);
+    expect(repository.createCalls, 0);
+    expect(controller.errorMessage.value, contains('terminated'));
+    expect(lease.status, LeaseStatus.terminated);
+  });
+
   test('renewal submission remains available for eligible statuses', () async {
     for (final status in <LeaseStatus>[
       LeaseStatus.active,
@@ -370,6 +414,22 @@ void main() {
         ..renewals = <LeaseRenewal>[];
       await _pumpLeasePage(tester, repository);
 
+      final button = find.byKey(const Key('request-lease-renewal'));
+      await _scrollLeaseTo(tester, button);
+
+      expect(tester.widget<FilledButton>(button).onPressed, isNull);
+      expect(find.text('Renewal unavailable'), findsOneWidget);
+    });
+
+    testWidgets('renders a terminated lease and disables renewal', (
+      tester,
+    ) async {
+      final repository = _FakeRepository()
+        ..leases = <Lease>[_lease('42', status: LeaseStatus.terminated)]
+        ..renewals = <LeaseRenewal>[];
+      await _pumpLeasePage(tester, repository);
+
+      expect(find.text('Terminated'), findsOneWidget);
       final button = find.byKey(const Key('request-lease-renewal'));
       await _scrollLeaseTo(tester, button);
 

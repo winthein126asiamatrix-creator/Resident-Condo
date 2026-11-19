@@ -11,6 +11,8 @@ import '../../features/complaints/presentation/pages/complaints_page.dart';
 import '../../features/complaints/presentation/pages/create_complaint_page.dart';
 import '../../features/config/domain/entities/condo_config.dart';
 import '../../features/config/presentation/middlewares/feature_gate_middleware.dart';
+import '../../features/config/presentation/middlewares/update_gate_middleware.dart';
+import '../../features/config/presentation/pages/app_update_screen.dart';
 import '../../features/config/presentation/pages/feature_unavailable_page.dart';
 import '../../features/dashboard/presentation/pages/main_shell_page.dart';
 import '../../features/dev_tools/presentation/pages/api_log_viewer_page.dart';
@@ -71,7 +73,7 @@ import '../bindings/app_binding.dart';
 import 'app_routes.dart';
 
 abstract final class AppPages {
-  static final pages = <GetPage<dynamic>>[
+  static final _rawPages = <GetPage<dynamic>>[
     GetPage<dynamic>(
       name: AppRoutes.splash,
       page: () => SplashPage(),
@@ -322,6 +324,10 @@ abstract final class AppPages {
       page: () => const FeatureUnavailablePage(),
     ),
     GetPage<dynamic>(
+      name: AppRoutes.appUpdate,
+      page: () => const AppUpdateRoute(),
+    ),
+    GetPage<dynamic>(
       name: AppRoutes.sample,
       page: () => SamplePage(),
       binding: SampleBinding(),
@@ -331,4 +337,23 @@ abstract final class AppPages {
       page: () => const ApiLogViewerPage(),
     ),
   ];
+
+  static final pages = _guardedPages(_rawPages);
+
+  static List<GetPage<dynamic>> _guardedPages(List<GetPage<dynamic>> pages) =>
+      pages.map(_guardPage).toList();
+
+  static GetPage<dynamic> _guardPage(GetPage<dynamic> page) {
+    if (page.name == AppRoutes.appUpdate) return page;
+    return GetPage<dynamic>(
+      name: page.name,
+      page: page.page,
+      binding: page.binding,
+      bindings: page.bindings,
+      middlewares: <GetMiddleware>[
+        UpdateGateMiddleware(),
+        ...?page.middlewares,
+      ],
+    );
+  }
 }

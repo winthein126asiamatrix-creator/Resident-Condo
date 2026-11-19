@@ -413,6 +413,24 @@ class LeaseConfig {
     'max_upload_mb': maxUploadMb,
     'approval_required': approvalRequired,
   };
+
+  int? get effectiveMinLeaseMonths =>
+      minLeaseMonths != null && minLeaseMonths! > 0 ? minLeaseMonths : null;
+
+  int? get effectiveMaxLeaseMonths =>
+      maxLeaseMonths != null && maxLeaseMonths! > 0 ? maxLeaseMonths : null;
+
+  String? validateRenewalMonths(int months) {
+    final min = effectiveMinLeaseMonths;
+    final max = effectiveMaxLeaseMonths;
+    if (min != null && months < min) {
+      return 'Lease renewal must be at least $min months.';
+    }
+    if (max != null && months > max) {
+      return 'Lease renewal cannot exceed $max months.';
+    }
+    return null;
+  }
 }
 
 class LeaseDocumentRequirement {

@@ -43,7 +43,7 @@ class PaymentDetailModel extends PaymentDetail {
       amount: _asDouble(json['amount'] ?? json['total_amount']),
       currency: _asString(json['currency']),
       paymentMethod: _asString(
-        json['payment_method'] ?? json['method'] ?? json['payment_type'],
+        json['payment_method']['label'] ?? json['method'] ?? json['payment_type'],
       ),
       transactionReference: _asString(
         json['transaction_reference'] ??

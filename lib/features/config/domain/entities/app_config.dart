@@ -43,9 +43,10 @@ class AppVersionConfig {
 
   factory AppVersionConfig.fromJson(Map<String, dynamic> json) {
     return AppVersionConfig(
-      minSupported: _stringOrNull(json['min_supported']),
-      //latest: '1.2.0',
-      latest:_stringOrNull(json['latest']),
+     minSupported: _stringOrNull(json['min_supported']),
+     latest:_stringOrNull(json['latest']),
+    //  minSupported: '1.2.0',
+    //  latest: '1.3.0',
       updateUrl: _stringOrNull(json['update_url']),
     );
   }

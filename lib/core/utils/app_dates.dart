@@ -110,6 +110,25 @@ abstract final class AppDates {
     return (days / averageMonthDays).round();
   }
 
+  /// Whole calendar months a lease term covers. A term of N months ends on the
+  /// day before the N-month anniversary, matching [addMonths] presets and
+  /// keeping month-end dates intact.
+  static int leaseMonthsBetween(DateTime from, DateTime to) {
+    final start = dateOnly(from);
+    final end = dateOnly(to);
+    if (!end.isAfter(start)) return 0;
+    var months = 0;
+    while (months < 1200) {
+      final nextEnd = addMonths(
+        start,
+        months + 1,
+      ).subtract(const Duration(days: 1));
+      if (nextEnd.isAfter(end)) break;
+      months++;
+    }
+    return months;
+  }
+
   /// Drops the time of day, so two dates on the same day compare equal.
   static DateTime dateOnly(DateTime value) =>
       DateTime(value.year, value.month, value.day);

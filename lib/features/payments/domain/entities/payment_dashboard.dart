@@ -156,6 +156,7 @@ class RecentPayment {
     required this.currency,
     required this.paidAt,
     required this.status,
+    required this.invoiceNumber
   });
 
   final int id;
@@ -164,6 +165,7 @@ class RecentPayment {
   final String currency;
   final DateTime? paidAt;
   final String status;
+  final String invoiceNumber;
 
   /// Payment transaction status, kept distinct from the invoice status.
   PaymentStatus? get paymentStatus {

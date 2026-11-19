@@ -11,7 +11,6 @@ import '../../../../core/widgets/offline_banner.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../config/domain/entities/condo_config.dart';
 import '../../../config/presentation/controllers/condo_config_controller.dart';
-import '../../../config/presentation/widgets/optional_update_banner.dart';
 import '../../../facilities/presentation/pages/facilities_page.dart';
 import '../../../maintenance/presentation/pages/maintenance_page.dart';
 import '../../../payments/presentation/pages/payments_page.dart';
@@ -205,7 +204,6 @@ class _MainShellPageState extends State<MainShellPage> {
         body: Column(
           children: [
             OfflineBannerSlot(applyStatusBarInset: true),
-            const OptionalUpdateBanner(),
             Expanded(
               child: MediaQuery.removePadding(
                 context: context,

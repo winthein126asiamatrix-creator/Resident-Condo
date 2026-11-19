@@ -97,7 +97,7 @@ class _MaintenanceDetailPageState extends State<MaintenanceDetailPage> {
                   ),
                   _Line(
                     label: 'Assigned technician',
-                    value: current.technician ?? 'Awaiting assignment',
+                    value: current.technician ?? '',
                   ),
                   if (current.completedAtDisplay != null)
                     _Line(

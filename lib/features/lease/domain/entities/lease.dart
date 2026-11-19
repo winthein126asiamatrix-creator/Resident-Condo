@@ -1,6 +1,6 @@
 import '../../../../core/utils/app_dates.dart';
 
-enum LeaseStatus { active, expiringSoon, expired, renewed }
+enum LeaseStatus { active, expiringSoon, expired, renewed, terminated }
 
 extension LeaseStatusLabel on LeaseStatus {
   String get label {
@@ -13,6 +13,8 @@ extension LeaseStatusLabel on LeaseStatus {
         return 'Expired';
       case LeaseStatus.renewed:
         return 'Renewed';
+      case LeaseStatus.terminated:
+        return 'Terminated';
     }
   }
 }

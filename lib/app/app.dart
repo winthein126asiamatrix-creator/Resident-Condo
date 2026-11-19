@@ -51,7 +51,8 @@ class CondoResidentApp extends StatefulWidget {
   State<CondoResidentApp> createState() => _CondoResidentAppState();
 }
 
-class _CondoResidentAppState extends State<CondoResidentApp> {
+class _CondoResidentAppState extends State<CondoResidentApp>
+    with WidgetsBindingObserver {
   late final AppearanceController _appearance;
   late final ConnectivityService _connectivity;
   late final AppLocaleController _localeController;
@@ -69,6 +70,7 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // App scoped, so they are registered before the first frame. The binding is
     // idempotent and the routes that need them run it again harmlessly.
     ApiBinding.register();
@@ -183,7 +185,16 @@ class _CondoResidentAppState extends State<CondoResidentApp> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    if (Get.isRegistered<AppConfigController>()) {
+      unawaited(Get.find<AppConfigController>().load(force: true));
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _connectivityWorker?.dispose();
     _notificationTapWorker?.dispose();
     super.dispose();
