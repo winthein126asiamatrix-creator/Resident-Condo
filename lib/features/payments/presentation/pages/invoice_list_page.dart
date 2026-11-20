@@ -263,7 +263,10 @@ class _InvoiceCard extends StatelessWidget {
                   style: TextStyle(color: tokens.muted, fontSize: 10.sp),
                 ),
                 6.h.heightBox(),
-                PaymentStatusBadge(status: invoice.invoiceStatus),
+                PaymentStatusBadges(
+                  status: invoice.invoiceStatus,
+                  overdue: invoice.isOverdue,
+                ),
               ],
             ),
             Icon(Icons.chevron_right_rounded, color: tokens.faint),

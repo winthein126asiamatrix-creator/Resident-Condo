@@ -95,19 +95,21 @@ class PaymentsPage extends GetView<PaymentController> {
                     icon: Icons.receipt_long_outlined,
                   )
                 else if (hasDashboard)
-                  ...controller.recentInvoices.take(5).map(
-                    (invoice) => Padding(
-                      padding: EdgeInsets.only(bottom: 10.h),
-                      child: _RecentInvoiceCard(
-                        invoice: invoice,
-                        currency: controller.dashboardCurrency,
-                        onTap: () {
-                          vibrateNow();
-                          _openRecentInvoice(context, invoice);
-                        },
+                  ...controller.recentInvoices
+                      .take(5)
+                      .map(
+                        (invoice) => Padding(
+                          padding: EdgeInsets.only(bottom: 10.h),
+                          child: _RecentInvoiceCard(
+                            invoice: invoice,
+                            currency: controller.dashboardCurrency,
+                            onTap: () {
+                              vibrateNow();
+                              _openRecentInvoice(context, invoice);
+                            },
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
                 16.h.heightBox(),
                 _SectionHeader(
                   title: 'Payment history',
@@ -919,7 +921,10 @@ class _RecentInvoiceCard extends StatelessWidget {
                   style: TextStyle(color: tokens.muted, fontSize: 10.sp),
                 ),
                 5.h.heightBox(),
-                PaymentStatusBadge(status: invoice.invoiceStatus),
+                PaymentStatusBadges(
+                  status: invoice.invoiceStatus,
+                  overdue: invoice.isOverdue,
+                ),
               ],
             ),
             Icon(Icons.chevron_right_rounded, color: tokens.faint),

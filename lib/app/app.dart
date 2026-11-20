@@ -190,6 +190,14 @@ class _CondoResidentAppState extends State<CondoResidentApp>
     if (Get.isRegistered<AppConfigController>()) {
       unawaited(Get.find<AppConfigController>().load(force: true));
     }
+    // Overdue is derived from today's date, so the invoice screens have to
+    // re-evaluate their badges after the app has been away, even if no invoice
+    // data changed while it was backgrounded.
+    if (Get.isRegistered<PaymentController>()) {
+      final payments = Get.find<PaymentController>();
+      payments.invoiceList.refresh();
+      payments.dashboard.refresh();
+    }
   }
 
   @override

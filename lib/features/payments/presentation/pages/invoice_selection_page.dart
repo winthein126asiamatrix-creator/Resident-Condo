@@ -12,7 +12,6 @@ import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../../../core/widgets/app_status_pill.dart';
-import '../../domain/entities/invoice.dart';
 import '../../domain/entities/invoice_list.dart';
 import '../controllers/payment_controller.dart';
 import '../widgets/payment_status_badge.dart';
@@ -160,8 +159,7 @@ class _PayableInvoiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
-    final status = _displayStatus(invoice);
-    final overdue = status == InvoiceStatus.overdue;
+    final overdue = invoice.isOverdue;
     final accent = overdue ? AppPalette.danger : tokens.brand;
 
     return InkWell(
@@ -209,7 +207,10 @@ class _PayableInvoiceCard extends StatelessWidget {
                   ),
                 ),
                 10.w.widthBox(),
-                PaymentStatusBadge(status: status),
+                PaymentStatusBadges(
+                  status: invoice.invoiceStatus,
+                  overdue: overdue,
+                ),
               ],
             ),
             12.h.heightBox(),
@@ -273,17 +274,6 @@ class _PayableInvoiceCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// Partially paid invoices keep their partial status even when the due date
-  /// has passed; every other unpaid invoice past its due date reads as overdue.
-  InvoiceStatus _displayStatus(InvoiceListItem invoice) {
-    final status = invoice.invoiceStatus;
-    if (status == InvoiceStatus.partiallyPaid ||
-        status == InvoiceStatus.overdue) {
-      return status;
-    }
-    return invoice.isOverdue ? InvoiceStatus.overdue : status;
   }
 
   String _money(double value, String currency) => currency.trim().isEmpty

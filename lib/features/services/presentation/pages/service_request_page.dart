@@ -485,7 +485,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                     child: Text(
                       'The service fee is billed as its own line on your next '
                       'statement. It is never added to the monthly condo fee.',
-                      style: TextStyle(
+                      style: TextStyle( 
                         color: tokens.mutedStrong,
                         fontSize: 11.5.sp,
                         height: 1.4,
@@ -509,7 +509,7 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                   AppLabelValueRow(
                     label: 'Service fee',
                     value:
-                        '${AppFormatters.currency(service.price)} ${service.unit}',
+                        AppFormatters.money(service.price,service.pricing.currency ?? ''),
                     emphasize: true,
                   ),
                 ],

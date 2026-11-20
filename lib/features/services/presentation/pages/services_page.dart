@@ -278,7 +278,7 @@ class _ServiceCard extends StatelessWidget {
                   ),
                   2.h.heightBox(),
                   Text(
-                    _pricingUnit(service).capitalizeFirst??"",
+                    "per ${service.pricing.unit?? ""}",
                     style: TextStyle(color: tokens.faint, fontSize: 10.5.sp),
                   ),
                 ],
@@ -341,7 +341,6 @@ class _Requests extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = AppThemeTokens.of(context);
     final active = controller.activeRequests;
     final history = controller.historyRequests;
     if (active.isEmpty &&
@@ -364,10 +363,7 @@ class _Requests extends StatelessWidget {
         AppSectionHeader(title: 'Active', count: active.length),
         10.h.heightBox(),
         if (active.isEmpty)
-          Text(
-            'Nothing active right now.',
-            style: TextStyle(color: tokens.muted, fontSize: 12.sp),
-          )
+          const _ActiveRequestsEmpty()
         else
           for (final request in active)
             Padding(
@@ -413,6 +409,63 @@ class _Requests extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Lightweight empty state shown above the history when nothing is active.
+///
+/// A soft neutral card with a tinted circular glyph, so the section still feels
+/// finished without pretending a request exists or competing with the cards
+/// below it.
+class _ActiveRequestsEmpty extends StatelessWidget {
+  const _ActiveRequestsEmpty();
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    return AppCard(
+      color: Colors.transparent,
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 46.r,
+            height: 46.r,
+            decoration: BoxDecoration(
+              color: tokens.brand.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.event_available_rounded,
+              size: 22.r,
+              color: tokens.brand,
+            ),
+          ),
+          12.h.heightBox(),
+          Text(
+            'No Active Requests',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: tokens.ink,
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              height: 1.2,
+            ),
+          ),
+          6.h.heightBox(),
+          Text(
+            "You don't have any ongoing service requests at the moment.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: tokens.muted,
+              fontSize: 12.sp,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

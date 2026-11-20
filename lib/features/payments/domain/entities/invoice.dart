@@ -1,4 +1,6 @@
-enum InvoiceStatus { paid, partiallyPaid, pending, overdue, unpaid }
+import '../../../../core/utils/app_dates.dart';
+
+enum InvoiceStatus { paid, partiallyPaid, pending, overdue, unpaid, cancelled }
 
 extension InvoiceStatusLabel on InvoiceStatus {
   String get label {
@@ -13,6 +15,8 @@ extension InvoiceStatusLabel on InvoiceStatus {
         return 'Overdue';
       case InvoiceStatus.unpaid:
         return 'Unpaid';
+      case InvoiceStatus.cancelled:
+        return 'Cancelled';
     }
   }
 }
@@ -114,9 +118,33 @@ InvoiceStatus invoiceStatusFromApi(Object? value) {
       return InvoiceStatus.overdue;
     case 'pending':
       return InvoiceStatus.pending;
+    case 'cancelled':
+    case 'canceled':
+    case 'void':
+      return InvoiceStatus.cancelled;
     default:
       return InvoiceStatus.pending;
   }
+}
+
+/// True when an invoice is past its due date and still owes money.
+///
+/// Shared by the invoice list and the dashboard so both derive the additional
+/// Overdue badge the same way. The comparison is date-only, so an invoice due
+/// today is not overdue. A missing due date, a zero balance, a paid invoice and
+/// a cancelled invoice never count as overdue.
+bool isInvoiceOverdue({
+  required DateTime? dueDate,
+  required double remainingAmount,
+  required InvoiceStatus status,
+}) {
+  if (dueDate == null || remainingAmount <= 0) {
+    return false;
+  }
+  if (status == InvoiceStatus.paid || status == InvoiceStatus.cancelled) {
+    return false;
+  }
+  return AppDates.dateOnly(dueDate).isBefore(AppDates.dateOnly(DateTime.now()));
 }
 
 /// Maps a backend `fee_type` onto the app's charge line type.

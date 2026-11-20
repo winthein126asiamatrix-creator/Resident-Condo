@@ -62,15 +62,12 @@ class InvoiceListItem {
   /// True when this invoice still has an amount the resident can pay.
   bool get isPayable => id > 0 && !isSettled && !isCancelled;
 
-  /// Date-based, so an invoice due today is not overdue. A missing due date
-  /// never counts as overdue.
-  bool get isOverdue {
-    final due = dueDate;
-    if (due == null || remainingAmount <= 0) {
-      return false;
-    }
-    return AppDates.dateOnly(due).isBefore(AppDates.dateOnly(DateTime.now()));
-  }
+  /// Date-based, using the same shared calculation as the dashboard.
+  bool get isOverdue => isInvoiceOverdue(
+    dueDate: dueDate,
+    remainingAmount: remainingAmount,
+    status: invoiceStatus,
+  );
 }
 
 /// A page of invoices plus the pagination metadata the list needs to keep

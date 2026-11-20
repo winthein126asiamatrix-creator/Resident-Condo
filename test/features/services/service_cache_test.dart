@@ -541,6 +541,15 @@ void main() {
 
     await tester.tap(find.byKey(const Key('services-tab-requests')));
     await tester.pumpAndSettle();
+
+    expect(find.text('No Active Requests'), findsOneWidget);
+    expect(
+      find.text(
+        "You don't have any ongoing service requests at the moment.",
+      ),
+      findsOneWidget,
+    );
+
     await tester.scrollUntilVisible(find.text('Past laundry'), 300);
     await tester.pumpAndSettle();
 

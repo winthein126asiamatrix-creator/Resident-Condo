@@ -13,12 +13,15 @@ import 'package:test/features/payments/domain/entities/payment_quote.dart';
 import 'package:test/features/payments/domain/entities/payment_dashboard.dart';
 import 'package:test/features/payments/domain/entities/payment_detail.dart';
 import 'package:test/features/payments/domain/entities/payment_list.dart';
+
 import 'dart:typed_data';
+
 import 'package:test/core/network/dio_api_service.dart';
 import 'package:test/features/payments/domain/repositories/payment_repository.dart';
 import 'package:test/features/payments/domain/usecases/payment_usecases.dart';
 import 'package:test/features/payments/presentation/controllers/payment_controller.dart';
 import 'package:test/features/payments/presentation/pages/invoice_list_page.dart';
+import 'package:test/features/payments/presentation/widgets/payment_status_badge.dart';
 import 'package:test/features/session/presentation/controllers/session_controller.dart';
 
 void main() {
@@ -82,6 +85,85 @@ void main() {
     expect(pillLeft(), closeTo(3 * segmentWidth, 0.01));
   });
 
+  testWidgets('keeps the original status and adds an Overdue badge', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final yesterday = DateTime.now().subtract(const Duration(days: 1));
+    final repository = _FilteredInvoiceRepository()
+      ..responses['all'] = InvoiceListResponse(
+        items: <InvoiceListItem>[
+          _invoice(
+            id: 601,
+            number: 'INV-UNPAID-PAST-DUE',
+            status: 'unpaid',
+            dueDate: yesterday,
+          ),
+          _invoice(
+            id: 602,
+            number: 'INV-PARTIAL-PAST-DUE',
+            status: 'partial',
+            paid: 40,
+            remaining: 60,
+            dueDate: yesterday,
+          ),
+          _invoice(
+            id: 603,
+            number: 'INV-PAID-PAST-DUE',
+            status: 'paid',
+            paid: 100,
+            remaining: 0,
+            dueDate: yesterday,
+          ),
+          _invoice(
+            id: 604,
+            number: 'INV-CANCELLED',
+            status: 'cancelled',
+            remaining: 80,
+            dueDate: yesterday,
+          ),
+        ],
+        page: 1,
+        limit: 20,
+        total: 4,
+      );
+
+    final session = SessionController()..setSession(_user(1));
+    final controller = PaymentController(
+      PaymentUseCases(repository),
+      sessionController: session,
+    );
+    Get.put(controller);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, _) => const MaterialApp(home: InvoiceListPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('INV-UNPAID-PAST-DUE'), findsOneWidget);
+    expect(find.text('INV-PARTIAL-PAST-DUE'), findsOneWidget);
+    expect(find.text('INV-PAID-PAST-DUE'), findsOneWidget);
+    expect(find.text('INV-CANCELLED'), findsOneWidget);
+    expect(find.widgetWithText(PaymentStatusBadge, 'Unpaid'), findsOneWidget);
+    expect(find.widgetWithText(PaymentStatusBadge, 'Partial'), findsOneWidget);
+    expect(find.widgetWithText(PaymentStatusBadge, 'Paid'), findsOneWidget);
+    expect(
+      find.widgetWithText(PaymentStatusBadge, 'Cancelled'),
+      findsOneWidget,
+    );
+    expect(
+      find.widgetWithText(PaymentStatusBadge, 'Overdue'),
+      findsNWidgets(2),
+    );
+  });
+
   testWidgets('a failing filter keeps the other filters reachable', (
     tester,
   ) async {
@@ -123,6 +205,27 @@ void main() {
     expect(controller.invoiceListStatus.value, 'paid');
     expect(find.text('INV-PAID'), findsOneWidget);
   });
+}
+
+InvoiceListItem _invoice({
+  required int id,
+  required String number,
+  String status = 'unpaid',
+  double paid = 0,
+  double remaining = 100,
+  DateTime? dueDate,
+}) {
+  return InvoiceListItem(
+    id: id,
+    invoiceNumber: number,
+    billingPeriod: '2026-09',
+    totalAmount: 100,
+    paidAmount: paid,
+    remainingAmount: remaining,
+    currency: 'USD',
+    status: status,
+    dueDate: dueDate,
+  );
 }
 
 InvoiceListResponse _page(List<int> ids, String number) {
@@ -180,6 +283,7 @@ class _FilteredInvoiceRepository implements PaymentRepository {
   final failures = <String>{};
   String? lastStatus;
 
+  @override
   Future<InvoiceListResponse> getInvoiceList({
     int page = 1,
     int limit = 20,
@@ -192,6 +296,7 @@ class _FilteredInvoiceRepository implements PaymentRepository {
     return responses[status] ?? _page(const <int>[], 'NONE');
   }
 
+  @override
   Future<InvoiceDetail> getInvoiceDetail(int id) async {
     throw StateError('Not used by this test.');
   }

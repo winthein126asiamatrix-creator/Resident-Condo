@@ -137,15 +137,13 @@ class RecentInvoice {
 
   /// True when the invoice still owes money and its due date is before today.
   ///
-  /// The comparison is date-only, so an invoice due today is not overdue. A
-  /// missing due date never counts as overdue.
-  bool get isOverdue {
-    final due = dueDate;
-    if (due == null || remainingAmount <= 0) {
-      return false;
-    }
-    return AppDates.dateOnly(due).isBefore(AppDates.dateOnly(DateTime.now()));
-  }
+  /// Uses the same shared calculation as the invoice list, so both screens add
+  /// the Overdue badge for exactly the same invoices.
+  bool get isOverdue => isInvoiceOverdue(
+    dueDate: dueDate,
+    remainingAmount: remainingAmount,
+    status: invoiceStatus,
+  );
 }
 
 class RecentPayment {
@@ -156,7 +154,7 @@ class RecentPayment {
     required this.currency,
     required this.paidAt,
     required this.status,
-    required this.invoiceNumber
+    required this.invoiceNumber,
   });
 
   final int id;
@@ -190,7 +188,7 @@ class RecentPayment {
     if (raw.isEmpty) {
       return 'Unknown';
     }
-      final normalized = raw.replaceAll(RegExp(r'[_-]+'), ' ');
+    final normalized = raw.replaceAll(RegExp(r'[_-]+'), ' ');
 
     return '${normalized[0].toUpperCase()}${normalized.substring(1)}';
   }
