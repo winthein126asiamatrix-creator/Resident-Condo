@@ -257,12 +257,12 @@ class _VerificationResult extends StatelessWidget {
                 ),
                 6.h.heightBox(),
                 Text(
-                  '${visitor.arrivalWindow} Â· ${visitor.purpose}',
+                  '${visitor.arrivalWindow}  · ${visitor.purpose}',
                   style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                 ),
                 4.h.heightBox(),
                 Text(
-                  'Code ${visitor.accessCode} Â· unit ${visitor.registeredBy}\'s host',
+                  'Code ${visitor.accessCode}  · unit ${visitor.registeredBy}\'s host',
                   style: TextStyle(color: tokens.faint, fontSize: 11.sp),
                 ),
               ],

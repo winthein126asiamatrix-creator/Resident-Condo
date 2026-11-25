@@ -976,7 +976,7 @@ class _ReservationsCard extends StatelessWidget {
                   reservation.facility,
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
-                subtitle: Text('${reservation.date} Â· ${reservation.time}'),
+                subtitle: Text('${reservation.date} · ${reservation.time}'),
                 trailing: StatusBadge(label: reservation.status),
               ),
             )

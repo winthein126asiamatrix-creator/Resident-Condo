@@ -29,28 +29,32 @@ class AppBrightnessModeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // A fixed height so the three options stay the same size whatever the text
-    // scale, and so the control below them never shifts.
-    return SizedBox(
-      height: 116,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (final mode in AppBrightnessMode.values) ...[
-            Expanded(
-              child: _ModeOption(
-                key: Key('appearance-mode-${mode.id}'),
-                mode: mode,
-                selected: mode == value,
-                onTap: () {
-                  vibrateNow();
-                  onChanged(mode);
-                },
+    // The cards share their tallest sibling's height so the three options stay
+    // equal whatever the text scale, and a slightly taller label or description
+    // grows the row instead of overflowing it. The minimum keeps the default
+    // look on devices where the copy wraps to fewer lines.
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 116),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final mode in AppBrightnessMode.values) ...[
+              Expanded(
+                child: _ModeOption(
+                  key: Key('appearance-mode-${mode.id}'),
+                  mode: mode,
+                  selected: mode == value,
+                  onTap: () {
+                    vibrateNow();
+                    onChanged(mode);
+                  },
+                ),
               ),
-            ),
-            if (mode != AppBrightnessMode.values.last) 10.w.widthBox(),
+              if (mode != AppBrightnessMode.values.last) 10.w.widthBox(),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -100,7 +104,9 @@ class _ModeOption extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _ModeIllustration(mode: mode, selected: selected),
-                  10.h.heightBox(),
+                  // Keep the gap modest: the card grows with its content, but
+                  // the label and description scale with .sp on this device.
+                  7.h.heightBox(),
                   Row(
                     children: [
                       Expanded(

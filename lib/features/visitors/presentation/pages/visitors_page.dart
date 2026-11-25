@@ -143,7 +143,7 @@ class _VisitorHero extends StatelessWidget {
       icon: Icons.people_alt_rounded,
       title: 'Visitor access',
       subtitle:
-          '${controller.activeCount} active  Â·  ${controller.onSiteCount} on site now',
+          '${controller.activeCount} active   ·  ${controller.onSiteCount} on site now',
       footnote: 'Codes expire automatically after the visitor checks out.',
       trailing: IconButton(
         tooltip: 'Refresh visitors',
@@ -238,7 +238,7 @@ class _VisitorCard extends StatelessWidget {
                     ),
                     3.h.heightBox(),
                     Text(
-                      '${visitor.relation.label} Â· ${visitor.purpose}',
+                      '${visitor.relation.label}  · ${visitor.purpose}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: tokens.muted, fontSize: 12.sp),

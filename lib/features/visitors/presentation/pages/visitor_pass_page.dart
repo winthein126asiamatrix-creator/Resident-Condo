@@ -295,7 +295,7 @@ class _CodeCard extends StatelessWidget {
           ),
           4.h.heightBox(),
           Text(
-            '${visitor.date} Â· ${visitor.arrivalWindow}',
+            '${visitor.date}  · ${visitor.arrivalWindow}',
             style: TextStyle(color: tokens.brandOnDarkMuted, fontSize: 12.sp),
           ),
           14.h.heightBox(),

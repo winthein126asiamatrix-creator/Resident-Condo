@@ -50,7 +50,7 @@ class ComplaintDetailPage extends GetView<ComplaintController> {
               title: current.reference,
               subtitle: current.subject,
               footnote:
-                  'Filed ${current.createdOn} Â· ${current.category.label}',
+                  'Filed ${current.createdOn}  · ${current.category.label}',
               trailing: ComplaintStatusPill(status: current.status),
             ),
             18.h.heightBox(),

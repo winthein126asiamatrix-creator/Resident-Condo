@@ -407,7 +407,7 @@ class _CreateComplaintPageState extends State<CreateComplaintPage> {
       subject: _subjectController.text,
       description: _descriptionController.text,
       location: _locationController.text.trim().isEmpty
-          ? 'Tower A Â· 1205'
+          ? 'Tower A  · 1205'
           : _locationController.text,
       priority: _priority,
       isAnonymous: _isAnonymous,

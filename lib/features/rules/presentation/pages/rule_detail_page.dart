@@ -44,7 +44,7 @@ class RuleDetailPage extends GetView<RulesController> {
         children: [
           AppHeroPanel(
             icon: ruleCategoryIcon(current.category),
-            title: '${current.code} Â· ${current.category.label}',
+            title: '${current.code}  · ${current.category.label}',
             subtitle: current.title,
             footnote: 'Last updated ${current.updatedOn}',
             trailing: current.fineAmount > 0

@@ -491,7 +491,7 @@ class _StoreHero extends StatelessWidget {
                 ),
                 4.h.heightBox(),
                 Text(
-                  '${controller.products.length} products Â· '
+                  '${controller.products.length} products  · '
                   'deliver to ${StoreController.doorstepLocation}',
                   style: TextStyle(
                     color: tokens.mutedStrong,
@@ -844,7 +844,7 @@ void showStoreProductDetail(
               ),
               10.h.heightBox(),
               Text(
-                '${product.unit} Â· ${product.stock} on the shelf',
+                '${product.unit}  · ${product.stock} on the shelf',
                 style: TextStyle(color: tokens.faint, fontSize: 12.sp),
               ),
               20.h.heightBox(),
@@ -852,7 +852,7 @@ void showStoreProductDetail(
                 controller: controller,
                 addFirst: true,
                 label: product.isInStock
-                    ? 'Add to Cart Â· ${AppFormatters.currency(product.price)}'
+                    ? 'Add to Cart  · ${AppFormatters.currency(product.price)}'
                     : 'Out of stock',
               ),
             ],

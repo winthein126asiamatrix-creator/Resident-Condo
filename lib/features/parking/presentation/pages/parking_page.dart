@@ -194,10 +194,10 @@ class _MySpaceCard extends StatelessWidget {
     return AppHeroPanel(
       icon: Icons.directions_car_filled_rounded,
       title: 'Slot ${space.slot}',
-      subtitle: '${space.level} Â· ${space.type.label}',
+      subtitle: '${space.level}  · ${space.type.label}',
       footnote:
           'Monthly parking fee '
-          '${AppFormatters.currency(space.monthlyFee)} Â· billed separately',
+          '${AppFormatters.currency(space.monthlyFee)}  · billed separately',
       trailing: AppStatusPill(
         label: space.status.label,
         color: space.status == ParkingStatus.occupied
@@ -533,7 +533,7 @@ class _GuestRequestCard extends StatelessWidget {
           ),
           8.h.heightBox(),
           Text(
-            '${request.licensePlate} Â· ${request.date} Â· ${request.window}',
+            '${request.licensePlate}  · ${request.date}  · ${request.window}',
             style: TextStyle(color: tokens.mutedStrong, fontSize: 12.sp),
           ),
           if (request.vehicle.isNotEmpty) ...[

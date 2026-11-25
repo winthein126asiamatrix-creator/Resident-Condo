@@ -92,7 +92,7 @@ class _AppealViolationPageState extends State<AppealViolationPage> {
             AppStateMessage(
               title: violation.reference,
               message:
-                  '${violation.ruleTitle} Â· fine '
+                  '${violation.ruleTitle}  · fine '
                   '${AppFormatters.currency(violation.amount)}',
               icon: Icons.report_rounded,
             ),

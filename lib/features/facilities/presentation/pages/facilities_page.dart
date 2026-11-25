@@ -192,7 +192,7 @@ class _FacilitySummary extends StatelessWidget {
                 ),
                 6.h.heightBox(),
                 Text(
-                  '$facilityCount facilities Â· $reservationCount reservations',
+                  '$facilityCount facilities  · $reservationCount reservations',
                   style: TextStyle(
                     color: tokens.brandOnDark,
                     fontSize: 15.sp,

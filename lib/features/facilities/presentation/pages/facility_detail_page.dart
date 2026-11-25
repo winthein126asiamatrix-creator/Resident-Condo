@@ -183,7 +183,7 @@ class _FacilityHero extends StatelessWidget {
                   ),
                   5.h.heightBox(),
                   Text(
-                    '${facility.location} Â· ${facility.openingHours}',
+                    '${facility.location}  · ${facility.openingHours}',
                     style: TextStyle(color: Colors.white70, fontSize: 13.sp),
                   ),
                 ],

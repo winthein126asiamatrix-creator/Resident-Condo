@@ -47,7 +47,7 @@ class ViolationDetailPage extends GetView<RulesController> {
               icon: Icons.report_rounded,
               title: current.reference,
               subtitle: current.ruleTitle,
-              footnote: 'Issued ${current.issuedOn} Â· due ${current.dueDate}',
+              footnote: 'Issued ${current.issuedOn}  · due ${current.dueDate}',
               trailing: ViolationStatusPill(
                 status: current.status,
                 dense: false,

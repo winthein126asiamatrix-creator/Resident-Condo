@@ -304,7 +304,7 @@ class StoreOrderTrackerListCard extends StatelessWidget {
                     ),
                     3.h.heightBox(),
                     Text(
-                      '${order.itemCount} ${order.itemCount == 1 ? 'item' : 'items'} Â· ${order.deliveryMethod.label}',
+                      '${order.itemCount} ${order.itemCount == 1 ? 'item' : 'items'}  · ${order.deliveryMethod.label}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(color: tokens.muted, fontSize: 11.5.sp),
@@ -425,7 +425,7 @@ void showStoreAddedToBasket(
                   ),
                   2.h.heightBox(),
                   Text(
-                    'Added to your basket Â· $quantity in basket',
+                    'Added to your basket  · $quantity in basket',
                     style: TextStyle(color: Color(0xB3FFFFFF), fontSize: 12.sp),
                   ),
                 ],
@@ -483,7 +483,7 @@ class StoreCheckoutButton extends StatelessWidget {
           label ??
           (controller.cart.isEmpty
               ? 'Choose a delivery time'
-              : 'Review & checkout Â· ${controller.cartCount}'),
+              : 'Review & checkout  · ${controller.cartCount}'),
       icon: Icons.shopping_cart_checkout_rounded,
     );
   }

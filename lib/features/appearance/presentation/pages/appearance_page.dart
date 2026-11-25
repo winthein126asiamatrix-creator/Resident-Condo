@@ -80,18 +80,7 @@ class _AppearancePageState extends State<AppearancePage> {
         // An error only takes over the screen when there is nothing to show.
         // A failure to re-read storage while the resident is editing should not
         // wipe the palette they are looking at.
-        if (controller.errorMessage.value != null &&
-            controller.isLoading.value == false &&
-            controller.hasUnsavedChanges == false &&
-            controller.draft.value == AppearancePreference.defaults()) {
-          return AppStateMessage(
-            title: 'Unable to load appearance',
-            message: controller.errorMessage.value!,
-            icon: Icons.palette_outlined,
-            actionLabel: 'Try again',
-            onAction: controller.loadPreference,
-          );
-        }
+       
         return _Body(controller: controller);
       }),
       bottomNavigationBar: _AppearanceActionBar(),
@@ -332,7 +321,7 @@ class _AppearanceActionBar extends StatelessWidget {
                         ),
                         1.h.heightBox(),
                         Text(
-                          '${draft.label} Â· ${draft.brightnessMode.label}',
+                          '${draft.label} · ${draft.brightnessMode.label}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

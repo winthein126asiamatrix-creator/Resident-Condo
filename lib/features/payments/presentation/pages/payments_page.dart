@@ -748,7 +748,7 @@ class _InvoiceCard extends StatelessWidget {
                   ),
                   4.h.heightBox(),
                   Text(
-                    '${invoice.billingPeriod} Â· ${invoice.number}',
+                    '${invoice.billingPeriod} · ${invoice.number}',
                     style: TextStyle(color: tokens.muted, fontSize: 12.sp),
                   ),
                   6.h.heightBox(),

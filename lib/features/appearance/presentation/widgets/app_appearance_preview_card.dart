@@ -449,7 +449,7 @@ class _PreviewAnnouncement extends StatelessWidget {
                 ),
                 2.h.heightBox(),
                 Text(
-                  '9:00 AM â€“ 12:00 PM',
+                  '9:00 AM - 12:00 PM',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: tokens.muted, fontSize: 9.5.sp),

@@ -377,7 +377,7 @@ class _ComplaintCard extends StatelessWidget {
                 ),
                 4.h.heightBox(),
                 Text(
-                  '${complaint.reference} Â· ${complaint.category.label}',
+                  '${complaint.reference}  · ${complaint.category.label}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: tokens.muted, fontSize: 11.sp),

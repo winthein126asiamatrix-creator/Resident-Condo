@@ -66,7 +66,7 @@ class RulesPage extends GetView<RulesController> {
                 icon: Icons.gavel_rounded,
                 title: 'Community rules',
                 subtitle:
-                    '${controller.rules.length} rules Â· '
+                    '${controller.rules.length} rules  · '
                     '${controller.openViolationCount} open violations',
                 footnote:
                     'Fines are billed as a separate Violation Fine item, '
@@ -273,7 +273,7 @@ class _Violations extends StatelessWidget {
                         ),
                         4.h.heightBox(),
                         Text(
-                          '${violation.reference} Â· issued ${violation.issuedOn}',
+                          '${violation.reference}  · issued ${violation.issuedOn}',
                           style: TextStyle(
                             color: AppPalette.muted,
                             fontSize: 11.sp,

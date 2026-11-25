@@ -203,7 +203,7 @@ Map<String, dynamic>? _payloadMap(Object? json) {
         'meta',
         'pagination',
       ]) {
-        nestedMap.putIfAbsent(key, () => map[key]);
+        nestedMap.putIfAbsent( key, () => map[key]);
       }
       map = nestedMap;
       continue;

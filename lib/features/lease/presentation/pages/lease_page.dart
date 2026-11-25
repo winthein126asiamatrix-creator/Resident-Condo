@@ -558,7 +558,7 @@ class _RenewalCard extends StatelessWidget {
           8.h.heightBox(),
           Text(
             'Requested by ${renewal.requestedBy}'
-            '${renewal.decideOn && renewal.decidedOn != null ? ' Â· updated ${renewal.decidedOn}' : ''}',
+            '${renewal.decideOn && renewal.decidedOn != null ? ' · updated ${renewal.decidedOn}' : ''}',
             style: TextStyle(color: tokens.faint, fontSize: 11.sp),
           ),
           if (renewal.status == RenewalStatus.pending) ...[

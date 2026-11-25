@@ -40,14 +40,14 @@ class StoreCheckoutPage extends GetView<StoreController> {
   /// The windows a resident can choose from for either delivery method.
   static const _slots = <String, List<String>>{
     'Deliver to Doorstep': [
-      'Today Â· 6:00 PM â€“ 7:00 PM',
-      'Today Â· 7:00 PM â€“ 8:00 PM',
-      'Tomorrow Â· 8:00 AM â€“ 9:00 AM',
+      'Today  · 6:00 PM â€“ 7:00 PM',
+      'Today  · 7:00 PM â€“ 8:00 PM',
+      'Tomorrow  · 8:00 AM â€“ 9:00 AM',
     ],
     'Pick-up at Lobby': [
-      'Today Â· 5:00 PM â€“ 6:00 PM',
-      'Today Â· 6:00 PM â€“ 7:00 PM',
-      'Tomorrow Â· 9:00 AM â€“ 10:00 AM',
+      'Today  · 5:00 PM â€“ 6:00 PM',
+      'Today  · 6:00 PM â€“ 7:00 PM',
+      'Tomorrow  · 9:00 AM â€“ 10:00 AM',
     ],
   };
 
@@ -241,7 +241,7 @@ class StoreCheckoutPage extends GetView<StoreController> {
         method != null) {
       return 'Pay $total via ${method.buttonLabel}';
     }
-    return 'Place order Â· $total';
+    return 'Place order  · $total';
   }
 
   Future<void> _place(BuildContext context) {

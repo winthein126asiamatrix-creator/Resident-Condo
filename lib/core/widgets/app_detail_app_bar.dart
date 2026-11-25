@@ -128,13 +128,15 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                           style: TextStyle(
                             color: tokens.ink,
                             fontSize: 18.sp,
-                            height: 1.2,
+                            // Tight single-line boxes: .sp scales with the
+                            // device while the row height below stays fixed,
+                            // so a generous line height overflows the bar.
+                            height: 1.1,
                             letterSpacing: -0.2,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                         if (subtitle != null) ...[
-                          3.h.heightBox(),
                           Text(
                             subtitle!,
                             maxLines: 1,
@@ -142,7 +144,7 @@ class AppDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                             style: TextStyle(
                               color: tokens.muted,
                               fontSize: 12.5.sp,
-                              height: 1.2,
+                              height: 1.1,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
