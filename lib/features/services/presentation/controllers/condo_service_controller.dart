@@ -198,7 +198,9 @@ class CondoServiceController extends GetxController {
 
     try {
       final results = await Future.wait<Object>([
-        useCases.getServices(),
+        // A full refresh always starts at page 1; the repository replaces the
+        // cached catalogue with this page instead of appending to it.
+        useCases.getServices(page: 1),
         useCases.getRequests(status: _activeStatus),
         useCases.getRequests(status: _historyStatus),
       ]);

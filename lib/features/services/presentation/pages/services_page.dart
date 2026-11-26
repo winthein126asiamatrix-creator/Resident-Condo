@@ -278,7 +278,7 @@ class _ServiceCard extends StatelessWidget {
                   ),
                   2.h.heightBox(),
                   Text(
-                    "per ${service.pricing.unit?? ""}",
+                    "per ${service.productUom?.displayName ?? ""}",
                     style: TextStyle(color: tokens.faint, fontSize: 10.5.sp),
                   ),
                 ],
@@ -611,7 +611,7 @@ String _pricingUnit(CondoService service) {
     case ServicePricingType.fixed:
       return 'fixed';
     case ServicePricingType.perUnit:
-      return '/ ${service.pricing.unit ?? 'unit'}';
+      return '/ ${service.productUom?.displayName ?? 'unit'}';
     case ServicePricingType.perHour:
       return '/ hour';
     case ServicePricingType.quote:

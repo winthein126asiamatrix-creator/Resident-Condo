@@ -14,9 +14,11 @@ class CondoServiceRepositoryImpl implements CondoServiceRepository {
   final CondoServiceLocalDataSource localDataSource;
 
   @override
-  Future<List<CondoService>> getServices() async {
-    final services = await remoteDataSource.getServices();
-    await localDataSource.saveServices(services);
+  Future<List<CondoService>> getServices({int page = 1}) async {
+    final services = await remoteDataSource.getServices(page: page);
+    // The cache is only touched after the API call succeeded, so a failed
+    // request leaves the last good catalogue available offline.
+    await localDataSource.saveServices(services, page: page);
     return services;
   }
 

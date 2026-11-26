@@ -401,21 +401,21 @@ class _RememberMeAndForgot extends StatelessWidget {
       ),
     );
 
-    final forgot = Obx(
-      () => TextButton(
-        key: Key('login-forgot-password'),
-        onPressed: auth.isSubmitting.value
-            ? null
-            : () => _showForgotPassword(context),
-        style: TextButton.styleFrom(
-          foregroundColor: tokens.brand,
-          minimumSize: Size(0, AppSpacing.minTouchTarget),
-          padding: EdgeInsets.symmetric(horizontal: 8),
-          textStyle: TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w700),
-        ),
-        child: Text('Forgot password'),
-      ),
-    );
+    // final forgot = Obx(
+    //   () => TextButton(
+    //     key: Key('login-forgot-password'),
+    //     onPressed: auth.isSubmitting.value
+    //         ? null
+    //         : () => _showForgotPassword(context),
+    //     style: TextButton.styleFrom(
+    //       foregroundColor: tokens.brand,
+    //       minimumSize: Size(0, AppSpacing.minTouchTarget),
+    //       padding: EdgeInsets.symmetric(horizontal: 8),
+    //       textStyle: TextStyle(fontSize: 13.5.sp, fontWeight: FontWeight.w700),
+    //     ),
+    //     child: Text('Forgot password'),
+    //   ),
+    // );
 
     // On a narrow phone the two controls cannot share a line without the label
     // wrapping a character at a time, so they stack instead of shrinking into
@@ -437,7 +437,7 @@ class _RememberMeAndForgot extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               rememberMe,
-              Align(alignment: Alignment.centerLeft, child: forgot),
+             // Align(alignment: Alignment.centerLeft, child: forgot),
             ],
           );
         }
@@ -445,7 +445,7 @@ class _RememberMeAndForgot extends StatelessWidget {
         return Row(
           children: [
             Expanded(child: rememberMe),
-            forgot,
+          //  forgot,
           ],
         );
       },

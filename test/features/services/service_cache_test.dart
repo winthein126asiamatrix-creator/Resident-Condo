@@ -9,8 +9,11 @@ import 'package:test/app/routes/app_routes.dart';
 import 'package:test/core/cache/api_cache_store.dart';
 import 'package:test/core/cache/app_cache_database.dart';
 import 'package:test/core/network/api_exception.dart';
+import 'package:test/core/network/dio_api_service.dart';
+import 'package:test/core/network/in_memory_token_storage.dart';
 import 'package:test/features/services/data/datasources/condo_service_local_data_source.dart';
 import 'package:test/features/services/data/datasources/condo_service_remote_data_source.dart';
+import 'package:test/features/services/data/repositories/condo_service_repository_impl.dart';
 import 'package:test/features/services/domain/entities/condo_service.dart';
 import 'package:test/features/services/domain/repositories/condo_service_repository.dart';
 import 'package:test/features/services/domain/usecases/condo_service_usecases.dart';
@@ -31,6 +34,7 @@ void main() {
         unit: 'KG',
         currency: 'USD',
       ),
+      productUom: ProductUom(id: 33, name: '5 kg', displayName: '5 kg'),
       estimatedDurationMinutes: 120,
       bookingFields: <ServiceBookingField>[
         ServiceBookingField(
@@ -74,6 +78,41 @@ void main() {
     expect(restored.availableDates.single.slots.single.startTime, '09:00');
     expect(restored.pricing.currency, 'USD');
     expect(restored.pricing.unit, 'KG');
+    expect(restored.productUom?.id, 33);
+    expect(restored.productUom?.name, '5 kg');
+    expect(restored.productUom?.displayName, '5 kg');
+  });
+
+  test('product_uom parsing handles objects, false and null', () {
+    final parsed = CondoService.fromJson(<String, dynamic>{
+      'id': 1,
+      'name': 'Laundry',
+      'product_uom': <String, dynamic>{
+        'id': 33,
+        'name': '5 kg',
+        'display_name': '5 kg',
+      },
+    });
+    final withoutDisplayName = CondoService.fromJson(<String, dynamic>{
+      'id': 2,
+      'name': 'Laundry',
+      'product_uom': <String, dynamic>{'id': 33, 'name': '5 kg'},
+    });
+    final disabled = CondoService.fromJson(<String, dynamic>{
+      'id': 3,
+      'name': 'Laundry',
+      'product_uom': false,
+    });
+    final missing = CondoService.fromJson(<String, dynamic>{
+      'id': 4,
+      'name': 'Laundry',
+      'product_uom': null,
+    });
+
+    expect(parsed.productUom?.displayName, '5 kg');
+    expect(withoutDisplayName.productUom?.displayName, '5 kg');
+    expect(disabled.productUom, isNull);
+    expect(missing.productUom, isNull);
   });
 
   test('service request JSON round-trips every detail field', () {
@@ -187,6 +226,141 @@ void main() {
     ]);
     expect(cached?.page, 2);
     expect(cached?.total, 4);
+  });
+
+  test('a page 1 services response replaces the cached catalogue', () async {
+    final local = CondoServiceLocalDataSource(
+      cache: _FakeCache(),
+      accountKey: () => 'user:1',
+    );
+
+    await local.saveServices(<CondoService>[_service(1), _service(2)], page: 1);
+    await local.saveServices(<CondoService>[_service(3)], page: 1);
+
+    expect((await local.readServices())!.map((service) => service.id), <int>[
+      3,
+    ]);
+  });
+
+  test('services pages append in order without duplicates', () async {
+    final local = CondoServiceLocalDataSource(
+      cache: _FakeCache(),
+      accountKey: () => 'user:1',
+    );
+
+    await local.saveServices(<CondoService>[_service(1), _service(2)], page: 1);
+    await local.saveServices(<CondoService>[_service(3), _service(4)], page: 2);
+    await local.saveServices(<CondoService>[_service(3), _service(4)], page: 2);
+
+    expect((await local.readServices())!.map((service) => service.id), <int>[
+      1,
+      2,
+      3,
+      4,
+    ]);
+  });
+
+  test('a duplicate service keeps its place and takes the newest copy', () async {
+    final local = CondoServiceLocalDataSource(
+      cache: _FakeCache(),
+      accountKey: () => 'user:1',
+    );
+
+    await local.saveServices(<CondoService>[
+      _service(1),
+      _service(2),
+    ], page: 1);
+    await local.saveServices(<CondoService>[
+      _service(2, name: 'Updated service 2'),
+      _service(3),
+    ], page: 2);
+
+    final cached = (await local.readServices())!;
+    expect(cached.map((service) => service.id), <int>[1, 2, 3]);
+    expect(cached[1].name, 'Updated service 2');
+  });
+
+  test('services cache stays isolated between accounts', () async {
+    final cache = _FakeCache();
+    var account = 'user:1';
+    final local = CondoServiceLocalDataSource(
+      cache: cache,
+      accountKey: () => account,
+    );
+
+    await local.saveServices(<CondoService>[_service(1)], page: 1);
+
+    account = 'user:2';
+    await local.saveServices(<CondoService>[_service(2)], page: 1);
+
+    expect((await local.readServices())!.single.id, 2);
+
+    account = 'user:1';
+    expect((await local.readServices())!.single.id, 1);
+  });
+
+  test('repository replaces page 1 and appends later pages', () async {
+    final cache = _FakeCache();
+    final local = CondoServiceLocalDataSource(
+      cache: cache,
+      accountKey: () => 'user:1',
+    );
+    final remote = _FakeServicesRemote();
+    final repository = CondoServiceRepositoryImpl(
+      remoteDataSource: remote,
+      localDataSource: local,
+    );
+
+    remote.services = <CondoService>[_service(1), _service(2)];
+    await repository.getServices(page: 1);
+    expect(remote.lastPage, 1);
+    expect((await local.readServices())!.map((service) => service.id), <int>[
+      1,
+      2,
+    ]);
+
+    remote.services = <CondoService>[_service(3)];
+    await repository.getServices(page: 2);
+    expect(remote.lastPage, 2);
+    expect((await local.readServices())!.map((service) => service.id), <int>[
+      1,
+      2,
+      3,
+    ]);
+
+    remote.services = <CondoService>[_service(4)];
+    await repository.getServices(page: 1);
+    expect((await local.readServices())!.map((service) => service.id), <int>[
+      4,
+    ]);
+  });
+
+  test('a failed services request leaves the cached catalogue untouched', () async {
+    final cache = _FakeCache();
+    final local = CondoServiceLocalDataSource(
+      cache: cache,
+      accountKey: () => 'user:1',
+    );
+    final remote = _FakeServicesRemote()
+      ..services = <CondoService>[_service(1)];
+    final repository = CondoServiceRepositoryImpl(
+      remoteDataSource: remote,
+      localDataSource: local,
+    );
+
+    await repository.getServices(page: 1);
+    remote.error = const ApiException(
+      'No connection.',
+      kind: ApiFailureKind.network,
+    );
+
+    await expectLater(
+      repository.getServices(page: 1),
+      throwsA(isA<ApiException>()),
+    );
+    expect((await local.readServices())!.map((service) => service.id), <int>[
+      1,
+    ]);
   });
 
   test('a status change keeps both cached lists consistent', () async {
@@ -496,6 +670,41 @@ void main() {
     expect(controller.historyTotal.value, 3);
   });
 
+  testWidgets('service card shows the product UOM display name', (
+    tester,
+  ) async {
+    Get.testMode = true;
+    addTearDown(Get.reset);
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _FakeRepository()
+      ..services = <CondoService>[
+        _service(
+          1,
+          productUom: const ProductUom(
+            id: 33,
+            name: '5 kg',
+            displayName: '5 kg',
+          ),
+        ),
+      ];
+    Get.put(CondoServiceController(CondoServiceUseCases(repository)));
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, _) =>
+            GetMaterialApp(home: const ServicesPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('per 5 kg'), findsOneWidget);
+  });
+
   testWidgets('My requests renders history cards and opens their details', (
     tester,
   ) async {
@@ -562,11 +771,12 @@ void main() {
   });
 }
 
-CondoService _service(int id) {
+CondoService _service(int id, {String? name, ProductUom? productUom}) {
   return CondoService(
     id: id,
     category: ServiceCategory.cleaning,
-    name: 'Service $id',
+    name: name ?? 'Service $id',
+    productUom: productUom,
     providerName: 'Provider',
     pricing: const ServicePricing(
       type: ServicePricingType.fixed,
@@ -656,6 +866,27 @@ class _FakeCache extends ApiCacheStore {
   Future<void> clearAll() async => entries.clear();
 }
 
+class _FakeServicesRemote extends CondoServiceRemoteDataSource {
+  _FakeServicesRemote()
+    : super(
+        DioApiService(
+          tokenStorage: InMemoryTokenStorage(),
+          baseUrl: 'http://localhost',
+        ),
+      );
+
+  List<CondoService> services = const <CondoService>[];
+  Object? error;
+  int? lastPage;
+
+  @override
+  Future<List<CondoService>> getServices({int page = 1}) async {
+    lastPage = page;
+    if (error != null) throw error!;
+    return services;
+  }
+}
+
 class _FakeRepository implements CondoServiceRepository {
   List<CondoService>? cachedServices;
   ServiceRequestPageResult? cachedActive;
@@ -683,7 +914,7 @@ class _FakeRepository implements CondoServiceRepository {
   }
 
   @override
-  Future<List<CondoService>> getServices() async {
+  Future<List<CondoService>> getServices({int page = 1}) async {
     if (error != null) throw error!;
     return services;
   }

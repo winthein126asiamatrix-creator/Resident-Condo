@@ -181,6 +181,53 @@ extension ServicePricingTypeLabel on ServicePricingType {
   }
 }
 
+/// The product unit of measure returned with a service.
+///
+/// The API sends this as a nested object:
+/// `{"id": 33, "name": "5 kg", "display_name": "5 kg"}`. Odoo can also return
+/// `false` when a service has no unit, so parsing accepts any JSON value and
+/// only builds a model for an actual object.
+class ProductUom {
+  const ProductUom({this.id, this.name, this.displayName});
+
+  final int? id;
+  final String? name;
+  final String? displayName;
+
+  static ProductUom? parse(Object? json) {
+    if (json is! Map) return null;
+    final map = Map<String, dynamic>.from(json);
+    final id = _asInt(map['id']);
+    final name = _asText(map['name']);
+    final displayName = _asText(map['display_name']) ?? name;
+    if (id == null && name == null && displayName == null) return null;
+    return ProductUom(
+      id: id,
+      name: name ?? displayName,
+      displayName: displayName,
+    );
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'id': id,
+    'name': name,
+    'display_name': displayName,
+  };
+
+  static int? _asInt(Object? value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse('$value');
+  }
+
+  static String? _asText(Object? value) {
+    if (value is! String) return null;
+    final text = value.trim();
+    if (text.isEmpty || text == 'false') return null;
+    return text;
+  }
+}
+
 class ServicePricing {
   const ServicePricing({
     required this.type,
@@ -646,6 +693,7 @@ class CondoService {
     this.providerName = '',
     this.description = '',
     this.pricing = const ServicePricing(type: ServicePricingType.fixed),
+    this.productUom,
     this.estimatedDurationMinutes,
     this.bookingFields = const <ServiceBookingField>[],
     this.availableDates = const <ServiceAvailableDate>[],
@@ -664,6 +712,7 @@ class CondoService {
   final String providerName;
   final String description;
   final ServicePricing pricing;
+  final ProductUom? productUom;
   final int? estimatedDurationMinutes;
   final List<ServiceBookingField> bookingFields;
   final List<ServiceAvailableDate> availableDates;
@@ -782,6 +831,7 @@ class CondoService {
       providerName: providerName,
       description: description is String ? description : '',
       pricing: pricing,
+      productUom: ProductUom.parse(json['product_uom']),
       estimatedDurationMinutes: json['estimated_duration_minutes'] is num
           ? (json['estimated_duration_minutes'] as num).toInt()
           : null,
@@ -881,6 +931,7 @@ class CondoService {
     'provider_name': providerName,
     'description': description,
     'pricing': pricing.toJson(),
+    'product_uom': productUom?.toJson(),
     'estimated_duration_minutes': estimatedDurationMinutes,
     'booking_fields': bookingFields.map((f) => f.toJson()).toList(),
     'available_dates': availableDates.map((d) => d.toJson()).toList(),

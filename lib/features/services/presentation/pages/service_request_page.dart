@@ -508,8 +508,15 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                   ),
                   AppLabelValueRow(
                     label: 'Service fee',
-                    value:
-                        AppFormatters.money(service.price,service.pricing.currency ?? ''),
+                    value: [
+                      AppFormatters.money(
+                        service.price,
+                        service.pricing.currency ?? '',
+                      ),
+                      if (service.productUom?.displayName != null &&
+                          service.productUom!.displayName!.isNotEmpty)
+                        service.productUom!.displayName!,
+                    ].join(' / '),
                     emphasize: true,
                   ),
                 ],

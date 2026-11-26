@@ -55,17 +55,22 @@ void main() {
     expect(repository.getRequestsCalls, 1);
   });
 
-  testWidgets('empty response shows an empty state', (tester) async {
+  testWidgets('empty request list hides the section', (tester) async {
     Get.put<MaintenanceController>(
       MaintenanceController(MaintenanceUseCases(_FakeMaintenanceRepository())),
     );
     await _pumpSection(tester);
 
-    expect(find.text('No maintenance requests yet'), findsOneWidget);
+    expect(
+      find.byKey(const Key('dashboard-maintenance-section')),
+      findsNothing,
+    );
+    expect(find.byKey(const Key('dashboard-maintenance-card')), findsNothing);
+    expect(find.text('No maintenance requests yet'), findsNothing);
     expect(find.text('Leaking kitchen sink'), findsNothing);
   });
 
-  testWidgets('API failure shows an error state with retry', (tester) async {
+  testWidgets('API failure with no requests hides the section', (tester) async {
     final repository = _FakeMaintenanceRepository()..error = true;
     final maintenance = Get.put<MaintenanceController>(
       MaintenanceController(MaintenanceUseCases(repository)),
@@ -73,15 +78,46 @@ void main() {
     await maintenance.loadRequests();
     await _pumpSection(tester);
 
-    expect(find.text('No connection.'), findsOneWidget);
-    expect(find.text('Leaking kitchen sink'), findsNothing);
-
-    repository.error = false;
-    await tester.tap(find.text('Try again'));
-    await tester.pumpAndSettle();
-    expect(repository.getRequestsCalls, 2);
+    expect(maintenance.errorMessage.value, 'No connection.');
+    expect(
+      find.byKey(const Key('dashboard-maintenance-section')),
+      findsNothing,
+    );
     expect(find.text('No connection.'), findsNothing);
-    expect(find.text('No maintenance requests yet'), findsOneWidget);
+    expect(find.text('Leaking kitchen sink'), findsNothing);
+  });
+
+  testWidgets('visibility reacts when requests are added and removed', (
+    tester,
+  ) async {
+    final maintenance = Get.put<MaintenanceController>(
+      MaintenanceController(MaintenanceUseCases(_FakeMaintenanceRepository())),
+    );
+    await _pumpSection(tester);
+
+    expect(
+      find.byKey(const Key('dashboard-maintenance-section')),
+      findsNothing,
+    );
+
+    maintenance.requests.add(
+      _request('1', 'Newly added request', MaintenanceStatus.submitted),
+    );
+    await tester.pump();
+
+    expect(
+      find.byKey(const Key('dashboard-maintenance-section')),
+      findsOneWidget,
+    );
+    expect(find.text('Newly added request'), findsOneWidget);
+
+    maintenance.requests.clear();
+    await tester.pump();
+
+    expect(
+      find.byKey(const Key('dashboard-maintenance-section')),
+      findsNothing,
+    );
   });
 
   testWidgets('cached data is marked on the section', (tester) async {
@@ -102,15 +138,22 @@ void main() {
     );
   });
 
-  testWidgets('loading shows a progress indicator', (tester) async {
+  testWidgets('loading keeps already loaded requests visible', (tester) async {
     final maintenance = Get.put<MaintenanceController>(
       MaintenanceController(MaintenanceUseCases(_FakeMaintenanceRepository())),
     );
     await maintenance.loadRequests();
+    maintenance.requests.assignAll(<MaintenanceRequest>[
+      _request('1', 'Saved request', MaintenanceStatus.submitted),
+    ]);
     maintenance.isLoading.value = true;
     await _pumpSection(tester, settle: false);
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(
+      find.byKey(const Key('dashboard-maintenance-section')),
+      findsOneWidget,
+    );
+    expect(find.text('Saved request'), findsOneWidget);
   });
 
   testWidgets('tapping a request opens the maintenance detail page', (
@@ -141,9 +184,13 @@ void main() {
   });
 
   testWidgets('View all opens the maintenance list tab', (tester) async {
-    Get.put<MaintenanceController>(
+    final maintenance = Get.put<MaintenanceController>(
       MaintenanceController(MaintenanceUseCases(_FakeMaintenanceRepository())),
     );
+    await maintenance.loadRequests();
+    maintenance.requests.assignAll(<MaintenanceRequest>[
+      _request('1', 'Real request one', MaintenanceStatus.submitted),
+    ]);
     final selected = <int>[];
     await _pumpSection(tester, onViewAll: () => selected.add(2));
 

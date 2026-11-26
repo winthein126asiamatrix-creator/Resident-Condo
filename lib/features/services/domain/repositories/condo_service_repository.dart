@@ -1,7 +1,10 @@
 import '../entities/condo_service.dart';
 
 abstract interface class CondoServiceRepository {
-  Future<List<CondoService>> getServices();
+  /// Loads one page of the catalogue.
+  ///
+  /// Page 1 replaces the cached snapshot; later pages are appended to it.
+  Future<List<CondoService>> getServices({int page = 1});
 
   /// The catalogue kept on this device, or null when there is no snapshot yet.
   Future<List<CondoService>?> getCachedServices();

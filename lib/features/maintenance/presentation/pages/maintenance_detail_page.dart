@@ -64,10 +64,10 @@ class _MaintenanceDetailPageState extends State<MaintenanceDetailPage> {
             32,
           ),
           children: [
-            if (controller.isLoadingDetail.value) ...[
-              LinearProgressIndicator(),
-              12.h.heightBox(),
-            ],
+            // if (controller.isLoadingDetail.value) ...[
+            //   LinearProgressIndicator(),
+            //   12.h.heightBox(),
+            // ],
             if (controller.detailError.value != null) ...[
               Text(
                 controller.detailError.value!,

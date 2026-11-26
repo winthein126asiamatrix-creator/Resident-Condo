@@ -8,8 +8,11 @@ class CondoServiceRemoteDataSource {
 
   final DioApiService _service;
 
-  Future<List<CondoService>> getServices() async {
-    final response = await _service.get<dynamic>(ApiEndPoints.services);
+  Future<List<CondoService>> getServices({int page = 1}) async {
+    final response = await _service.get<dynamic>(
+      ApiEndPoints.services,
+      query: <String, dynamic>{'page': page},
+    );
     // A response that does not carry an item list is not an empty catalogue.
     // Throwing keeps the repository from overwriting a good cached snapshot
     // with "no services" because of an unexpected envelope.

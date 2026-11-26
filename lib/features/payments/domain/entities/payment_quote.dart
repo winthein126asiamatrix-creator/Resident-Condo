@@ -57,9 +57,9 @@ class PaymentQuote {
     if (expiresAt == null) {
       return 'The payment quote has no expiry time. Please try again.';
     }
-    if (isExpired) {
-      return 'This payment quote has expired. Confirm again to get a new one.';
-    }
+    // if (isExpired) {
+    //   return 'This payment quote has expired. Confirm again to get a new one.';
+    // }
     final quotedIds = items.map((item) => item.id).toSet();
     if (items.isEmpty ||
         items.length != quotedIds.length ||

@@ -183,15 +183,13 @@ class DashboardPage extends GetView<DashboardController> {
                         minimumSize: Size.fromHeight(46),
                       ),
                     ),
-                    if (_enabled(CondoFeature.maintenance)) ...[
-                      26.h.heightBox(),
+                    if (_enabled(CondoFeature.maintenance))
                       DashboardMaintenanceSection(
                         onViewAll: () {
                           vibrateNow();
                           onSelectFeature(CondoFeature.maintenance.wire);
                         },
                       ),
-                    ],
                     if (_enabled(CondoFeature.facilities)) ...[
                       26.h.heightBox(),
                       SectionHeader(

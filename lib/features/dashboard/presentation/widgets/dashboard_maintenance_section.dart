@@ -20,19 +20,22 @@ class DashboardMaintenanceSection extends StatelessWidget {
     final maintenance = Get.isRegistered<MaintenanceController>()
         ? Get.find<MaintenanceController>()
         : null;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SectionHeader(
-          key: const Key('dashboard-maintenance-section'),
-          title: 'Maintenance',
-          actionLabel: 'View all',
-          onAction: onViewAll,
-        ),
-        10.h.heightBox(),
-        Obx(() {
-          return DashboardMaintenanceCard(
-            requests: maintenance?.requests ?? <MaintenanceRequest>[],
+    return Obx(() {
+      final requests = maintenance?.requests ?? <MaintenanceRequest>[];
+      if (requests.isEmpty) return const SizedBox.shrink();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          26.h.heightBox(),
+          SectionHeader(
+            key: const Key('dashboard-maintenance-section'),
+            title: 'Maintenance',
+            actionLabel: 'View all',
+            onAction: onViewAll,
+          ),
+          10.h.heightBox(),
+          DashboardMaintenanceCard(
+            requests: requests,
             inProgress: maintenance?.inProgressCount ?? 0,
             completed: maintenance?.completedCount ?? 0,
             isLoading: maintenance?.isLoading.value ?? false,
@@ -50,9 +53,9 @@ class DashboardMaintenanceSection extends StatelessWidget {
                       arguments: request,
                     );
                   },
-          );
-        }),
-      ],
-    );
+          ),
+        ],
+      );
+    });
   }
 }

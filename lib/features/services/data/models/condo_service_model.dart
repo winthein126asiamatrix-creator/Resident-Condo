@@ -8,6 +8,7 @@ class CondoServiceModel extends CondoService {
     required super.providerName,
     required super.description,
     required super.pricing,
+    super.productUom,
     super.estimatedDurationMinutes,
     super.bookingFields,
     super.availableDates,

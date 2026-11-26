@@ -6,7 +6,8 @@ class CondoServiceUseCases {
 
   final CondoServiceRepository repository;
 
-  Future<List<CondoService>> getServices() => repository.getServices();
+  Future<List<CondoService>> getServices({int page = 1}) =>
+      repository.getServices(page: page);
 
   Future<List<CondoService>?> getCachedServices() =>
       repository.getCachedServices();

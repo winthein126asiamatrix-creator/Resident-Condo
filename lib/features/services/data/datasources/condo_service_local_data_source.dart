@@ -19,6 +19,15 @@ class CondoServiceLocalDataSource {
 
   static const String servicesCacheKey = 'services:catalogue';
 
+  /// The catalogue snapshot belonging to one resident.
+  ///
+  /// The shared [servicesCacheKey] is kept as a fallback for installs that
+  /// cached a catalogue before it was scoped, but a signed-in resident reads
+  /// and writes this key so refreshing their list cannot replace another
+  /// resident's copy.
+  static String _servicesKeyFor(String accountKey) =>
+      '$servicesCacheKey:$accountKey';
+
   /// Prefix shared by every cached request list, so one lookup can drop them all.
   static const String requestsCacheKeyPrefix = 'service_requests:';
 
@@ -38,33 +47,90 @@ class CondoServiceLocalDataSource {
   /// Null and an empty list are different: the first means there is no snapshot
   /// to fall back to, the second is a real, empty catalogue the API returned.
   Future<List<CondoService>?> readServices() async {
-    final entry = await _cache?.read(servicesCacheKey);
+    final account = _accountKey();
+    if (account != null) {
+      final scoped = await _readServicesEntry(
+        _servicesKeyFor(account),
+        accountKey: account,
+      );
+      if (scoped != null) return scoped;
+    }
+    // No snapshot for this resident yet: fall back to the shared catalogue
+    // written by older builds so the screen still has something to show.
+    return _readServicesEntry(servicesCacheKey);
+  }
+
+  /// Saves a page of the catalogue.
+  ///
+  /// Page 1 is a full refresh, so it replaces the cached list: services the
+  /// API no longer returns disappear from the screen. Later pages are appended
+  /// to the pages already on the device, keyed by service id so a record that
+  /// appears twice is kept once with the newest API copy.
+  Future<void> saveServices(
+    Iterable<CondoService> services, {
+    int page = 1,
+  }) async {
+    final incoming = services.toList(growable: false);
+    var items = incoming;
+    if (page > 1) {
+      final cached = await readServices();
+      if (cached != null) {
+        final merged = <int, CondoService>{};
+        for (final service in cached) {
+          merged[service.id] = service;
+        }
+        for (final service in incoming) {
+          // The API copy wins, but a duplicate keeps the position the earlier
+          // page gave it so the list order stays stable.
+          merged[service.id] = service;
+        }
+        items = merged.values.toList(growable: false);
+      }
+    }
+
+    final payload = <String, Object?>{
+      'items': items.map((service) => service.toJson()).toList(),
+      'page': page,
+    };
+    final account = _accountKey();
+    if (account != null) {
+      await _cache?.save(
+        key: _servicesKeyFor(account),
+        accountKey: account,
+        payload: payload,
+      );
+    }
+    await _cache?.save(key: servicesCacheKey, payload: payload);
+  }
+
+  Future<List<CondoService>?> _readServicesEntry(
+    String key, {
+    String? accountKey,
+  }) async {
+    final entry = await _cache?.read(key);
     if (entry == null) return null;
+    if (accountKey != null && entry.accountKey != accountKey) return null;
     try {
       final json = jsonDecode(entry.payloadJson);
-      if (json is! Map) return await _discardServices();
+      if (json is! Map) return await _discardServices(key);
       final items = json['items'];
-      if (items is! List) return await _discardServices();
-      return items
-          .whereType<Map>()
-          .map((item) => CondoService.fromJson(Map<String, dynamic>.from(item)))
-          .toList();
+      if (items is! List) return await _discardServices(key);
+      // Older builds could leave the same service in the payload more than
+      // once; collapse them here so the screen never renders a duplicate even
+      // before the next page 1 refresh rewrites the cache.
+      final unique = <int, CondoService>{};
+      for (final item in items.whereType<Map>()) {
+        final service = CondoService.fromJson(Map<String, dynamic>.from(item));
+        unique[service.id] = service;
+      }
+      return unique.values.toList();
     } catch (error) {
       superPrint(
         'Discarded unreadable service catalogue cache: $error',
         title: 'Services',
       );
-      return _discardServices();
+      return _discardServices(key);
     }
-  }
-
-  Future<void> saveServices(Iterable<CondoService> services) async {
-    await _cache?.save(
-      key: servicesCacheKey,
-      payload: <String, Object?>{
-        'items': services.map((service) => service.toJson()).toList(),
-      },
-    );
   }
 
   /// The cached page for [status], or null when nothing belongs to this account.
@@ -264,8 +330,8 @@ class CondoServiceLocalDataSource {
     }
   }
 
-  Future<List<CondoService>?> _discardServices() async {
-    await _cache?.invalidate(servicesCacheKey);
+  Future<List<CondoService>?> _discardServices(String key) async {
+    await _cache?.invalidate(key);
     return null;
   }
 
