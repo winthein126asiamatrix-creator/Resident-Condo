@@ -11,7 +11,6 @@ import '../../../../core/network/api_exception.dart';
 import '../../../../core/network/connectivity_service.dart';
 import '../../../../core/network/refresh_registry.dart';
 import '../../../../core/utils/app_dates.dart';
-import '../../../config/presentation/controllers/condo_config_controller.dart';
 import '../../../session/presentation/controllers/session_controller.dart';
 import '../../domain/entities/invoice.dart';
 import '../../domain/entities/invoice_detail.dart';
@@ -1706,6 +1705,7 @@ class PaymentController extends GetxController {
         return;
       }
       invoiceDetail.value = detail;
+      _syncSelectionWithRefreshedDetail(detail);
       invoiceDetailError.value = null;
       _registry?.markFresh(invoiceDetailScreen);
     } on AppException catch (error) {
@@ -1742,19 +1742,49 @@ class PaymentController extends GetxController {
 
   // -------------------------------------------------------------- selection
 
-  /// True when the condominium config disables partial payment.
-  ///
-  /// While the config is unresolved the previous behaviour is kept.
-  bool get requiresFullPayment {
-    if (!Get.isRegistered<CondoConfigController>()) return false;
-    final config = Get.find<CondoConfigController>();
-    if (config.config.value == null) return false;
-    return !config.partialPaymentEnabled;
+  /// Whether the selected invoice has any line the backend allows paying.
+  bool get hasPayableItems {
+    final invoice = selectedInvoice.value;
+    return invoice?.unpaidItems.isNotEmpty ?? false;
   }
 
-  /// Selecting an invoice clears the selection: nothing optional is auto
-  /// selected so "Pay now" can never settle the whole balance by accident.
-  /// Mandatory charges are the exception, they are always pre-selected.
+  String get noPayableItemsMessage =>
+      'No payable fees are available for this invoice.';
+
+  /// Selected lines that are still outstanding and payable. Paid and
+  /// non-payable lines can never reach the quote or the displayed total.
+  List<InvoiceItem> get payableSelectedItems =>
+      selectedItems.where((item) => item.isPayable).toList(growable: false);
+
+  /// Keeps the summary selection in step with a freshly loaded invoice.
+  ///
+  /// A line that just became paid or non-payable is dropped, mandatory payable
+  /// lines are kept selected, and optional lines the resident had picked stay
+  /// picked as long as they are still payable.
+  void _syncSelectionWithRefreshedDetail(InvoiceDetail detail) {
+    final current = selectedInvoice.value;
+    if (current == null || int.tryParse(current.id) != detail.id) {
+      return;
+    }
+    final refreshed = detail.toInvoice();
+    selectedInvoice.value = refreshed;
+    final selectedIds = selectedItems
+        .where((item) => item.isPayable)
+        .map((item) => item.id)
+        .whereType<int>()
+        .toSet();
+    selectedItems.assignAll(
+      refreshed.items.where(
+        (item) =>
+            item.isPayable &&
+            (item.isMandatory ||
+                (item.id != null && selectedIds.contains(item.id))),
+      ),
+    );
+  }
+
+  /// Selecting an invoice starts with every mandatory, payable line only.
+  /// Optional lines are left for the resident to choose.
   void selectInvoice(Invoice invoice) {
     selectedInvoice.value = invoice;
     paymentSuccess.value = null;
@@ -1763,12 +1793,10 @@ class PaymentController extends GetxController {
     selectedPaymentMethodKey.value = null;
     selectedItems
       ..clear()
-      ..addAll(
-        requiresFullPayment ? invoice.unpaidItems : invoice.mandatoryItems,
-      );
+      ..addAll(invoice.mandatoryItems);
   }
 
-  /// Clears the optional items. Mandatory charges stay selected.
+  /// Clears the optional items. Mandatory, payable charges stay selected.
   void clearSelection() {
     final invoice = selectedInvoice.value;
     if (invoice == null) {
@@ -1777,9 +1805,7 @@ class PaymentController extends GetxController {
     }
     selectedItems
       ..clear()
-      ..addAll(
-        requiresFullPayment ? invoice.unpaidItems : invoice.mandatoryItems,
-      );
+      ..addAll(invoice.mandatoryItems);
   }
 
   /// Explicit user action, used by the "Select all unpaid" shortcut.
@@ -1795,13 +1821,10 @@ class PaymentController extends GetxController {
 
   bool isItemSelected(InvoiceItem item) => selectedItems.contains(item);
 
-  /// Paid and zero-amount items can never be selected again, and mandatory
-  /// charges can never be deselected.
+  /// Only optional, payable lines can be toggled. Mandatory payable lines are
+  /// always selected and non-payable lines are never selectable.
   void toggleInvoiceItem(InvoiceItem item) {
-    if (requiresFullPayment) {
-      return;
-    }
-    if (!item.isPayable || item.mustPaid) {
+    if (!item.isPayable || item.isMandatory) {
       return;
     }
     if (selectedItems.contains(item)) {
@@ -1823,9 +1846,12 @@ class PaymentController extends GetxController {
         .toList();
   }
 
-  /// Payment can only continue once every mandatory charge is selected.
+  /// Payment can only continue when there is something payable, at least one
+  /// payable line is selected, and every mandatory payable line is selected.
   bool get canProceedToPayment =>
-      selectedItems.isNotEmpty && missingMandatoryItems.isEmpty;
+      hasPayableItems &&
+      payableSelectedItems.isNotEmpty &&
+      missingMandatoryItems.isEmpty;
 
   String get mandatoryValidationMessage {
     final missing = missingMandatoryItems;
@@ -1837,9 +1863,9 @@ class PaymentController extends GetxController {
   }
 
   double get selectedTotal =>
-      selectedItems.fold(0, (total, item) => total + item.dueAmount);
+      payableSelectedItems.fold(0, (total, item) => total + item.dueAmount);
 
-  int get selectedCount => selectedItems.length;
+  int get selectedCount => payableSelectedItems.length;
 
   // ---------------------------------------------------------------- payment
 
@@ -1861,7 +1887,12 @@ class PaymentController extends GetxController {
       errorMessage.value = 'Select an unpaid invoice first.';
       return null;
     }
-    if (selectedItems.isEmpty) {
+    if (!hasPayableItems) {
+      errorMessage.value = noPayableItemsMessage;
+      return null;
+    }
+    final itemsToPay = payableSelectedItems;
+    if (itemsToPay.isEmpty) {
       errorMessage.value = 'Select at least one fee to pay.';
       return null;
     }
@@ -1891,12 +1922,12 @@ class PaymentController extends GetxController {
       errorMessage.value = 'This invoice cannot be paid right now.';
       return null;
     }
-    final selectedItemIds = selectedItems
+    final selectedItemIds = itemsToPay
         .map((item) => item.id)
         .whereType<int>()
         .where((id) => id > 0)
         .toList(growable: false);
-    if (selectedItemIds.length != selectedItems.length ||
+    if (selectedItemIds.length != itemsToPay.length ||
         selectedItemIds.toSet().length != selectedItemIds.length) {
       errorMessage.value =
           'Some selected fees cannot be paid right now. Please choose again.';
@@ -1927,7 +1958,7 @@ class PaymentController extends GetxController {
         invoiceNumber: invoice.number,
         residentName: _session?.name ?? '',
         unitLabel: invoice.unitLabel,
-        items: List<InvoiceItem>.unmodifiable(selectedItems),
+        items: List<InvoiceItem>.unmodifiable(itemsToPay),
         amount: quote.totalAmount,
         date: AppDates.format(DateTime.now()),
         method: paymentMethodFromCode(method.code),

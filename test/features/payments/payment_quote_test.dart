@@ -290,6 +290,170 @@ void main() {
       expect(controller.errorMessage.value, contains('cannot be paid'));
     });
   });
+
+  group('payment summary selection rules', () {
+    InvoiceItem line(
+      int id, {
+      required bool mandatory,
+      required bool payable,
+    }) {
+      return InvoiceItem(
+        type: InvoiceItemType.condoFee,
+        amount: 100,
+        id: id,
+        mustPaid: mandatory,
+        apiPayable: payable,
+      );
+    }
+
+    Invoice selectionInvoice() {
+      return Invoice(
+        id: '42',
+        number: 'INV-42',
+        title: 'Invoice',
+        billingPeriod: 'November 2026',
+        unitLabel: 'Tower A - 1205',
+        dueDate: 'Nov 30, 2026',
+        currency: 'MMK',
+        status: InvoiceStatus.unpaid,
+        items: <InvoiceItem>[
+          line(11, mandatory: true, payable: true),
+          line(12, mandatory: false, payable: true),
+          line(13, mandatory: true, payable: false),
+          line(14, mandatory: false, payable: false),
+        ],
+      );
+    }
+
+    test('initial selection contains only mandatory payable items', () {
+      final controller = _controller(_QuoteRepository());
+      controller.selectInvoice(selectionInvoice());
+
+      expect(controller.selectedItems.map((item) => item.id), <int>[11]);
+      expect(controller.selectedTotal, 100);
+      expect(controller.canProceedToPayment, isTrue);
+    });
+
+    test('optional payable items toggle; locked items never do', () {
+      final controller = _controller(_QuoteRepository());
+      final invoice = selectionInvoice();
+      controller.selectInvoice(invoice);
+
+      final optional = invoice.items[1];
+      controller.toggleInvoiceItem(optional);
+      expect(controller.selectedItems.map((item) => item.id), <int>[11, 12]);
+      controller.toggleInvoiceItem(optional);
+      expect(controller.selectedItems.map((item) => item.id), <int>[11]);
+
+      for (final locked in <InvoiceItem>[
+        invoice.items[0],
+        invoice.items[2],
+        invoice.items[3],
+      ]) {
+        controller.toggleInvoiceItem(locked);
+      }
+      expect(controller.selectedItems.map((item) => item.id), <int>[11]);
+    });
+
+    test('clear resets to mandatory payable items', () {
+      final controller = _controller(_QuoteRepository());
+      controller.selectInvoice(selectionInvoice());
+
+      controller.selectAllUnpaidItems();
+      expect(controller.selectedItems.map((item) => item.id), <int>[11, 12]);
+
+      controller.clearSelection();
+      expect(controller.selectedItems.map((item) => item.id), <int>[11]);
+    });
+
+    test('a refreshed item that became paid leaves the selection', () async {
+      final repository = _RefreshQuoteRepository();
+      final controller = PaymentController(
+        PaymentUseCases(repository),
+        sessionController: _sessionFor(1),
+      );
+      final invoice = selectionInvoice();
+      controller.selectInvoice(invoice);
+      controller.toggleInvoiceItem(invoice.items[1]);
+      expect(controller.selectedItems.map((item) => item.id), <int>[11, 12]);
+
+      repository.detail = InvoiceDetail(
+        id: 42,
+        invoiceNumber: 'INV-42',
+        billingPeriod: '2026-11',
+        totalAmount: 150,
+        paidAmount: 50,
+        remainingAmount: 100,
+        currency: 'MMK',
+        status: 'unpaid',
+        items: <InvoiceDetailItem>[
+          const InvoiceDetailItem(
+            id: 11,
+            feeType: 'condo_fee',
+            amount: 100,
+            remainingAmount: 100,
+            isMandatory: true,
+            isPayable: true,
+          ),
+          const InvoiceDetailItem(
+            id: 12,
+            feeType: 'parking',
+            amount: 50,
+            paidAmount: 50,
+            remainingAmount: 0,
+            isPaid: true,
+            isPayable: false,
+            status: 'paid',
+          ),
+        ],
+      );
+
+      await controller.loadInvoiceDetail(42, force: true);
+
+      expect(controller.selectedItems.map((item) => item.id), <int>[11]);
+      expect(controller.selectedTotal, 100);
+      expect(controller.selectedItems.every((item) => item.isPayable), isTrue);
+    });
+
+    test('no payable items blocks payment before quoting', () async {
+      final repository = _QuoteRepository();
+      final controller = _controller(repository);
+      controller.selectInvoice(
+        _invoice(
+          items: <InvoiceItem>[
+            line(13, mandatory: true, payable: false),
+            line(14, mandatory: false, payable: false),
+          ],
+        ),
+      );
+
+      expect(controller.hasPayableItems, isFalse);
+      expect(controller.canProceedToPayment, isFalse);
+
+      final payment = await controller.confirmPayment(transactionId: 'TX-1');
+
+      expect(payment, isNull);
+      expect(repository.quoteCalls, 0);
+      expect(controller.errorMessage.value, contains('No payable fees'));
+    });
+
+    test('quote uses mandatory plus selected optional payable ids only', () async {
+      final repository = _QuoteRepository()
+        ..quote = _quote(itemIds: const <int>[11, 12]);
+      final controller = _controller(repository);
+      final invoice = selectionInvoice();
+      controller.selectInvoice(invoice);
+      controller.selectPaymentMethod(_method());
+      controller.toggleInvoiceItem(invoice.items[1]);
+
+      final payment = await controller.confirmPayment(transactionId: 'TX-1');
+
+      expect(payment, isNotNull);
+      expect(repository.quoteItemIds.single, <int>[11, 12]);
+      expect(payment!.items.map((item) => item.id), <int>[11, 12]);
+      expect(payment.amount, 150);
+    });
+  });
 }
 
 PaymentController _controller(_QuoteRepository repository) {
@@ -549,4 +713,12 @@ class _QuoteRepository implements PaymentRepository {
 
   @override
   Future<void> clearPaymentMethodsCache() async {}
+}
+
+class _RefreshQuoteRepository extends _QuoteRepository {
+  InvoiceDetail? detail;
+
+  @override
+  Future<InvoiceDetail> getInvoiceDetail(int id) =>
+      Future<InvoiceDetail>.value(detail!);
 }

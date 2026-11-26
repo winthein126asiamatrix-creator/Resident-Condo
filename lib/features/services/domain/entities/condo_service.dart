@@ -12,9 +12,9 @@ enum ServiceCategory {
   other;
 
   static ServiceCategory fromApiCategory(Map<String, dynamic> json) {
-    final code = json['code'];
+   // final code = json['code'];
     final label = json['label'] ?? json['name'];
-    return fromApiName(code is String ? code : label?.toString());
+    return fromApiName( label?.toString());
   }
 
   static ServiceCategory fromApiName(String? name) {
@@ -26,7 +26,7 @@ enum ServiceCategory {
       'pest_control' ||
       'pestcontrol' => ServiceCategory.pestControl,
       'waste' || 'waste & bulky items' => ServiceCategory.waste,
-      'aircon' ||
+      'aircon' || 'air con serviceing' ||
       'aircon servicing' ||
       'air conditioning' => ServiceCategory.aircon,
       'catering' => ServiceCategory.catering,

@@ -353,7 +353,7 @@ class _InvoiceHero extends StatelessWidget {
           ),
           14.h.heightBox(),
           Text(
-            view.money(view.remainingAmount),
+            view.money(view.totalAmount),
             style: TextStyle(
               color: tokens.onBrand,
               fontSize: 32.sp,

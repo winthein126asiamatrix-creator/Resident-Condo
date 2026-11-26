@@ -912,7 +912,7 @@ class _RecentInvoiceCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(remaining, style: TextStyle(fontWeight: FontWeight.w800)),
+                Text(total, style: TextStyle(fontWeight: FontWeight.w800)),
                 4.h.heightBox(),
                 Text(
                   invoice.dueDateLabel.isEmpty

@@ -85,6 +85,18 @@ void main() {
       expect(invoice.amountPaid, 0);
     });
 
+    test('a paid status marks the item paid even when is_paid disagrees', () {
+      final detail = InvoiceDetailModel.fromJson(
+        _partialInvoiceJson(isPaid: false, status: 'paid'),
+      );
+
+      expect(detail.items.single.isPaid, isTrue);
+      final item = detail.toInvoice().items.single;
+      expect(item.isPaid, isTrue);
+      expect(item.isPayable, isFalse);
+      expect(item.dueAmount, 0);
+    });
+
     test('selected total uses the payable item balance', () {
       final detail = InvoiceDetailModel.fromJson(
         _partialInvoiceJson(isMandatory: true),
@@ -133,6 +145,226 @@ void main() {
     expect(amount.data, '300,000 Ks');
     expect(find.text('500,000 Ks'), findsOneWidget);
   });
+
+  testWidgets('payment summary toggles optional payable items only', (
+    tester,
+  ) async {
+    Get.testMode = true;
+    addTearDown(Get.reset);
+    // Tall enough for all three item rows to be built by the ListView.
+    tester.view.physicalSize = const Size(390, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final invoice = Invoice(
+      id: '42',
+      number: 'INV-42',
+      title: 'Invoice',
+      billingPeriod: 'November 2026',
+      unitLabel: 'Tower A',
+      dueDate: 'Nov 30, 2026',
+      currency: 'MMK',
+      status: InvoiceStatus.unpaid,
+      items: <InvoiceItem>[
+        InvoiceItem(
+          type: InvoiceItemType.condoFee,
+          amount: 100,
+          id: 11,
+          note: 'Mandatory',
+          mustPaid: true,
+          apiPayable: true,
+        ),
+        InvoiceItem(
+          type: InvoiceItemType.parking,
+          amount: 50,
+          id: 12,
+          note: 'Optional',
+          apiPayable: true,
+        ),
+        InvoiceItem(
+          type: InvoiceItemType.lateFee,
+          amount: 20,
+          id: 13,
+          note: 'Locked fee',
+          apiPayable: false,
+        ),
+      ],
+    );
+    final controller = PaymentController(
+      PaymentUseCases(_NoopPaymentRepository()),
+      sessionController: SessionController(),
+    );
+    addTearDown(controller.onClose);
+    controller.selectInvoice(invoice);
+    Get.put(controller);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, _) => const MaterialApp(home: PaymentSummaryPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final tiles = tester
+        .widgetList<CheckboxListTile>(find.byType(CheckboxListTile))
+        .toList();
+    expect(tiles, hasLength(3));
+
+    final mandatory = tiles[0];
+    final optional = tiles[1];
+    final locked = tiles[2];
+    expect(mandatory.value, isTrue);
+    expect(mandatory.onChanged, isNull);
+    expect(optional.value, isFalse);
+    expect(optional.onChanged, isNotNull);
+    expect(locked.onChanged, isNull);
+
+    await tester.tap(find.byType(CheckboxListTile).at(1));
+    await tester.pumpAndSettle();
+    expect(controller.selectedItems.map((item) => item.id), <int>[11, 12]);
+
+    await tester.tap(find.byType(CheckboxListTile).at(1));
+    await tester.pumpAndSettle();
+    expect(controller.selectedItems.map((item) => item.id), <int>[11]);
+  });
+
+  testWidgets('paid items are locked, labelled and excluded from the total', (
+    tester,
+  ) async {
+    Get.testMode = true;
+    addTearDown(Get.reset);
+    tester.view.physicalSize = const Size(390, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final invoice = Invoice(
+      id: '42',
+      number: 'INV-42',
+      title: 'Invoice',
+      billingPeriod: 'November 2026',
+      unitLabel: 'Tower A',
+      dueDate: 'Nov 30, 2026',
+      currency: 'MMK',
+      status: InvoiceStatus.partiallyPaid,
+      items: <InvoiceItem>[
+        InvoiceItem(
+          type: InvoiceItemType.rent,
+          amount: 100,
+          id: 11,
+          note: 'Paid rent',
+          isPaid: true,
+          apiPayable: true,
+        ),
+        InvoiceItem(
+          type: InvoiceItemType.parking,
+          amount: 50,
+          id: 12,
+          note: 'Open parking',
+          apiPayable: true,
+        ),
+      ],
+    );
+    final controller = PaymentController(
+      PaymentUseCases(_NoopPaymentRepository()),
+      sessionController: SessionController(),
+    );
+    addTearDown(controller.onClose);
+    controller.selectInvoice(invoice);
+    Get.put(controller);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, _) => const MaterialApp(home: PaymentSummaryPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('paid-badge')), findsOneWidget);
+    final tiles = tester
+        .widgetList<CheckboxListTile>(find.byType(CheckboxListTile))
+        .toList();
+    expect(tiles, hasLength(2));
+    expect(tiles[0].onChanged, isNull);
+    expect(tiles[0].value, isFalse);
+    expect(tiles[1].onChanged, isNotNull);
+
+    final paidTitle = tester.widget<Text>(find.text('Monthly Rent'));
+    expect(paidTitle.style?.decoration, TextDecoration.lineThrough);
+
+    expect(controller.selectedItems, isEmpty);
+    expect(controller.selectedTotal, 0);
+
+    await tester.tap(find.byType(CheckboxListTile).at(1));
+    await tester.pumpAndSettle();
+    expect(controller.selectedItems.map((item) => item.id), <int>[12]);
+    expect(controller.selectedTotal, 50);
+
+    await tester.tap(find.byType(CheckboxListTile).at(1));
+    await tester.pumpAndSettle();
+    expect(controller.selectedItems, isEmpty);
+    expect(controller.selectedTotal, 0);
+  });
+
+  testWidgets('payment summary blocks invoices with no payable fees', (
+    tester,
+  ) async {
+    Get.testMode = true;
+    addTearDown(Get.reset);
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final invoice = Invoice(
+      id: '42',
+      number: 'INV-42',
+      title: 'Invoice',
+      billingPeriod: 'November 2026',
+      unitLabel: 'Tower A',
+      dueDate: 'Nov 30, 2026',
+      currency: 'MMK',
+      status: InvoiceStatus.unpaid,
+      items: <InvoiceItem>[
+        InvoiceItem(
+          type: InvoiceItemType.condoFee,
+          amount: 100,
+          id: 11,
+          note: 'Locked',
+          mustPaid: true,
+          apiPayable: false,
+        ),
+      ],
+    );
+    final controller = PaymentController(
+      PaymentUseCases(_NoopPaymentRepository()),
+      sessionController: SessionController(),
+    );
+    addTearDown(controller.onClose);
+    controller.selectInvoice(invoice);
+    Get.put(controller);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, _) => const MaterialApp(home: PaymentSummaryPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('No payable fees are available for this invoice.'),
+      findsOneWidget,
+    );
+    final button = tester.widget<FilledButton>(
+      find.byKey(const Key('continue-to-payment')),
+    );
+    expect(button.onPressed, isNull);
+    expect(controller.canProceedToPayment, isFalse);
+  });
 }
 
 Map<String, dynamic> _partialInvoiceJson({
@@ -166,6 +398,7 @@ Map<String, dynamic> _partialInvoiceJson({
         'is_paid': isPaid,
         'is_payable': isPayable,
         'is_mandatory': isMandatory,
+        'status': status,
       },
     ],
   };

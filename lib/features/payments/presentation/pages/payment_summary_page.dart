@@ -32,7 +32,6 @@ class PaymentSummaryPage extends GetView<PaymentController> {
         title: 'Payment summary',
         actions: [
           Obx(() {
-            if (controller.requiresFullPayment) return const SizedBox.shrink();
             return TextButton(
               onPressed: controller.selectedItems.isEmpty
                   ? null
@@ -45,7 +44,6 @@ class PaymentSummaryPage extends GetView<PaymentController> {
       body: Obx(() {
         final invoice = controller.selectedInvoice.value;
         final tokens = AppThemeTokens.of(context);
-        final fullPayment = controller.requiresFullPayment;
         if (invoice == null) {
           return AppStateMessage(
             title: 'No invoice selected',
@@ -77,36 +75,29 @@ class PaymentSummaryPage extends GetView<PaymentController> {
                     ),
                   ),
                 ),
-                if (!fullPayment)
-                  TextButton.icon(
-                    key: Key('select-all-unpaid'),
-                    onPressed: invoice.unpaidItems.isEmpty
-                        ? null
-                        : controller.selectAllUnpaidItems,
-                    icon: Icon(Icons.done_all_rounded, size: 18),
-                    label: Text('Select all unpaid'),
-                  ),
+                TextButton.icon(
+                  key: Key('select-all-unpaid'),
+                  onPressed: invoice.unpaidItems.isEmpty
+                      ? null
+                      : controller.selectAllUnpaidItems,
+                  icon: Icon(Icons.done_all_rounded, size: 18),
+                  label: Text('Select all unpaid'),
+                ),
               ],
             ),
             4.h.heightBox(),
             Text(
-              fullPayment
-                  ? 'All unpaid fees must be paid together for this condominium.'
-                  : 'Pick one or several fees. Mandatory fees are always '
-                        'included and settled items are locked.',
+              'Pick one or several fees. Mandatory fees are always '
+              'included and settled items are locked.',
               style: TextStyle(color: tokens.muted, fontSize: 12.sp),
             ),
-            if (fullPayment) ...[
-              10.h.heightBox(),
-              _FullPaymentNotice(tokens: tokens),
-            ],
             10.h.heightBox(),
             for (final item in invoice.items)
               _SelectableItem(
                 key: Key('invoice-item-${item.key}'),
                 item: item,
                 selected: controller.isItemSelected(item),
-                onChanged: item.isPayable && !item.mustPaid && !fullPayment
+                onChanged: item.isPayable && !item.isMandatory
                     ? (_) => controller.toggleInvoiceItem(item)
                     : null,
                 currency: invoice.currency,
@@ -117,6 +108,10 @@ class PaymentSummaryPage extends GetView<PaymentController> {
               count: controller.selectedCount,
               currency: invoice.currency,
             ),
+            if (!controller.hasPayableItems) ...[
+              12.h.heightBox(),
+              _MandatoryWarning(message: controller.noPayableItemsMessage),
+            ],
             if (controller.missingMandatoryItems.isNotEmpty) ...[
               12.h.heightBox(),
               _MandatoryWarning(message: controller.mandatoryValidationMessage),
@@ -139,40 +134,6 @@ class PaymentSummaryPage extends GetView<PaymentController> {
           ],
         );
       }),
-    );
-  }
-}
-
-class _FullPaymentNotice extends StatelessWidget {
-  const _FullPaymentNotice({required this.tokens});
-
-  final AppThemeTokens tokens;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: tokens.brandTint,
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.lock_outline_rounded, size: 16, color: tokens.brand),
-          8.w.widthBox(),
-          Expanded(
-            child: Text(
-              'Partial payment is not enabled. Every fee is selected '
-              'automatically.',
-              style: TextStyle(
-                color: tokens.mutedStrong,
-                fontSize: 11.5.sp,
-                height: 1.3,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -246,7 +207,9 @@ class _SelectableItem extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 8),
       child: Material(
         color: item.isPaid
-            ? tokens.brandTint
+            ? AppPalette.success.withValues(
+                alpha: tokens.isDark ? 0.14 : 0.07,
+              )
             : locked
             ? tokens.surface
             : tokens.surface,
@@ -279,6 +242,7 @@ class _SelectableItem extends StatelessWidget {
                   ),
                 ),
               ),
+              if (item.isPaid) ...[_PaidBadge(), 8.w.widthBox()],
               if (item.isMandatory) ...[_MandatoryBadge(), 8.w.widthBox()],
               Text(
                 item.isZero
@@ -287,6 +251,7 @@ class _SelectableItem extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   color: item.isPaid ? tokens.muted : tokens.ink,
+                  decoration: item.isPaid ? TextDecoration.lineThrough : null,
                 ),
               ),
             ],
@@ -296,6 +261,8 @@ class _SelectableItem extends StatelessWidget {
                 ? 'Paid${item.paidDate == null ? '' : ' on ${item.paidDate}'}'
                 : item.isMandatory
                 ? 'Mandatory fee · always included'
+                : !item.isPayable
+                ? 'Not payable'
                 : item.isZero
                 ? 'Not charged this period'
                 : item.note.isEmpty
@@ -311,6 +278,7 @@ class _SelectableItem extends StatelessWidget {
               fontWeight: item.isPaid || item.isMandatory
                   ? FontWeight.w700
                   : FontWeight.w400,
+              decoration: item.isPaid ? TextDecoration.lineThrough : null,
             ),
           ),
           secondary: item.isPaid
@@ -341,6 +309,30 @@ class _MandatoryBadge extends StatelessWidget {
         'Mandatory',
         style: TextStyle(
           color: tokens.brand,
+          fontSize: 10.sp,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _PaidBadge extends StatelessWidget {
+  const _PaidBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: Key('paid-badge'),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppPalette.success.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Text(
+        'Paid',
+        style: TextStyle(
+          color: AppPalette.success,
           fontSize: 10.sp,
           fontWeight: FontWeight.w800,
         ),

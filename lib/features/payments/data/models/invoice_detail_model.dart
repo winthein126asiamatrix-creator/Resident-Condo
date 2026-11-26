@@ -155,10 +155,12 @@ class InvoiceItemModel extends InvoiceDetailItem {
     );
     final status = _asString(json['status']);
     final normalizedStatus = status.trim().toLowerCase();
+    // The backend status is authoritative: an item marked paid must never be
+    // treated as selectable, even if a separate boolean flag disagrees.
     final isPaid =
-        _asBool(json['is_paid'] ?? json['paid']) ??
-        (normalizedStatus == 'paid' ||
-            normalizedStatus == 'settled' ||
+        normalizedStatus == 'paid' ||
+        normalizedStatus == 'settled' ||
+        (_asBool(json['is_paid'] ?? json['paid']) ??
             (remaining <= 0 && amount > 0));
     final isPayable =
         _asBool(json['is_payable'] ?? json['payable']) ??
