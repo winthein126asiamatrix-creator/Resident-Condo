@@ -357,7 +357,19 @@ class MaintenanceRequest {
 
   int get resolvedPhotoCount => photos.isNotEmpty ? photos.length : photoCount;
 
-  String get createdAtDisplay => _formatDate(createdAt);
+  /// Submission date and time from the backend `created_at` value.
+  ///
+  /// Returns an empty string when the value is missing or cannot be parsed so
+  /// the caller can fall back without showing a misleading timestamp.
+  String get createdAtDisplay {
+    final text = createdAt.trim();
+    if (text.isEmpty) return '';
+    final parsed = DateTime.tryParse(text);
+    if (parsed == null) return '';
+    final local = parsed.toLocal();
+    final hasTime = RegExp(r'\d{1,2}:\d{2}').hasMatch(text);
+    return hasTime ? AppDates.formatDateTime(local) : AppDates.format(local);
+  }
 
   String get preferredDateDisplay => _formatDate(preferredDate);
 

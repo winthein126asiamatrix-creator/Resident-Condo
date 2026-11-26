@@ -11,6 +11,7 @@ import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_dialogs.dart';
+import '../../../../core/widgets/app_image_preview.dart';
 import '../../../../core/widgets/app_section.dart';
 import '../../../../core/widgets/app_state_message.dart';
 import '../../domain/entities/payment.dart';
@@ -302,12 +303,29 @@ class _PaymentDetailView extends StatelessWidget {
                   ),
                 ),
                 AppLabelValueRow(
+                  label: 'Submitted At',
+                  value: _valueOrDash(detail.submittedAtLabel),
+                ),
+                AppLabelValueRow(
                   label: 'Paid date/time',
                   value: _valueOrDash(detail.paidAtLabel),
                 ),
               ],
             ),
           ),
+          if (detail.hasProofImage) ...[
+            16.h.heightBox(),
+            AppSectionCard(
+              title: 'Payment Proof',
+              child: AppImagePreview(
+                key: const Key('payment-proof-image'),
+                path: detail.proofImageUrl!,
+                caption: 'Payment proof',
+                height: 220,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ],
           16.h.heightBox(),
           AppSectionCard(
             title: 'Receipt',

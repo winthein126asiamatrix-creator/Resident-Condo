@@ -6,6 +6,7 @@ import 'package:gal/gal.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:test/core/utils/super_print.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/api_exception.dart';
@@ -838,6 +839,7 @@ class PaymentController extends GetxController {
     }
 
     url = url.trim();
+    superPrint(url,title: "URL");
     if (url.isEmpty) {
       throw const FormatException('Receipt download URL is missing.');
     }

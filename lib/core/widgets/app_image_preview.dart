@@ -14,6 +14,7 @@ class AppImagePreview extends StatelessWidget {
     required this.path,
     required this.caption,
     this.height = 180,
+    this.fit = BoxFit.cover,
     super.key,
   });
 
@@ -25,6 +26,10 @@ class AppImagePreview extends StatelessWidget {
 
   /// Enough to read the photo without making the page long.
   final double height;
+
+  /// How the image fills its preview box. Use [BoxFit.contain] for documents
+  /// whose full frame matters, such as payment proof.
+  final BoxFit fit;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +57,7 @@ class AppImagePreview extends StatelessWidget {
               SizedBox(
                 height: height,
                 width: double.infinity,
-                child: _PreviewImage(path: path),
+                child: _PreviewImage(path: path, fit: fit),
               ),
               Padding(
                 padding: EdgeInsets.fromLTRB(12, 9, 12, 10),
@@ -240,13 +245,21 @@ class _ImageFallback extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              loading
-                  ? Icons.image_outlined
-                  : Icons.image_not_supported_outlined,
-              size: 30,
-              color: tokens.faint,
-            ),
+            if (loading)
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.2,
+                  color: tokens.faint,
+                ),
+              )
+            else
+              Icon(
+                Icons.image_not_supported_outlined,
+                size: 30,
+                color: tokens.faint,
+              ),
             if (!loading) ...[
               8.h.heightBox(),
               Text(

@@ -432,13 +432,15 @@ class _StatusProgress extends StatelessWidget {
     MaintenanceStatus step,
     MaintenanceProgressEntry? entry,
   ) {
+    if (step == MaintenanceStatus.submitted) {
+      final submittedAt = request.createdAtDisplay;
+      if (submittedAt.isNotEmpty) return submittedAt;
+    }
     final note = entry?.note?.trim();
     if (note != null && note.isNotEmpty) return note;
     final createdAt = entry?.createdAt?.trim();
     if (createdAt != null && createdAt.isNotEmpty) return createdAt;
-    return step == MaintenanceStatus.submitted
-        ? request.createdAtDisplay
-        : null;
+    return null;
   }
 }
 

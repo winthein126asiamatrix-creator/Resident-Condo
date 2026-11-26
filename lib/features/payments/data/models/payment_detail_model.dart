@@ -12,6 +12,8 @@ class PaymentDetailModel extends PaymentDetail {
     required super.status,
     super.invoiceId,
     super.paidAt,
+    super.submittedAt,
+    super.proofImageUrl,
     super.receipt,
   });
 
@@ -57,6 +59,8 @@ class PaymentDetailModel extends PaymentDetail {
             json['payment_date'] ??
             json['created_at'],
       ),
+      submittedAt: _asDate(json['submitted_at'] ?? json['submittedAt']),
+      proofImageUrl: _nullableString(json['proof_image_url']),
       receipt: _receipt(json['receipt'] ?? json['receipt_info'], json),
     );
   }
@@ -131,6 +135,11 @@ int? _asInt(Object? value) {
 String _asString(Object? value) => value is String
     ? value
     : (value == null || value == false ? '' : value.toString());
+
+String? _nullableString(Object? value) {
+  final text = _asString(value).trim();
+  return text.isEmpty ? null : text;
+}
 
 DateTime? _asDate(Object? value) {
   if (value is! String) {

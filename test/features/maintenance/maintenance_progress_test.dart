@@ -20,6 +20,24 @@ void main() {
     );
   });
 
+  test('createdAtDisplay preserves the backend date and time', () {
+    final request = _request(
+      status: MaintenanceStatus.submitted,
+      createdAt: '2026-11-16T09:30:00',
+    );
+
+    expect(request.createdAtDisplay, 'Nov 16, 2026 · 9:30 AM');
+  });
+
+  test('an invalid created_at is handled gracefully', () {
+    final request = _request(
+      status: MaintenanceStatus.submitted,
+      createdAt: 'not-a-date',
+    );
+
+    expect(request.createdAtDisplay, '');
+  });
+
   testWidgets('requested marks only the first step current', (tester) async {
     await _pump(tester, MaintenanceStatus.submitted);
 
@@ -28,6 +46,32 @@ void main() {
     expect(_stepLabel(tester, 2), 'Step 3, not started');
     expect(_stepLabel(tester, 3), 'Step 4, not started');
     expect(_completedCount(tester), 0);
+  });
+
+  testWidgets('submitted step shows the backend submission date and time', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      MaintenanceStatus.submitted,
+      createdAt: '2026-11-16T09:30:00',
+    );
+
+    // Shown both in the Request information row and on the Submitted step.
+    expect(find.text('Nov 16, 2026 · 9:30 AM'), findsNWidgets(2));
+  });
+
+  testWidgets('invalid submission timestamp does not crash the timeline', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      MaintenanceStatus.submitted,
+      createdAt: 'not-a-date',
+    );
+
+    expect(find.text('Request progress'), findsOneWidget);
+    expect(find.text('Submitted'), findsWidgets);
   });
 
   testWidgets('assigned completes requested and activates assigned', (
@@ -125,13 +169,18 @@ Future<void> _pump(
   MaintenanceStatus status, {
   List<MaintenanceProgressEntry> history =
       const <MaintenanceProgressEntry>[],
+  String createdAt = '2026-11-16T09:00:00Z',
 }) async {
   tester.view.physicalSize = const Size(390, 844);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
-  final request = _request(status: status, history: history);
+  final request = _request(
+    status: status,
+    history: history,
+    createdAt: createdAt,
+  );
   Get.put<MaintenanceController>(
     MaintenanceController(MaintenanceUseCases(_FakeRepository())),
   );
@@ -152,6 +201,7 @@ MaintenanceRequest _request({
   required MaintenanceStatus status,
   List<MaintenanceProgressEntry> history =
       const <MaintenanceProgressEntry>[],
+  String createdAt = '2026-11-16T09:00:00Z',
 }) {
   return MaintenanceRequest(
     id: '42',
@@ -162,7 +212,7 @@ MaintenanceRequest _request({
     location: 'Kitchen',
     priority: MaintenancePriority.medium,
     status: status,
-    createdAt: '2026-11-16T09:00:00Z',
+    createdAt: createdAt,
     preferredDate: '2026-11-18',
     preferredTime: '10:00',
     cancelledAt: status == MaintenanceStatus.cancelled

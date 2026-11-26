@@ -128,6 +128,8 @@ void main() {
             'transaction_reference': 'TXN-501',
             'status': 'completed',
             'paid_at': '2026-09-25T10:30:00Z',
+            'submitted_at': '2026-09-25T11:31:00Z',
+            'proof_image_url': 'https://example.com/proofs/501.jpg',
             'receipt': <String, dynamic>{
               'receipt_number': 'RCT-501',
               'download_url': 'https://example.com/receipts/501.pdf',
@@ -142,6 +144,37 @@ void main() {
       expect(detail.hasReceipt, isTrue);
       expect(detail.receipt?.receiptNumber, 'RCT-501');
       expect(detail.receipt?.hasDownloadUrl, isTrue);
+      expect(detail.submittedAt, isNotNull);
+      expect(detail.proofImageUrl, 'https://example.com/proofs/501.jpg');
+      expect(detail.hasProofImage, isTrue);
+    });
+
+    test('parses submitted timestamp and proof image URL', () {
+      final detail = PaymentDetailModel.fromJson(<String, dynamic>{
+        'id': 501,
+        'payment_method': <String, dynamic>{'label': 'card'},
+        'submitted_at': '2026-11-25T11:31:00',
+        'proof_image_url': 'https://example.com/proofs/501.jpg',
+      });
+
+      expect(detail.submittedAt, DateTime(2026, 11, 25, 11, 31));
+      expect(detail.submittedAtLabel, 'Nov 25, 2026 · 11:31 AM');
+      expect(detail.proofImageUrl, 'https://example.com/proofs/501.jpg');
+      expect(detail.hasProofImage, isTrue);
+    });
+
+    test('missing submission and proof fields are handled', () {
+      final detail = PaymentDetailModel.fromJson(<String, dynamic>{
+        'id': 501,
+        'payment_method': <String, dynamic>{'label': 'card'},
+        'submitted_at': 'not-a-date',
+        'proof_image_url': '   ',
+      });
+
+      expect(detail.submittedAt, isNull);
+      expect(detail.submittedAtLabel, '');
+      expect(detail.proofImageUrl, isNull);
+      expect(detail.hasProofImage, isFalse);
     });
 
     test('receipt falls back to top-level fields', () {
@@ -550,7 +583,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       final repository = _PaymentRepository()
-        ..detail = const PaymentDetail(
+        ..detail = PaymentDetail(
           id: 501,
           paymentNumber: 'PAY-2026-501',
           invoiceNumber: 'INV-2026-011',
@@ -559,7 +592,9 @@ void main() {
           paymentMethod: 'card',
           transactionReference: 'TXN-501',
           status: 'paid',
-          receipt: PaymentReceiptInfo(
+          submittedAt: DateTime(2026, 11, 25, 11, 31),
+          proofImageUrl: 'https://example.com/proofs/501.jpg',
+          receipt: const PaymentReceiptInfo(
             receiptNumber: 'RCT-501',
             downloadUrl: 'https://example.com/receipts/501.pdf',
           ),
@@ -581,6 +616,25 @@ void main() {
 
       expect(find.text('PAY-2026-501'), findsWidgets);
       expect(find.text('INV-2026-011'), findsOneWidget);
+      expect(find.text('Submitted At'), findsOneWidget);
+      expect(find.text('Nov 25, 2026 · 11:31 AM'), findsOneWidget);
+
+      final detailScrollable = find.descendant(
+        of: find.byKey(const Key('payment-detail-scroll')),
+        matching: find.byType(Scrollable),
+      );
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('payment-proof-image')),
+        300,
+        scrollable: detailScrollable,
+      );
+      expect(find.text('Payment Proof'), findsOneWidget);
+
+      await tester.scrollUntilVisible(
+        find.text('RCT-501'),
+        300,
+        scrollable: detailScrollable,
+      );
       expect(find.text('RCT-501'), findsOneWidget);
       expect(find.byKey(const Key('payment-receipt-download')), findsOneWidget);
     });
@@ -677,6 +731,8 @@ void main() {
         findsOneWidget,
       );
       expect(find.byKey(const Key('payment-receipt-download')), findsNothing);
+      expect(find.text('Payment Proof'), findsNothing);
+      expect(find.byKey(const Key('payment-proof-image')), findsNothing);
     });
   });
 }

@@ -27,6 +27,8 @@ class PaymentDetail {
     required this.status,
     this.invoiceId,
     this.paidAt,
+    this.submittedAt,
+    this.proofImageUrl,
     this.receipt,
   });
 
@@ -40,6 +42,8 @@ class PaymentDetail {
   final String transactionReference;
   final String status;
   final DateTime? paidAt;
+  final DateTime? submittedAt;
+  final String? proofImageUrl;
   final PaymentReceiptInfo? receipt;
 
   PaymentStatus? get paymentStatus => paymentStatusFromApi(status);
@@ -50,6 +54,12 @@ class PaymentDetail {
 
   String get paidAtLabel =>
       paidAt == null ? '' : AppDates.formatDateTime(paidAt!.toLocal());
+
+  String get submittedAtLabel => submittedAt == null
+      ? ''
+      : AppDates.formatDateTime(submittedAt!.toLocal());
+
+  bool get hasProofImage => (proofImageUrl?.trim().isNotEmpty ?? false);
 
   bool get hasReceipt => receipt != null && !receipt!.isEmpty;
 }
