@@ -542,6 +542,40 @@ void main() {
     });
   });
 
+  group('receipt download', () {
+    test('uses the receipt URL from the selected payment', () async {
+      final repository = _PaymentRepository();
+      final controller = PaymentController(
+        PaymentUseCases(repository),
+        sessionController: _sessionFor(1),
+      );
+      const detail = PaymentDetail(
+        id: 501,
+        paymentNumber: 'PAY-2026-501',
+        invoiceNumber: 'INV-2026-011',
+        amount: 422.40,
+        currency: 'USD',
+        paymentMethod: 'card',
+        transactionReference: 'TXN-501',
+        status: 'paid',
+        receipt: PaymentReceiptInfo(
+          receiptNumber: 'RCT-501',
+          downloadUrl: 'https://example.com/receipts/501.pdf',
+        ),
+      );
+
+      await expectLater(
+        controller.downloadReceipt(detail),
+        throwsA(isA<FormatException>()),
+      );
+
+      expect(repository.receiptUrls, <String>[
+        'https://example.com/receipts/501.pdf',
+      ]);
+      expect(controller.isDownloadingReceipt.value, isFalse);
+    });
+  });
+
   group('payment pages', () {
     setUp(() {
       Get.testMode = true;
@@ -891,9 +925,11 @@ class _CacheWrite {
 class _PaymentRepository implements PaymentRepository {
   @override
   Future<ApiBinaryResponse> downloadReceipt(String downloadUrl) async {
+    receiptUrls.add(downloadUrl);
     return ApiBinaryResponse(bytes: Uint8List(0));
   }
 
+  final receiptUrls = <String>[];
   CachedPaymentList? cached;
   PaymentListResponse fresh = _page(page: 1, startId: 0, count: 0);
   PaymentDetail? detail;

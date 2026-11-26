@@ -104,14 +104,14 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
       return;
     }
     try {
-      await controller.downloadReceipt(detail);
+      final result = await controller.downloadReceipt(detail);
       if (!mounted) {
         return;
       }
       showAppFeedback(
         context,
         title: 'Receipt',
-        message: 'Receipt saved to your gallery.',
+        message: result.message,
         isError: false,
       );
     } catch (error) {
@@ -130,15 +130,25 @@ class _PaymentDetailsPageState extends State<PaymentDetailsPage> {
   String _receiptErrorMessage(Object error) {
     final text = error.toString().toLowerCase();
     if (text.contains('permission')) {
-      return 'Permission denied. Please allow photo access in settings.';
+      return 'Storage permission is required to save the receipt. '
+          'Please allow it in settings.';
     }
-    if (text.contains('unsupported')) {
-      return 'This receipt format is not supported.';
+    if (text.contains('space')) {
+      return 'Not enough storage space to save the receipt.';
+    }
+    if (text.contains('already in progress')) {
+      return 'A receipt download is already in progress.';
+    }
+    if (text.contains('unsupported') ||
+        text.contains('not a valid') ||
+        text.contains('empty') ||
+        text.contains('invalid')) {
+      return 'The receipt file could not be verified. Please try again.';
     }
     if (text.contains('network') || text.contains('timeout')) {
       return 'Network error. Please try again.';
     }
-    return 'Unable to download the receipt. Please try again.';
+    return 'Unable to save the receipt. Please try again.';
   }
 
   Future<void> _openReceipt(String rawUrl) async {

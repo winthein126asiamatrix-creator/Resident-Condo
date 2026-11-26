@@ -18,6 +18,7 @@ import 'package:test/features/services/domain/entities/condo_service.dart';
 import 'package:test/features/services/domain/repositories/condo_service_repository.dart';
 import 'package:test/features/services/domain/usecases/condo_service_usecases.dart';
 import 'package:test/features/services/presentation/controllers/condo_service_controller.dart';
+import 'package:test/features/services/presentation/pages/service_request_detail_page.dart';
 import 'package:test/features/services/presentation/pages/services_page.dart';
 
 void main() {
@@ -768,6 +769,142 @@ void main() {
     await tester.tap(find.text('Past laundry'));
     await tester.pumpAndSettle();
     expect(Get.currentRoute, AppRoutes.serviceRequestDetail);
+  });
+
+  testWidgets('My requests reflects a cancellation without reopening the page', (
+    tester,
+  ) async {
+    Get.testMode = true;
+    addTearDown(Get.reset);
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _FakeRepository()
+      ..services = <CondoService>[_service(1)]
+      ..active = ServiceRequestPageResult(
+        items: <ServiceRequest>[_request('a')],
+        page: 1,
+        limit: 20,
+        total: 1,
+      )
+      ..history = ServiceRequestPageResult.empty;
+    final controller = CondoServiceController(CondoServiceUseCases(repository));
+    Get.put(controller);
+    await controller.loadAll();
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, _) => GetMaterialApp(home: const ServicesPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('services-tab-requests')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Service 1'), findsOneWidget);
+    expect(find.text('Requested'), findsOneWidget);
+    expect(find.textContaining('1 open requests'), findsOneWidget);
+
+    // The detail page cancels through the same shared controller.
+    await controller.cancelRequest(controller.activeRequests.single);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Requested'), findsNothing);
+    expect(find.text('Cancelled'), findsOneWidget);
+    expect(find.text('History'), findsOneWidget);
+    expect(find.textContaining('0 open requests'), findsOneWidget);
+  });
+
+  testWidgets('cancelling from the details page updates My requests on back', (
+    tester,
+  ) async {
+    Get.testMode = true;
+    addTearDown(Get.reset);
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _FakeRepository()
+      ..services = <CondoService>[_service(1)]
+      ..active = ServiceRequestPageResult(
+        items: <ServiceRequest>[_request('a')],
+        page: 1,
+        limit: 20,
+        total: 1,
+      )
+      ..history = ServiceRequestPageResult.empty;
+    final controller = CondoServiceController(CondoServiceUseCases(repository));
+    Get.put(controller);
+    await controller.loadAll();
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 844),
+        builder: (_, _) => GetMaterialApp(
+          getPages: <GetPage<dynamic>>[
+            GetPage<dynamic>(
+              name: AppRoutes.serviceRequestDetail,
+              page: () => ServiceRequestDetailPage(
+                request: Get.arguments as ServiceRequest,
+              ),
+            ),
+          ],
+          home: const ServicesPage(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('services-tab-requests')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Service 1'));
+    await tester.pumpAndSettle();
+
+    expect(Get.currentRoute, AppRoutes.serviceRequestDetail);
+    // The list page stays in the tree behind the detail route.
+    expect(find.text('Requested'), findsWidgets);
+
+    final detailScroll = find.descendant(
+      of: find.byType(ServiceRequestDetailPage),
+      matching: find.byType(Scrollable),
+    );
+    await tester.scrollUntilVisible(
+      find.text('Cancel request'),
+      300,
+      scrollable: detailScroll,
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Cancel request'));
+    await tester.pumpAndSettle();
+    expect(find.text('Cancel service request?'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Cancel request'));
+    await tester.pumpAndSettle();
+
+    await tester.drag(detailScroll, const Offset(0, 1000));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byType(ServiceRequestDetailPage),
+        matching: find.text('Cancelled'),
+      ),
+      findsWidgets,
+    );
+    expect(find.text('Cancel request'), findsNothing);
+
+    Get.back();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Requested'), findsNothing);
+    expect(find.text('Cancelled'), findsOneWidget);
+    expect(find.text('History'), findsOneWidget);
   });
 }
 

@@ -149,6 +149,12 @@ class _ServicesHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The open-request count is derived from activeRequests, which the page
+    // level Obx does not read. Watch it here so a cancellation updates it.
+    return Obx(_buildHero);
+  }
+
+  Widget _buildHero() {
     //final tokens = AppThemeTokens.of(context);
     return AppHeroPanel(
       icon: Icons.room_service_rounded,
@@ -341,6 +347,13 @@ class _Requests extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The page-level Obx only reads the tab, services, and loading flags. This
+    // panel must watch the request lists itself so a cancellation made on the
+    // detail page updates the list without reopening the page.
+    return Obx(_buildRequests);
+  }
+
+  Widget _buildRequests() {
     final active = controller.activeRequests;
     final history = controller.historyRequests;
     if (active.isEmpty &&

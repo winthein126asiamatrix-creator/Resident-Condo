@@ -1,12 +1,10 @@
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:test/core/utils/super_print.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/api_exception.dart';
@@ -813,12 +811,12 @@ class PaymentController extends GetxController {
     }
   }
 
-  Future<void> downloadReceipt(
+  Future<ReceiptSaveResult> downloadReceipt(
     Object? receiptOrDetail, {
     String? receiptNumber,
   }) async {
     if (isDownloadingReceipt.value) {
-      return;
+      throw StateError('A receipt download is already in progress.');
     }
     String url = '';
     String resolvedReceiptNumber = receiptNumber?.trim() ?? '';
@@ -826,6 +824,9 @@ class PaymentController extends GetxController {
       url = receiptOrDetail.receipt?.downloadUrl ?? '';
       if (resolvedReceiptNumber.isEmpty) {
         resolvedReceiptNumber = receiptOrDetail.receipt?.receiptNumber ?? '';
+      }
+      if (resolvedReceiptNumber.isEmpty) {
+        resolvedReceiptNumber = receiptOrDetail.paymentNumber;
       }
     } else if (receiptOrDetail is PaymentReceiptInfo) {
       url = receiptOrDetail.downloadUrl;
@@ -839,7 +840,6 @@ class PaymentController extends GetxController {
     }
 
     url = url.trim();
-    superPrint(url,title: "URL");
     if (url.isEmpty) {
       throw const FormatException('Receipt download URL is missing.');
     }
@@ -847,89 +847,80 @@ class PaymentController extends GetxController {
     isDownloadingReceipt.value = true;
     try {
       final response = await useCases.downloadReceipt(url);
-      await _saveReceiptToGallery(
-        response,
-        receiptNumber: resolvedReceiptNumber,
-      );
+      return await _saveReceipt(response, receiptNumber: resolvedReceiptNumber);
     } finally {
       isDownloadingReceipt.value = false;
     }
   }
 
-  Future<void> _saveReceiptToGallery(
+  Future<ReceiptSaveResult> _saveReceipt(
     ApiBinaryResponse response, {
     required String receiptNumber,
   }) async {
-    final contentType = (response.contentType ?? '').toLowerCase();
     final bytes = response.bytes;
-    final baseName = receiptNumber.trim().isEmpty
-        ? 'receipt'
-        : receiptNumber.trim();
+    if (bytes.isEmpty) {
+      throw const FormatException('The receipt file is empty.');
+    }
 
-    final isImage = contentType.startsWith('image/') || _looksLikeImage(bytes);
-    final isPdf = contentType.contains('pdf') || _looksLikePdf(bytes);
+    final format = detectReceiptFileFormat(response.contentType, bytes);
+    if (format == null) {
+      throw const FormatException(
+        'The receipt file is not a valid PDF or image.',
+      );
+    }
 
-    if (isImage) {
+    final baseName = receiptFileBaseName(receiptNumber);
+    if (format == ReceiptFileFormat.image) {
       await Gal.putImageBytes(bytes, name: baseName);
-      return;
+      return ReceiptSaveResult(
+        format: format,
+        fileName: '$baseName.${_imageExtension(bytes)}',
+        location: 'Gallery',
+      );
     }
-    if (isPdf) {
-      final directory =
-          await getDownloadsDirectory() ??
-          await getApplicationDocumentsDirectory();
-      await Directory(directory.path).create(recursive: true);
-      final file = File(p.join(directory.path, '$baseName.pdf'));
-      await file.writeAsBytes(bytes, flush: true);
-      return;
-    }
-    throw const FormatException('Unsupported receipt format.');
+
+    final fileName = '$baseName.pdf';
+    final location = await _savePdfToDownloads(bytes, fileName);
+    return ReceiptSaveResult(
+      format: format,
+      fileName: fileName,
+      location: location,
+    );
   }
 
-  bool _looksLikeImage(Uint8List bytes) {
-    if (bytes.length < 4) {
-      return false;
+  Future<String> _savePdfToDownloads(Uint8List bytes, String fileName) async {
+    if (Platform.isAndroid) {
+      // Public Downloads needs MediaStore on Android 10+, otherwise the file
+      // lands in the app-specific folder and never appears in Files.
+      final saved = await _receiptStorageChannel.invokeMethod<String>(
+        'savePdfToDownloads',
+        <String, Object>{
+          'bytes': bytes,
+          'fileName': fileName,
+          'mimeType': 'application/pdf',
+        },
+      );
+      final location = saved?.trim() ?? '';
+      if (location.isEmpty) {
+        throw FileSystemException('The receipt was not saved.');
+      }
+      return location;
     }
-    if (bytes[0] == 0x89 &&
-        bytes[1] == 0x50 &&
-        bytes[2] == 0x4E &&
-        bytes[3] == 0x47) {
-      return true;
-    }
-    if (bytes.length >= 3 &&
-        bytes[0] == 0xFF &&
-        bytes[1] == 0xD8 &&
-        bytes[2] == 0xFF) {
-      return true;
-    }
-    if (bytes.length >= 6 &&
-        bytes[0] == 0x47 &&
-        bytes[1] == 0x49 &&
-        bytes[2] == 0x46) {
-      return true;
-    }
-    if (bytes.length >= 12 &&
-        bytes[0] == 0x52 &&
-        bytes[1] == 0x49 &&
-        bytes[2] == 0x46 &&
-        bytes[3] == 0x46 &&
-        bytes[8] == 0x57 &&
-        bytes[9] == 0x45 &&
-        bytes[10] == 0x42 &&
-        bytes[11] == 0x50) {
-      return true;
-    }
-    if (bytes.length >= 2 && bytes[0] == 0x42 && bytes[1] == 0x4D) {
-      return true;
-    }
-    return false;
-  }
 
-  bool _looksLikePdf(Uint8List bytes) {
-    return bytes.length >= 4 &&
-        bytes[0] == 0x25 &&
-        bytes[1] == 0x50 &&
-        bytes[2] == 0x44 &&
-        bytes[3] == 0x46;
+    Directory? directory;
+    try {
+      directory = await getDownloadsDirectory();
+    } catch (_) {
+      // Not every platform exposes a Downloads folder.
+    }
+    directory ??= await getApplicationDocumentsDirectory();
+    await directory.create(recursive: true);
+    final file = File(p.join(directory.path, fileName));
+    await file.writeAsBytes(bytes, flush: true);
+    if (!await file.exists() || await file.length() != bytes.length) {
+      throw FileSystemException('The receipt was not fully written.');
+    }
+    return file.path;
   }
 
   Future<void> _refreshActivePaymentDetail() async {
@@ -2026,4 +2017,148 @@ class _InvoiceListFilterState {
   int? ownerUserId;
   int seq = 0;
   Future<void>? inFlight;
+}
+
+const MethodChannel _receiptStorageChannel = MethodChannel(
+  'com.asiamatrix.matrixcondo/receipts',
+);
+
+enum ReceiptFileFormat { pdf, image }
+
+/// Where a downloaded receipt ended up, so the UI can name the real location.
+class ReceiptSaveResult {
+  const ReceiptSaveResult({
+    required this.format,
+    required this.fileName,
+    required this.location,
+  });
+
+  final ReceiptFileFormat format;
+  final String fileName;
+
+  /// Display location including the file name, for example
+  /// `Downloads/Receipt_PAY-2026-005.pdf`.
+  final String location;
+
+  bool get isImage => format == ReceiptFileFormat.image;
+
+  String get message => isImage
+      ? 'Receipt saved to Gallery as $fileName.'
+      : 'Receipt saved to $location.';
+}
+
+/// Builds `Receipt_PAY-2026-005` from the receipt number, safe for MediaStore.
+String receiptFileBaseName(String receiptNumber) {
+  final trimmed = receiptNumber.trim();
+  final raw = trimmed.isEmpty ? 'Receipt' : 'Receipt_$trimmed';
+  final sanitized = raw.replaceAll(RegExp(r'[^A-Za-z0-9._-]+'), '_');
+  return sanitized.isEmpty ? 'Receipt' : sanitized;
+}
+
+/// Decides the save path from the actual bytes, not only the Content-Type.
+///
+/// A 200 HTML error page often claims to be a PDF, so a PDF must carry the
+/// `%PDF` signature before it is written to Downloads.
+ReceiptFileFormat? detectReceiptFileFormat(
+  String? contentType,
+  Uint8List bytes,
+) {
+  if (_looksLikePdf(bytes)) return ReceiptFileFormat.pdf;
+  if (_looksLikeImage(bytes)) return ReceiptFileFormat.image;
+
+  final type = (contentType ?? '').toLowerCase();
+  if (type.contains('pdf')) return null;
+  if (type.startsWith('image/')) return ReceiptFileFormat.image;
+  return null;
+}
+
+bool _looksLikePdf(Uint8List bytes) {
+  return bytes.length >= 4 &&
+      bytes[0] == 0x25 &&
+      bytes[1] == 0x50 &&
+      bytes[2] == 0x44 &&
+      bytes[3] == 0x46;
+}
+
+bool _looksLikeImage(Uint8List bytes) {
+  if (bytes.length >= 4 &&
+      bytes[0] == 0x89 &&
+      bytes[1] == 0x50 &&
+      bytes[2] == 0x4E &&
+      bytes[3] == 0x47) {
+    return true;
+  }
+  if (bytes.length >= 3 &&
+      bytes[0] == 0xFF &&
+      bytes[1] == 0xD8 &&
+      bytes[2] == 0xFF) {
+    return true;
+  }
+  if (bytes.length >= 6 &&
+      bytes[0] == 0x47 &&
+      bytes[1] == 0x49 &&
+      bytes[2] == 0x46) {
+    return true;
+  }
+  if (bytes.length >= 12 &&
+      bytes[0] == 0x52 &&
+      bytes[1] == 0x49 &&
+      bytes[2] == 0x46 &&
+      bytes[3] == 0x46 &&
+      bytes[8] == 0x57 &&
+      bytes[9] == 0x45 &&
+      bytes[10] == 0x42 &&
+      bytes[11] == 0x50) {
+    return true;
+  }
+  if (bytes.length >= 2 && bytes[0] == 0x42 && bytes[1] == 0x4D) {
+    return true;
+  }
+  return _isHeif(bytes);
+}
+
+bool _isHeif(Uint8List bytes) {
+  if (bytes.length < 12) return false;
+  if (bytes[4] != 0x66 ||
+      bytes[5] != 0x74 ||
+      bytes[6] != 0x79 ||
+      bytes[7] != 0x70) {
+    return false;
+  }
+  final brand = String.fromCharCodes(bytes.sublist(8, 12));
+  return brand == 'heic' ||
+      brand == 'heix' ||
+      brand == 'mif1' ||
+      brand == 'msf1' ||
+      brand == 'avif';
+}
+
+String _imageExtension(Uint8List bytes) {
+  if (bytes.length >= 4 && bytes[0] == 0x89 && bytes[1] == 0x50) {
+    return 'png';
+  }
+  if (bytes.length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8) {
+    return 'jpg';
+  }
+  if (bytes.length >= 6 &&
+      bytes[0] == 0x47 &&
+      bytes[1] == 0x49 &&
+      bytes[2] == 0x46) {
+    return 'gif';
+  }
+  if (bytes.length >= 12 &&
+      bytes[8] == 0x57 &&
+      bytes[9] == 0x45 &&
+      bytes[10] == 0x42 &&
+      bytes[11] == 0x50) {
+    return 'webp';
+  }
+  if (bytes.length >= 2 && bytes[0] == 0x42 && bytes[1] == 0x4D) {
+    return 'bmp';
+  }
+  if (_isHeif(bytes)) {
+    final brand = String.fromCharCodes(bytes.sublist(8, 12));
+    return brand == 'avif' ? 'avif' : 'heic';
+  }
+  return 'jpg';
 }

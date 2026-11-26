@@ -21,12 +21,7 @@ extension InvoiceStatusLabel on InvoiceStatus {
   }
 }
 
-/// Every charge keeps its own identity so the resident can pay for one, some
-/// or all of them separately.
-///
-/// Business rule: Monthly Rent and Monthly Condo Fee are always separate line
-/// items, and parking / utility / facility / service / store / violation charges
-/// are never bundled into the condo fee.
+
 enum InvoiceItemType {
   rent,
   condoFee,
@@ -127,12 +122,7 @@ InvoiceStatus invoiceStatusFromApi(Object? value) {
   }
 }
 
-/// True when an invoice is past its due date and still owes money.
-///
-/// Shared by the invoice list and the dashboard so both derive the additional
-/// Overdue badge the same way. The comparison is date-only, so an invoice due
-/// today is not overdue. A missing due date, a zero balance, a paid invoice and
-/// a cancelled invoice never count as overdue.
+
 bool isInvoiceOverdue({
   required DateTime? dueDate,
   required double remainingAmount,
