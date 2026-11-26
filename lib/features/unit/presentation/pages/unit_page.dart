@@ -208,23 +208,37 @@ class _UnitInformationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final u = unit.unit;
+    final tiles = [
+      _tile('Unit number', u.number, Icons.tag_rounded),
+      _tile('Tower', u.tower?.name ?? '', Icons.apartment_rounded),
+      _tile('Floor', u.floorLabel ?? '', Icons.layers_outlined),
+      _tile('Unit type', u.unitType?.name ?? '', Icons.bed_outlined),
+      _tile('Area', '${u.areaM2 ?? ''}', Icons.square_foot_rounded),
+      _tile('Bedrooms', '${u.bedrooms ?? ''}', Icons.king_bed_outlined),
+      _tile('Bathrooms', '${u.bathrooms ?? ''}', Icons.bathtub_outlined),
+      _tile('Occupancy', u.occupancy ?? '', Icons.check_circle_outline_rounded),
+    ];
+
     return _UnitCard(
-      child: GridView.count(
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        childAspectRatio: 2.35,
+      child: Column(
         children: [
-          _tile('Unit number', u.number, Icons.tag_rounded),
-          _tile('Tower', u.tower?.name ?? '', Icons.apartment_rounded),
-          _tile('Floor', u.floorLabel ?? '', Icons.layers_outlined),
-          _tile('Unit type', u.unitType?.name ?? '', Icons.bed_outlined),
-          _tile('Area', '${u.areaM2 ?? ''}', Icons.square_foot_rounded),
-          _tile('Bedrooms', '${u.bedrooms ?? ''}', Icons.king_bed_outlined),
-          _tile('Bathrooms', '${u.bathrooms ?? ''}', Icons.bathtub_outlined),
-          _tile('Occupancy', u.occupancy ?? '', Icons.check_circle_outline_rounded),
+          for (var i = 0; i < tiles.length; i += 2) ...[
+            if (i > 0) const SizedBox(height: 10),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: tiles[i]),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: i + 1 < tiles.length
+                        ? tiles[i + 1]
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

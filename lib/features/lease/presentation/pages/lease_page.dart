@@ -141,7 +141,7 @@ class LeasePage extends GetView<LeaseController> {
                         ),
                       ),
                       AppLabelValueRow(
-                        label: 'Last rent payment',
+                        label: 'Last rent date',
                         value: lease.lastRentPaymentDate,
                       ),
                     ],
