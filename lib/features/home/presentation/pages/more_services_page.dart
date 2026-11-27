@@ -67,9 +67,9 @@ class MoreServicesPage extends StatelessWidget {
                 title: 'Resident services',
                 subtitle:
                     'Everything for ${session.session.value?.unitLabel ?? ''}',
-                footnote:
-                    'You are signed in as ${session.session.value?.role.label ?? 'Resident'}. '
-                    'Some screens change with your role.',
+                // footnote:
+                //     'You are signed in as ${session.session.value?.role.label ?? 'Resident'}. '
+                //     'Some screens change with your role.',
               ),
               20.h.heightBox(),
               if (enabled(CondoFeature.lease) ||
@@ -99,7 +99,7 @@ class MoreServicesPage extends StatelessWidget {
                   _ModuleTile(
                     route: AppRoutes.parking,
                     icon: Icons.directions_car_rounded,
-                    color: AppPalette.warning,
+                    color: tokens.brand,
                     title: 'Parking',
                     subtitle: 'Your bay, access log and guest parking',
                     badge: _parkingBadge(),
@@ -142,7 +142,7 @@ class MoreServicesPage extends StatelessWidget {
                   _ModuleTile(
                     route: AppRoutes.rules,
                     icon: Icons.gavel_rounded,
-                    color: AppPalette.danger,
+                    color: tokens.brand,
                     title: 'Rules & violations',
                     subtitle: 'Community rules, fines and appeals',
                     badge: _violationBadge(),
@@ -172,29 +172,7 @@ class MoreServicesPage extends StatelessWidget {
                 title: 'Notifications',
                 subtitle: 'All your resident updates',
               ),
-              18.h.heightBox(),
-              AppCard(
-                color: tokens.surface,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.cloud_off_rounded, color: tokens.muted),
-                    10.w.widthBox(),
-                    Expanded(
-                      child: Text(
-                        'All data in this build is mocked locally. Every module '
-                        'follows the same repository structure that the Odoo API '
-                        'will plug into.',
-                        style: TextStyle(
-                          color: tokens.muted,
-                          fontSize: 11.sp,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+             
             ],
           ),
         ),
@@ -286,10 +264,10 @@ class _ModuleTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (badge != null)
-              AppStatusPill(label: badge!, color: color, dense: true)
-            else
-              Icon(Icons.chevron_right_rounded, color: tokens.faint),
+            // if (badge != null)
+            //   AppStatusPill(label: badge!, color: color, dense: true)
+            // else
+            //   Icon(Icons.chevron_right_rounded, color: tokens.faint),
           ],
         ),
       ),

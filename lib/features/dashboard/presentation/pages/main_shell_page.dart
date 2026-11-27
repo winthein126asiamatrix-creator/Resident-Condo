@@ -111,14 +111,6 @@ class _MainShellPageState extends State<MainShellPage> {
           selectedIcon: Icons.payments_rounded,
           label: 'payments'.tr,
         ),
-      if (enabled(CondoFeature.maintenance))
-        _tab(
-          feature: 'maintenance',
-          page: const MaintenancePage(),
-          icon: Icons.handyman_outlined,
-          selectedIcon: Icons.handyman_rounded,
-          label: 'maintenance'.tr,
-        ),
       if (enabled(CondoFeature.facilities))
         _tab(
           feature: 'facilities',

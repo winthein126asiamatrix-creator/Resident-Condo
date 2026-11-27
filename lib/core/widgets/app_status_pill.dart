@@ -70,7 +70,7 @@ class AppIconTile extends StatelessWidget {
         color: color.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(size / 3),
       ),
-      child: Icon(icon, color: color, size: size * 0.5),
+      child: Icon(icon,  size: size * 0.5),
     );
   }
 }

@@ -359,24 +359,12 @@ class _BalanceSummary extends StatelessWidget {
               ),
             ),
           ),
-          8.h.heightBox(),
-          Text(
-            'Pay Now opens your invoice. If more than one is open, choose the '
-            'one to pay first. Nothing is charged until you confirm the items.',
-            style: TextStyle(
-              color: tokens.brandOnDarkMuted,
-              fontSize: 10.sp,
-              height: 1.35,
-            ),
-          ),
         ],
       ),
     );
   }
 
-  /// Opens the only open invoice directly, or asks which one to pay when the
-  /// dashboard reports several. When the dashboard cannot identify the single
-  /// invoice, the payable list is resolved first so the count is never guessed.
+ 
   Future<void> _startPaymentFlow(BuildContext context) async {
     final openCount = controller.openInvoiceCount;
     if (openCount <= 0) {
@@ -447,16 +435,14 @@ class _FeeBreakdown extends StatelessWidget {
     // A fee type the API omits is zero.
     double amountFor(FeeSummary? fee) => fee?.amount ?? 0;
 
-    final rows = <({String label, double amount, Color color})>[
+    final rows = <({String label, double amount})>[
       (
         label: labelFor(rent, 'Monthly Rent'),
         amount: amountFor(rent),
-        color: AppPalette.info,
       ),
       (
         label: labelFor(condoFee, 'Monthly Condo Fee'),
         amount: amountFor(condoFee),
-        color: tokens.brand,
       ),
       (
         label: labelFor(
@@ -464,7 +450,6 @@ class _FeeBreakdown extends StatelessWidget {
           'Parking, utility, facility, service & fines',
         ),
         amount: amountFor(otherFees),
-        color: AppPalette.warning,
       ),
     ];
 
@@ -497,7 +482,7 @@ class _FeeBreakdown extends StatelessWidget {
                     width: 10,
                     height: 10,
                     decoration: BoxDecoration(
-                      color: row.color,
+                      color: tokens.mutedStrong.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(3.r),
                     ),
                   ),
@@ -562,21 +547,21 @@ class _InvoiceSummaryCard extends StatelessWidget {
                 child: _InvoiceCount(
                   label: 'Unpaid',
                   value: summary.unpaid,
-                  color: AppPalette.warning,
+                  color: tokens.ink,
                 ),
               ),
               Expanded(
                 child: _InvoiceCount(
                   label: 'Partial',
                   value: summary.partial,
-                  color: AppPalette.info,
+                  color: tokens.ink,
                 ),
               ),
               Expanded(
                 child: _InvoiceCount(
                   label: 'Paid',
                   value: summary.paid,
-                  color: AppPalette.success,
+                  color: tokens.ink,
                 ),
               ),
             ],
@@ -864,6 +849,14 @@ class _RecentInvoiceCard extends StatelessWidget {
     final total = _money(invoice.totalAmount);
     final paid = _money(invoice.paidAmount);
     final remaining = _money(invoice.remainingAmount);
+    final (label) = switch (invoice.invoiceStatus) {
+      InvoiceStatus.paid => ('Paid'),
+      InvoiceStatus.partiallyPaid => ('Partial'),
+      InvoiceStatus.pending => ('Pending'),
+      InvoiceStatus.overdue => ('Overdue'),
+      InvoiceStatus.unpaid => ('Unpaid'),
+      InvoiceStatus.cancelled => ('Cancelled'),
+    };
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(18.r),
@@ -874,31 +867,76 @@ class _RecentInvoiceCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(18.r),
           border: Border.all(color: tokens.border),
         ),
-        child: Row(
+        child: Column(
           children: [
-            AppIconTile(
-              icon: settled
-                  ? Icons.receipt_long_rounded
-                  : Icons.receipt_long_outlined,
-              color: settled ? AppPalette.success : tokens.brand,
+            Row(
+              children: [
+                AppIconTile(
+                  icon: settled
+                      ? Icons.receipt_long_rounded
+                      : Icons.receipt_long_outlined,
+                  color:  tokens.brand,
+                ),
+                12.w.widthBox(),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        invoice.invoiceNumber,
+                        style: TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      4.h.heightBox(),
+                      Text(
+                        invoice.billingPeriodLabel,
+                        style: TextStyle(color: tokens.muted, fontSize: 12.sp),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(total, style: TextStyle(fontWeight: FontWeight.w800)),
+                    4.h.heightBox(),
+                    Text(
+                      invoice.dueDateLabel.isEmpty
+                          ? ''
+                          : invoice.isOverdue?
+
+                          'Over Due ${invoice.dueDateLabel}':
+                          'Due ${invoice.dueDateLabel}',
+                      style: TextStyle(color:invoice.isOverdue?AppPalette.danger: tokens.muted, fontSize: 10.sp),
+                    ),
+                  ],
+                ),
+                Icon(Icons.chevron_right_rounded, color: tokens.faint),
+                
+              ],
             ),
-            12.w.widthBox(),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    invoice.invoiceNumber,
-                    style: TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                  4.h.heightBox(),
-                  Text(
-                    invoice.billingPeriodLabel,
-                    style: TextStyle(color: tokens.muted, fontSize: 12.sp),
-                  ),
-                  6.h.heightBox(),
-                  Text(
-                    'Total $total · Paid $paid',
+            16.h.heightBox(),
+            Row(
+
+              children: [
+               Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: tokens.border)
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    ),
+                      Spacer(),
+                      Text(
+                    invoice.invoiceStatus == InvoiceStatus.paid ?
+                    'Paid $paid':
+                    'Paid $paid . $remaining Left',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -906,28 +944,8 @@ class _RecentInvoiceCard extends StatelessWidget {
                       fontSize: 11.sp,
                     ),
                   ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(total, style: TextStyle(fontWeight: FontWeight.w800)),
-                4.h.heightBox(),
-                Text(
-                  invoice.dueDateLabel.isEmpty
-                      ? ''
-                      : 'Due ${invoice.dueDateLabel}',
-                  style: TextStyle(color: tokens.muted, fontSize: 10.sp),
-                ),
-                5.h.heightBox(),
-                PaymentStatusBadges(
-                  status: invoice.invoiceStatus,
-                  overdue: invoice.isOverdue,
-                ),
               ],
-            ),
-            Icon(Icons.chevron_right_rounded, color: tokens.faint),
+            )
           ],
         ),
       ),

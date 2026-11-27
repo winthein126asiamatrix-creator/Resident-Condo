@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:test/features/maintenance/presentation/pages/maintenance_page.dart';
 
 import '../../features/announcements/presentation/pages/announcements_page.dart';
 import '../../features/appearance/presentation/bindings/appearance_binding.dart';
@@ -162,6 +163,11 @@ abstract final class AppPages {
             : null;
         return PaymentDetailsPage(paymentId: id);
       },
+    ),
+    GetPage<dynamic>(
+      name: AppRoutes.maintenance,
+      page: () => MaintenancePage(),
+      middlewares: [FeatureGateMiddleware(CondoFeature.maintenance)],
     ),
     GetPage<dynamic>(
       name: AppRoutes.maintenanceDetail,

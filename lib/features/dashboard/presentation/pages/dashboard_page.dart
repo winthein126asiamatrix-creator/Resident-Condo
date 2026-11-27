@@ -190,35 +190,35 @@ class DashboardPage extends GetView<DashboardController> {
                           onSelectFeature(CondoFeature.maintenance.wire);
                         },
                       ),
-                    if (_enabled(CondoFeature.facilities)) ...[
-                      26.h.heightBox(),
-                      SectionHeader(
-                        title: 'Reservations',
-                        actionLabel: 'Book',
-                        onAction: () {
-                          vibrateNow();
-                          onSelectFeature(CondoFeature.facilities.wire);
-                        },
-                      ),
-                      10.h.heightBox(),
-                      _ReservationsCard(reservations: data.reservations),
-                    ],
-                    26.h.heightBox(),
-                    SectionHeader(
-                      title: 'Latest announcements',
-                      actionLabel: 'View all',
-                      onAction: () {
-                        vibrateNow();
-                        Get.toNamed(AppRoutes.announcements);
-                      },
-                    ),
-                    10.h.heightBox(),
-                    ...data.announcements.map(
-                      (announcement) => Padding(
-                        padding: EdgeInsets.only(bottom: 10),
-                        child: _AnnouncementCard(announcement: announcement),
-                      ),
-                    ),
+                    // if (_enabled(CondoFeature.facilities)) ...[
+                    //   26.h.heightBox(),
+                    //   SectionHeader(
+                    //     title: 'Reservations',
+                    //     actionLabel: 'Book',
+                    //     onAction: () {
+                    //       vibrateNow();
+                    //       onSelectFeature(CondoFeature.facilities.wire);
+                    //     },
+                    //   ),
+                    //    10.h.heightBox(),
+                    //    _ReservationsCard(reservations: data.reservations),
+                    // ],
+                    // 26.h.heightBox(),
+                    // SectionHeader(
+                    //   title: 'Latest announcements',
+                    //   actionLabel: 'View all',
+                    //   onAction: () {
+                    //     vibrateNow();
+                    //     Get.toNamed(AppRoutes.announcements);
+                    //   },
+                    // ),
+                    // 10.h.heightBox(),
+                    // ...data.announcements.map(
+                    //   (announcement) => Padding(
+                    //     padding: EdgeInsets.only(bottom: 10),
+                    //     child: _AnnouncementCard(announcement: announcement),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -291,6 +291,13 @@ class _GreetingHeader extends StatelessWidget {
       isError: false,
     );
   }
+  String greeting() {
+  final hour = DateTime.now().hour;
+
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
 
   @override
   Widget build(BuildContext context) {
@@ -301,6 +308,7 @@ class _GreetingHeader extends StatelessWidget {
       style: TextStyle(color: tokens.brand, fontWeight: FontWeight.w800),
     );
     return Row(
+      crossAxisAlignment: .center,
       children: [
         Expanded(
           child: Column(
@@ -310,7 +318,7 @@ class _GreetingHeader extends StatelessWidget {
                 onTap: () => _copyDeviceToken(context),
                 onDoubleTap: _showApiLogger,
                 child: Text(
-                  'Good morning, ${_firstName(resident?.name)}',
+                  '${greeting()}, ${_firstName(resident?.name)}',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: tokens.ink,
@@ -327,12 +335,7 @@ class _GreetingHeader extends StatelessWidget {
           ),
         ),
         12.w.widthBox(),
-        IconButton(
-          key: Key('dashboard-all-services-icon'),
-          onPressed: onMore,
-          tooltip: 'All resident services',
-          icon: Icon(Icons.grid_view_rounded, color: tokens.brand),
-        ),
+       
         Stack(
           clipBehavior: Clip.none,
           children: [
@@ -583,8 +586,8 @@ class _BalanceCard extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
-              if (due.date.isNotEmpty)
-                _DueDateChip(date: due.date, overdue: due.overdue),
+              if (due.overdue)
+                _DueDateChip(date: due.date),
             ],
           ),
           8.h.heightBox(),
@@ -664,51 +667,29 @@ class _BalanceCard extends StatelessWidget {
 }
 
 class _DueDateChip extends StatelessWidget {
-  const _DueDateChip({required this.date, required this.overdue});
+  const _DueDateChip({required this.date});
 
   final String date;
-  final bool overdue;
 
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
-    final color = overdue ? AppPalette.danger : tokens.brand;
-    final background = overdue
-        ? Color.alphaBlend(
+    final color =  AppPalette.danger ;
+    final background = Color.alphaBlend(
             AppPalette.danger.withValues(alpha: 0.10),
             tokens.surface,
-          )
-        : tokens.brand.withValues(alpha: 0.12);
+          );
     return Container(
-      key: Key(overdue ? 'dashboard-due-overdue' : 'dashboard-due-date'),
+      key: Key( 'dashboard-due-overdue'),
       padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(20.r),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            overdue
-                ? Icons.warning_amber_rounded
-                : Icons.calendar_today_rounded,
-            size: 12.sp,
-            color: color,
-          ),
-          4.w.widthBox(),
-          Text(
-            overdue ? 'Overdue' : 'Due Date',
-            style: Theme.of(context).textTheme.labelSmall
-                ?.copyWith(color: color, fontWeight: FontWeight.w800),
-          ),
-          5.w.widthBox(),
-          Text(
-            date,
-            style: Theme.of(context).textTheme.labelSmall
-                ?.copyWith(color: color, fontWeight: FontWeight.w600),
-          ),
-        ],
+      child: Text(
+        'Overdue',
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: color, fontWeight: FontWeight.w800),
       ),
     );
   }
@@ -726,9 +707,6 @@ class _QuickActions extends StatelessWidget {
   static const int _quickActionRows = 3;
   static const int _quickActionSlots = _quickActionColumns * _quickActionRows;
 
-  /// Six fixed slots, three across and two down. Disabled features are
-  /// omitted and the remaining shortcuts keep their order. Every other module
-  /// is one tap away through "All resident services" below the grid.
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
@@ -779,14 +757,14 @@ class _QuickActions extends StatelessWidget {
           color: tokens.brandTint,
           onTap: () {
             vibrateNow();
-            onSelectFeature(CondoFeature.maintenance.wire);
+             Get.toNamed(AppRoutes.maintenance);
           },
         );
       case CondoFeature.condoServices:
         return _QuickAction(
           icon: Icons.room_service_outlined,
           label: 'Services',
-          color: tokens.infoTint,
+          color: tokens.brandTint,
           onTap: () {
             vibrateNow();
             Get.toNamed(AppRoutes.services);
@@ -796,7 +774,7 @@ class _QuickActions extends StatelessWidget {
         return _QuickAction(
           icon: Icons.event_available_outlined,
           label: 'Reserve',
-          color: tokens.infoTint,
+          color: tokens.brandTint,
           onTap: () {
             vibrateNow();
             onSelectFeature(CondoFeature.facilities.wire);
@@ -806,7 +784,7 @@ class _QuickActions extends StatelessWidget {
         return _QuickAction(
           icon: Icons.report_problem_outlined,
           label: CondoFeature.complaints.label,
-          color: tokens.infoTint,
+          color: tokens.brandTint,
           onTap: () {
             vibrateNow();
             Get.toNamed(AppRoutes.complaints);
@@ -816,7 +794,7 @@ class _QuickActions extends StatelessWidget {
         return _QuickAction(
           icon: Icons.person_add_alt_1_outlined,
           label: 'Register visitor',
-          color: tokens.warningTint,
+          color: tokens.brandTint,
           onTap: () {
             vibrateNow();
             Get.toNamed(AppRoutes.visitors);
@@ -836,7 +814,7 @@ class _QuickActions extends StatelessWidget {
         return _QuickAction(
           icon: Icons.gavel_outlined,
           label: CondoFeature.rulesViolations.label,
-          color: tokens.warningTint,
+          color: tokens.brandTint,
           onTap: () {
             vibrateNow();
             Get.toNamed(AppRoutes.rules);
@@ -846,7 +824,7 @@ class _QuickActions extends StatelessWidget {
         return _QuickAction(
           icon: Icons.rule_outlined,
           label: CondoFeature.violationAppeals.label,
-          color: tokens.warningTint,
+          color: tokens.brandTint,
           onTap: () {
             vibrateNow();
             Get.toNamed(AppRoutes.rules);
@@ -856,7 +834,7 @@ class _QuickActions extends StatelessWidget {
         return _QuickAction(
           icon: Icons.pie_chart_outline,
           label: CondoFeature.partialPayment.label,
-          color: tokens.infoTint,
+          color: tokens.brandTint,
           onTap: () {
             vibrateNow();
             onSelectFeature(CondoFeature.payments.wire);
@@ -866,7 +844,7 @@ class _QuickActions extends StatelessWidget {
         return _QuickAction(
           icon: Icons.description_outlined,
           label: CondoFeature.lease.label,
-          color: tokens.infoTint,
+          color: tokens.brandTint,
           onTap: () {
             vibrateNow();
             Get.toNamed(AppRoutes.lease);

@@ -19,6 +19,7 @@ abstract final class AppRoutes {
   static const paymentHistory = '/payments/history';
   static const maintenanceDetail = '/maintenance/detail';
   static const maintenanceCreate = '/maintenance/create';
+   static const maintenance = '/maintenance';
   static const facilityDetail = '/facilities/detail';
   static const facilityReserve = '/facilities/reserve';
   static const bookingConfirmed = '/facilities/confirmed';

@@ -3,6 +3,7 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:test/core/widgets/app_detail_app_bar.dart';
 
 import '../../../../app/routes/app_routes.dart';
 
@@ -30,7 +31,17 @@ class MaintenancePage extends GetView<MaintenanceController> {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
-    return Scaffold(
+    return Scaffold( 
+      appBar: AppDetailAppBar(
+        title: 'Maintenance',
+        actions: [
+          IconButton(
+            onPressed: controller.refreshRequests,
+            tooltip: 'Refresh Maintenance',
+            icon: Icon(Icons.refresh_rounded),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Obx(
           () => controller.isLoading.value && controller.requests.isEmpty
@@ -53,18 +64,6 @@ class MaintenancePage extends GetView<MaintenanceController> {
                     physics: AlwaysScrollableScrollPhysics(),
                     padding: EdgeInsets.fromLTRB(20, 18, 20, 32),
                     children: [
-                      _MaintenanceHeader(onRefresh: controller.refreshRequests),
-                      20.h.heightBox(),
-                      if (controller.isShowingCachedData.value) ...[
-                        Text(
-                          'Showing saved maintenance data. Pull to refresh.',
-                          style: TextStyle(
-                            color: tokens.muted,
-                            fontSize: 12.sp,
-                          ),
-                        ),
-                        12.h.heightBox(),
-                      ],
                       AppHeroPanel(
                         icon: Icons.handyman_rounded,
                         title: 'Maintenance summary',
@@ -97,7 +96,6 @@ class MaintenancePage extends GetView<MaintenanceController> {
                         AppStateMessage(
                           title: 'No requests',
                           message: 'Create a request and our team will take it from there.',
-                          icon: Icons.handyman_outlined,
                         )
                       else
                         ...controller.requests.map(

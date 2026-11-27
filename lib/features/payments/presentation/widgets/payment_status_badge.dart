@@ -46,27 +46,14 @@ class PaymentStatusBadge extends StatelessWidget {
 class PaymentStatusBadges extends StatelessWidget {
   const PaymentStatusBadges({
     required this.status,
-    required this.overdue,
     super.key,
   });
 
   final InvoiceStatus status;
-  final bool overdue;
 
   @override
   Widget build(BuildContext context) {
-    final showOverdue = overdue && status != InvoiceStatus.overdue;
-    if (!showOverdue) {
       return PaymentStatusBadge(status: status);
-    }
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        PaymentStatusBadge(status: status),
-        const SizedBox(height: 6),
-        const PaymentStatusBadge(status: InvoiceStatus.overdue),
-      ],
-    );
+    
   }
 }

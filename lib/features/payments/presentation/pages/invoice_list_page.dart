@@ -265,7 +265,7 @@ class _InvoiceCard extends StatelessWidget {
                 6.h.heightBox(),
                 PaymentStatusBadges(
                   status: invoice.invoiceStatus,
-                  overdue: invoice.isOverdue,
+                 // overdue: invoice.isOverdue,
                 ),
               ],
             ),

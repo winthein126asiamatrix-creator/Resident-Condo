@@ -185,11 +185,10 @@ class _CreateMaintenanceRequestPageState
                     MaintenancePriority.medium: Icons.drag_handle_rounded,
                     MaintenancePriority.high: Icons.priority_high_rounded,
                   },
-                  // The colour carries the severity, so it stays per option.
                   colors: {
-                    MaintenancePriority.low: AppPalette.success,
-                    MaintenancePriority.medium: AppPalette.warning,
-                    MaintenancePriority.high: AppPalette.danger,
+                    MaintenancePriority.low: AppThemeTokens.of(context).brand,
+                    MaintenancePriority.medium: AppThemeTokens.of(context).brand,
+                    MaintenancePriority.high: AppThemeTokens.of(context).brand,
                   },
                   optionKey: (value) => 'priority-${value.name}',
                   value: _priority,

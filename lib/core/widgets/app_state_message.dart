@@ -6,7 +6,7 @@ class AppStateMessage extends StatelessWidget {
   const AppStateMessage({
     required this.title,
     required this.message,
-    required this.icon,
+     this.icon,
     this.actionLabel,
     this.onAction,
     super.key,
@@ -14,7 +14,7 @@ class AppStateMessage extends StatelessWidget {
 
   final String title;
   final String message;
-  final IconData icon;
+  final IconData? icon;
   final String? actionLabel;
   final VoidCallback? onAction;
 
@@ -26,7 +26,9 @@ class AppStateMessage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 56, color: Theme.of(context).colorScheme.primary),
+           icon == null?SizedBox.shrink(
+
+           ): Icon(icon, size: 56, color: Theme.of(context).colorScheme.primary),
             16.h.heightBox(),
             Text(
               title,
