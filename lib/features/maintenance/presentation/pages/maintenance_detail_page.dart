@@ -14,7 +14,6 @@ import '../../../../core/theme/app_theme_tokens.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_image_preview.dart';
 import '../../../../core/widgets/app_primary_action.dart';
-import '../../../../core/widgets/app_step_progress.dart';
 
 class MaintenanceDetailPage extends StatefulWidget {
   const MaintenanceDetailPage({required this.request, super.key});
@@ -350,23 +349,18 @@ class _StatusProgress extends StatelessWidget {
     final status = request.status;
     final cancelled = status == MaintenanceStatus.cancelled;
 
-    // The current status owns the step the user sees; history only supplies
-    // supporting subtitles. A cancelled history entry is ignored here because
-    // cancellation is rendered as its own terminal state below.
-    final history = <MaintenanceStatus, MaintenanceProgressEntry>{
-      for (final entry in request.progressHistory)
-        if (entry.status != MaintenanceStatus.cancelled) entry.status: entry,
-    };
-
-    final steps = <AppProgressStep>[
-      for (final step in _happyPath)
-        AppProgressStep(
-          title: step.label,
-          // A cancelled request has no reached happy-path step, so dated
-          // subtitles would imply progress that did not happen.
-          subtitle: cancelled ? null : _subtitleFor(step, history[step]),
-        ),
-    ];
+    // The current status owns the step the user sees; history supplies the
+    // date and time shown beside each status. The cancelled entry is kept
+    // aside because cancellation is rendered as its own terminal state.
+    MaintenanceProgressEntry? cancelledEntry;
+    final history = <MaintenanceStatus, MaintenanceProgressEntry>{};
+    for (final entry in request.progressHistory) {
+      if (entry.status == MaintenanceStatus.cancelled) {
+        cancelledEntry = entry;
+      } else {
+        history[entry.status] = entry;
+      }
+    }
 
     // `-1` leaves every happy-path step upcoming for a cancelled request.
     final currentIndex = cancelled ? -1 : _indexFor(status);
@@ -386,35 +380,24 @@ class _StatusProgress extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15.sp),
           ),
           16.h.heightBox(),
-          AppStepProgress(steps: steps, currentIndex: currentIndex),
+          for (var index = 0; index < _happyPath.length; index++)
+            _ProgressStepRow(
+              position: index,
+              title: _happyPath[index].label,
+              // A cancelled request has no reached happy-path step, so dated
+              // subtitles would imply progress that did not happen.
+              subtitle: cancelled
+                  ? null
+                  : _subtitleFor(_happyPath[index], history[_happyPath[index]]),
+              state: _stateFor(index, currentIndex),
+              isLast: index == _happyPath.length - 1,
+            ),
           if (cancelled) ...[
             14.h.heightBox(),
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppPalette.danger.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.cancel_rounded,
-                    size: 18,
-                    color: AppPalette.danger,
-                  ),
-                  10.w.widthBox(),
-                  Expanded(
-                    child: Text(
-                      MaintenanceStatus.cancelled.label,
-                      style: TextStyle(
-                        color: AppPalette.danger,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            _CancelledNotice(
+              subtitle:
+                  cancelledEntry?.occurredAtDisplay ??
+                  request.statusTimestampDisplay(MaintenanceStatus.cancelled),
             ),
           ],
         ],
@@ -428,19 +411,228 @@ class _StatusProgress extends StatelessWidget {
     return index < 0 ? 0 : index;
   }
 
+  static _StepState _stateFor(int index, int currentIndex) {
+    if (index < currentIndex) return _StepState.completed;
+    if (index == currentIndex) return _StepState.current;
+    return _StepState.upcoming;
+  }
+
   String? _subtitleFor(
     MaintenanceStatus step,
     MaintenanceProgressEntry? entry,
   ) {
-    if (step == MaintenanceStatus.submitted) {
-      final submittedAt = request.createdAtDisplay;
-      if (submittedAt.isNotEmpty) return submittedAt;
-    }
+    // Prefer the progress history, then fall back to the workflow fields a
+    // list response carries (`created_at`, `assigned_at`, ...). A missing or
+    // unparseable timestamp leaves the line empty instead of guessing.
+    final occurredAt =
+        entry?.occurredAtDisplay ?? request.statusTimestampDisplay(step);
+    if (occurredAt != null) return occurredAt;
+
     final note = entry?.note?.trim();
     if (note != null && note.isNotEmpty) return note;
-    final createdAt = entry?.createdAt?.trim();
-    if (createdAt != null && createdAt.isNotEmpty) return createdAt;
     return null;
+  }
+}
+
+enum _StepState { completed, current, upcoming }
+
+/// One row of the vertical progress timeline: a circle on the left, the status
+/// label, and the date and time it happened on the right.
+class _ProgressStepRow extends StatelessWidget {
+  const _ProgressStepRow({
+    required this.position,
+    required this.title,
+    required this.state,
+    required this.subtitle,
+    required this.isLast,
+  });
+
+  final int position;
+  final String title;
+  final _StepState state;
+  final String? subtitle;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
+    final isDone = state == _StepState.completed;
+    final isCurrent = state == _StepState.current;
+
+    final background = isDone
+        ? tokens.brand
+        : isCurrent
+        ? tokens.brandTint
+        : tokens.surface;
+    final foreground = isDone
+        ? tokens.onBrand
+        : isCurrent
+        ? tokens.brand
+        : tokens.mutedStrong;
+
+    // State is spelled out for a screen reader as well as shown, so it never
+    // depends on seeing the colour.
+    final stateWord = switch (state) {
+      _StepState.completed => 'completed',
+      _StepState.current => 'current step',
+      _StepState.upcoming => 'not started',
+    };
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            width: 28,
+            child: Column(
+              children: [
+                Semantics(
+                  label:
+                      '${isDone ? 'Done' : 'Step ${position + 1}'}, $stateWord',
+                  child: Container(
+                    key: Key('progress-step-$position'),
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      color: background,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isDone || isCurrent
+                            ? tokens.brand
+                            : tokens.border,
+                        width: isCurrent ? 2 : 1.4,
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: isDone
+                        ? Icon(
+                            Icons.check_rounded,
+                            size: 15,
+                            color: tokens.onBrand,
+                          )
+                        : Text(
+                            '${position + 1}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: foreground,
+                              fontSize: 12.sp,
+                              height: 1,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                  ),
+                ),
+                if (!isLast)
+                  Expanded(
+                    child: Container(
+                      width: 2,
+                      margin: EdgeInsets.symmetric(vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isDone ? tokens.brand : tokens.border,
+                        borderRadius: BorderRadius.circular(1.r),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          12.w.widthBox(),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(top: 3, bottom: isLast ? 0 : 18),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontWeight: isDone || isCurrent
+                            ? FontWeight.w800
+                            : FontWeight.w600,
+                        color: state == _StepState.upcoming
+                            ? tokens.muted
+                            : tokens.ink,
+                      ),
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    12.w.widthBox(),
+                    Flexible(
+                      child: Text(
+                        subtitle!,
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: tokens.faint,
+                          fontSize: 12.sp,
+                          height: 1.3,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CancelledNotice extends StatelessWidget {
+  const _CancelledNotice({this.subtitle});
+
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppPalette.danger.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.cancel_rounded, size: 18, color: AppPalette.danger),
+          10.w.widthBox(),
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    MaintenanceStatus.cancelled.label,
+                    style: TextStyle(
+                      color: AppPalette.danger,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  12.w.widthBox(),
+                  Flexible(
+                    child: Text(
+                      subtitle!,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        color: AppPalette.danger.withValues(alpha: 0.8),
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

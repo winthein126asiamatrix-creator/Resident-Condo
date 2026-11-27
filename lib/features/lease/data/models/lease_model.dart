@@ -382,7 +382,7 @@ String _displayDate(Object? value, String field) {
 
 String _displayDateOrRaw(Object? value) {
   final text = _text(value);
-  if (text == null || text.isEmpty) return '';
+  if (text == null || text.isEmpty || text.toLowerCase() == 'false') return '';
   final date = _tryDate(text);
   return date == null ? text : AppDates.format(date);
 }

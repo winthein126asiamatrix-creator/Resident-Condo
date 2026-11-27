@@ -623,7 +623,7 @@ class _BalanceCard extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onPayNow,
                 icon: Icon(Icons.arrow_forward_rounded, size: 16),
-                label: Text('Pay now'),
+                label: Text('Pay now',style: TextStyle(color: Colors.white),),
                 style: FilledButton.styleFrom(
                   backgroundColor: tokens.brand,
                   foregroundColor: tokens.onBrand,

@@ -4,9 +4,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../domain/entities/invoice.dart';
 
 class PaymentStatusBadge extends StatelessWidget {
-  const PaymentStatusBadge({required this.status, super.key});
+  const PaymentStatusBadge({required this.status, super.key, this.backgroundColor});
 
   final InvoiceStatus status;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +23,7 @@ class PaymentStatusBadge extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: backgroundColor??color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Text(

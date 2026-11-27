@@ -348,7 +348,7 @@ class _InvoiceHero extends StatelessWidget {
                   ),
                 ),
               ),
-              PaymentStatusBadge(status: view.status),
+              PaymentStatusBadge(status: view.status,backgroundColor: Colors.white.withValues(alpha: 0.3)),
             ],
           ),
           14.h.heightBox(),

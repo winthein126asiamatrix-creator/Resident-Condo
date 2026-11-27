@@ -252,6 +252,7 @@ class _PaymentDetailView extends StatelessWidget {
                     _PaymentStatusPill(
                       status: detail.status,
                       parsed: detail.paymentStatus,
+                      backgroundColor: Colors.white.withValues(alpha: 0.3),
                     ),
                   ],
                 ),
@@ -443,10 +444,11 @@ class _ReceiptSection extends StatelessWidget {
 }
 
 class _PaymentStatusPill extends StatelessWidget {
-  const _PaymentStatusPill({required this.status, required this.parsed});
+  const _PaymentStatusPill({required this.status, required this.parsed, this.backgroundColor});
 
   final String status;
   final PaymentStatus? parsed;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -465,7 +467,7 @@ class _PaymentStatusPill extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color:backgroundColor?? color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Text(

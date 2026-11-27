@@ -214,6 +214,8 @@ class MaintenanceRepositoryImpl implements MaintenanceRepository {
       status: list.status,
       priority: list.priority,
       technician: list.technician ?? detail.technician,
+      assignedAt: list.assignedAt ?? detail.assignedAt,
+      inProgressAt: list.inProgressAt ?? detail.inProgressAt,
       completedAt: list.completedAt ?? detail.completedAt,
       cancelledAt: list.cancelledAt ?? detail.cancelledAt,
       // Descriptive fields only win when the list actually carries a value, so

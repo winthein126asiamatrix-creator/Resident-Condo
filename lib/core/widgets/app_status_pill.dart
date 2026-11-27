@@ -24,7 +24,7 @@ class AppStatusPill extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: dense ? 8 : 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: color,
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
@@ -37,7 +37,7 @@ class AppStatusPill extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: color,
+              color: Colors.white,
               fontSize: dense ? 10 : 11,
               fontWeight: FontWeight.w800,
             ),

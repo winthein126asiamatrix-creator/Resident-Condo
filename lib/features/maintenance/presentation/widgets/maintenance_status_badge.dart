@@ -25,13 +25,13 @@ class MaintenanceStatusBadge extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+        color: color,
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: color,
+          color: Colors.white,
           fontSize: 11.sp,
           fontWeight: FontWeight.w800,
         ),

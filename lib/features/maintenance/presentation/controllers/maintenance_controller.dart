@@ -335,8 +335,9 @@ class MaintenanceController extends GetxController {
         forceRefresh: forceRefresh,
       );
       if (seq != _detailSeq || accountKey != _accountKey) return;
-      selectedRequest.value = loaded;
-      _replace(loaded);
+      final merged = _mergeListSnapshot(loaded, request);
+      selectedRequest.value = merged;
+      _replace(merged);
     } on AppException catch (error) {
       detailError.value = error.message;
     } catch (_) {
@@ -532,6 +533,38 @@ class MaintenanceController extends GetxController {
     if (error is ApiException && error.isRetryable) {
       _registry?.markStale(screen);
     }
+  }
+
+  /// Keeps list-only workflow timestamps when the detail endpoint omits them.
+  ///
+  /// The list response is the source of truth for the `*_at` workflow fields
+  /// and is already in memory when the user opens a request. A detail refresh
+  /// must not erase a timestamp the list provided.
+  MaintenanceRequest _mergeListSnapshot(
+    MaintenanceRequest detail,
+    MaintenanceRequest fallback,
+  ) {
+    var list = fallback;
+    for (final item in requests) {
+      if (item.id == detail.id) {
+        list = item;
+        break;
+      }
+    }
+    return detail.copyWith(
+      assignedAt: detail.assignedAt ?? list.assignedAt,
+      inProgressAt: detail.inProgressAt ?? list.inProgressAt,
+      completedAt: detail.completedAt ?? list.completedAt,
+      cancelledAt: detail.cancelledAt ?? list.cancelledAt,
+      createdAt: detail.createdAt.trim().isEmpty
+          ? list.createdAt
+          : detail.createdAt,
+      technician: detail.technician ?? list.technician,
+      photos: detail.photos.isEmpty ? list.photos : detail.photos,
+      progressHistory: detail.progressHistory.isEmpty
+          ? list.progressHistory
+          : detail.progressHistory,
+    );
   }
 
   void _replace(MaintenanceRequest updated) {

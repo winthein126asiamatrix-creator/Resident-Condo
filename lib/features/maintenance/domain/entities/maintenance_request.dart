@@ -280,17 +280,33 @@ class MaintenanceProgressEntry {
       ? status.label
       : statusLabel!;
 
+  /// The moment this progress entry happened, ready to show beside its status.
+  ///
+  /// Returns `null` when the backend did not send a timestamp or it cannot be
+  /// parsed, so the caller can omit the subtitle instead of showing a
+  /// misleading one.
+  String? get occurredAtDisplay => _formatTimestamp(createdAt);
+
   factory MaintenanceProgressEntry.fromJson(Map<String, dynamic> json) {
     return MaintenanceProgressEntry(
       status: MaintenanceStatus.fromApi(json['status']),
       statusLabel: (json['status_label'] ?? json['label'] ?? json['title'])
           ?.toString(),
-      note: (json['note'] ?? json['message'] ?? json['description'])
-          ?.toString(),
+      note:
+          (json['note'] ??
+                  json['comment'] ??
+                  json['message'] ??
+                  json['description'])
+              ?.toString(),
       actor: (json['actor'] ?? json['by'] ?? json['user'] ?? json['technician'])
           ?.toString(),
-      createdAt: (json['created_at'] ?? json['timestamp'] ?? json['date'])
-          ?.toString(),
+      createdAt:
+          (json['at'] ??
+                  json['created_at'] ??
+                  json['occurred_at'] ??
+                  json['timestamp'] ??
+                  json['date'])
+              ?.toString(),
     );
   }
 
@@ -320,6 +336,8 @@ class MaintenanceRequest {
     required this.preferredTime,
     this.photoCount = 0,
     this.technician,
+    this.assignedAt,
+    this.inProgressAt,
     this.completedAt,
     this.cancelledAt,
     this.timezone = 'UTC',
@@ -342,6 +360,8 @@ class MaintenanceRequest {
   final String preferredTime;
   final int photoCount;
   final String? technician;
+  final String? assignedAt;
+  final String? inProgressAt;
   final String? completedAt;
   final String? cancelledAt;
   final String timezone;
@@ -361,14 +381,22 @@ class MaintenanceRequest {
   ///
   /// Returns an empty string when the value is missing or cannot be parsed so
   /// the caller can fall back without showing a misleading timestamp.
-  String get createdAtDisplay {
-    final text = createdAt.trim();
-    if (text.isEmpty) return '';
-    final parsed = DateTime.tryParse(text);
-    if (parsed == null) return '';
-    final local = parsed.toLocal();
-    final hasTime = RegExp(r'\d{1,2}:\d{2}').hasMatch(text);
-    return hasTime ? AppDates.formatDateTime(local) : AppDates.format(local);
+  String get createdAtDisplay => _formatTimestamp(createdAt) ?? '';
+
+  /// The date and time the backend recorded for [status].
+  ///
+  /// List responses carry the `*_at` workflow fields without a progress
+  /// history, so the timeline uses this as a fallback. Returns `null` when the
+  /// field is missing or cannot be parsed.
+  String? statusTimestampDisplay(MaintenanceStatus status) {
+    final value = switch (status) {
+      MaintenanceStatus.submitted => createdAt,
+      MaintenanceStatus.assigned => assignedAt,
+      MaintenanceStatus.inProgress => inProgressAt,
+      MaintenanceStatus.completed => completedAt,
+      MaintenanceStatus.cancelled => cancelledAt,
+    };
+    return _formatTimestamp(value);
   }
 
   String get preferredDateDisplay => _formatDate(preferredDate);
@@ -401,6 +429,8 @@ class MaintenanceRequest {
     String? preferredTime,
     int? photoCount,
     String? technician,
+    String? assignedAt,
+    String? inProgressAt,
     String? completedAt,
     String? cancelledAt,
     String? timezone,
@@ -423,6 +453,8 @@ class MaintenanceRequest {
       preferredTime: preferredTime ?? this.preferredTime,
       photoCount: photoCount ?? this.photoCount,
       technician: technician ?? this.technician,
+      assignedAt: assignedAt ?? this.assignedAt,
+      inProgressAt: inProgressAt ?? this.inProgressAt,
       completedAt: completedAt ?? this.completedAt,
       cancelledAt: cancelledAt ?? this.cancelledAt,
       timezone: timezone ?? this.timezone,
@@ -721,6 +753,9 @@ class MaintenanceRequestModelData {
               .toString(),
       photoCount: photoCount,
       technician: technician,
+      assignedAt: (json['assigned_at'] ?? json['assignedAt'])?.toString(),
+      inProgressAt: (json['in_progress_at'] ?? json['inProgressAt'])
+          ?.toString(),
       completedAt: (json['completed_at'] ?? json['completedAt'])?.toString(),
       cancelledAt: (json['cancelled_at'] ?? json['cancelledAt'])?.toString(),
       timezone: (json['timezone'] ?? 'UTC').toString(),
@@ -748,6 +783,8 @@ class MaintenanceRequestModelData {
       'preferred_time': request.preferredTime,
       'photo_count': request.photoCount,
       if (request.technician != null) 'technician': request.technician,
+      if (request.assignedAt != null) 'assigned_at': request.assignedAt,
+      if (request.inProgressAt != null) 'in_progress_at': request.inProgressAt,
       if (request.completedAt != null) 'completed_at': request.completedAt,
       if (request.cancelledAt != null) 'cancelled_at': request.cancelledAt,
       'timezone': request.timezone,
@@ -771,6 +808,19 @@ String _formatDate(String value) {
   final parsed = DateTime.tryParse(text);
   if (parsed != null) return AppDates.format(parsed);
   return text;
+}
+
+/// Formats a backend timestamp (`Nov 25, 2026 · 2:39 PM`).
+///
+/// Returns `null` for missing or unparseable values so no timestamp is shown.
+String? _formatTimestamp(String? value) {
+  final text = value?.trim() ?? '';
+  if (text.isEmpty) return null;
+  final parsed = DateTime.tryParse(text);
+  if (parsed == null) return null;
+  final local = parsed.toLocal();
+  final hasTime = RegExp(r'\d{1,2}:\d{2}').hasMatch(text);
+  return hasTime ? AppDates.formatDateTime(local) : AppDates.format(local);
 }
 
 String _formatTime(String value) {
