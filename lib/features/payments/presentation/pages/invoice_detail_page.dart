@@ -139,7 +139,10 @@ class _DetailScaffold extends StatelessWidget {
                   ),
                 if (view.unitLabel.isNotEmpty)...[
                   AppLabelValueRow(label: 'Unit', value: view.unitLabel),
-                   Divider(color: tokens.brandTint),
+                   Padding(
+                     padding: const EdgeInsets.symmetric(vertical: 6.0),
+                     child: Divider(color: tokens.brandTint),
+                   ),
                 ],
                  
                 if (view.invoiceDateLabel.isNotEmpty)...[

@@ -67,7 +67,7 @@ class AppIconTile extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
+        color: color,
         borderRadius: BorderRadius.circular(size / 3),
       ),
       child: Icon(icon,  size: size * 0.5),

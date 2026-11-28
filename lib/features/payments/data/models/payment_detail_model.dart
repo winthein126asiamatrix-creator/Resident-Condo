@@ -1,3 +1,5 @@
+import 'package:test/features/payments/domain/entities/payment.dart';
+
 import '../../domain/entities/payment_detail.dart';
 
 class PaymentDetailModel extends PaymentDetail {
@@ -28,7 +30,7 @@ class PaymentDetailModel extends PaymentDetail {
         currency: '',
         paymentMethod: '',
         transactionReference: '',
-        status: '',
+        status: .unknown,
       );
     }
     return PaymentDetailModel.fromJson(map);
@@ -52,7 +54,9 @@ class PaymentDetailModel extends PaymentDetail {
             json['transaction_id'] ??
             json['reference'],
       ),
-      status: _asString(json['status']),
+      status: PaymentStatus.fromApi(
+  _asString(json['status']),
+),
       paidAt: _asDate(
         json['paid_at'] ??
             json['paid_date'] ??

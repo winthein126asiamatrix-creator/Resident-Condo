@@ -855,7 +855,7 @@ class _RecentPaymentCard extends StatelessWidget {
                 // if (status != null)
                 //   PaymentRecordBadge(status: status)
                 // else
-                  _StatusPill(label: payment.status.label, color: tokens.muted),
+                  StatusPill(label: payment.status.label, color: tokens.muted),
               ],
             ),
             if (onTap != null)
@@ -867,8 +867,8 @@ class _RecentPaymentCard extends StatelessWidget {
   }
 }
 
-class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.label, required this.color});
+class StatusPill extends StatelessWidget {
+  const StatusPill({super.key, required this.label, required this.color});
   final String label;
   final Color color;
 

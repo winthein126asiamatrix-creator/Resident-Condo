@@ -96,7 +96,13 @@ class _Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
+    String greeting() {
+  final hour = DateTime.now().hour;
 
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
     return ListView(
       key: Key('appearance-scroll'),
       physics: AlwaysScrollableScrollPhysics(),
@@ -185,8 +191,8 @@ class _Body extends StatelessWidget {
             controller: controller,
             child: AppAppearancePreviewCard(
               tokens: controller.previewTokens,
-              greeting: 'Good morning, Mary',
-              unitLabel: 'Building A Â· Unit A-101',
+              greeting: greeting(),
+              unitLabel: 'Building A · Unit A-101',
               balanceAmount: '\$100',
               balanceDue: 'Due Sep 30',
             ),

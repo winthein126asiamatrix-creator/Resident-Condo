@@ -69,7 +69,7 @@ class InvoiceCard extends StatelessWidget {
                   icon: settled
                       ? Icons.receipt_long_rounded
                       : Icons.receipt_long_outlined,
-                  color: tokens.brand,
+                  color: tokens.brandTint,
                 ),
                 12.w.widthBox(),
                 Expanded(

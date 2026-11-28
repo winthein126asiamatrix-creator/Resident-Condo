@@ -3,6 +3,7 @@ import 'package:test/core/utils/sized_box_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:test/features/payments/presentation/pages/payments_page.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/theme/app_palette.dart';
@@ -170,7 +171,6 @@ class _PaymentHistoryCard extends StatelessWidget {
           children: [
             Icon(
               failed ? Icons.error_rounded : Icons.check_circle_rounded,
-              color: parsed == null ? tokens.muted : color,
             ),
             10.w.widthBox(),
             Expanded(
@@ -222,16 +222,15 @@ class _PaymentHistoryCard extends StatelessWidget {
                   amount,
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    color: parsed == null ? tokens.ink : color,
                   ),
                 ),
                 6.h.heightBox(),
-                if (parsed != null)
-                  PaymentRecordBadge(status: parsed)
-                else
-                  _StatusPill(
+                // if (parsed != null)
+                //   PaymentRecordBadge(status: parsed)
+                // else
+                  StatusPill(
                     label: payment.statusLabel,
-                    color: _statusColor(payment.status, tokens),
+                    color: tokens.muted,
                   ),
               ],
             ),
@@ -242,41 +241,8 @@ class _PaymentHistoryCard extends StatelessWidget {
       ),
     );
   }
-
-  static Color _statusColor(String status, AppThemeTokens tokens) {
-    return switch (status.trim().toLowerCase()) {
-      'failed' || 'declined' || 'error' => AppPalette.danger,
-      'pending' || 'processing' || 'awaiting' => AppPalette.warning,
-      _ => tokens.muted,
-    };
-  }
 }
 
-class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.label, required this.color});
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 11.sp,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
-}
 
 class _LoadMoreError extends StatelessWidget {
   const _LoadMoreError({required this.message, required this.onRetry});

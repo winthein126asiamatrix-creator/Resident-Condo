@@ -251,8 +251,7 @@ class _PaymentDetailView extends StatelessWidget {
                     ),
                     _PaymentStatusPill(
                       status: detail.status,
-                      parsed: detail.paymentStatus,
-                      backgroundColor: Colors.white.withValues(alpha: 0.3),
+                     // backgroundColor: Colors.white.withValues(alpha: 0.3),
                     ),
                   ],
                 ),
@@ -285,38 +284,67 @@ class _PaymentDetailView extends StatelessWidget {
                   label: 'Payment number',
                   value: _valueOrDash(detail.paymentNumber),
                 ),
+                                Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Divider(color: tokens.brandTint),
+                  ),
+
                 AppLabelValueRow(
                   label: 'Invoice number',
                   value: _valueOrDash(detail.invoiceNumber),
                 ),
+                 Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Divider(color: tokens.brandTint),
+                  ),
                 AppLabelValueRow(
                   label: 'Amount',
                   value: money,
-                  emphasize: true,
                 ),
+                 Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Divider(color: tokens.brandTint),
+                  ),
                 AppLabelValueRow(
                   label: 'Currency',
                   value: _valueOrDash(detail.currency),
                 ),
+                 Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Divider(color: tokens.brandTint),
+                  ),
                 AppLabelValueRow(
                   label: 'Payment method',
                   value: _valueOrDash(detail.paymentMethodLabel),
                 ),
+                 Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Divider(color: tokens.brandTint),
+                  ),
                 AppLabelValueRow(
                   label: 'Transaction reference',
                   value: _valueOrDash(detail.transactionReference),
                 ),
+                 Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Divider(color: tokens.brandTint),
+                  ),
                 AppLabelValueRow(
                   label: 'Status',
-                  valueWidget: _PaymentStatusPill(
-                    status: detail.status,
-                    parsed: detail.paymentStatus,
-                  ),
+                  value: detail.status.label,
                 ),
+                 Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Divider(color: tokens.brandTint),
+                  ),
                 AppLabelValueRow(
                   label: 'Submitted At',
                   value: _valueOrDash(detail.submittedAtLabel),
                 ),
+                 Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Divider(color: tokens.brandTint),
+                  ),
                 AppLabelValueRow(
                   label: 'Paid date/time',
                   value: _valueOrDash(detail.paidAtLabel),
@@ -362,7 +390,7 @@ class _ReceiptSection extends StatelessWidget {
   });
 
   final PaymentReceiptInfo? receipt;
-  final String status;
+  final PaymentStatus status;
   final bool isDownloading;
   final Future<void> Function() onDownloadReceipt;
 
@@ -384,7 +412,7 @@ class _ReceiptSection extends StatelessWidget {
         ],
       );
     }
-    final isPaid = paymentStatusFromApi(status) == PaymentStatus.successful;
+    final isPaid = status == PaymentStatus.successful;
     final canDownload = isPaid && value.hasDownloadUrl;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -444,41 +472,30 @@ class _ReceiptSection extends StatelessWidget {
 }
 
 class _PaymentStatusPill extends StatelessWidget {
-  const _PaymentStatusPill({required this.status, required this.parsed, this.backgroundColor});
+  const _PaymentStatusPill({required this.status}) : backgroundColor = null;
 
-  final String status;
-  final PaymentStatus? parsed;
+  final PaymentStatus status;
   final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
-    final value = parsed;
-    if (value != null) {
-      return PaymentRecordBadge(status: value);
-    }
     final tokens = AppThemeTokens.of(context);
-    final label = paymentStatusLabelFromApi(status);
-    final normalized = status.trim().toLowerCase();
-    final color = switch (normalized) {
-      'failed' || 'declined' || 'error' => AppPalette.danger,
-      'pending' || 'processing' || 'awaiting' => AppPalette.warning,
-      _ => tokens.muted,
-    };
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-      decoration: BoxDecoration(
-        color:backgroundColor?? color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 11.sp,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  color: tokens.brandOnDark,
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+                child: Text(
+                  status.label,
+                  style: TextStyle(
+                    color: tokens.brand,
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              );
+    
   }
 }
 

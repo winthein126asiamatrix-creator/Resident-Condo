@@ -40,15 +40,13 @@ class PaymentDetail {
   final String currency;
   final String paymentMethod;
   final String transactionReference;
-  final String status;
+  final PaymentStatus status;
   final DateTime? paidAt;
   final DateTime? submittedAt;
   final String? proofImageUrl;
   final PaymentReceiptInfo? receipt;
 
-  PaymentStatus? get paymentStatus => paymentStatusFromApi(status);
 
-  String get statusLabel => paymentStatusLabelFromApi(status);
 
   String get paymentMethodLabel => paymentMethodLabelFromApi(paymentMethod);
 
