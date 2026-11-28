@@ -152,7 +152,6 @@ class _UnitHero extends StatelessWidget {
                     ),
                     _StatusBadge(
                       label: u.occupancy ?? '',
-                      color: tokens.brandOnDark,
                     ),
                   ],
                 ),
@@ -380,22 +379,22 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({required this.label, required this.color});
+  const _StatusBadge({required this.label});
 
   final String label;
-  final Color color;
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.16),
+        color: tokens.brandOnDark,
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Text(
         label,
-        style: TextStyle(color: color, fontSize: 11.sp, fontWeight: FontWeight.w800),
+        style: TextStyle(color: tokens.brand, fontSize: 11.sp, fontWeight: FontWeight.w800),
       ),
     );
   }

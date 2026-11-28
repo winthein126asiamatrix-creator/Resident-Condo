@@ -52,13 +52,16 @@ class ServiceStatusPill extends StatelessWidget {
   final ServiceRequestStatus status;
   final String? label;
   final bool dense;
+  
 
   @override
   Widget build(BuildContext context) {
     return AppStatusPill(
       label: label ?? status.label,
       color: serviceStatusColor(status, AppThemeTokens.of(context)),
+      textColor: AppPalette.darkText,
       dense: dense,
     );
   }
 }
+// serviceStatusColor(request.status, tokens),

@@ -20,26 +20,44 @@ class InvoiceCard extends StatelessWidget {
     super.key,
     required this.invoice,
     required this.currency,
-    required this.onTap,
+    this.onTap,
+    this.selectionControl,
+    this.isSelected = false,
+    this.enabled = true,
   });
 
   /// Builds the shared card from an invoice-list row.
   factory InvoiceCard.fromInvoiceListItem({
     Key? key,
     required InvoiceListItem invoice,
-    required VoidCallback onTap,
+    VoidCallback? onTap,
+    Widget? selectionControl,
+    bool isSelected = false,
+    bool enabled = true,
   }) {
     return InvoiceCard(
       key: key,
       invoice: invoice.toRecentInvoice(),
       currency: invoice.currency,
       onTap: onTap,
+      selectionControl: selectionControl,
+      isSelected: isSelected,
+      enabled: enabled,
     );
   }
 
   final RecentInvoice invoice;
   final String currency;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+
+  /// Optional caller-owned checkbox/selection indicator; kept outside card tap.
+  final Widget? selectionControl;
+
+  /// Whether a selection indicator should show the selected visual state.
+  final bool isSelected;
+
+  /// When false, card tap is disabled without changing the card layout.
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -48,18 +66,21 @@ class InvoiceCard extends StatelessWidget {
     final total = _money(invoice.totalAmount);
     final paid = _money(invoice.paidAmount);
     final remaining = _money(invoice.remainingAmount);
-    final dateProgress = invoice.dateProgress;
+    //final dateProgress = invoice.dateProgress;
     final label = invoice.invoiceStatus.label;
 
     return InkWell(
-      onTap: onTap,
+      onTap: enabled ? onTap : null,
       borderRadius: BorderRadius.circular(18.r),
       child: Container(
         padding: EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: tokens.surface,
           borderRadius: BorderRadius.circular(18.r),
-          border: Border.all(color: tokens.border),
+          border: Border.all(
+            color: isSelected ? tokens.brand : tokens.border,
+            width: isSelected ? 1.5 : 1,
+          ),
         ),
         child: Column(
           children: [
@@ -108,6 +129,10 @@ class InvoiceCard extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (selectionControl != null) ...[
+                  10.w.widthBox(),
+                  selectionControl!,
+                ],
                 Icon(Icons.chevron_right_rounded, color: tokens.faint),
               ],
             ),

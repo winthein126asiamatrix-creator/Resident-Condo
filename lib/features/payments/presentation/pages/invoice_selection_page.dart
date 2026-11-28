@@ -5,16 +5,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
-import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_theme_tokens.dart';
-import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_state_message.dart';
-import '../../../../core/widgets/app_status_pill.dart';
-import '../../domain/entities/invoice_list.dart';
+
 import '../controllers/payment_controller.dart';
-import '../widgets/payment_status_badge.dart';
+import '../widgets/invoice_card.dart';
 
 /// Picks the one invoice a Pay Now action should open.
 ///
@@ -102,7 +99,8 @@ class _InvoiceSelectionPageState extends State<InvoiceSelectionPage> {
                 for (final invoice in items)
                   Padding(
                     padding: EdgeInsets.only(bottom: 10),
-                    child: _PayableInvoiceCard(
+                    child: InvoiceCard.fromInvoiceListItem(
+                      key: Key('payable-invoice-${invoice.id}'),
                       invoice: invoice,
                       onTap: () {
                         vibrateNow();
@@ -144,179 +142,6 @@ class _SelectionIntro extends StatelessWidget {
           'Select one invoice to continue. Nothing is charged until you '
           'confirm the items.',
           style: TextStyle(color: tokens.muted, fontSize: 12.sp, height: 1.35),
-        ),
-      ],
-    );
-  }
-}
-
-class _PayableInvoiceCard extends StatelessWidget {
-  const _PayableInvoiceCard({required this.invoice, required this.onTap});
-
-  final InvoiceListItem invoice;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = AppThemeTokens.of(context);
-    final overdue = invoice.isOverdue;
-    final accent = overdue ? AppPalette.danger : tokens.brand;
-
-    return InkWell(
-      key: Key('payable-invoice-${invoice.id}'),
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18.r),
-      child: Container(
-        padding: EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: tokens.surface,
-          borderRadius: BorderRadius.circular(18.r),
-          border: Border.all(
-            color: overdue
-                ? AppPalette.danger.withValues(alpha: 0.45)
-                : tokens.border,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppIconTile(icon: Icons.receipt_long_rounded, color: accent),
-                12.w.widthBox(),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        invoice.invoiceNumber,
-                        style: TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                      if (invoice.billingPeriodLabel.isNotEmpty) ...[
-                        3.h.heightBox(),
-                        Text(
-                          invoice.billingPeriodLabel,
-                          style: TextStyle(
-                            color: tokens.muted,
-                            fontSize: 12.sp,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                10.w.widthBox(),
-                PaymentStatusBadges(
-                  status: invoice.invoiceStatus,
-                //  overdue: overdue,
-                ),
-              ],
-            ),
-            12.h.heightBox(),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  child: _Amount(
-                    label: 'Total',
-                    value: _money(invoice.totalAmount, invoice.currency),
-                    muted: true,
-                  ),
-                ),
-                Expanded(
-                  child: _Amount(
-                    label: 'Paid',
-                    value: _money(invoice.paidAmount, invoice.currency),
-                    muted: true,
-                  ),
-                ),
-                Expanded(
-                  child: _Amount(
-                    label: 'Remaining',
-                    value: _money(invoice.remainingAmount, invoice.currency),
-                    muted: false,
-                    alignEnd: true,
-                  ),
-                ),
-              ],
-            ),
-            if (invoice.dueDateLabel.isNotEmpty) ...[
-              10.h.heightBox(),
-              Row(
-                children: [
-                  Icon(
-                    overdue
-                        ? Icons.error_outline_rounded
-                        : Icons.event_outlined,
-                    size: 14,
-                    color: overdue ? AppPalette.danger : tokens.muted,
-                  ),
-                  6.w.widthBox(),
-                  Expanded(
-                    child: Text(
-                      overdue
-                          ? 'Overdue · Due ${invoice.dueDateLabel}'
-                          : 'Due ${invoice.dueDateLabel}',
-                      style: TextStyle(
-                        color: overdue ? AppPalette.danger : tokens.muted,
-                        fontSize: 11.sp,
-                        fontWeight: overdue ? FontWeight.w700 : FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  Icon(Icons.chevron_right_rounded, color: tokens.faint),
-                ],
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _money(double value, String currency) => currency.trim().isEmpty
-      ? AppFormatters.currency(value)
-      : AppFormatters.money(value, currency);
-}
-
-class _Amount extends StatelessWidget {
-  const _Amount({
-    required this.label,
-    required this.value,
-    required this.muted,
-    this.color,
-    this.alignEnd = false,
-  });
-
-  final String label;
-  final String value;
-  final bool muted;
-  final Color? color;
-  final bool alignEnd;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = AppThemeTokens.of(context);
-    return Column(
-      crossAxisAlignment: alignEnd
-          ? CrossAxisAlignment.end
-          : CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(color: tokens.muted, fontSize: 10.sp),
-        ),
-        2.h.heightBox(),
-        Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: muted ? tokens.mutedStrong : color,
-            fontWeight: muted ? FontWeight.w600 : FontWeight.w800,
-            fontSize: 12.sp,
-          ),
         ),
       ],
     );

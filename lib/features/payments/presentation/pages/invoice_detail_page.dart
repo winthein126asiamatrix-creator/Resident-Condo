@@ -512,7 +512,7 @@ class _PaidCard extends StatelessWidget {
           CircleAvatar(
             radius: 20,
             backgroundColor: tokens.brandSoft,
-            child: const Icon(Icons.check_rounded, color: AppPalette.success),
+            child: const Icon(Icons.check_rounded),
           ),
           12.w.widthBox(),
           Expanded(
@@ -523,7 +523,6 @@ class _PaidCard extends StatelessWidget {
                   'Paid in full',
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    color: AppPalette.success,
                   ),
                 ),
                 4.h.heightBox(),

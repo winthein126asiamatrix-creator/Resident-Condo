@@ -246,7 +246,7 @@ class _ServiceCard extends StatelessWidget {
             children: [
               AppIconTile(
                 icon: serviceIcon(service.category),
-                color: tokens.brand,
+                color: tokens.brandOnDark,
                 size: 46,
               ),
               12.w.widthBox(),
@@ -557,7 +557,7 @@ class _RequestCard extends StatelessWidget {
         children: [
           AppIconTile(
             icon: serviceIcon(request.category),
-            color: serviceStatusColor(request.status, tokens),
+            color: tokens.brandOnDark,
             size: 42,
           ),
           12.w.widthBox(),
@@ -595,6 +595,7 @@ class _RequestCard extends StatelessWidget {
                     ServiceStatusPill(
                       status: request.status,
                       label: request.status.label,
+                      
                     ),
                     Icon(Icons.chevron_right_rounded, color: tokens.faint),
                   ],

@@ -51,7 +51,7 @@ class LeaseRenewalSentPage extends StatelessWidget {
               ),
               child: Icon(
                 Icons.check_rounded,
-                color: AppPalette.success,
+                color: tokens.brand,
                 size: 48,
               ),
             ),

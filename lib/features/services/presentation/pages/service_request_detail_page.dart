@@ -47,11 +47,12 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
             AppHeroPanel(
               icon: serviceIcon(current.category),
               title: current.serviceName,
-              subtitle: '${current.displayScheduledDate} · ${current.displayScheduledSlot}',
+              subtitle:
+                  '${current.displayScheduledDate} · ${current.displayScheduledSlot}',
               footnote: hasProvider ? 'Provider: $provider' : null,
-              trailing: ServiceStatusPill(
-                status: current.status,
+              trailing: AppStatusPill(
                 label: current.status.label,
+                textColor: serviceStatusColor(current.status, tokens),
                 dense: false,
               ),
             ),
@@ -64,16 +65,41 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                     label: 'Category',
                     value: _categoryLabel(current),
                   ),
-                  if (hasProvider)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Divider(color: tokens.border,height: 2,),
+                  ),
+                  if (hasProvider) ...[
                     AppLabelValueRow(label: 'Provider', value: provider),
+                     Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Divider(color: tokens.border,height: 2,),
+                  ),
+                  ],
+
                   AppLabelValueRow(
                     label: 'Scheduled',
-                     value: current.displayScheduledDate,
+                    value: current.displayScheduledDate,
                   ),
-                   AppLabelValueRow(label: 'Slot', value: current.displayScheduledSlot),
+                   Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Divider(color: tokens.border,height: 2,),
+                  ),
+                  AppLabelValueRow(
+                    label: 'Slot',
+                    value: current.displayScheduledSlot,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Divider(color: tokens.border,height: 2,),
+                  ),
                   AppLabelValueRow(
                     label: 'Service fee',
-                    value: AppFormatters.money(current.price,current.currency),
+                    value: AppFormatters.money(current.price, current.currency),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Divider(color: tokens.border,height: 2,),
                   ),
                   AppLabelValueRow(
                     label: 'Requested on',
@@ -128,9 +154,10 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
             if (current.canCancel)
               OutlinedButton.icon(
                 onPressed:
-                    controller.isSubmitting.value || controller.isCancelling.value
-                        ? null
-                        : () => _cancel(context, current),
+                    controller.isSubmitting.value ||
+                        controller.isCancelling.value
+                    ? null
+                    : () => _cancel(context, current),
                 icon: controller.isCancelling.value
                     ? SizedBox(
                         width: 18,
@@ -149,22 +176,22 @@ class ServiceRequestDetailPage extends GetView<CondoServiceController> {
                       : 'Cancel request',
                 ),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppPalette.danger,
-                  side: BorderSide(color: Color(0xFFF0C6C0)),
+                  foregroundColor: tokens.brand,
+                  side: BorderSide(color: tokens.brand.withValues(alpha: 0.4)),
                   minimumSize: Size.fromHeight(50),
                 ),
               ),
-            if (current.canRate) ...[
-              10.h.heightBox(),
-              FilledButton.icon(
-                onPressed: controller.isSubmitting.value
-                    ? null
-                    : () => _rate(context, current),
-                icon: Icon(Icons.star_rounded, size: 18),
-                label: Text('Rate this service'),
-                style: FilledButton.styleFrom(minimumSize: Size.fromHeight(50)),
-              ),
-            ],
+            // if (current.canRate) ...[
+            //   10.h.heightBox(),
+            //   FilledButton.icon(
+            //     onPressed: controller.isSubmitting.value
+            //         ? null
+            //         : () => _rate(context, current),
+            //     icon: Icon(Icons.star_rounded, size: 18),
+            //     label: Text('Rate this service'),
+            //     style: FilledButton.styleFrom(minimumSize: Size.fromHeight(50)),
+            //   ),
+            // ],
             // if (controller.errorMessage.value != null) ...[
             //   10.h.heightBox(),
             //   Text(

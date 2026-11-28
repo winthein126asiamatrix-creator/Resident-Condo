@@ -185,7 +185,7 @@ class _RequestCard extends StatelessWidget {
       borderRadius: 18,
       child: Row(
         children: [
-          AppIconTile(icon: Icons.build_circle_outlined, color: tokens.brand),
+          AppIconTile(icon: Icons.build_circle_outlined, color: tokens.brandOnDark),
           12.w.widthBox(),
           Expanded(
             child: Column(

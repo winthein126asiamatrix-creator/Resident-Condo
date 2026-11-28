@@ -5,9 +5,10 @@ import '../../../../core/theme/app_theme_tokens.dart';
 import '../../domain/entities/maintenance_request.dart';
 
 class MaintenanceStatusBadge extends StatelessWidget {
-  const MaintenanceStatusBadge({required this.status, super.key});
+  const MaintenanceStatusBadge({required this.status, super.key, this.backgroundColor});
 
   final MaintenanceStatus status;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -15,8 +16,8 @@ class MaintenanceStatusBadge extends StatelessWidget {
     // Assigned, in progress and completed carry meaning, so those colours stay
     // fixed. Submitted has no colour of its own, so it borrows the neutral one.
     final (label, color) = switch (status) {
-      MaintenanceStatus.submitted => ('Requested', tokens.mutedStrong),
-      MaintenanceStatus.assigned => ('Assigned', Color(0xFF5B4CC4)),
+      MaintenanceStatus.submitted => ('Requested', Color(0xFF5B4CC4)),
+      MaintenanceStatus.assigned => ('Assigned', Color(0xFFB45309)),
       MaintenanceStatus.inProgress => ('In Progress', Color(0xFFB45309)),
       MaintenanceStatus.completed => ('Completed', Color(0xFF087F5B)),
       MaintenanceStatus.cancelled => ('Cancelled', Color(0xFFB42318)),
@@ -25,13 +26,13 @@ class MaintenanceStatusBadge extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
-        color: color,
+        color:backgroundColor?? color,
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: Colors.white,
+          color: backgroundColor!= null?color:Colors.white,
           fontSize: 11.sp,
           fontWeight: FontWeight.w800,
         ),

@@ -8,23 +8,26 @@ import '../theme/app_theme_tokens.dart';
 class AppStatusPill extends StatelessWidget {
   const AppStatusPill({
     required this.label,
-    required this.color,
+    this.color,
     this.icon,
+    this.textColor,
     this.dense = false,
     super.key,
   });
 
   final String label;
-  final Color color;
+  final Color? color;
+  final Color? textColor;
   final IconData? icon;
   final bool dense;
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: dense ? 8 : 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color,
+        color:color?? tokens.brandOnDark,
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Row(
@@ -37,7 +40,7 @@ class AppStatusPill extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: Colors.white,
+              color: textColor ?? tokens.brand,
               fontSize: dense ? 10 : 11,
               fontWeight: FontWeight.w800,
             ),

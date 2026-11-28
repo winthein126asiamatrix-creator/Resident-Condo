@@ -464,37 +464,37 @@ class _ServiceRequestPageState extends State<ServiceRequestPage> {
                 maxLines: 3,
               ),
             ),
-            18.h.heightBox(),
-            AppCard(
-              color: AppPalette.warning.withValues(
-                alpha: tokens.isDark ? 0.16 : 0.08,
-              ),
-              borderColor: AppPalette.warning.withValues(
-                alpha: tokens.isDark ? 0.35 : 0.22,
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.receipt_long_outlined,
-                    color: AppPalette.warning,
-                    size: 20,
-                  ),
-                  10.w.widthBox(),
-                  Expanded(
-                    child: Text(
-                      'The service fee is billed as its own line on your next '
-                      'statement. It is never added to the monthly condo fee.',
-                      style: TextStyle( 
-                        color: tokens.mutedStrong,
-                        fontSize: 11.5.sp,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // 18.h.heightBox(),
+            // AppCard(
+            //   color: AppPalette.warning.withValues(
+            //     alpha: tokens.isDark ? 0.16 : 0.08,
+            //   ),
+            //   borderColor: AppPalette.warning.withValues(
+            //     alpha: tokens.isDark ? 0.35 : 0.22,
+            //   ),
+            //   child: Row(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       Icon(
+            //         Icons.receipt_long_outlined,
+            //         color: AppPalette.warning,
+            //         size: 20,
+            //       ),
+            //       10.w.widthBox(),
+            //       Expanded(
+            //         child: Text(
+            //           'The service fee is billed as its own line on your next '
+            //           'statement. It is never added to the monthly condo fee.',
+            //           style: TextStyle( 
+            //             color: tokens.mutedStrong,
+            //             fontSize: 11.5.sp,
+            //             height: 1.4,
+            //           ),
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
             22.h.heightBox(),
             AppSectionCard(
               title: 'Booking summary',
@@ -577,7 +577,7 @@ class _SelectedServiceCard extends StatelessWidget {
             children: [
               AppIconTile(
                 icon: serviceIcon(service.category),
-                color: tokens.brand,
+                color: tokens.brandOnDark,
                 size: 46,
               ),
               12.w.widthBox(),

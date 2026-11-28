@@ -81,7 +81,7 @@ class MoreServicesPage extends StatelessWidget {
                   _ModuleTile(
                     route: AppRoutes.lease,
                     icon: Icons.description_rounded,
-                    color: tokens.brand,
+                    color: tokens.brandTint,
                     title: 'Rental & lease',
                     subtitle: 'Term progress, expiry and renewal',
                     badge: _leaseSubtitle(),
@@ -90,7 +90,7 @@ class MoreServicesPage extends StatelessWidget {
                   _ModuleTile(
                     route: AppRoutes.visitors,
                     icon: Icons.people_alt_rounded,
-                    color: tokens.brand,
+                    color: tokens.brandTint,
                     title: 'Visitors',
                     subtitle: 'Access codes, check-in and check-out',
                     badge: _visitorBadge(),
@@ -99,7 +99,7 @@ class MoreServicesPage extends StatelessWidget {
                   _ModuleTile(
                     route: AppRoutes.parking,
                     icon: Icons.directions_car_rounded,
-                    color: tokens.brand,
+                    color: tokens.brandTint,
                     title: 'Parking',
                     subtitle: 'Your bay, access log and guest parking',
                     badge: _parkingBadge(),
@@ -116,7 +116,7 @@ class MoreServicesPage extends StatelessWidget {
                   _ModuleTile(
                     route: AppRoutes.store,
                     icon: Icons.storefront_rounded,
-                    color: tokens.brand,
+                    color: tokens.brandTint,
                     title: 'Convenience Store',
                     subtitle: 'Groceries, snacks and drinks to your door',
                   ),
@@ -124,7 +124,7 @@ class MoreServicesPage extends StatelessWidget {
                   _ModuleTile(
                     route: AppRoutes.services,
                     icon: Icons.room_service_rounded,
-                    color: tokens.brand,
+                    color: tokens.brandTint,
                     title: 'Condo services',
                     subtitle: 'Cleaning, laundry, pest control and more',
                     badge: _serviceBadge(),
@@ -133,7 +133,7 @@ class MoreServicesPage extends StatelessWidget {
                   _ModuleTile(
                     route: AppRoutes.complaints,
                     icon: Icons.support_agent_rounded,
-                    color: tokens.brand,
+                    color: tokens.brandTint,
                     title: 'Complaints',
                     subtitle: 'Report an issue to the community team',
                     badge: _complaintBadge(),
@@ -142,7 +142,7 @@ class MoreServicesPage extends StatelessWidget {
                   _ModuleTile(
                     route: AppRoutes.rules,
                     icon: Icons.gavel_rounded,
-                    color: tokens.brand,
+                    color: tokens.brandTint,
                     title: 'Rules & violations',
                     subtitle: 'Community rules, fines and appeals',
                     badge: _violationBadge(),
@@ -154,21 +154,21 @@ class MoreServicesPage extends StatelessWidget {
               _ModuleTile(
                 route: AppRoutes.unit,
                 icon: Icons.home_work_rounded,
-                color: tokens.brand,
+                color: tokens.brandTint,
                 title: 'My unit',
                 subtitle: 'Owner, tenant, residents and parking details',
               ),
               _ModuleTile(
                 route: AppRoutes.announcements,
                 icon: Icons.campaign_rounded,
-                color: tokens.brand,
+                color: tokens.brandTint,
                 title: 'Announcements',
                 subtitle: 'Notices from the management team',
               ),
               _ModuleTile(
                 route: AppRoutes.notifications,
                 icon: Icons.notifications_none_rounded,
-                color: tokens.brand,
+                color: tokens.brandTint,
                 title: 'Notifications',
                 subtitle: 'All your resident updates',
               ),

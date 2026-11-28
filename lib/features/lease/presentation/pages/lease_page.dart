@@ -150,11 +150,6 @@ class LeasePage extends GetView<LeaseController> {
                 22.h.heightBox(),
                 AppSectionHeader(title: 'Renewal requests'),
                 4.h.heightBox(),
-                Text(
-                  'The tenant and the owner can both propose a renewal.',
-                  style: TextStyle(color: tokens.muted, fontSize: 12.sp),
-                ),
-                10.h.heightBox(),
                 _RenewalList(controller: controller, lease: lease),
                 20.h.heightBox(),
                 FilledButton.icon(
@@ -244,7 +239,7 @@ class _LeaseProgressCard extends StatelessWidget {
           : 'Ends ${AppDates.format(lease.endDate)} · ${lease.daysRemaining} days left',
       trailing: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
-        children: [AppStatusPill(label: lease.status.label, color: color)],
+        children: [AppStatusPill(label: lease.status.label)],
       ),
       leading: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,13 +318,13 @@ class _LeaseProgressCard extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: AppPalette.success.withValues(alpha: 0.5),
+                color: tokens.brandOnDark,
                 borderRadius: BorderRadius.circular(20.r),
               ),
               child: Text(
                 'Renewal Approved',
                 style: TextStyle(
-                  color: tokens.brandOnDark,
+                  color: tokens.brand,
                   fontSize: 12.sp,
                   fontWeight: FontWeight.w800,
                 ),
@@ -521,7 +516,7 @@ class _RenewalCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              AppStatusPill(label: renewal.status.label, color: color),
+              AppStatusPill(label: renewal.status.label),
               Spacer(),
               Text(
                 renewal.requestedOn,
@@ -569,8 +564,8 @@ class _RenewalCard extends StatelessWidget {
               icon: Icon(Icons.undo_rounded, size: 18),
               label: Text('Withdraw request'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppPalette.danger,
-                side: BorderSide(color: Color(0xFFF0C6C0)),
+                foregroundColor: tokens.brand,
+                side: BorderSide(color: tokens.border),
                 minimumSize: Size.fromHeight(44),
               ),
             ),
