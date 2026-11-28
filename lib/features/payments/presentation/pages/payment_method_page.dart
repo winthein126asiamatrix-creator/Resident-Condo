@@ -114,12 +114,6 @@ class _PaymentMethodPageState extends State<PaymentMethodPage> {
             ),
             10.h.heightBox(),
             _ReviewCard(controller: controller),
-            if (controller.isShowingCachedPaymentMethods.value) ...[
-              10.h.heightBox(),
-              _CachedMethodsNotice(
-                updatedAt: controller.paymentMethodsUpdatedLabel,
-              ),
-            ],
             20.h.heightBox(),
             Text(
               'Choose how you want to pay',

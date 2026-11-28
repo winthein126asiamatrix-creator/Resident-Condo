@@ -58,7 +58,7 @@ class PaymentSuccessPage extends StatelessWidget {
                     ? Icons.hourglass_top_rounded
                     : Icons.check_rounded,
                 color: pendingVerification
-                    ? AppPalette.warning
+                    ? AppPalette.ink
                     : AppPalette.success,
                 size: 48,
               ),
@@ -124,8 +124,8 @@ class _SuccessCard extends StatelessWidget {
             '${pendingVerification ? 'SUBMITTED' : 'PAID'} ITEMS '
             '(${payment.items.length})',
             style: TextStyle(
-              color: tokens.brandDark,
-              fontSize: 11.sp,
+              color: tokens.ink,
+              fontSize: 12.sp,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.1,
             ),
@@ -136,17 +136,17 @@ class _SuccessCard extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.check_circle_rounded,
-                    size: 16,
-                    color: AppPalette.success,
+                  Container(
+                    width: 10.w,
+                    height: 10.h,
+                   decoration: BoxDecoration(color: tokens.ink),
                   ),
                   8.w.widthBox(),
                   Expanded(
                     child: Text(
                       item.type.label,
                       style: TextStyle(
-                        fontSize: 12.sp,
+                        fontSize: 14.sp,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -154,7 +154,7 @@ class _SuccessCard extends StatelessWidget {
                   Text(
                     AppFormatters.money(item.amount,payment.currency),
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w800,
                     ),
                   ),

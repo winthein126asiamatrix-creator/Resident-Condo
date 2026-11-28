@@ -15,7 +15,7 @@ void main() {
         designSize: const Size(390, 844),
         builder: (_, _) => MaterialApp(
           home: Scaffold(
-            body: PaymentStatusBadges(status: status, overdue: overdue),
+            body: PaymentStatusBadges(status: status),
           ),
         ),
       ),

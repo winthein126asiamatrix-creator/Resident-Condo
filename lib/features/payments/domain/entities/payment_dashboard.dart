@@ -104,6 +104,7 @@ class RecentInvoice {
     required this.paidAmount,
     required this.remainingAmount,
     required this.status,
+    this.invoiceDate,
     this.dueDate,
   });
 
@@ -114,6 +115,7 @@ class RecentInvoice {
   final double paidAmount;
   final double remainingAmount;
   final String status;
+  final DateTime? invoiceDate;
   final DateTime? dueDate;
 
   InvoiceStatus get invoiceStatus => invoiceStatusFromApi(status);
@@ -134,6 +136,41 @@ class RecentInvoice {
   }
 
   String get dueDateLabel => dueDate == null ? '' : AppDates.format(dueDate!);
+
+  /// Progress through the invoice's issue-to-due window, from `0.0` to `1.0`.
+  ///
+  /// This is a date-based timeline, not the payment completion percentage
+  /// (`paidAmount / totalAmount`). Returns `null` when either date is missing or
+  /// when the due date is before the invoice date, so the card can hide the
+  /// indicator instead of producing an invalid calculation. A same-day invoice
+  /// is valid: it has no elapsed window, but it is complete once due.
+  double? get dateProgress => dateProgressOn(DateTime.now());
+
+  /// [dateProgress] evaluated against a supplied day, which keeps the
+  /// calculation deterministic in tests.
+  double? dateProgressOn(DateTime today) {
+    final issued = invoiceDate;
+    final due = dueDate;
+    if (issued == null || due == null) {
+      return null;
+    }
+
+    // Work with local calendar days so a UTC timestamp cannot shift the day.
+    final start = AppDates.dateOnly(issued.toLocal());
+    final end = AppDates.dateOnly(due.toLocal());
+    final currentDay = AppDates.dateOnly(today.toLocal());
+    final totalDays = AppDates.daysBetween(start, end);
+    if (totalDays < 0) {
+      return null;
+    }
+    if (totalDays == 0) {
+      // Invoice date and due date are the same day; avoid dividing by zero.
+      return currentDay.isBefore(end) ? 0.0 : 1.0;
+    }
+
+    final elapsedDays = AppDates.daysBetween(start, currentDay);
+    return (elapsedDays / totalDays).clamp(0.0, 1.0);
+  }
 
   /// True when the invoice still owes money and its due date is before today.
   ///
@@ -162,34 +199,11 @@ class RecentPayment {
   final double amount;
   final String currency;
   final DateTime? paidAt;
-  final String status;
+  final PaymentStatus status;
   final String invoiceNumber;
 
-  /// Payment transaction status, kept distinct from the invoice status.
-  PaymentStatus? get paymentStatus {
-    return switch (status.trim().toLowerCase()) {
-      'paid' ||
-      'successful' ||
-      'succeeded' ||
-      'completed' => PaymentStatus.successful,
-      'failed' || 'declined' || 'error' => PaymentStatus.failed,
-      _ => null,
-    };
-  }
+
 
   String get paidAtLabel => paidAt == null ? '' : AppDates.format(paidAt!);
 
-  String get statusLabel {
-    final parsed = paymentStatus;
-    if (parsed != null) {
-      return parsed.label;
-    }
-    final raw = status.trim();
-    if (raw.isEmpty) {
-      return 'Unknown';
-    }
-    final normalized = raw.replaceAll(RegExp(r'[_-]+'), ' ');
-
-    return '${normalized[0].toUpperCase()}${normalized.substring(1)}';
-  }
 }

@@ -5,18 +5,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
-import '../../../../core/theme/app_palette.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_theme_tokens.dart';
-import '../../../../core/utils/app_formatters.dart';
 import '../../../../core/widgets/app_detail_app_bar.dart';
 import '../../../../core/widgets/app_segmented_tabs.dart';
 import '../../../../core/widgets/app_state_message.dart';
-import '../../../../core/widgets/app_status_pill.dart';
-import '../../domain/entities/invoice.dart';
-import '../../domain/entities/invoice_list.dart';
 import '../controllers/payment_controller.dart';
-import '../widgets/payment_status_badge.dart';
+import '../widgets/invoice_card.dart';
 
 /// The resident's invoices, opened from the payment dashboard's "View all".
 ///
@@ -149,7 +144,7 @@ class _InvoiceListPageState extends State<InvoiceListPage> {
                   for (final invoice in items)
                     Padding(
                       padding: EdgeInsets.only(bottom: 10),
-                      child: _InvoiceCard(
+                      child: InvoiceCard.fromInvoiceListItem(
                         invoice: invoice,
                         onTap: () {
                           vibrateNow();
@@ -177,108 +172,6 @@ class _InvoiceListPageState extends State<InvoiceListPage> {
       }),
     );
   }
-}
-
-class _InvoiceCard extends StatelessWidget {
-  const _InvoiceCard({required this.invoice, required this.onTap});
-
-  final InvoiceListItem invoice;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = AppThemeTokens.of(context);
-    final settled = invoice.invoiceStatus == InvoiceStatus.paid;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18.r),
-      child: Container(
-        padding: EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: tokens.surface,
-          borderRadius: BorderRadius.circular(18.r),
-          border: Border.all(color: tokens.border),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppIconTile(
-              icon: settled
-                  ? Icons.receipt_long_rounded
-                  : Icons.receipt_long_outlined,
-              color: settled ? AppPalette.success : tokens.brand,
-            ),
-            12.w.widthBox(),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    invoice.invoiceNumber,
-                    style: TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                  3.h.heightBox(),
-                  Text(
-                    invoice.billingPeriodLabel,
-                    style: TextStyle(color: tokens.muted, fontSize: 12.sp),
-                  ),
-                  if (invoice.invoiceDate != null ||
-                      invoice.dueDate != null) ...[
-                    4.h.heightBox(),
-                    Text(
-                      [
-                        if (invoice.invoiceDateLabel.isNotEmpty)
-                          'Issued ${invoice.invoiceDateLabel}',
-                        if (invoice.dueDateLabel.isNotEmpty)
-                          'Due ${invoice.dueDateLabel}',
-                      ].join(' · '),
-                      style: TextStyle(color: tokens.muted, fontSize: 11.sp),
-                    ),
-                  ],
-                  6.h.heightBox(),
-                  Text(
-                    'Total ${_money(invoice.totalAmount, invoice.currency)} · '
-                    'Paid ${_money(invoice.paidAmount, invoice.currency)}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: tokens.mutedStrong,
-                      fontSize: 11.sp,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            10.w.widthBox(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  _money(invoice.remainingAmount, invoice.currency),
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
-                3.h.heightBox(),
-                Text(
-                  'Remaining',
-                  style: TextStyle(color: tokens.muted, fontSize: 10.sp),
-                ),
-                6.h.heightBox(),
-                PaymentStatusBadges(
-                  status: invoice.invoiceStatus,
-                 // overdue: invoice.isOverdue,
-                ),
-              ],
-            ),
-            Icon(Icons.chevron_right_rounded, color: tokens.faint),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _money(double value, String currency) => currency.trim().isEmpty
-      ? AppFormatters.currency(value)
-      : AppFormatters.money(value, currency);
 }
 
 class _CacheNotice extends StatelessWidget {

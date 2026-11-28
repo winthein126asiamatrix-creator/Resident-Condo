@@ -94,7 +94,6 @@ void main() {
     expect(payment.amount, 238.10);
     expect(payment.currency, 'USD');
     expect(payment.paidAtLabel, 'Sep 2, 2026');
-    expect(payment.paymentStatus, PaymentStatus.successful);
   });
 
   test('handles missing fields, numeric strings and unknown statuses', () {

@@ -236,7 +236,6 @@ class _PayableInvoiceCard extends StatelessWidget {
                     label: 'Remaining',
                     value: _money(invoice.remainingAmount, invoice.currency),
                     muted: false,
-                    color: accent,
                     alignEnd: true,
                   ),
                 ),

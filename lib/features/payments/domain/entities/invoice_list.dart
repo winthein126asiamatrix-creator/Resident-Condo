@@ -1,5 +1,6 @@
 import '../../../../core/utils/app_dates.dart';
 import 'invoice.dart';
+import 'payment_dashboard.dart';
 
 /// One invoice row returned by `GET /api/v1/payments/invoices`.
 class InvoiceListItem {
@@ -68,6 +69,24 @@ class InvoiceListItem {
     remainingAmount: remainingAmount,
     status: invoiceStatus,
   );
+
+  /// Adapts this invoice-list row to the shared invoice-card shape.
+  ///
+  /// Uses only fields already provided by the invoice-list API; no data is
+  /// invented and the same shared [RecentInvoice.dateProgress] logic is reused.
+  RecentInvoice toRecentInvoice() {
+    return RecentInvoice(
+      id: id,
+      invoiceNumber: invoiceNumber,
+      billingPeriod: billingPeriod,
+      totalAmount: totalAmount,
+      paidAmount: paidAmount,
+      remainingAmount: remainingAmount,
+      status: status,
+      invoiceDate: invoiceDate,
+      dueDate: dueDate,
+    );
+  }
 }
 
 /// A page of invoices plus the pagination metadata the list needs to keep

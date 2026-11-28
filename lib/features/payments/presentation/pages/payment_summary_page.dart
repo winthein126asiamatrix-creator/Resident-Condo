@@ -75,13 +75,15 @@ class PaymentSummaryPage extends GetView<PaymentController> {
                     ),
                   ),
                 ),
+
+              
                 TextButton.icon(
                   key: Key('select-all-unpaid'),
                   onPressed: invoice.unpaidItems.isEmpty
                       ? null
                       : controller.selectAllUnpaidItems,
-                  icon: Icon(Icons.done_all_rounded, size: 18),
-                  label: Text('Select all unpaid'),
+                  icon: Icon(Icons.done_all_rounded, size: 18,color: tokens.ink,),
+                  label: Text('Select all unpaid',style: TextStyle(color: tokens.ink),),
                 ),
               ],
             ),
@@ -145,42 +147,41 @@ class _SummaryIntro extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
-    return Container(
-      padding: EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: tokens.surface,
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  invoice.number,
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                invoice.number,
+                style: TextStyle(fontWeight: FontWeight.w800),
               ),
-              Text(
-                AppFormatters.money(invoice.remainingAmount, invoice.currency),
-                key: Key('payment-summary-remaining-amount'),
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  color: AppPalette.danger,
-                ),
-              ),
-            ],
-          ),
-          5.h.heightBox(),
-          Text(invoice.unitLabel, style: TextStyle(color: tokens.muted)),
-          4.h.heightBox(),
-          Text(
-            'Due ${invoice.dueDate} · ${invoice.unpaidItems.length} unpaid items',
-            style: TextStyle(color: tokens.muted, fontSize: 12.sp),
-          ),
-        ],
-      ),
+            ),
+            Text(
+              AppFormatters.money(invoice.remainingAmount, invoice.currency),
+              key: Key('payment-summary-remaining-amount'),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18.sp),
+            ),
+          ],
+        ),
+        5.h.heightBox(),
+        Text("Unit ${invoice.unitLabel}", style: TextStyle(color: tokens.muted)),
+        4.h.heightBox(),
+        Row(
+          mainAxisAlignment: .spaceBetween,
+          children: [
+            Text(
+              'Due ${invoice.dueDate}',
+              style: TextStyle(color: tokens.muted, fontSize: 12.sp),
+            ),
+            Text(
+              ' ${invoice.unpaidItems.length} unpaid items',
+              style: TextStyle(color: tokens.muted, fontSize: 12.sp),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
@@ -207,23 +208,21 @@ class _SelectableItem extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 8),
       child: Material(
         color: item.isPaid
-            ? AppPalette.success.withValues(
-                alpha: tokens.isDark ? 0.14 : 0.07,
-              )
+            ? tokens.ink.withValues(alpha: tokens.isDark ? 0.14 : 0.07)
             : locked
             ? tokens.surface
             : tokens.surface,
         shape: RoundedRectangleBorder(
           borderRadius: radius,
           side: BorderSide(
-            color: selected ? tokens.brand : tokens.border,
+            color:  tokens.border,
             width: selected ? 1.6 : 1,
           ),
         ),
         clipBehavior: Clip.antiAlias,
         child: CheckboxListTile(
           value: item.isPaid
-              ? false
+              ? true
               : item.isMandatory
               ? true
               : selected,
@@ -242,8 +241,8 @@ class _SelectableItem extends StatelessWidget {
                   ),
                 ),
               ),
-              if (item.isPaid) ...[_PaidBadge(), 8.w.widthBox()],
-              if (item.isMandatory) ...[_MandatoryBadge(), 8.w.widthBox()],
+              // if (item.isPaid) ...[_PaidBadge(), 8.w.widthBox()],
+              // if (item.isMandatory) ...[_MandatoryBadge(), 8.w.widthBox()],
               Text(
                 item.isZero
                     ? 'No charge'
@@ -270,11 +269,11 @@ class _SelectableItem extends StatelessWidget {
                 : item.note,
             style: TextStyle(
               fontSize: 11.sp,
-              color: item.isPaid
-                  ? AppPalette.success
-                  : item.isMandatory
-                  ? tokens.brand
-                  : tokens.muted,
+              // color: item.isPaid
+              //     ? AppPalette.success
+              //     : item.isMandatory
+              //     ? tokens.brand
+              //     : tokens.muted,
               fontWeight: item.isPaid || item.isMandatory
                   ? FontWeight.w700
                   : FontWeight.w400,
@@ -282,9 +281,9 @@ class _SelectableItem extends StatelessWidget {
             ),
           ),
           secondary: item.isPaid
-              ? Icon(Icons.lock_rounded, size: 18, color: AppPalette.success)
+              ? Icon(Icons.lock_rounded, size: 18)
               : item.isMandatory
-              ? Icon(Icons.lock_rounded, size: 18, color: tokens.brand)
+              ? Icon(Icons.lock_rounded, size: 18)
               : null,
         ),
       ),

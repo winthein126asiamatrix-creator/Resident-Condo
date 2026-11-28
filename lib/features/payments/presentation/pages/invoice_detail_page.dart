@@ -125,22 +125,46 @@ class _DetailScaffold extends StatelessWidget {
                   label: 'Invoice number',
                   value: view.invoiceNumber,
                 ),
+                 Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Divider(color: tokens.brandTint),
+                  ),
                 AppLabelValueRow(
                   label: 'Billing period',
                   value: view.billingPeriod,
                 ),
-                if (view.unitLabel.isNotEmpty)
+                 Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Divider(color: tokens.brandTint),
+                  ),
+                if (view.unitLabel.isNotEmpty)...[
                   AppLabelValueRow(label: 'Unit', value: view.unitLabel),
-                if (view.invoiceDateLabel.isNotEmpty)
+                   Divider(color: tokens.brandTint),
+                ],
+                 
+                if (view.invoiceDateLabel.isNotEmpty)...[
                   AppLabelValueRow(
                     label: 'Invoice date',
                     value: view.invoiceDateLabel,
                   ),
-                if (view.dueDateLabel.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Divider(color: tokens.brandTint),
+                  ),
+                ],
+                  
+                if (view.dueDateLabel.isNotEmpty)...[
                   AppLabelValueRow(label: 'Due date', value: view.dueDateLabel),
+                   Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6.0),
+                    child: Divider(color: tokens.brandTint),
+                  ),
+                ],
+                
                 AppLabelValueRow(
                   label: 'Status',
-                  valueWidget: PaymentStatusBadge(status: view.status),
+                  value: view.status.label
+                 // valueWidget: PaymentStatusBadge(status: view.status),
                 ),
               ],
             ),
@@ -153,7 +177,9 @@ class _DetailScaffold extends StatelessWidget {
               children: [
                 for (final item in view.items)
                   _ItemLine(item: item, currency: view.currency),
-                Divider(height: 20),
+                8.h.heightBox(),
+                Divider(color: tokens.brandTint,),
+                8.h.heightBox(),
                 AppLabelValueRow(
                   label: 'Invoice total',
                   value: view.money(view.totalAmount),
@@ -162,6 +188,8 @@ class _DetailScaffold extends StatelessWidget {
                   label: 'Amount paid',
                   value: view.money(view.paidAmount),
                 ),
+                8.h.heightBox(),
+                Divider(color: tokens.brandTint,),
                 AppLabelValueRow(
                   label: 'Remaining',
                   value: view.money(view.remainingAmount),
@@ -189,19 +217,6 @@ class _DetailScaffold extends StatelessWidget {
             )
           else
             _PaidCard(view: view),
-          if (view.payableInvoice != null) ...[
-            8.h.heightBox(),
-            Text(
-              'Pay Now never charges the full balance automatically — you pick '
-              'exactly which fees to settle.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: tokens.muted,
-                fontSize: 11.sp,
-                height: 1.35,
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -380,13 +395,13 @@ class _ItemLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
     final tags = <Widget>[
-      if (item.isMandatory) _ItemTag(label: 'Mandatory', color: tokens.brand),
+      if (item.isMandatory) _ItemTag(label: 'Mandatory', isPaid: item.isPaid),
       if (!item.isPayable && !item.isPaid && !item.isZero)
-        _ItemTag(label: 'Not payable', color: AppPalette.muted),
+        _ItemTag(label: 'Not payable', isPaid: false),
       if (item.statusLabel.isNotEmpty)
         _ItemTag(
           label: item.statusLabel,
-          color: item.isPaid ? AppPalette.success : AppPalette.warning,
+          isPaid: item.isPaid,
         ),
     ];
     final description = item.description.trim();
@@ -394,61 +409,52 @@ class _ItemLine extends StatelessWidget {
         description.isNotEmpty &&
         description.toLowerCase() != item.title.toLowerCase();
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 7),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            item.isPaid
-                ? Icons.check_circle_rounded
-                : item.isZero
-                ? Icons.remove_circle_outline_rounded
-                : Icons.radio_button_unchecked_rounded,
-            size: 18,
-            color: item.isPaid
-                ? AppPalette.success
-                : item.isZero
-                ? tokens.faint
-                : AppPalette.warning,
-          ),
-          10.w.widthBox(),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: item.isPaid ? tokens.muted : tokens.ink,
-                    decoration: item.isPaid ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-                if (showDescription) ...[
-                  2.h.heightBox(),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 16,horizontal: 10),
+        decoration: BoxDecoration(color:tokens.border.withValues(alpha: 0.4),borderRadius: .circular(16.r)),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            10.w.widthBox(),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    item.isPaid && item.paidDateLabel.isNotEmpty
-                        ? '$description · paid ${item.paidDateLabel}'
-                        : description,
-                    style: TextStyle(color: tokens.muted, fontSize: 11.sp),
+                    item.title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: item.isPaid ? tokens.muted : tokens.ink,
+                      decoration: item.isPaid ? TextDecoration.lineThrough : null,
+                    ),
                   ),
+                  if (showDescription) ...[
+                    2.h.heightBox(),
+                    Text(
+                      item.isPaid && item.paidDateLabel.isNotEmpty
+                          ? '$description · paid ${item.paidDateLabel}'
+                          : description,
+                      style: TextStyle(color: tokens.muted, fontSize: 11.sp),
+                    ),
+                  ],
+                  if (tags.isNotEmpty) ...[
+                    5.h.heightBox(),
+                    Wrap(spacing: 5, runSpacing: 4, children: tags),
+                  ],
                 ],
-                if (tags.isNotEmpty) ...[
-                  5.h.heightBox(),
-                  Wrap(spacing: 5, runSpacing: 4, children: tags),
-                ],
-              ],
+              ),
             ),
-          ),
-          10.w.widthBox(),
-          Text(
-            item.isZero ? 'No charge' : _money(item.amount, currency),
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-              color: item.isPaid ? tokens.muted : tokens.ink,
+            10.w.widthBox(),
+            Text(
+              item.isZero ? 'No charge' : _money(item.amount, currency),
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: item.isPaid ? tokens.muted : tokens.ink,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -459,22 +465,24 @@ class _ItemLine extends StatelessWidget {
 }
 
 class _ItemTag extends StatelessWidget {
-  const _ItemTag({required this.label, required this.color});
+  const _ItemTag({required this.label, required this.isPaid});
   final String label;
-  final Color color;
+  final bool isPaid;
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+       color: isPaid? Colors.white:Colors.black,
+       border: Border.all(color: tokens.border),
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: color,
+          color: isPaid? Colors.black:Colors.white,
           fontSize: 9.sp,
           fontWeight: FontWeight.w800,
         ),

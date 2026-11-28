@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:test/core/theme/app_theme_tokens.dart';
 
 import '../../domain/entities/invoice.dart';
 
@@ -11,30 +12,22 @@ class PaymentStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (label, color) = switch (status) {
-      InvoiceStatus.paid => ('Paid', Color(0xFF087F5B)),
-      InvoiceStatus.partiallyPaid => ('Partial', Color(0xFFB45309)),
-      InvoiceStatus.pending => ('Pending', Color(0xFFB45309)),
-      InvoiceStatus.overdue => ('Overdue', Color(0xFFC2410C)),
-      InvoiceStatus.unpaid => ('Unpaid', Color(0xFF9A5B13)),
-      InvoiceStatus.cancelled => ('Cancelled', Color(0xFF6B7280)),
-    };
-
+    final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-      decoration: BoxDecoration(
-        color: backgroundColor??color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 11.sp,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  color: tokens.brandOnDark,
+                  borderRadius: BorderRadius.circular(16.r),
+                ),
+                child: Text(
+                  status.label,
+                  style: TextStyle(
+                    color: tokens.brand,
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              );
   }
 }
 

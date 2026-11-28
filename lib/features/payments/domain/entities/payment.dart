@@ -26,7 +26,16 @@ PaymentMethod paymentMethodFromCode(String code) {
   };
 }
 
-enum PaymentStatus { successful, failed, pendingVerification, unknown }
+enum PaymentStatus { successful, failed, pendingVerification, unknown;
+ static PaymentStatus fromApi(String? value) {
+    return switch (value?.trim().toLowerCase()) {
+      'successful'|| 'paid' => PaymentStatus.successful,
+      'failed' => PaymentStatus.failed,
+      'pending_verification' => PaymentStatus.pendingVerification,
+      _ => PaymentStatus.unknown,
+    };
+  }
+ }
 
 extension PaymentStatusLabel on PaymentStatus {
   String get label {
@@ -36,7 +45,7 @@ extension PaymentStatusLabel on PaymentStatus {
       case PaymentStatus.failed:
         return 'Failed';
       case PaymentStatus.pendingVerification:
-        return 'Pending verification';
+        return 'Pending';
       case PaymentStatus.unknown:
         return 'Unknown';
     }

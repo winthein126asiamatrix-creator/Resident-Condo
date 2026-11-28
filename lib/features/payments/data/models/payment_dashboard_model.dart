@@ -1,3 +1,5 @@
+import 'package:test/features/payments/domain/entities/payment.dart';
+
 import '../../domain/entities/payment_dashboard.dart';
 
 /// Parsed `GET /api/v1/payments/dashboard` response.
@@ -45,7 +47,7 @@ class PaymentDashboardModel extends PaymentDashboard {
     final balanceJson = json['outstanding_balance'];
     final statisticsJson = json['payment_statistics'];
     final invoiceSummaryJson = json['invoice_summary'];
-    
+
     return PaymentDashboardModel(
       outstandingBalance: balanceJson is Map
           ? OutstandingBalanceModel.fromJson(
@@ -121,6 +123,7 @@ class PaymentDashboardModel extends PaymentDashboard {
               paidAmount: invoice.paidAmount,
               remainingAmount: invoice.remainingAmount,
               status: invoice.status,
+              invoiceDate: invoice.invoiceDate,
               dueDate: invoice.dueDate,
             ),
           )
@@ -176,6 +179,7 @@ class PaymentDashboardModel extends PaymentDashboard {
             'paid_amount': invoice.paidAmount,
             'remaining_amount': invoice.remainingAmount,
             'status': invoice.status,
+            'invoice_date': invoice.invoiceDate?.toIso8601String(),
             'due_date': invoice.dueDate?.toIso8601String(),
           },
         )
@@ -185,7 +189,7 @@ class PaymentDashboardModel extends PaymentDashboard {
           (payment) => <String, dynamic>{
             'id': payment.id,
             'payment_number': payment.paymentNumber,
-            'invoice_number' : payment.invoiceNumber,
+            'invoice_number': payment.invoiceNumber,
             'amount': payment.amount,
             'currency': payment.currency,
             'paid_at': payment.paidAt?.toIso8601String(),
@@ -293,6 +297,7 @@ class RecentInvoiceModel extends RecentInvoice {
     required super.paidAmount,
     required super.remainingAmount,
     required super.status,
+    super.invoiceDate,
     super.dueDate,
   });
 
@@ -305,6 +310,9 @@ class RecentInvoiceModel extends RecentInvoice {
       paidAmount: _asDouble(json['paid_amount']),
       remainingAmount: _asDouble(json['remaining_amount']),
       status: _asString(json['status']),
+      invoiceDate: _asDate(
+        json['invoice_date'] ?? json['issued_at'] ?? json['date'],
+      ),
       dueDate: _asDate(json['due_date']),
     );
   }
@@ -317,6 +325,7 @@ class RecentInvoiceModel extends RecentInvoice {
     'paid_amount': paidAmount,
     'remaining_amount': remainingAmount,
     'status': status,
+    'invoice_date': invoiceDate?.toIso8601String(),
     'due_date': dueDate?.toIso8601String(),
   };
 }
@@ -329,7 +338,7 @@ class RecentPaymentModel extends RecentPayment {
     required super.currency,
     required super.paidAt,
     required super.status,
-    required super.invoiceNumber
+    required super.invoiceNumber,
   });
 
   factory RecentPaymentModel.fromJson(Map<String, dynamic> json) {
@@ -340,7 +349,9 @@ class RecentPaymentModel extends RecentPayment {
       amount: _asDouble(json['amount']),
       currency: _asString(json['currency']),
       paidAt: _asDate(json['paid_at']),
-      status: _asString(json['status']),
+      status: PaymentStatus.fromApi(
+  _asString(json['status']),
+),
     );
   }
 

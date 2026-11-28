@@ -81,7 +81,7 @@ class MoreServicesPage extends StatelessWidget {
                   _ModuleTile(
                     route: AppRoutes.lease,
                     icon: Icons.description_rounded,
-                    color: AppPalette.info,
+                    color: tokens.brand,
                     title: 'Rental & lease',
                     subtitle: 'Term progress, expiry and renewal',
                     badge: _leaseSubtitle(),
@@ -154,7 +154,7 @@ class MoreServicesPage extends StatelessWidget {
               _ModuleTile(
                 route: AppRoutes.unit,
                 icon: Icons.home_work_rounded,
-                color: tokens.mutedStrong,
+                color: tokens.brand,
                 title: 'My unit',
                 subtitle: 'Owner, tenant, residents and parking details',
               ),
@@ -168,7 +168,7 @@ class MoreServicesPage extends StatelessWidget {
               _ModuleTile(
                 route: AppRoutes.notifications,
                 icon: Icons.notifications_none_rounded,
-                color: AppPalette.info,
+                color: tokens.brand,
                 title: 'Notifications',
                 subtitle: 'All your resident updates',
               ),

@@ -84,25 +84,23 @@ class AppLabelValueRow extends StatelessWidget {
       padding: EdgeInsets.symmetric(vertical: 7),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: .spaceBetween,
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: emphasize ? tokens.ink : tokens.muted,
-                fontWeight: emphasize ? FontWeight.w800 : FontWeight.w400,
-              ),
+          Text(
+            label,
+            style: TextStyle(
+              color: emphasize ? tokens.ink : tokens.muted,
+              fontWeight: emphasize ? FontWeight.w800 : FontWeight.w400,
             ),
           ),
-          12.w.widthBox(),
           valueWidget ??
               Flexible(
                 child: Text(
                   value ?? '',
-                  textAlign: TextAlign.right,
                   style: TextStyle(
+                    
                     fontWeight: FontWeight.w800,
-                    color: emphasize ? tokens.brand : tokens.ink,
+                    color:  tokens.ink,
                   ),
                 ),
               ),

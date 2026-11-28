@@ -28,6 +28,7 @@ import '../../domain/entities/payment_dashboard.dart';
 
 import '../controllers/payment_controller.dart';
 
+import '../widgets/invoice_card.dart';
 import '../widgets/payment_record_badge.dart';
 
 import '../widgets/payment_status_badge.dart';
@@ -68,10 +69,6 @@ class PaymentsPage extends GetView<PaymentController> {
               padding: EdgeInsets.fromLTRB(20, 18, 20, 32),
               children: [
                 _PaymentsHeader(onRefresh: controller.loadPayments),
-                if (controller.isShowingCachedData.value) ...[
-                  10.h.heightBox(),
-                  _CachedDataNotice(updatedAt: controller.lastUpdatedLabel),
-                ],
                 20.h.heightBox(),
                 _BalanceSummary(controller: controller),
                 20.h.heightBox(),
@@ -100,7 +97,7 @@ class PaymentsPage extends GetView<PaymentController> {
                       .map(
                         (invoice) => Padding(
                           padding: EdgeInsets.only(bottom: 10.h),
-                          child: _RecentInvoiceCard(
+                          child: InvoiceCard(
                             invoice: invoice,
                             currency: controller.dashboardCurrency,
                             onTap: () {
@@ -202,37 +199,7 @@ class _PaymentsHeader extends StatelessWidget {
   }
 }
 
-class _CachedDataNotice extends StatelessWidget {
-  const _CachedDataNotice({required this.updatedAt});
-  final String updatedAt;
 
-  @override
-  Widget build(BuildContext context) {
-    final tokens = AppThemeTokens.of(context);
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-      decoration: BoxDecoration(
-        color: tokens.surface,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: tokens.border),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.cloud_off_rounded, size: 15, color: tokens.muted),
-          8.w.widthBox(),
-          Expanded(
-            child: Text(
-              updatedAt.isEmpty
-                  ? 'Showing saved data'
-                  : 'Showing saved data · Updated $updatedAt',
-              style: TextStyle(color: tokens.muted, fontSize: 11.sp),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _BalanceSummary extends StatelessWidget {
   const _BalanceSummary({required this.controller});
@@ -364,7 +331,6 @@ class _BalanceSummary extends StatelessWidget {
     );
   }
 
- 
   Future<void> _startPaymentFlow(BuildContext context) async {
     final openCount = controller.openInvoiceCount;
     if (openCount <= 0) {
@@ -436,10 +402,7 @@ class _FeeBreakdown extends StatelessWidget {
     double amountFor(FeeSummary? fee) => fee?.amount ?? 0;
 
     final rows = <({String label, double amount})>[
-      (
-        label: labelFor(rent, 'Monthly Rent'),
-        amount: amountFor(rent),
-      ),
+      (label: labelFor(rent, 'Monthly Rent'), amount: amountFor(rent)),
       (
         label: labelFor(condoFee, 'Monthly Condo Fee'),
         amount: amountFor(condoFee),
@@ -832,131 +795,6 @@ class _PaymentPreview extends StatelessWidget {
   }
 }
 
-class _RecentInvoiceCard extends StatelessWidget {
-  const _RecentInvoiceCard({
-    required this.invoice,
-    required this.currency,
-    required this.onTap,
-  });
-  final RecentInvoice invoice;
-  final String currency;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = AppThemeTokens.of(context);
-    final settled = invoice.invoiceStatus == InvoiceStatus.paid;
-    final total = _money(invoice.totalAmount);
-    final paid = _money(invoice.paidAmount);
-    final remaining = _money(invoice.remainingAmount);
-    final (label) = switch (invoice.invoiceStatus) {
-      InvoiceStatus.paid => ('Paid'),
-      InvoiceStatus.partiallyPaid => ('Partial'),
-      InvoiceStatus.pending => ('Pending'),
-      InvoiceStatus.overdue => ('Overdue'),
-      InvoiceStatus.unpaid => ('Unpaid'),
-      InvoiceStatus.cancelled => ('Cancelled'),
-    };
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18.r),
-      child: Container(
-        padding: EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: tokens.surface,
-          borderRadius: BorderRadius.circular(18.r),
-          border: Border.all(color: tokens.border),
-        ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                AppIconTile(
-                  icon: settled
-                      ? Icons.receipt_long_rounded
-                      : Icons.receipt_long_outlined,
-                  color:  tokens.brand,
-                ),
-                12.w.widthBox(),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        invoice.invoiceNumber,
-                        style: TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                      4.h.heightBox(),
-                      Text(
-                        invoice.billingPeriodLabel,
-                        style: TextStyle(color: tokens.muted, fontSize: 12.sp),
-                      ),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(total, style: TextStyle(fontWeight: FontWeight.w800)),
-                    4.h.heightBox(),
-                    Text(
-                      invoice.dueDateLabel.isEmpty
-                          ? ''
-                          : invoice.isOverdue?
-
-                          'Over Due ${invoice.dueDateLabel}':
-                          'Due ${invoice.dueDateLabel}',
-                      style: TextStyle(color:invoice.isOverdue?AppPalette.danger: tokens.muted, fontSize: 10.sp),
-                    ),
-                  ],
-                ),
-                Icon(Icons.chevron_right_rounded, color: tokens.faint),
-                
-              ],
-            ),
-            16.h.heightBox(),
-            Row(
-
-              children: [
-               Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: tokens.border)
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11.sp,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    ),
-                      Spacer(),
-                      Text(
-                    invoice.invoiceStatus == InvoiceStatus.paid ?
-                    'Paid $paid':
-                    'Paid $paid . $remaining Left',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: tokens.mutedStrong,
-                      fontSize: 11.sp,
-                    ),
-                  ),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _money(double value) => currency.trim().isEmpty
-      ? AppFormatters.currency(value)
-      : AppFormatters.money(value, currency);
-}
-
 class _RecentPaymentCard extends StatelessWidget {
   const _RecentPaymentCard({required this.payment, this.onTap});
   final RecentPayment payment;
@@ -965,15 +803,14 @@ class _RecentPaymentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AppThemeTokens.of(context);
-    final status = payment.paymentStatus;
-    final failed = status == PaymentStatus.failed;
+    final failed = payment.status == PaymentStatus.failed;
     final color = failed ? AppPalette.danger : AppPalette.success;
     final amount = payment.currency.trim().isEmpty
         ? AppFormatters.currency(payment.amount)
         : AppFormatters.money(payment.amount, payment.currency);
     final subtitle = payment.paidAtLabel.isEmpty
         ? payment.invoiceNumber
-        : '${payment.paidAtLabel} · ${payment.statusLabel}';
+        : payment.paidAtLabel;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(18.r),
@@ -988,7 +825,7 @@ class _RecentPaymentCard extends StatelessWidget {
           children: [
             Icon(
               failed ? Icons.error_rounded : Icons.check_circle_rounded,
-              color: color,
+              //color: color,
             ),
             10.w.widthBox(),
             Expanded(
@@ -1012,13 +849,13 @@ class _RecentPaymentCard extends StatelessWidget {
               children: [
                 Text(
                   amount,
-                  style: TextStyle(fontWeight: FontWeight.w800, color: color),
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
                 4.h.heightBox(),
-                if (status != null)
-                  PaymentRecordBadge(status: status)
-                else
-                  _StatusPill(label: payment.statusLabel, color: tokens.muted),
+                // if (status != null)
+                //   PaymentRecordBadge(status: status)
+                // else
+                  _StatusPill(label: payment.status.label, color: tokens.muted),
               ],
             ),
             if (onTap != null)
@@ -1037,16 +874,18 @@ class _StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AppThemeTokens.of(context);
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
+       // color: color.withValues(alpha: 0.12),
+        border: Border.all(color: color.withValues(alpha: 0.12),),
         borderRadius: BorderRadius.circular(20.r),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: color,
+          color: tokens.ink,
           fontSize: 11.sp,
           fontWeight: FontWeight.w800,
         ),
